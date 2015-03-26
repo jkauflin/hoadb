@@ -113,10 +113,6 @@ function setInputText(idName,textVal,textSize){
 	return '<input id="'+idName+'" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" data-mini="true" >';
 }
 
-//tr += '<tr><th>Comments: </th><td><input id="PropertyComments" value="'+hoaRec.Comments+'" data-mini="true" size="50" maxlength="50"></td></tr>';
-
-
-
 function formatPropertyDetailResults(hoaRec){
     var tr = '';
     var checkedStr = '';
@@ -130,7 +126,8 @@ function formatPropertyDetailResults(hoaRec){
     tr += '<tr><th>City: </th><td>'+hoaRec.Property_City+'</td></tr>';
     tr += '<tr><th>State: </th><td>'+hoaRec.Property_State+'</td></tr>';
     tr += '<tr><th>Zip Code: </th><td>'+hoaRec.Property_Zip+'</td></tr>';
-    tr += '<tr><th>Member: </th><td>'+setCheckbox(hoaRec.Member)+'</td></tr>';
+    //tr += '<tr><th>Member: </th><td>'+setCheckbox(hoaRec.Member)+'</td></tr>';
+    tr += '<tr><th>Member: </th><td><input type="checkbox" data-mini="true" checked='+hoaRec.Member+' disabled="disabled"></td></tr>';
     tr += '<tr><th>Vacant: </th><td>'+setCheckbox(hoaRec.Vacant)+'</td></tr>';
     tr += '<tr><th>Rental: </th><td>'+setCheckbox(hoaRec.Rental)+'</td></tr>';
     tr += '<tr><th>Managed: </th><td>'+setCheckbox(hoaRec.Managed)+'</td></tr>';
@@ -140,6 +137,9 @@ function formatPropertyDetailResults(hoaRec){
     tr += '<tr><th>Comments: </th><td>'+hoaRec.Comments+'</td></tr>';
     $("#PropertyDetail tbody").html(tr);
 
+//	$("#SearchList").html(li).listview('refresh');
+
+    
     var own1 = '';
     tr = '';
 	$.each(hoaRec.ownersList, function(index, rec) {
@@ -201,6 +201,8 @@ function formatPropertyDetailResults(hoaRec){
 	});
     $("#PropertyAssessments tbody").html(tr);
     
+    
+    
     var mcTreasURI = 'http://mctreas.org/master.cfm?parid='+hoaRec.Parcel_ID+'&taxyr='+TaxYear+'&own1='+own1;
     $("#MCTreasLink").html('<a href="'+encodeURI(mcTreasURI)+'" class="ui-btn ui-corner-all ui-mini btnMarginPad" target="_blank">Montgomery<br>County<br>Treasurer</a>');    
 
@@ -211,10 +213,11 @@ function formatPropertyDetailResults(hoaRec){
 
 
 $(document).on("pageinit","#DetailPage",function(){
-	// Initialize the links to blank when detail page loads
-    $("#MCTreasLink").html('');    
-    $("#MCAuditorLink").html('');    
     
+	// do the work in detail after init - pass parcel id in
+	
+    //$("#PropertyDetail tbody").table("refresh");
+	
     // Response to Detail link clicks
     $(document).on("click","#PropertyDetail tr td",function(){
         waitCursor();
