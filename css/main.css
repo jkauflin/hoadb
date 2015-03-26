@@ -234,6 +234,23 @@ table, th, td {
        (-webkit-min-device-pixel-ratio: 1.25),
        (min-resolution: 120dpi) {
 
+	div[data-role="navbar"] {
+		display: none;
+	}
+	
+	/*
+	nav, aside {
+      display: none;
+   	}
+   	
+<div id="HeaderNav" data-role="navbar">
+	div[data-role="header"] {
+		display: none;
+	}
+	
+	.my-breakpoint.ui-grid-a .ui-block-a { width: 1%; }
+	.my-breakpoint.ui-grid-a .ui-block-b { width: 99%; }
+	*/
 }
 
 /* ==========================================================================
