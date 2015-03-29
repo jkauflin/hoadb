@@ -130,7 +130,7 @@ include 'hoaDbCommon.php';
 
 	$conn->close();
 	
-	//testMail($outputStr);
+	testMail($outputStr);
 	
 	echo $outputStr;
 	

@@ -237,6 +237,9 @@ table, th, td {
 	div[data-role="navbar"] {
 		display: none;
 	}
+
+	.my-breakpoint.ui-grid-a .ui-block-a { display: none; }
+	.my-breakpoint.ui-grid-a .ui-block-b { width: 100%; }
 	
 	/*
 	nav, aside {
@@ -248,8 +251,6 @@ table, th, td {
 		display: none;
 	}
 	
-	.my-breakpoint.ui-grid-a .ui-block-a { width: 1%; }
-	.my-breakpoint.ui-grid-a .ui-block-b { width: 99%; }
 	*/
 }
 
