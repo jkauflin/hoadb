@@ -34,6 +34,7 @@ function scrollTo(id)
 }
 
 $(document).ready(function(){
+
 	
 }); // $(document).ready(function(){
 
@@ -520,6 +521,32 @@ $(document).on("pageinit","#ReportsPage",function(){
 }); // End of $(document).on("pageinit","#ReportsPage",function(){
 
 $(document).on("pageinit","#AdminPage",function(){
+	$('#summernote').summernote();
+	
+	//$('.summernote').summernote({
+	/*
+	$('#summernote').summernote({
+		  height: 300,                 // set editor height
+
+		  minHeight: null,             // set minimum height of editor
+		  maxHeight: null,             // set maximum height of editor
+
+		  focus: true,                 // set focus to editable area after initializing summernote
+	});
+	*/
+	
+	/*
+	Get the HTML contents of the first summernote in the set of matched elements.
+
+	var sHTML = $('.summernote').code();
+	Get the HTML content of the second summernote with jQuery eq.
+
+	var sHTML = $('.summernote').eq(1).code();
+	A string of HTML to set as the content of each matched element.
+
+	$('.summernote').code(sHTML);
+	*/
+
 });
 
 $(document).on("pageinit","#UsersPage",function(){
