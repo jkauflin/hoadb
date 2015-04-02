@@ -522,6 +522,11 @@ $(document).on("pageinit","#ReportsPage",function(){
 
 $(document).on("pageinit","#AdminPage",function(){
 	$('#summernote').summernote();
+
+	$.get("getFile.php","",function(response){
+		$('#summernote').code(response);
+	});
+	
 	
 	//$('.summernote').summernote({
 	/*
