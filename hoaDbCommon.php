@@ -104,7 +104,8 @@ function getParamVal($paramName) {
 
 
 function testMail($inStr) {
-	$to = "somebody@example.com, somebodyelse@example.com";
+	//$to = "somebody@example.com, somebodyelse@example.com";
+	$to = "johnkauflin@gmail.com";
 	$subject = "HTML email";
 	
 	$message = '<html><head><title>HTML email</title></head><body>' . $inStr . '</body></html>';
@@ -114,7 +115,7 @@ function testMail($inStr) {
 	$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
 	
 	// More headers
-	$headers .= 'From: <webmaster@example.com>' . "\r\n";
+	$headers .= 'From: <hoadb@grha-dayton.org>' . "\r\n";
 	//$headers .= 'Cc: myboss@example.com' . "\r\n";
 	
 	mail($to,$subject,$message,$headers);
