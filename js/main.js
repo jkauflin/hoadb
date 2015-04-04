@@ -210,11 +210,14 @@ function formatPropertyDetailResults(hoaRec){
     $("#PropertyAssessments tbody").html(tr);
     
     var mcTreasURI = 'http://mctreas.org/master.cfm?parid='+hoaRec.Parcel_ID+'&taxyr='+TaxYear+'&own1='+own1;
-    $("#MCTreasLink").html('<a href="'+encodeURI(mcTreasURI)+'" class="ui-btn ui-corner-all ui-mini btnMarginPad" target="_blank">Montgomery<br>County<br>Treasurer</a>');    
+    $("#MCTreasLink").html('<a href="'+encodeURI(mcTreasURI)+'" class="ui-btn ui-mini ui-btn-inline ui-icon-action ui-btn-icon-left ui-corner-all" data-mini="true" target="_blank">Montgomery<br>County<br>Treasurer</a>');    
 
     var mcAuditorURI = 'http://www.mcrealestate.org/search/CommonSearch.aspx?mode=PARID';
-    $("#MCAuditorLink").html('<a href="'+encodeURI(mcAuditorURI)+'" class="ui-btn ui-corner-all ui-mini btnMarginPad" target="_blank">Montgomery<br>County<br>Auditor</a>');    
+    //$("#MCAuditorLink").html('<a href="'+encodeURI(mcAuditorURI)+'" class="ui-btn ui-corner-all ui-mini btnMarginPad" target="_blank">Montgomery<br>County<br>Auditor</a>');    
+    $("#MCAuditorLink").html('<a href="'+encodeURI(mcAuditorURI)+'" class="ui-btn ui-mini ui-btn-inline ui-icon-action ui-btn-icon-left ui-corner-all" data-mini="true" target="_blank">Montgomery<br> County<br>Auditor</a>');    
     
+//		<a id="SalesReport" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-action ui-btn-icon-left ui-corner-all" data-mini="true">Sales Report</a>
+		
 } // End of function formatDetailResults(hoaRec){
 
 
@@ -500,7 +503,7 @@ $(document).on("pageinit","#ReportsPage",function(){
     		});
 			*/
     		
-            $("#ReportHeader").html("Residential Sales for "+$("#salesYear").val());
+            $("#ReportHeader").html("HOA Residential Sales for "+$("#salesYear").val());
             //$("#ReportListDisplay tbody").html(tr);
             $("#ReportDisplay").html(reportHtml);
     	});

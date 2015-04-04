@@ -150,7 +150,7 @@ table, th, td {
 }
 
 /* 2014-04-04 JJK - New way to handle media width breaks */
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 700px) {
 	.my-breakpoint .ui-block-a,
 	.my-breakpoint .ui-block-b,
 	.my-breakpoint .ui-block-c,
@@ -159,9 +159,11 @@ table, th, td {
 		width: 100%;
 		float:none;
 	}
+	
+	/* Change button class when it goes single column - responsive button format */
 }
 
-@media screen and (min-width: 601px) {
+@media screen and (min-width: 701px) {
 	.my-breakpoint.ui-grid-a .ui-block-a { width: 25%; }
 	.my-breakpoint.ui-grid-a .ui-block-b { width: 75%; }
 	
@@ -228,30 +230,19 @@ table, th, td {
 .my-breakpoint.ui-grid-b .ui-block-b { padding: 0 10px 10px 10px; } 	
 .my-breakpoint.ui-grid-b .ui-block-c { padding: 0 10px 10px 10px; }
 
-
+/* 2015-04-04 JJK - The printer is a device */
 @media print,
        (-o-min-device-pixel-ratio: 5/4),
        (-webkit-min-device-pixel-ratio: 1.25),
        (min-resolution: 120dpi) {
 
-	div[data-role="navbar"] {
+	div[data-role="header"] {
 		display: none;
 	}
 
 	.my-breakpoint.ui-grid-a .ui-block-a { display: none; }
 	.my-breakpoint.ui-grid-a .ui-block-b { width: 100%; }
 	
-	/*
-	nav, aside {
-      display: none;
-   	}
-   	
-<div id="HeaderNav" data-role="navbar">
-	div[data-role="header"] {
-		display: none;
-	}
-	
-	*/
 }
 
 /* ==========================================================================
