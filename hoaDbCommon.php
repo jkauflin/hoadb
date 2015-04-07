@@ -121,6 +121,13 @@ function testMail($inStr) {
 	mail($to,$subject,$message,$headers);
 }
 
+function truncDate($inStr) {
+	if (strlen($inStr) > 10) {
+		return substr($inStr,0,10);
+	} else {
+		return $inStr;
+	}
+}
 
 
 function getHoaRec($conn,$parcelId,$ownerId,$fy) {
@@ -176,7 +183,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy) {
 				$hoaOwnerRec->CurrentOwner = $row["CurrentOwner"];
 				$hoaOwnerRec->Owner_Name1 = $row["Owner_Name1"];
 				$hoaOwnerRec->Owner_Name2 = $row["Owner_Name2"];
-				$hoaOwnerRec->DatePurchased = $row["DatePurchased"];
+				$hoaOwnerRec->DatePurchased = truncDate($row["DatePurchased"]);
 				$hoaOwnerRec->Mailing_Name = $row["Mailing_Name"];
 				$hoaOwnerRec->AlternateMailing = $row["AlternateMailing"];
 				$hoaOwnerRec->Alt_Address_Line1 = $row["Alt_Address_Line1"];
@@ -212,9 +219,9 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy) {
 				$hoaAssessmentRec->Parcel_ID = $row["Parcel_ID"];
 				$hoaAssessmentRec->FY = $row["FY"];
 				$hoaAssessmentRec->DuesAmt = $row["DuesAmt"];
-				$hoaAssessmentRec->DateDue = $row["DateDue"];
+				$hoaAssessmentRec->DateDue = truncDate($row["DateDue"]);
 				$hoaAssessmentRec->Paid = $row["Paid"];
-				$hoaAssessmentRec->DatePaid = $row["DatePaid"];
+				$hoaAssessmentRec->DatePaid = truncDate($row["DatePaid"]);
 				$hoaAssessmentRec->PaymentMethod = $row["PaymentMethod"];
 				$hoaAssessmentRec->Comments = $row["Comments"];
 	

@@ -19,6 +19,29 @@ $.urlParam = function(name){
     }
 }
 
+//  $str = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $str);
+
+//myString.replaceAll("[\\p{Cc}\\p{Cf}\\p{Co}\\p{Cn}]", "?");
+// [ -~]
+//yourString = yourString.replace ( /[^0-9]/g, '' );
+
+//var regex = /e/;
+var regexStr = "^((\"([ !#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\]^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])*\"|([!#$%&'*+\\-/0-9=?A-Z^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])+)(\\.(\"([ !#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\]^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])*\"|([!#$%&'*+\\-/0-9=?A-Z^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])+))*)@([a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?)*\\.(?![0-9]*\\.?$)[a-zA-Z0-9]{2,}\\.?)$";
+var regex = new RegExp(regexStr); 
+
+/*
+var inStr = $("#TestInput").val();
+    	var resultStr = "";
+    	
+    	if (regex.test(inStr)) {
+    		resultStr = '<b style="color:green;">VALID</b>';
+    	} else {
+    		resultStr = '<b style="color:red;">INVALID</b>';
+    	}
+    	$("#Result").html('<div style="color:blue;">'+inStr+'</div><br>email address is '+resultStr);
+    });
+*/
+
 function waitCursor() {
     $('*').css('cursor', 'progress');
 }
@@ -42,8 +65,38 @@ function scrollTo(id)
     }
 }
 
+
 $(document).ready(function(){
 
+    // http://xdsoft.net/jqplugins/datetimepicker/
+    /*
+    $(".DateTime").datetimepicker({
+        format:'Y-m-d H:i'
+    });    
+    $(".Date").datetimepicker({
+        timepicker:false,
+        format:'Y-m-d'
+    });    
+    jQuery('#datetimepicker6').datetimepicker({
+    	  timepicker:false,
+    	  onChangeDateTime:function(dp,$input){
+    	    alert($input.val())
+    	  }
+    	});
+    	
+    $(".Date").datetimepicker({
+        timepicker:false,
+        format:'Y-m-d',
+  	  	onChangeDateTime:function(dp,$input){
+  	  		alert($input.val())
+  	  	}
+    $(".Date").datetimepicker({
+        timepicker:false,
+        format:'Y-m-d'
+    });    
+    });    
+        <input type="text" class="Date" name="ErrBeginDateTime" id="ErrBeginDateTime"  placeholder="Begin Date (YYYY-MM-DD)" data-mini="true">
+    */
 	
 }); // $(document).ready(function(){
 
@@ -120,9 +173,11 @@ function setCheckboxEdit(checkVal,idName){
 	}
 	return '<input id="'+idName+'" type="checkbox" data-mini="true" '+checkedStr+'>';
 }
-
 function setInputText(idName,textVal,textSize){
-	return '<input id="'+idName+'" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" data-mini="true" >';
+	return '<input id="'+idName+'" type="text" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" data-mini="true" >';
+}
+function setInputDate(idName,textVal,textSize){
+	return '<input id="'+idName+'" class="Date" type="text" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" placeholder="YYYY-MM-DD" data-mini="true" >';
 }
 
 function formatPropertyDetailResults(hoaRec){
@@ -222,7 +277,6 @@ function formatPropertyDetailResults(hoaRec){
 
 
 $(document).on("pageinit","#DetailPage",function(){
-
     // Response to Detail link clicks
     $(document).on("click","#PropertyDetail tr td",function(){
         waitCursor();
@@ -276,7 +330,7 @@ function formatPropertyDetailEdit(hoaRec){
     tr += '<tr><th>Foreclosure: </th><td>'+setCheckboxEdit(hoaRec.Foreclosure,'ForeclosureCheckbox')+'</td></tr>';
     tr += '<tr><th>Bankruptcy: </th><td>'+setCheckboxEdit(hoaRec.Bankruptcy,'BankruptcyCheckbox')+'</td></tr>';
     tr += '<tr><th>ToBe Released: </th><td>'+setCheckboxEdit(hoaRec.Liens_2B_Released,'LiensCheckbox')+'</td></tr>';
-    tr += '<tr><th>Comments: </th><td>'+setInputText("PropertyComments",hoaRec.Comments,"50")+'</td></tr>';
+    tr += '<tr><th>Comments: </th><td>'+setInputText("PropertyComments",hoaRec.Comments,"60")+'</td></tr>';
     
     tr += '<tr><th></th><td>'+
     	  '<a id="SavePropertyEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-plus ui-btn-icon-left ui-corner-all">Save</a>' +
@@ -303,16 +357,16 @@ function formatOwnerDetailEdit(hoaRec){
 	    tr += '<tr><th>Current Owner: </th><td>'+setCheckboxEdit(rec.CurrentOwner,'CurrentOwnerCheckbox')+'</td></tr>';
 	    tr += '<tr><th>Owner Name1:</th><td>'+ setInputText("OwnerName1",rec.Owner_Name1,"50")+'</td></tr>';
 	    tr += '<tr><th>Owner Name2:</th><td>'+ setInputText("OwnerName2",rec.Owner_Name2,"50")+'</td></tr>';
-	    tr += '<tr><th>Date Purchased:</th><td>'+ setInputText("DatePurchased",rec.DatePurchased,"50")+'</td></tr>';
+	    tr += '<tr><th>Date Purchased:</th><td>'+ setInputDate("DatePurchased",rec.DatePurchased,"10")+'</td></tr>';
 	    tr += '<tr><th>Mailing Name:</th><td>'+ setInputText("MailingName",rec.Mailing_Name,"50")+'</td></tr>';
 	    tr += '<tr><th>Alternate Mailing: </th><td>'+setCheckboxEdit(rec.AlternateMailing,'AlternateMailingCheckbox')+'</td></tr>';
 	    tr += '<tr><th>Address Line1:</th><td>'+ setInputText("AddrLine1",rec.Alt_Address_Line1,"50")+'</td></tr>';
 	    tr += '<tr><th>Address Line2:</th><td>'+ setInputText("AddrLine2",rec.Alt_Address_Line2,"50")+'</td></tr>';
-	    tr += '<tr><th>City:</th><td>'+ setInputText("AltCity",rec.Alt_City,"50")+'</td></tr>';
-	    tr += '<tr><th>State:</th><td>'+ setInputText("AltState",rec.Alt_State,"50")+'</td></tr>';
-	    tr += '<tr><th>Zip:</th><td>'+ setInputText("AltZip",rec.Alt_Zip,"50")+'</td></tr>';
-	    tr += '<tr><th>Owner Phone:</th><td>'+ setInputText("OwnerPhone",rec.Owner_Phone,"50")+'</td></tr>';
-	    tr += '<tr><th>Comments: </th><td>'+setInputText("OwnerComments",rec.Comments,"50")+'</td></tr>';
+	    tr += '<tr><th>City:</th><td>'+ setInputText("AltCity",rec.Alt_City,"40")+'</td></tr>';
+	    tr += '<tr><th>State:</th><td>'+ setInputText("AltState",rec.Alt_State,"20")+'</td></tr>';
+	    tr += '<tr><th>Zip:</th><td>'+ setInputText("AltZip",rec.Alt_Zip,"20")+'</td></tr>';
+	    tr += '<tr><th>Owner Phone:</th><td>'+ setInputText("OwnerPhone",rec.Owner_Phone,"30")+'</td></tr>';
+	    tr += '<tr><th>Comments: </th><td>'+setInputText("OwnerComments",rec.Comments,"60")+'</td></tr>';
 	    
 	    tr += '<tr><th>Created:</th><td>'+rec.EntryTimestamp+'</td></tr>';
 	    tr += '<tr><th>Last Updated:</th><td>'+rec.UpdateTimestamp+'</td></tr>';
@@ -324,6 +378,11 @@ function formatOwnerDetailEdit(hoaRec){
 	  	  '</td></tr>';
 
     $("#EditTable tbody").html(tr);
+
+    $(".Date").datetimepicker({
+        timepicker:false,
+        format:'Y-m-d'
+    });    
 
 } // End of function formatOwnerDetailEdit(hoaRec){
 
@@ -341,12 +400,12 @@ function formatAssessmentDetailEdit(hoaRec){
 	    tr += '<tr><th>Owner Id:</th><td>'+rec.OwnerID+'</td></tr>';
 	    tr += '<tr><th>Parcel Id:</th><td>'+rec.Parcel_ID+'</td></tr>';
 	    
-	    tr += '<tr><th>Dues Amount:</th><td>'+setInputText("AssessmentsComments",rec.DuesAmt,"50")+'</td></tr>';
-	    tr += '<tr><th>Date Due:</th><td>'+setInputText("AssessmentsComments",rec.DateDue,"50")+'</td></tr>';
+	    tr += '<tr><th>Dues Amount:</th><td>'+setInputText("DuesAmount",rec.DuesAmt,"10")+'</td></tr>';
+	    tr += '<tr><th>Date Due:</th><td>'+setInputDate("DateDue",rec.DateDue,"10")+'</td></tr>';
 	    tr += '<tr><th>Paid: </th><td>'+setCheckboxEdit(rec.Paid,'PaidCheckbox')+'</td></tr>';
-	    tr += '<tr><th>Date Paid:</th><td>'+setInputText("AssessmentsComments",rec.DatePaid,"50")+'</td></tr>';
-	    tr += '<tr><th>Payment Method:</th><td>'+setInputText("AssessmentsComments",rec.PaymentMethod,"50")+'</td></tr>';
-	    tr += '<tr><th>Comments: </th><td>'+setInputText("AssessmentsComments",rec.Comments,"50")+'</td></tr>';
+	    tr += '<tr><th>Date Paid:</th><td>'+setInputDate("DatePaid",rec.DatePaid,"10")+'</td></tr>';
+	    tr += '<tr><th>Payment Method:</th><td>'+setInputText("AssessmentsComments",rec.PaymentMethod,"40")+'</td></tr>';
+	    tr += '<tr><th>Comments: </th><td>'+setInputText("AssessmentsComments",rec.Comments,"60")+'</td></tr>';
 	});
 
     tr += '<tr><th></th><td>'+
@@ -356,12 +415,16 @@ function formatAssessmentDetailEdit(hoaRec){
 
 	$("#EditTable tbody").html(tr);
 
+    $(".Date").datetimepicker({
+        timepicker:false,
+        format:'Y-m-d'
+    });    
+
 } // End of function formatAssessmentDetailEdit(hoaRec){
 
 
 $(document).on("pageinit","#EditPage",function(){
 	// Functions for EditPage - respond to requests for update
-
 	$(document).on("click","#SavePropertyEdit",function(){
         waitCursor();
     	
@@ -468,6 +531,7 @@ $(document).on("pageinit","#EditPage",function(){
 
 $(document).on("pageinit","#ReportsPage",function(){
 
+	
 	$(document).on("click","#SalesReport",function(){
 		waitCursor();
 		
