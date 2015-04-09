@@ -8,6 +8,8 @@
  * 2015-03-26 JJK	Solved initial DetailPage checkbox display problem by
  * 					moving format after the pagecontainer change (instead of
  * 					before it.  Let the page initialize first, then fill it.
+ * 2015-04-09 JJK   Added Regular Expressions and functions for validating
+ * 					email addresses and replacing non-printable characters
  *============================================================================*/
 $.urlParam = function(name){
     var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
@@ -19,28 +21,66 @@ $.urlParam = function(name){
     }
 }
 
-//  $str = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $str);
 
-//myString.replaceAll("[\\p{Cc}\\p{Cf}\\p{Co}\\p{Cn}]", "?");
-// [ -~]
-//yourString = yourString.replace ( /[^0-9]/g, '' );
 
-//var regex = /e/;
-var regexStr = "^((\"([ !#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\]^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])*\"|([!#$%&'*+\\-/0-9=?A-Z^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])+)(\\.(\"([ !#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\]^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])*\"|([!#$%&'*+\\-/0-9=?A-Z^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])+))*)@([a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?)*\\.(?![0-9]*\\.?$)[a-zA-Z0-9]{2,}\\.?)$";
-var regex = new RegExp(regexStr); 
+var validEmailAddrRegExStr = "^((\"([ !#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\]^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])*\"|([!#$%&'*+\\-/0-9=?A-Z^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])+)(\\.(\"([ !#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\]^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])*\"|([!#$%&'*+\\-/0-9=?A-Z^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])+))*)@([a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?)*\\.(?![0-9]*\\.?$)[a-zA-Z0-9]{2,}\\.?)$";
+var regex = new RegExp(validEmailAddrRegExStr,"g"); 
+
+
+//Non-Printable characters
+//[\x00\x08\x0B\x0C\x0E-\x1F]
+
+//$string=~s/[\x00-\x1F]+/./g
+//You know \x09 is tab, \x0A is line feed, and \x0D is carriage return
+
+//Non-Printable characters - Hex 01 to 1F, and 7F
+var nonPrintableCharsStr = "[\x01-\x1F\x7F]";
+//"g" global so it does more than 1 substitution
+var regexNonPrintableChars = new RegExp(nonPrintableCharsStr,"g");
+
+function cleanStr(inStr) {
+	return inStr.replace(regexNonPrintableChars,'');
+}
 
 /*
-var inStr = $("#TestInput").val();
-    	var resultStr = "";
-    	
-    	if (regex.test(inStr)) {
-    		resultStr = '<b style="color:green;">VALID</b>';
-    	} else {
-    		resultStr = '<b style="color:red;">INVALID</b>';
-    	}
-    	$("#Result").html('<div style="color:blue;">'+inStr+'</div><br>email address is '+resultStr);
-    });
+$("#TestInput").change(function() {
+    //waitCursor();
+	
+	var inStr = $("#TestInput").val();
+	var resultStr = "";
+
+	if (regex.test(inStr)) {
+		resultStr = '<b style="color:green;">VALID</b>';
+	} else {
+		resultStr = '<b style="color:red;">INVALID</b>';
+	}
+	$("#Result").html('<div style="color:blue;">'+inStr+'</div><br>email address is '+resultStr);
+
+	//resultStr = inStr.replace(regexNonPrintableChars,'');
+	
+	//var str = 'ABC';
+	var str = '\x44' + '\x01'+ '\x04'+ '\x03'+ '\x04' + '\x7F' + '\x46';
+//	var str = '\x44' + '\x7F' + '\x46';
+
+	str = str.replace(regexNonPrintableChars,'');
+
+	
+	//var str = inStr;
+	var result = [];
+	for(var i = 0, length = str.length; i < length; i++) {
+	    var code = str.charCodeAt(i);
+	    // Since charCodeAt returns between 0~65536, simply save every character as 2-bytes
+	    //result.push(code & 0xff00, code & 0xff);
+	    resultStr += '<br>' + str.charAt(i) + ', code = ' + code;
+	}
+	//alert(result);
+	
+
+	$("#Result").html('<div style="color:blue;">'+inStr+'</div><br>Result: '+resultStr);
+
+});
 */
+
 
 function waitCursor() {
     $('*').css('cursor', 'progress');
@@ -108,12 +148,12 @@ $(document).on("pageinit","#SearchPage",function(){
         $("#PropertyListDisplay tbody").html("");
         
     	// Get the list
-    	$.getJSON("getHoaPropertiesList.php","parcelId="+$("#parcelId").val()+
-    										"&checkNo="+$("#checkNo").val()+
-    										"&address="+$("#address").val()+
-    										"&ownerName="+$("#ownerName").val()+
-    										"&phoneNo="+$("#phoneNo").val()+
-    										"&altAddress="+$("#altAddress").val(),function(hoaPropertyRecList){
+    	$.getJSON("getHoaPropertiesList.php","parcelId="+cleanStr($("#parcelId").val())+
+    										"&checkNo="+cleanStr($("#checkNo").val())+
+    										"&address="+cleanStr($("#address").val())+
+    										"&ownerName="+cleanStr($("#ownerName").val())+
+    										"&phoneNo="+cleanStr($("#phoneNo").val())+
+    										"&altAddress="+cleanStr($("#altAddress").val()),function(hoaPropertyRecList){
     		var tr = '';
     	    rowId = 0;
     		$.each(hoaPropertyRecList, function(index, hoaPropertyRec) {
@@ -481,7 +521,7 @@ $(document).on("pageinit","#EditPage",function(){
         						 "&foreclosureBoolean="+$foreclosureBoolean+
         						 "&bankruptcyBoolean="+$bankruptcyBoolean+
         						 "&liensBoolean="+$liensBoolean+
-        						 "&propertyComments="+$("#PropertyComments").val(),function(results){
+        						 "&propertyComments="+cleanStr($("#PropertyComments").val()),function(results){
 
         	// Re-read the updated data for the Detail page display
             $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
@@ -514,7 +554,7 @@ $(document).on("pageinit","#EditPage",function(){
         						 "&foreclosureBoolean="+$foreclosureBoolean+
         						 "&bankruptcyBoolean="+$bankruptcyBoolean+
         						 "&liensBoolean="+$liensBoolean+
-        						 "&propertyComments="+$("#PropertyComments").val(),function(results){
+        						 "&propertyComments="+cleanStr($("#PropertyComments").val()),function(results){
 
         	// Re-read the updated data for the Detail page display
             $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
