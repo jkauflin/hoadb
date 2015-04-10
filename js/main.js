@@ -21,17 +21,15 @@ $.urlParam = function(name){
     }
 }
 
-
-
-var validEmailAddrRegExStr = "^((\"([ !#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\]^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])*\"|([!#$%&'*+\\-/0-9=?A-Z^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])+)(\\.(\"([ !#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\]^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])*\"|([!#$%&'*+\\-/0-9=?A-Z^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])+))*)@([a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?)*\\.(?![0-9]*\\.?$)[a-zA-Z0-9]{2,}\\.?)$";
-var regex = new RegExp(validEmailAddrRegExStr,"g"); 
-
-
-//Non-Printable characters
-//[\x00\x08\x0B\x0C\x0E-\x1F]
-
-//$string=~s/[\x00-\x1F]+/./g
-//You know \x09 is tab, \x0A is line feed, and \x0D is carriage return
+//var validEmailAddrRegExStr = "^((\"([ !#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\]^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])*\"|([!#$%&'*+\\-/0-9=?A-Z^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])+)(\\.(\"([ !#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\]^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])*\"|([!#$%&'*+\\-/0-9=?A-Z^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])+))*)@([a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?)*\\.(?![0-9]*\\.?$)[a-zA-Z0-9]{2,}\\.?)$";
+//var regex = new RegExp(validEmailAddrRegExStr,"g"); 
+/*
+if (regex.test(inStr)) {
+	resultStr = '<b style="color:green;">VALID</b>';
+} else {
+	resultStr = '<b style="color:red;">INVALID</b>';
+}
+*/
 
 //Non-Printable characters - Hex 01 to 1F, and 7F
 var nonPrintableCharsStr = "[\x01-\x1F\x7F]";
@@ -41,45 +39,6 @@ var regexNonPrintableChars = new RegExp(nonPrintableCharsStr,"g");
 function cleanStr(inStr) {
 	return inStr.replace(regexNonPrintableChars,'');
 }
-
-/*
-$("#TestInput").change(function() {
-    //waitCursor();
-	
-	var inStr = $("#TestInput").val();
-	var resultStr = "";
-
-	if (regex.test(inStr)) {
-		resultStr = '<b style="color:green;">VALID</b>';
-	} else {
-		resultStr = '<b style="color:red;">INVALID</b>';
-	}
-	$("#Result").html('<div style="color:blue;">'+inStr+'</div><br>email address is '+resultStr);
-
-	//resultStr = inStr.replace(regexNonPrintableChars,'');
-	
-	//var str = 'ABC';
-	var str = '\x44' + '\x01'+ '\x04'+ '\x03'+ '\x04' + '\x7F' + '\x46';
-//	var str = '\x44' + '\x7F' + '\x46';
-
-	str = str.replace(regexNonPrintableChars,'');
-
-	
-	//var str = inStr;
-	var result = [];
-	for(var i = 0, length = str.length; i < length; i++) {
-	    var code = str.charCodeAt(i);
-	    // Since charCodeAt returns between 0~65536, simply save every character as 2-bytes
-	    //result.push(code & 0xff00, code & 0xff);
-	    resultStr += '<br>' + str.charAt(i) + ', code = ' + code;
-	}
-	//alert(result);
-	
-
-	$("#Result").html('<div style="color:blue;">'+inStr+'</div><br>Result: '+resultStr);
-
-});
-*/
 
 
 function waitCursor() {
@@ -385,11 +344,13 @@ function formatOwnerDetailEdit(hoaRec){
     var tr = '';
     var checkedStr = '';
     var buttonStr = '';
+    var ownerId = '';
 
     // action or type of update
     $("#EditPageHeader").text("Edit Owner");
 
 	$.each(hoaRec.ownersList, function(index, rec) {
+		ownerId = rec.OwnerID;
 		tr = '';
 	    tr += '<tr><th>Owner Id:</th><td>'+rec.OwnerID+'</td></tr>';
 	    tr += '<tr><th>Parcel Id:</th><td>'+rec.Parcel_ID+'</td></tr>';
@@ -413,7 +374,7 @@ function formatOwnerDetailEdit(hoaRec){
 	});
 
     tr += '<tr><th></th><td>'+
-	  	  '<a id="SaveOwnerEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-plus ui-btn-icon-left ui-corner-all">Save</a>' +
+	  	  '<a id="SaveOwnerEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+ownerId+'" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-plus ui-btn-icon-left ui-corner-all">Save</a>' +
 	  	  '<a href="#" data-rel="back" class="ui-btn ui-mini ui-btn-inline ui-icon-delete ui-btn-icon-left ui-corner-all">Cancel</a>' +
 	  	  '</td></tr>';
 
@@ -479,7 +440,7 @@ $(document).on("pageinit","#EditPage",function(){
         var $liensBoolean = $("#LiensCheckbox").is(":checked");
 
         //$.getJSON("updHoaDbData.php","parcelId="+$this.attr("data-parcelId"),function(hoaRec){
-        $.get("updHoaDbData.php","parcelId="+$parcelId+
+        $.get("updHoaProperty.php","parcelId="+$parcelId+
         						 "&memberBoolean="+$memberBoolean+
         						 "&vacantBoolean="+$vacantBoolean+
         						 "&rentalBoolean="+$rentalBoolean+
@@ -487,7 +448,7 @@ $(document).on("pageinit","#EditPage",function(){
         						 "&foreclosureBoolean="+$foreclosureBoolean+
         						 "&bankruptcyBoolean="+$bankruptcyBoolean+
         						 "&liensBoolean="+$liensBoolean+
-        						 "&propertyComments="+$("#PropertyComments").val(),function(results){
+        						 "&propertyComments="+cleanStr($("#PropertyComments").val()),function(results){
 
         	// Re-read the updated data for the Detail page display
             $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
@@ -504,24 +465,26 @@ $(document).on("pageinit","#EditPage",function(){
     	
         var $this = $(this);
         var $parcelId = $this.attr("data-parcelId");
-        var $memberBoolean = $("#MemberCheckbox").is(":checked");
-        var $vacantBoolean = $("#VacantCheckbox").is(":checked");
-        var $rentalBoolean = $("#RentalCheckbox").is(":checked");
-        var $managedBoolean = $("#ManagedCheckbox").is(":checked");
-        var $foreclosureBoolean = $("#ForeclosureCheckbox").is(":checked");
-        var $bankruptcyBoolean = $("#BankruptcyCheckbox").is(":checked");
-        var $liensBoolean = $("#LiensCheckbox").is(":checked");
+        var $ownerId = $this.attr("data-OwnerId");
 
-        //$.getJSON("updHoaDbData.php","parcelId="+$this.attr("data-parcelId"),function(hoaRec){
-        $.get("updHoaDbData.php","parcelId="+$parcelId+
-        						 "&memberBoolean="+$memberBoolean+
-        						 "&vacantBoolean="+$vacantBoolean+
-        						 "&rentalBoolean="+$rentalBoolean+
-        						 "&managedBoolean="+$managedBoolean+
-        						 "&foreclosureBoolean="+$foreclosureBoolean+
-        						 "&bankruptcyBoolean="+$bankruptcyBoolean+
-        						 "&liensBoolean="+$liensBoolean+
-        						 "&propertyComments="+cleanStr($("#PropertyComments").val()),function(results){
+        var $currentOwnerBoolean = $("#CurrentOwnerCheckbox").is(":checked");
+        var $alternateMailingBoolean = $("#AlternateMailingCheckbox").is(":checked");
+
+        $.get("updHoaOwner.php","parcelId="+$parcelId+
+        						 "&ownerId="+$ownerId+
+        						 "&currentOwnerBoolean="+$currentOwnerBoolean+
+        						 "&ownerName1="+cleanStr($("#OwnerName1").val())+
+        						 "&ownerName2="+cleanStr($("#OwnerName2").val())+
+        						 "&datePurchased="+cleanStr($("#DatePurchased").val())+
+        						 "&mailingName="+cleanStr($("#MailingName").val())+
+           						 "&alternateMailingBoolean="+$alternateMailingBoolean+
+           						 "&addrLine1="+cleanStr($("#AddrLine1").val())+
+        						 "&addrLine2="+cleanStr($("#AddrLine2").val())+
+        						 "&altCity="+cleanStr($("#AltCity").val())+
+        						 "&altState="+cleanStr($("#AltState").val())+
+        						 "&altZip="+cleanStr($("#AltZip").val())+
+        						 "&ownerPhone="+cleanStr($("#OwnerPhone").val())+
+        						 "&ownerComments="+cleanStr($("#OwnerComments").val()),function(results){
 
         	// Re-read the updated data for the Detail page display
             $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
@@ -545,8 +508,7 @@ $(document).on("pageinit","#EditPage",function(){
         var $bankruptcyBoolean = $("#BankruptcyCheckbox").is(":checked");
         var $liensBoolean = $("#LiensCheckbox").is(":checked");
 
-        //$.getJSON("updHoaDbData.php","parcelId="+$this.attr("data-parcelId"),function(hoaRec){
-        $.get("updHoaDbData.php","parcelId="+$parcelId+
+        $.get("updHoaAssessment.php","parcelId="+$parcelId+
         						 "&memberBoolean="+$memberBoolean+
         						 "&vacantBoolean="+$vacantBoolean+
         						 "&rentalBoolean="+$rentalBoolean+

@@ -13,8 +13,6 @@ include 'hoaDbCommon.php';
 
 	// If they are set, get input parameters from the REQUEST
 	$parcelId = getParamVal("parcelId");
-	$ownerId = getParamVal("ownerId");
-	$fy = getParamVal("fy");
 	
 	$memberBoolean = paramBoolVal("memberBoolean");
 	$vacantBoolean = paramBoolVal("vacantBoolean");
@@ -23,9 +21,8 @@ include 'hoaDbCommon.php';
 	$foreclosureBoolean = paramBoolVal("foreclosureBoolean");
 	$bankruptcyBoolean = paramBoolVal("bankruptcyBoolean");
 	$liensBoolean = paramBoolVal("liensBoolean");
-
-	$propertyComments = getParamVal("propertyComments");
 	
+	$propertyComments = getParamVal("propertyComments");
 	
 	//--------------------------------------------------------------------------------------------------------
 	// Create connection to the database
