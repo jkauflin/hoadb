@@ -16,29 +16,12 @@ include 'hoaDbCommon.php';
 	$ownerId = getParamVal("ownerId");
 	$fy = getParamVal("fy");
 	
-	$memberBoolean = paramBoolVal("memberBoolean");
-	$vacantBoolean = paramBoolVal("vacantBoolean");
-	$rentalBoolean = paramBoolVal("rentalBoolean");
-	$managedBoolean = paramBoolVal("managedBoolean");
-	$foreclosureBoolean = paramBoolVal("foreclosureBoolean");
-	$bankruptcyBoolean = paramBoolVal("bankruptcyBoolean");
-	$liensBoolean = paramBoolVal("liensBoolean");
-	
-	$propertyComments = getParamVal("propertyComments");
-	
-	$currentOwnerBoolean = paramBoolVal("currentOwnerBoolean");
-	$ownerName1 = getParamVal("ownerName1");
-	$ownerName2 = getParamVal("ownerName2");
-	$datePurchased = getParamVal("datePurchased");
-	$mailingName = getParamVal("mailingName");
-	$alternateMailingBoolean = paramBoolVal("alternateMailingBoolean");
-	$addrLine1 = getParamVal("addrLine1");
-	$addrLine2 = getParamVal("addrLine2");
-	$altCity = getParamVal("altCity");
-	$altState = getParamVal("altState");
-	$altZip = getParamVal("altZip");
-	$ownerPhone = getParamVal("ownerPhone");
-	$ownerComments = getParamVal("ownerComments");
+	$duesAmount = getParamVal("duesAmount");
+	$dateDue = getParamVal("dateDue");
+	$paidBoolean = paramBoolVal("paidBoolean");
+	$datePaid = getParamVal("datePaid");
+	$paymentMethod = getParamVal("paymentMethod");
+	$assessmentsComments = getParamVal("assessmentsComments");
 	
 	//--------------------------------------------------------------------------------------------------------
 	// Create connection to the database
@@ -50,11 +33,8 @@ include 'hoaDbCommon.php';
     	die("Connection failed: " . $conn->connect_error);
 	} 
 
-	
-	//if (empty($ownerId)) {
-	
-	$stmt = $conn->prepare("UPDATE hoa_properties SET Member=?,Vacant=?,Rental=?,Managed=?,Foreclosure=?,Bankruptcy=?,Liens_2B_Released=?,Comments=? WHERE Parcel_ID = ? ; ");
-	$stmt->bind_param("iiiiiiiss", $memberBoolean,$vacantBoolean,$rentalBoolean,$managedBoolean,$foreclosureBoolean,$bankruptcyBoolean,$liensBoolean,$propertyComments,$parcelId);	
+	$stmt = $conn->prepare("UPDATE hoa_assessments SET DuesAmt=?,DateDue=?,Paid=?,DatePaid=?,PaymentMethod=?,Comments=? WHERE Parcel_ID = ? AND OwnerID = ? AND FY = ? ; ");
+	$stmt->bind_param("ssissssss", $duesAmount,$dateDue,$paidBoolean,$datePaid,$paymentMethod,$assessmentsComments,$parcelId,$ownerId,$fy);
 	$stmt->execute();
 	$stmt->close();
 	$conn->close();

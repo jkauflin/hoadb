@@ -329,7 +329,7 @@ function formatPropertyDetailEdit(hoaRec){
     tr += '<tr><th>Foreclosure: </th><td>'+setCheckboxEdit(hoaRec.Foreclosure,'ForeclosureCheckbox')+'</td></tr>';
     tr += '<tr><th>Bankruptcy: </th><td>'+setCheckboxEdit(hoaRec.Bankruptcy,'BankruptcyCheckbox')+'</td></tr>';
     tr += '<tr><th>ToBe Released: </th><td>'+setCheckboxEdit(hoaRec.Liens_2B_Released,'LiensCheckbox')+'</td></tr>';
-    tr += '<tr><th>Comments: </th><td>'+setInputText("PropertyComments",hoaRec.Comments,"60")+'</td></tr>';
+    tr += '<tr><th>Comments: </th><td>'+setInputText("PropertyComments",hoaRec.Comments,"80")+'</td></tr>';
     
     tr += '<tr><th></th><td>'+
     	  '<a id="SavePropertyEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-plus ui-btn-icon-left ui-corner-all">Save</a>' +
@@ -367,7 +367,7 @@ function formatOwnerDetailEdit(hoaRec){
 	    tr += '<tr><th>State:</th><td>'+ setInputText("AltState",rec.Alt_State,"20")+'</td></tr>';
 	    tr += '<tr><th>Zip:</th><td>'+ setInputText("AltZip",rec.Alt_Zip,"20")+'</td></tr>';
 	    tr += '<tr><th>Owner Phone:</th><td>'+ setInputText("OwnerPhone",rec.Owner_Phone,"30")+'</td></tr>';
-	    tr += '<tr><th>Comments: </th><td>'+setInputText("OwnerComments",rec.Comments,"60")+'</td></tr>';
+	    tr += '<tr><th>Comments: </th><td>'+setInputText("OwnerComments",rec.Comments,"12")+'</td></tr>';
 	    
 	    tr += '<tr><th>Created:</th><td>'+rec.EntryTimestamp+'</td></tr>';
 	    tr += '<tr><th>Last Updated:</th><td>'+rec.UpdateTimestamp+'</td></tr>';
@@ -391,11 +391,15 @@ function formatAssessmentDetailEdit(hoaRec){
     var tr = '';
     var checkedStr = '';
     var buttonStr = '';
+    var ownerId = '';
+    var fy = '';
 
     // action or type of update
     $("#EditPageHeader").text("Edit Assessment");
 
 	$.each(hoaRec.assessmentsList, function(index, rec) {
+		ownerId = rec.OwnerID;
+		fy = rec.FY;
 		tr = '';
 	    tr += '<tr><th>Fiscal Year:</th><td>'+rec.FY+'</td></tr>';
 	    tr += '<tr><th>Owner Id:</th><td>'+rec.OwnerID+'</td></tr>';
@@ -405,12 +409,12 @@ function formatAssessmentDetailEdit(hoaRec){
 	    tr += '<tr><th>Date Due:</th><td>'+setInputDate("DateDue",rec.DateDue,"10")+'</td></tr>';
 	    tr += '<tr><th>Paid: </th><td>'+setCheckboxEdit(rec.Paid,'PaidCheckbox')+'</td></tr>';
 	    tr += '<tr><th>Date Paid:</th><td>'+setInputDate("DatePaid",rec.DatePaid,"10")+'</td></tr>';
-	    tr += '<tr><th>Payment Method:</th><td>'+setInputText("AssessmentsComments",rec.PaymentMethod,"40")+'</td></tr>';
-	    tr += '<tr><th>Comments: </th><td>'+setInputText("AssessmentsComments",rec.Comments,"60")+'</td></tr>';
+	    tr += '<tr><th>Payment Method:</th><td>'+setInputText("PaymentMethod",rec.PaymentMethod,"20")+'</td></tr>';
+	    tr += '<tr><th>Comments: </th><td>'+setInputText("AssessmentsComments",rec.Comments,"10")+'</td></tr>';
 	});
 
     tr += '<tr><th></th><td>'+
-	  	  '<a id="SaveAssessmentEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-plus ui-btn-icon-left ui-corner-all">Save</a>' +
+	  	  '<a id="SaveAssessmentEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+ownerId+'" data-FY="'+fy+'" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-plus ui-btn-icon-left ui-corner-all">Save</a>' +
 	  	  '<a href="#" data-rel="back" class="ui-btn ui-mini ui-btn-inline ui-icon-delete ui-btn-icon-left ui-corner-all">Cancel</a>' +
 	  	  '</td></tr>';
 
@@ -500,23 +504,20 @@ $(document).on("pageinit","#EditPage",function(){
     	
         var $this = $(this);
         var $parcelId = $this.attr("data-parcelId");
-        var $memberBoolean = $("#MemberCheckbox").is(":checked");
-        var $vacantBoolean = $("#VacantCheckbox").is(":checked");
-        var $rentalBoolean = $("#RentalCheckbox").is(":checked");
-        var $managedBoolean = $("#ManagedCheckbox").is(":checked");
-        var $foreclosureBoolean = $("#ForeclosureCheckbox").is(":checked");
-        var $bankruptcyBoolean = $("#BankruptcyCheckbox").is(":checked");
-        var $liensBoolean = $("#LiensCheckbox").is(":checked");
+        var $ownerId = $this.attr("data-OwnerId");
+        var $fy = $this.attr("data-FY");
+
+        var $paidBoolean = $("#PaidCheckbox").is(":checked");
 
         $.get("updHoaAssessment.php","parcelId="+$parcelId+
-        						 "&memberBoolean="+$memberBoolean+
-        						 "&vacantBoolean="+$vacantBoolean+
-        						 "&rentalBoolean="+$rentalBoolean+
-        						 "&managedBoolean="+$managedBoolean+
-        						 "&foreclosureBoolean="+$foreclosureBoolean+
-        						 "&bankruptcyBoolean="+$bankruptcyBoolean+
-        						 "&liensBoolean="+$liensBoolean+
-        						 "&propertyComments="+cleanStr($("#PropertyComments").val()),function(results){
+				 					 "&ownerId="+$ownerId+
+				 					 "&fy="+$fy+
+        						 "&duesAmount="+cleanStr($("#DuesAmount").val())+
+        						 "&dateDue="+cleanStr($("#DateDue").val())+
+        						 "&paidBoolean="+$paidBoolean+
+        						 "&datePaid="+cleanStr($("#DatePaid").val())+
+        						 "&paymentMethod="+cleanStr($("#PaymentMethod").val())+
+        						 "&assessmentsComments="+cleanStr($("#AssessmentsComments").val()),function(results){
 
         	// Re-read the updated data for the Detail page display
             $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){

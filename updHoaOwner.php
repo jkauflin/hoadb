@@ -14,18 +14,7 @@ include 'hoaDbCommon.php';
 	// If they are set, get input parameters from the REQUEST
 	$parcelId = getParamVal("parcelId");
 	$ownerId = getParamVal("ownerId");
-	$fy = getParamVal("fy");
-	
-	$memberBoolean = paramBoolVal("memberBoolean");
-	$vacantBoolean = paramBoolVal("vacantBoolean");
-	$rentalBoolean = paramBoolVal("rentalBoolean");
-	$managedBoolean = paramBoolVal("managedBoolean");
-	$foreclosureBoolean = paramBoolVal("foreclosureBoolean");
-	$bankruptcyBoolean = paramBoolVal("bankruptcyBoolean");
-	$liensBoolean = paramBoolVal("liensBoolean");
-	
-	$propertyComments = getParamVal("propertyComments");
-	
+
 	$currentOwnerBoolean = paramBoolVal("currentOwnerBoolean");
 	$ownerName1 = getParamVal("ownerName1");
 	$ownerName2 = getParamVal("ownerName2");
@@ -52,15 +41,36 @@ include 'hoaDbCommon.php';
 
 	
 	//if (empty($ownerId)) {
+	/*
+	CREATE TABLE IF NOT EXISTS `hoa_owners` (
+			`OwnerID` int(1) DEFAULT NULL,
+			`Parcel_ID` varchar(14) DEFAULT NULL,
+			`CurrentOwner` int(1) DEFAULT NULL,
+			`Owner_Name1` varchar(23) DEFAULT NULL,
+			`Owner_Name2` varchar(12) DEFAULT NULL,
+			`DatePurchased` varchar(18) DEFAULT NULL,
+			`Mailing_Name` varchar(16) DEFAULT NULL,
+			`AlternateMailing` int(1) DEFAULT NULL,
+			`Alt_Address_Line1` varchar(16) DEFAULT NULL,
+			`Alt_Address_Line2` varchar(10) DEFAULT NULL,
+			`Alt_City` varchar(13) DEFAULT NULL,
+			`Alt_State` varchar(2) DEFAULT NULL,
+			`Alt_Zip` varchar(6) DEFAULT NULL,
+			`Owner_Phone` varchar(14) DEFAULT NULL,
+			`Comments` varchar(10) DEFAULT NULL,
+			`EntryTimestamp` varchar(19) DEFAULT NULL,
+			`UpdateTimestamp` varchar(19) DEFAULT NULL,
+	*/
 	
-	$stmt = $conn->prepare("UPDATE hoa_properties SET Member=?,Vacant=?,Rental=?,Managed=?,Foreclosure=?,Bankruptcy=?,Liens_2B_Released=?,Comments=? WHERE Parcel_ID = ? ; ");
-	$stmt->bind_param("iiiiiiiss", $memberBoolean,$vacantBoolean,$rentalBoolean,$managedBoolean,$foreclosureBoolean,$bankruptcyBoolean,$liensBoolean,$propertyComments,$parcelId);	
+	$stmt = $conn->prepare("UPDATE hoa_owners SET CurrentOwner=?,Owner_Name1=?,Owner_Name2=?,DatePurchased=?,Mailing_Name=?,AlternateMailing=?,Alt_Address_Line1=?,Alt_Address_Line2=?,Alt_City=?,Alt_State=?,Alt_Zip=?,Owner_Phone=?,Comments=? WHERE Parcel_ID = ? AND OwnerID = ?; ");
+	$stmt->bind_param("issssisssssssss",$currentOwnerBoolean,$ownerName1,$ownerName2,$datePurchased,$mailingName,$alternateMailingBoolean,$addrLine1,$addrLine2,$altCity,$altState,$altZip,$ownerPhone,$ownerComments,$parcelId,$ownerId);
+	
 	$stmt->execute();
 	$stmt->close();
 	$conn->close();
 
 	//echo json_encode($hoaRec);
 	//echo 'Update Successful - member = ' . $memberBoolean . ', vacant = ' . $vacantBoolean . ', rental = ' . $rentalBoolean . ', managed = ' . $managedBoolean . ', foreclosure = ' . $foreclosureBoolean . ', bankruptcy = ' . $bankruptcyBoolean . ', liens = ' . $liensBoolean;
-	echo 'Update Successful - propertyComments = ' . $propertyComments . ', parcelId = ' . $parcelId;
+	echo 'Update Successful - ownerId = ' . $ownerId . ', parcelId = ' . $parcelId;
 	
 ?>
