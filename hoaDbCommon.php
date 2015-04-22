@@ -84,52 +84,6 @@ class HoaPropertyRec
 	public $ownerPhone;
 }
 
-// Set 0 or 1 according to the boolean value of a string
-function paramBoolVal($paramName) {
-	$retBoolean = 0;
-	if (strtolower(getParamVal($paramName)) == 'true') {
-		$retBoolean = 1;
-	}
-	return $retBoolean;
-}
-
-function getParamVal($paramName) {
-	$paramVal = "";
-	if (isset($_REQUEST[$paramName])) {
-		$paramVal = trim(urldecode($_REQUEST[$paramName]));
-		// more input string cleanup ???  invalid characters?
-	}
-	return $paramVal;
-}
-
-
-function testMail($inStr) {
-	//$to = "somebody@example.com, somebodyelse@example.com";
-	$to = "johnkauflin@gmail.com";
-	$subject = "HTML email";
-	
-	$message = '<html><head><title>HTML email</title></head><body>' . $inStr . '</body></html>';
-	
-	// Always set content-type when sending HTML email
-	$headers = "MIME-Version: 1.0" . "\r\n";
-	$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-	
-	// More headers
-	$headers .= 'From: <hoadb@grha-dayton.org>' . "\r\n";
-	//$headers .= 'Cc: myboss@example.com' . "\r\n";
-	
-	mail($to,$subject,$message,$headers);
-}
-
-function truncDate($inStr) {
-	if (strlen($inStr) > 10) {
-		return substr($inStr,0,10);
-	} else {
-		return $inStr;
-	}
-}
-
-
 function getHoaRec($conn,$parcelId,$ownerId,$fy) {
 
 	$hoaRec = new HoaRec();

@@ -8,6 +8,7 @@
  * 2015-03-06 JJK 	Initial version to get data 
  *============================================================================*/
 
+include 'commonUtil.php';
 // Include table record classes and db connection parameters
 include 'hoaDbCommon.php';
 
