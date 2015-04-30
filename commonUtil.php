@@ -58,12 +58,8 @@ function downloadUrlToFile($url, $outFileName)
 	
 }
 
-function testMail($inStr) {
-	//$to = "somebody@example.com, somebodyelse@example.com";
-	$to = "johnkauflin@gmail.com";
-	$subject = "HTML email";
-	
-	$message = '<html><head><title>HTML email</title></head><body>' . $inStr . '</body></html>';
+function sendHtmlEMail($toStr,$subject,$messageStr) {
+	$message = '<html><head><title>' . $subject .'</title></head><body>' . $messageStr . '</body></html>';
 	
 	// Always set content-type when sending HTML email
 	$headers = "MIME-Version: 1.0" . "\r\n";
@@ -73,7 +69,7 @@ function testMail($inStr) {
 	$headers .= 'From: <hoadb@grha-dayton.org>' . "\r\n";
 	//$headers .= 'Cc: myboss@example.com' . "\r\n";
 	
-	mail($to,$subject,$message,$headers);
+	mail($toStr,$subject,$message,$headers);
 }
 
 function truncDate($inStr) {

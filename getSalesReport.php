@@ -6,6 +6,7 @@
  *----------------------------------------------------------------------------
  * Modification History
  * 2015-03-06 JJK 	Initial version to get data 
+ * 2015-04-28 JJK	Got hoa_sales get and insert working
  *============================================================================*/
 
 include 'commonUtil.php';
@@ -17,14 +18,12 @@ include 'hoaDbCommon.php';
 
 // Linux command for executing from a Cron job
 //php -q /home/grhada5/public_html/hoadb/testCron.php
+//php -q /home/grhada5/public_html/hoadb/getSalesReport.php
 
-$outstr = "JJK test, date = " . date("Y-m-d H:i:s");
 $currTimestampStr = date("Y-m-d H:i:s");
 //JJK test, date = 2015-04-22 19:45:09
-//testMail($outstr);
 
-
-$salesYear = '2015';
+$salesYear = substr($currTimestampStr,0,4);
 
 $url = 'http://mctreas.org/data/Yearly/SALES_' . $salesYear . '.zip';
 $zipFileName = 'SALES_' . $salesYear . '.zip';
@@ -34,14 +33,14 @@ if (is_file($zipFileName)) {
 
 	// TODO - make sure the zip file is value
 	
+	$sendMessage = false;
+	$addToOutput = false;
 	$outputStr = '';
 	$fileName = 'SALES_' . $salesYear . '_RES.csv';
 	$zipFile = new ZipArchive();
 	if ($zipFile->open($zipFileName)) {
 		$file = $zipFile->getStream($fileName);
 		if(!$file) exit("failed\n");
-	
-		//$outputStr .= '<h2>Residential Sales in ' . $year . '</h2>';
 
 		//--------------------------------------------------------------------------------------------------------
 		// Create connection to the database
@@ -69,14 +68,6 @@ if (is_file($zipFileName)) {
 			 County Weekly/Monthly/Yearly Sales File Record Layout
 			 Field Name 		Description
 			 ------------------------------------------------
-			
-			 $outputStr .= '<tr><th>Old Owner:</th><td>' . $salesRecArray[4] . '</td></tr>';
-			 $outputStr .= '<tr><th>HOA Owner:</th><td>' . $hoaOwnerRec->Owner_Name1 . ' ' . $hoaOwnerRec->Owner_Name2 . '</td></tr>';
-			 $outputStr .= '<tr><th>New Owner1:</th><td>' . $salesRecArray[5] . '</td></tr>';
-			 $outputStr .= '<tr><th>Mailing Name1:</th><td>' . $salesRecArray[7] . '</td></tr>';
-			 $outputStr .= '<tr><th>Mailing Name2:</th><td>' . $salesRecArray[8] . '</td></tr>';
-			 $outputStr .= '<tr><th>Sale Date:</th><td>' . $salesRecArray[2] . '</td></tr>';
-			
 			 PARID 			Parcel Identification Number
 			 CONVNUM 		Conveyance Number
 			 SALEDT 			Sale Date
@@ -122,7 +113,8 @@ if (is_file($zipFileName)) {
 
 			
 			$hoaSalesRec = getHoaSalesRec($conn,$hoaRec->Parcel_ID,$salesRecArray[2]);
-			
+				
+			$addToOutput = false;
 			if (empty($hoaSalesRec->PARID)) {
 				//$stmt = $conn->prepare("UPDATE hoa_properties SET Member=?,Vacant=?,Rental=?,Managed=?,Foreclosure=?,Bankruptcy=?,Liens_2B_Released=?,Comments=? WHERE Parcel_ID = ? ; ");
 				// http://php.net/manual/en/mysqli.quickstart.prepared-statements.php
@@ -130,7 +122,7 @@ if (is_file($zipFileName)) {
 					die("Prepare failed: " . $conn->error);
 				}
 				
-				$NotificationFlag = 'N';
+				$NotificationFlag = 'Y';
 				if (!(
 						$stmt->bind_param("ssssssssssssss",
 								$salesRecArray[0],
@@ -157,43 +149,31 @@ if (is_file($zipFileName)) {
 				}
 					
 				$stmt->close();
+				$hoaSalesRec = getHoaSalesRec($conn,$hoaRec->Parcel_ID,$salesRecArray[2]);
+				$addToOutput = true;
 				
 			} else {
-				
+				// If the sales record is found but there was no notification, send an email
+				if ($hoaSalesRec->NotificationFlag == 'N') {
+					$addToOutput = true;
+				}
 			}
 			
-			
-			/*
-			 PARID 			Parcel Identification Number
-			 CONVNUM 		Conveyance Number
-			 SALEDT 			Sale Date
-			 PRICE 			Sale Price
-			 OLDOWN 			Old Owner Name
-			 OWNERNAME1 		New Owner Name
-			 PARCELLOCATION 	Parcel Location
-			 MAILINGNAME1 	Mailing Name 1
-			 MAILINGNAME2 	Mailing Name 2
-			 PADDR1 			Mailing Address Line 1
-			 PADDR2 			Mailing Address Line 2
-			 PADDR3 			Mailing Address Line 3
-			 CreateTimestamp
-			 NotificationFlag
-			*/
-					
-	
-			/*
+			if ($addToOutput) {
+				$sendMessage = true;
+				
 				$outputStr .= '<p><table border=1 class="evenLineHighlight"><tbody>';
 				$outputStr .= '<tr><th>Parcel Id:</th><td>' . $parcelId . '</td></tr>';
 				$outputStr .= '<tr><th>Parcel Location:</th><td><b>' . $hoaRec->Parcel_Location . '</b></td></tr>';
-				$outputStr .= '<tr><th>Old Owner:</th><td>' . $salesRecArray[4] . '</td></tr>';
+				$outputStr .= '<tr><th>Old Owner:</th><td>' . $hoaSalesRec->OLDOWN . '</td></tr>';
 				$outputStr .= '<tr><th>HOA Owner:</th><td>' . $hoaOwnerRec->Owner_Name1 . ' ' . $hoaOwnerRec->Owner_Name2 . '</td></tr>';
-				$outputStr .= '<tr><th>New Owner1:</th><td>' . $salesRecArray[5] . '</td></tr>';
-				$outputStr .= '<tr><th>Mailing Name1:</th><td>' . $salesRecArray[7] . '</td></tr>';
-				$outputStr .= '<tr><th>Mailing Name2:</th><td>' . $salesRecArray[8] . '</td></tr>';
-				$outputStr .= '<tr><th>Sale Date:</th><td>' . $salesRecArray[2] . '</td></tr>';
+				$outputStr .= '<tr><th>New Owner1:</th><td>' . $hoaSalesRec->OWNERNAME1 . '</td></tr>';
+				$outputStr .= '<tr><th>Mailing Name1:</th><td>' . $hoaSalesRec->MAILINGNAME1 . '</td></tr>';
+				$outputStr .= '<tr><th>Mailing Name2:</th><td>' . $hoaSalesRec->MAILINGNAME2 . '</td></tr>';
+				$outputStr .= '<tr><th>Sale Date:</th><td>' . $hoaSalesRec->SALEDT . '</td></tr>';
 				$outputStr .= '</tbody></table></p>';
-				*/
-				
+			}
+			
 				/*
 				 $hoaOwnerRec->OwnerID = $row["OwnerID"];
 				 $hoaOwnerRec->Owner_Name1 = $row["Owner_Name1"];
@@ -209,8 +189,6 @@ if (is_file($zipFileName)) {
 				 $hoaOwnerRec->Owner_Phone = $row["Owner_Phone"];
 				 */
 
-				
-				
 			//$outputStr .= '<br>' . $valArray[0];
 			
 		} // End of while(!feof($file))
@@ -218,13 +196,19 @@ if (is_file($zipFileName)) {
 
 		// Close db connection
 		$conn->close();
+
+		if ($sendMessage) {
+			//$toStr = "somebody@example.com, somebodyelse@example.com";
+			$toStr = "johnkauflin@gmail.com";
+			$subject = 'HOA Residential Sales in ' . $salesYear;
+			$messageStr = '<h2>HOA Residential Sales in ' . $salesYear . '</h2>' . $outputStr;
+			sendHtmlEMail($toStr,$subject,$messageStr);
+		}
+		
 		
 	} // End of If Zip file was opened
 	
-	//testMail($outputStr);
-	
-	echo $outputStr;
-	
+	//echo $outputStr;
 	
 } // End of If the zip file was downloaded
 
