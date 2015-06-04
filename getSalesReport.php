@@ -198,11 +198,9 @@ if (is_file($zipFileName)) {
 		$conn->close();
 
 		if ($sendMessage) {
-			//$toStr = "somebody@example.com, somebodyelse@example.com";
-			$toStr = "johnkauflin@gmail.com";
 			$subject = 'HOA Residential Sales in ' . $salesYear;
 			$messageStr = '<h2>HOA Residential Sales in ' . $salesYear . '</h2>' . $outputStr;
-			sendHtmlEMail($toStr,$subject,$messageStr);
+			sendHtmlEMail($salesReportEmailList,$subject,$messageStr);
 		}
 		
 		
