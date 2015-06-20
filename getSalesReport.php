@@ -2,37 +2,30 @@
 /*==============================================================================
  * (C) Copyright 2015 John J Kauflin, All rights reserved. 
  *----------------------------------------------------------------------------
- * DESCRIPTION: 
+ * DESCRIPTION: Scheduled job to get sales information from the county
+ * 				auditor site, find parcels in the hoa, update the hoa_sales
+ * 				table, and email a report of new sales
  *----------------------------------------------------------------------------
  * Modification History
  * 2015-03-06 JJK 	Initial version to get data 
  * 2015-04-28 JJK	Got hoa_sales get and insert working
+ * 2015-06-19 JJK	Abstracted some variables
  *============================================================================*/
 
 include 'commonUtil.php';
 // Include table record classes and db connection parameters
 include 'hoaDbCommon.php';
 
-// If they are set, get input parameters from the REQUEST
-//$salesYear = getParamVal("salesYear");
-
-// Linux command for executing from a Cron job
-//php -q /home/grhada5/public_html/hoadb/testCron.php
-//php -q /home/grhada5/public_html/hoadb/getSalesReport.php
-
 $currTimestampStr = date("Y-m-d H:i:s");
 //JJK test, date = 2015-04-22 19:45:09
-
+// Get the year from the current system time
 $salesYear = substr($currTimestampStr,0,4);
 
-$url = 'http://mctreas.org/data/Yearly/SALES_' . $salesYear . '.zip';
+$url = $countySalesDataUrl . $salesYear . '.zip';
 $zipFileName = 'SALES_' . $salesYear . '.zip';
 downloadUrlToFile($url, $zipFileName);
 
 if (is_file($zipFileName)) {
-
-	// TODO - make sure the zip file is value
-	
 	$sendMessage = false;
 	$addToOutput = false;
 	$outputStr = '';
@@ -64,42 +57,6 @@ if (is_file($zipFileName)) {
 			}
 					
 			$salesRecArray = fgetcsv($file);
-			/*
-			 County Weekly/Monthly/Yearly Sales File Record Layout
-			 Field Name 		Description
-			 ------------------------------------------------
-			 PARID 			Parcel Identification Number
-			 CONVNUM 		Conveyance Number
-			 SALEDT 			Sale Date
-			 PRICE 			Sale Price
-			 OLDOWN 			Old Owner Name
-			 OWNERNAME1 		New Owner Name
-			 PARCELLOCATION 	Parcel Location
-			 MAILINGNAME1 	Mailing Name 1
-			 MAILINGNAME2 	Mailing Name 2
-			 PADDR1 			Mailing Address Line 1
-			 PADDR2 			Mailing Address Line 2
-			 PADDR3 			Mailing Address Line 3
-			 CreateTimestamp
-			
-			 CLASS 			Parcel Class
-			 A=Agricultural
-			 C=Commercial
-			 E=Exempt
-			 I-Industrial
-			 R=Residential
-			 U=Utilities
-			 ACRES 			Parcel Acreage
-			 TAXABLELAND 	35% Taxable Land Value
-			 TAXABLEBLDG 	35% Taxable Building Value
-			 TAXABLETOTAL 	35% Taxable Total Value
-			 ASMTLAND 		100% Assessed Land Value
-			 ASMTBLDG 		100% Assessed Building Value
-			 ASMTTOTAL 		100% Assessed Total Value
-			 SALETYPE 		Type of Sale (Land Only, Building Only, Land & Building)
-			 SALEVALIDITY 	Sale Validity
-			 DYTNCRDT 		Indicator whether parcel is flagged for Dayton Credit
-			 */
 					
 			$parcelId = $salesRecArray[0];
 			// Check if the Parcel Id from the sales record matches any in our HOA database
@@ -110,8 +67,6 @@ if (is_file($zipFileName)) {
 			}
 
 			$hoaOwnerRec = $hoaRec->ownersList[0];
-
-			
 			$hoaSalesRec = getHoaSalesRec($conn,$hoaRec->Parcel_ID,$salesRecArray[2]);
 				
 			$addToOutput = false;
@@ -144,7 +99,7 @@ if (is_file($zipFileName)) {
 				}
 					
 				if (!( $stmt->execute() )) {
-					testMail("getSalesReport, Execute failed: " . $conn->error . ', LINE = ' . __LINE__);
+					//testMail("getSalesReport, Execute failed: " . $conn->error . ', LINE = ' . __LINE__);
 					die("Execute failed: " . $conn->error);
 				}
 					

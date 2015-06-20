@@ -10,6 +10,13 @@
  * 					before it.  Let the page initialize first, then fill it.
  * 2015-04-09 JJK   Added Regular Expressions and functions for validating
  * 					email addresses and replacing non-printable characters
+ * 
+ * Example error displayed in console
+ajax exception = SyntaxError: Unexpected token <
+main.js:54 ajax exception xhr.responseText = <br />
+<b>Warning</b>:  mysqli::mysqli(): (HY000/1045): Access denied for user 'root'@'localhost' (using password: NO) in <b>/home/grhada5/public_html/hoadb/getHoaPropertiesList.php</b> on line <b>53</b><br />
+Connection failed: Access denied for user 'root'@'localhost' (using password: NO) * 
+ * 
  *============================================================================*/
 $.urlParam = function(name){
     var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
@@ -216,7 +223,8 @@ function formatPropertyDetailResults(hoaRec){
     	    tr = tr +   '</tr>';
 		}
 	    tr = tr + '<tr>';
-	    tr = tr +   '<td data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+rec.OwnerID+'"><a href="#EditPage">'+rec.OwnerID+'</a></td>';
+	    //tr = tr +   '<td data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+rec.OwnerID+'"><a href="#EditPage">'+rec.OwnerID+'</a></td>';
+	    tr = tr +   '<td>'+rec.OwnerID+'</td>';
 	    /*
 	    if (rec.CurrentOwner) {
 	    	own1 = rec.Owner_Name1;
@@ -225,7 +233,7 @@ function formatPropertyDetailResults(hoaRec){
 		    tr = tr +   '<td>'+rec.OwnerID+'</td>';
 	    }
 	    */
-	    tr = tr +   '<td>'+rec.Owner_Name1+' '+rec.Owner_Name2+'</td>';
+	    tr = tr +   '<td data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+rec.OwnerID+'"><a href="#EditPage">'+rec.Owner_Name1+' '+rec.Owner_Name2+'</a></td>';
 	    tr = tr +   '<td>'+rec.DatePurchased.substring(0,10)+'</td>';
 	    tr = tr +   '<td>'+rec.Owner_Phone+'</td>';
 	    tr = tr +   '<td>'+rec.Alt_Address_Line1+'</td>';
@@ -264,11 +272,11 @@ function formatPropertyDetailResults(hoaRec){
     $("#PropertyAssessments tbody").html(tr);
     
     var mcTreasURI = 'http://mctreas.org/master.cfm?parid='+hoaRec.Parcel_ID+'&taxyr='+TaxYear+'&own1='+own1;
-    $("#MCTreasLink").html('<a href="'+encodeURI(mcTreasURI)+'" class="ui-btn ui-mini ui-btn-inline ui-icon-action ui-btn-icon-left ui-corner-all" data-mini="true" target="_blank">Montgomery<br>County<br>Treasurer</a>');    
+    $("#MCTreasLink").html('<a href="'+encodeURI(mcTreasURI)+'" class="ui-btn ui-mini ui-btn-inline ui-icon-action ui-btn-icon-left ui-corner-all" data-mini="true" target="_blank">County<br>Treasurer<br>Information</a>');    
 
     var mcAuditorURI = 'http://www.mcrealestate.org/search/CommonSearch.aspx?mode=PARID';
     //$("#MCAuditorLink").html('<a href="'+encodeURI(mcAuditorURI)+'" class="ui-btn ui-corner-all ui-mini btnMarginPad" target="_blank">Montgomery<br>County<br>Auditor</a>');    
-    $("#MCAuditorLink").html('<a href="'+encodeURI(mcAuditorURI)+'" class="ui-btn ui-mini ui-btn-inline ui-icon-action ui-btn-icon-left ui-corner-all" data-mini="true" target="_blank">Montgomery<br> County<br>Auditor</a>');    
+    $("#MCAuditorLink").html('<a href="'+encodeURI(mcAuditorURI)+'" class="ui-btn ui-mini ui-btn-inline ui-icon-action ui-btn-icon-left ui-corner-all" data-mini="true" target="_blank">County<br>Property<br>Information</a>');    
     
 //		<a id="SalesReport" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-action ui-btn-icon-left ui-corner-all" data-mini="true">Sales Report</a>
 		
@@ -534,47 +542,22 @@ $(document).on("pageinit","#EditPage",function(){
 
 $(document).on("pageinit","#ReportsPage",function(){
 
-	
 	$(document).on("click","#SalesReport",function(){
 		waitCursor();
 		
         $("#PropertyListDisplay tbody").html("");
         
     	// Get the list
+        /*
     	$.get("getSalesReport.php","salesYear="+$("#salesYear").val(),function(reportHtml){
-    		/*
-    		var tr = '';
-    	    rowId = 0;
-    		$.each(hoaPropertyRecList, function(index, hoaPropertyRec) {
-    			rowId = index + 1;
-    			if (index == 0) {
-    	    	    tr +=    '<tr>';
-    	    	    tr +=      '<th>Row</th>';
-    	    	    tr +=      '<th>Parcel Id</th>';
-    	    	    tr +=  	   '<th>Lot No</th>';
-    	    	    tr +=      '<th>Sub Div</th>';
-    	    	    tr +=      '<th>Parcel Location</th>';
-    	    	    tr +=      '<th>Owner Name</th>';
-    	    	    tr +=      '<th>Owner Phone</th>';
-    	    	    tr +=    '</tr>';
-    			}
-    		    tr +=  '<tr>';
-    		    tr +=    '<td>'+rowId+'</td>';
-    		    tr +=    '<td data-parcelId="'+hoaPropertyRec.parcelId+'"><a href="#">'+hoaPropertyRec.parcelId+'</a></td>';
-    		    tr +=    '<td>'+hoaPropertyRec.lotNo+'</td>';
-    		    tr +=    '<td>'+hoaPropertyRec.subDivParcel+'</td>';
-    		    tr +=    '<td>'+hoaPropertyRec.parcelLocation+'</td>';
-    		    tr +=    '<td>'+hoaPropertyRec.ownerName+'</td>';
-    		    tr +=    '<td>'+hoaPropertyRec.ownerPhone+'</td>';
-    		    tr +=  '</tr>';
-    		});
-			*/
-    		
             $("#ReportHeader").html("HOA Residential Sales for "+$("#salesYear").val());
             //$("#ReportListDisplay tbody").html(tr);
             $("#ReportDisplay").html(reportHtml);
     	});
+        */
         
+        $("#ReportDisplay").html("Report Display test string");
+
         event.stopPropagation();
 		
 	});

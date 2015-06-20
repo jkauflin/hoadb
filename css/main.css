@@ -145,10 +145,6 @@ table, th, td {
    Media Queries
    ========================================================================== */
 
-@media only screen and (min-width: 35em) {
-
-}
-
 /* 2014-04-04 JJK - New way to handle media width breaks */
 @media screen and (max-width: 700px) {
 	.my-breakpoint .ui-block-a,
@@ -172,56 +168,6 @@ table, th, td {
 	.my-breakpoint.ui-grid-b .ui-block-c { width: 55%; }
 	
 }
-@media screen and (min-width: 747px) {
-	/*
-	.my-breakpoint.ui-grid-a .ui-block-a { width: 44%; }
-	.my-breakpoint.ui-grid-a .ui-block-b { width: 56%; }
-	*/
-	
-	/*
-	.my-breakpoint.ui-grid-b .ui-block-a { width: 24%; }
-	.my-breakpoint.ui-grid-b .ui-block-b { width: 38%; } 	
-	.my-breakpoint.ui-grid-b .ui-block-c { width: 38%; }
-	*/
-}
-
-/* 2014-04-12 JJK - Logic for the nested grid-b */
-@media screen and (max-width: 1034px) {
-	/*
-	.my-breakpoint.ui-grid-b .ui-block-a { width: 100%; float:none; }
-	.my-breakpoint.ui-grid-b .ui-block-b { width: 100%; float:none; } 	
-	.my-breakpoint.ui-grid-b .ui-block-c { width: 100%; float:none; }
-	*/ 
-}
-
-@media screen and (min-width: 1035px) {
-	/*
-	.my-breakpoint.ui-grid-a .ui-block-a { width: 30%; }
-	.my-breakpoint.ui-grid-a .ui-block-b { width: 70%; }
-	*/
-	
-	/*
-	.my-breakpoint.ui-grid-b .ui-block-a { width: 50%; }
-	.my-breakpoint.ui-grid-b .ui-block-b { width: 50%; }
-	*/ 	
-}
-@media screen and (min-width: 1035px) and (max-width: 1534px) {
-	/*
-	.my-breakpoint.ui-grid-b .ui-block-c { width: 50%; float:none;}
-	*/
-}
-@media screen and (min-width: 1535px) {
-	/*
-	.my-breakpoint.ui-grid-a .ui-block-a { width: 20%; }
-	.my-breakpoint.ui-grid-a .ui-block-b { width: 80%; }
-	*/
-	
-	/*
-	.my-breakpoint.ui-grid-b .ui-block-a { width: 38%; }
-	.my-breakpoint.ui-grid-b .ui-block-b { width: 38%; } 	
-	.my-breakpoint.ui-grid-b .ui-block-c { width: 24%; }
-	*/
-}
 
 .my-breakpoint.ui-grid-a .ui-block-a { padding: 0 10px 10px 10px; }
 .my-breakpoint.ui-grid-a .ui-block-b { padding: 0 10px 10px 10px; } 	
@@ -231,19 +177,25 @@ table, th, td {
 .my-breakpoint.ui-grid-b .ui-block-c { padding: 0 10px 10px 10px; }
 
 /* 2015-04-04 JJK - The printer is a device */
-@media print,
+/*
        (-o-min-device-pixel-ratio: 5/4),
        (-webkit-min-device-pixel-ratio: 1.25),
        (min-resolution: 120dpi) {
-
+*/
+@media print {
 	div[data-role="header"] {
 		display: none;
 	}
 
+	/*
 	.my-breakpoint.ui-grid-a .ui-block-a { display: none; }
 	.my-breakpoint.ui-grid-a .ui-block-b { width: 100%; }
+	*/
 	
+	.ui-block-a { display: none; }
+	.ui-block-b { width: 100%; }
 }
+
 
 /* ==========================================================================
    Helper classes

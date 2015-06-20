@@ -66,8 +66,7 @@ function sendHtmlEMail($toStr,$subject,$messageStr) {
 	$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
 	
 	// More headers
-	$headers .= 'From: <hoadb@grha-dayton.org>' . "\r\n";
-	//$headers .= 'Cc: myboss@example.com' . "\r\n";
+	$headers .= 'From: ' . $fromEmailAddress . "\r\n";
 	
 	mail($toStr,$subject,$message,$headers);
 }
