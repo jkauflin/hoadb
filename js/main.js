@@ -10,6 +10,8 @@
  * 					before it.  Let the page initialize first, then fill it.
  * 2015-04-09 JJK   Added Regular Expressions and functions for validating
  * 					email addresses and replacing non-printable characters
+ * 2015-08-03 JJK	Modified to put the data parameters on the "a" element
+ * 					and only response to clicks to the anchor
  * 
  * Example error displayed in console
 ajax exception = SyntaxError: Unexpected token <
@@ -139,7 +141,7 @@ $(document).on("pageinit","#SearchPage",function(){
     			}
     		    tr +=  '<tr>';
     		    tr +=    '<td>'+rowId+'</td>';
-    		    tr +=    '<td data-parcelId="'+hoaPropertyRec.parcelId+'"><a href="#">'+hoaPropertyRec.parcelId+'</a></td>';
+    		    tr +=    '<td><a data-parcelId="'+hoaPropertyRec.parcelId+'" href="#">'+hoaPropertyRec.parcelId+'</a></td>';
     		    tr +=    '<td>'+hoaPropertyRec.lotNo+'</td>';
     		    tr +=    '<td>'+hoaPropertyRec.subDivParcel+'</td>';
     		    tr +=    '<td>'+hoaPropertyRec.parcelLocation+'</td>';
@@ -154,7 +156,7 @@ $(document).on("pageinit","#SearchPage",function(){
         event.stopPropagation();
     });
 
-    $(document).on("click","#PropertyListDisplay tr td",function(){
+    $(document).on("click","#PropertyListDisplay tr td a",function(){
         waitCursor();
         var $this = $(this);
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-parcelId"),function(hoaRec){
@@ -192,7 +194,7 @@ function formatPropertyDetailResults(hoaRec){
     var tr = '';
     var checkedStr = '';
 	
-    tr += '<tr><th>Parcel Id:</th><td data-ParcelId="'+hoaRec.Parcel_ID+'"><a href="#EditPage">'+hoaRec.Parcel_ID+'</a></td></tr>';
+    tr += '<tr><th>Parcel Id:</th><td><a data-ParcelId="'+hoaRec.Parcel_ID+'" href="#EditPage">'+hoaRec.Parcel_ID+'</a></td></tr>';
     tr += '<tr><th>Lot No:</th><td>'+hoaRec.LotNo+'</td></tr>';
     tr += '<tr><th>Sub Division: </th><td>'+hoaRec.SubDivParcel+'</td></tr>';
     tr += '<tr><th>Location: </th><td>'+hoaRec.Parcel_Location+'</td></tr>';
@@ -235,7 +237,7 @@ function formatPropertyDetailResults(hoaRec){
 		    tr = tr +   '<td>'+rec.OwnerID+'</td>';
 	    }
 	    */
-	    tr = tr +   '<td data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+rec.OwnerID+'"><a href="#EditPage">'+rec.Owner_Name1+' '+rec.Owner_Name2+'</a></td>';
+	    tr = tr +   '<td><a data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+rec.OwnerID+'" href="#EditPage">'+rec.Owner_Name1+' '+rec.Owner_Name2+'</a></td>';
 	    tr = tr +   '<td>'+rec.DatePurchased.substring(0,10)+'</td>';
 	    tr = tr +   '<td>'+rec.Owner_Phone+'</td>';
 	    tr = tr +   '<td>'+rec.Alt_Address_Line1+'</td>';
@@ -262,7 +264,7 @@ function formatPropertyDetailResults(hoaRec){
 		}
 	    tr = tr + '<tr>';
 	    tr = tr +   '<td>'+rec.OwnerID+'</td>';
-	    tr = tr +   '<td data-ParcelId="'+hoaRec.Parcel_ID+'" data-FY="'+rec.FY+'"><a href="#EditPage">'+rec.FY+'</a></td>';
+	    tr = tr +   '<td><a data-ParcelId="'+hoaRec.Parcel_ID+'" data-FY="'+rec.FY+'" href="#EditPage">'+rec.FY+'</a></td>';
 	    tr = tr +   '<td>'+rec.DuesAmt+'</td>';
 	    tr = tr +   '<td>'+rec.DateDue.substring(0,10)+'</td>';
 	    tr = tr +   '<td>'+setCheckbox(rec.Paid)+'</td>';
@@ -287,7 +289,8 @@ function formatPropertyDetailResults(hoaRec){
 
 $(document).on("pageinit","#DetailPage",function(){
     // Response to Detail link clicks
-    $(document).on("click","#PropertyDetail tr td",function(){
+	// *** 8/3/2015 fix so it only reacts to the clicks on the property one
+    $(document).on("click","#PropertyDetail tr td a",function(){
         waitCursor();
         var $this = $(this);
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-parcelId"),function(hoaRec){
@@ -296,7 +299,7 @@ $(document).on("pageinit","#DetailPage",function(){
         });
     });	
 
-    $(document).on("click","#PropertyOwners tr td",function(){
+    $(document).on("click","#PropertyOwners tr td a",function(){
         waitCursor();
         var $this = $(this);
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-parcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
@@ -305,7 +308,7 @@ $(document).on("pageinit","#DetailPage",function(){
         });
     });	
 
-    $(document).on("click","#PropertyAssessments tr td",function(){
+    $(document).on("click","#PropertyAssessments tr td a",function(){
         waitCursor();
         var $this = $(this);
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-parcelId")+"&fy="+$this.attr("data-FY"),function(hoaRec){
