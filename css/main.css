@@ -87,9 +87,11 @@ textarea {
 }
 */
 
+/*
 .ui-listview {
 	font-size: 0.9em;
 }
+*/
 
 /* .ui-dialog .ui-content { */ 
 /*
@@ -105,9 +107,11 @@ textarea {
 	margin: 10% auto 15px auto;
 }
 
+/*
 tr,th {
     font-size: 0.9em;
 }
+*/
 
 /*
 .evenLineHighlight th {
@@ -125,10 +129,11 @@ td,th {
 .btnMarginPad {
     margin: 0px 30px 0px 30px;
 }
-
+/*
 .smallerFont {
     font-size: 0.8em;
 }
+*/
 
 table {
     border-collapse: collapse;

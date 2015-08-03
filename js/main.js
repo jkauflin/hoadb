@@ -50,6 +50,7 @@ function cleanStr(inStr) {
 
 function waitCursor() {
     $('*').css('cursor', 'progress');
+    $(".ajaxError").html("");
 }
 
 $(document).ajaxComplete(function(event, request, settings) {
@@ -59,6 +60,7 @@ $(document).ajaxComplete(function(event, request, settings) {
 $(document).ajaxError(function(e, xhr, settings, exception) {
 	console.log("ajax exception = "+exception);
 	console.log("ajax exception xhr.responseText = "+xhr.responseText);
+    $(".ajaxError").html("An Error has occurred (see console log)");
 });
 
 
