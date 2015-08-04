@@ -8,6 +8,11 @@
  * 2015-03-06 JJK 	Initial version with some common utilities 
  *============================================================================*/
 
+/*
+$username = $_SERVER['PHP_AUTH_USER'];
+$password = $_SERVER['PHP_AUTH_PW'];
+*/
+
 // Set 0 or 1 according to the boolean value of a string
 function paramBoolVal($paramName) {
 	$retBoolean = 0;
