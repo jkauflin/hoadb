@@ -467,6 +467,8 @@ $(document).on("pageinit","#EditPage",function(){
         						 "&liensBoolean="+$liensBoolean+
         						 "&propertyComments="+cleanStr($("#PropertyComments").val()),function(results){
 
+        	//console.log("After updHoaProperty");
+        	
         	// Re-read the updated data for the Detail page display
             $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
                 $( ":mobile-pagecontainer" ).pagecontainer( "change", "#DetailPage");

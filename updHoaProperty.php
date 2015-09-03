@@ -12,6 +12,8 @@ include 'commonUtil.php';
 // Include table record classes and db connection parameters
 include 'hoaDbCommon.php';
 
+	$username = $_SERVER['PHP_AUTH_USER'];
+
 	// If they are set, get input parameters from the REQUEST
 	$parcelId = getParamVal("parcelId");
 	
@@ -28,16 +30,15 @@ include 'hoaDbCommon.php';
 	//--------------------------------------------------------------------------------------------------------
 	// Create connection to the database
 	//--------------------------------------------------------------------------------------------------------
-	$conn = new mysqli($host, $username, $password, $dbname);
+	$conn = new mysqli($host, $dbadmin, $password, $dbname);
 
 	// Check connection
 	if ($conn->connect_error) {
     	die("Connection failed: " . $conn->connect_error);
 	} 
 
-	
-	$stmt = $conn->prepare("UPDATE hoa_properties SET Member=?,Vacant=?,Rental=?,Managed=?,Foreclosure=?,Bankruptcy=?,Liens_2B_Released=?,Comments=? WHERE Parcel_ID = ? ; ");
-	$stmt->bind_param("iiiiiiiss", $memberBoolean,$vacantBoolean,$rentalBoolean,$managedBoolean,$foreclosureBoolean,$bankruptcyBoolean,$liensBoolean,$propertyComments,$parcelId);	
+	$stmt = $conn->prepare("UPDATE hoa_properties SET Member=?,Vacant=?,Rental=?,Managed=?,Foreclosure=?,Bankruptcy=?,Liens_2B_Released=?,Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? ; ");
+	$stmt->bind_param("iiiiiiisss", $memberBoolean,$vacantBoolean,$rentalBoolean,$managedBoolean,$foreclosureBoolean,$bankruptcyBoolean,$liensBoolean,$propertyComments,$username,$parcelId);	
 	$stmt->execute();
 	$stmt->close();
 	$conn->close();

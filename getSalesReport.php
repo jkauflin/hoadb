@@ -38,7 +38,7 @@ if (is_file($zipFileName)) {
 		//--------------------------------------------------------------------------------------------------------
 		// Create connection to the database
 		//--------------------------------------------------------------------------------------------------------
-		$conn = new mysqli($host, $username, $password, $dbname);
+		$conn = new mysqli($host, $dbadmin, $password, $dbname);
 		// Check connection
 		if ($conn->connect_error) {
 			die("Connection failed: " . $conn->connect_error);

@@ -13,7 +13,7 @@
 // Include db connection credentials
 include 'hoaDbCred.php';
 //$host = '127.0.0.1';
-//$username = "root";
+//$dbadmin = "root";
 //$password = "";
 //$dbname = "<name of the mysql database>";
 
@@ -36,7 +36,9 @@ class HoaRec
   	public $Bankruptcy;
   	public $Liens_2B_Released;
   	public $Comments;
-	
+  	public $LastChangedBy;
+  	public $LastChangedTs;
+  	 
 	public $ownersList;
 	public $assessmentsList;
 }
@@ -60,6 +62,8 @@ class HoaOwnerRec
   	public $Comments;
   	public $EntryTimestamp;
   	public $UpdateTimestamp;
+  	public $LastChangedBy;
+  	public $LastChangedTs;
 }
 
 class HoaAssessmentRec
@@ -73,6 +77,8 @@ class HoaAssessmentRec
   	public $DatePaid;
   	public $PaymentMethod;
   	public $Comments;
+  	public $LastChangedBy;
+  	public $LastChangedTs;
 }
 
 class HoaPropertyRec
@@ -101,6 +107,8 @@ class HoaSalesRec
 	public $PADDR3;
 	public $CreateTimestamp;
 	public $NotificationFlag;
+  	public $LastChangedBy;
+  	public $LastChangedTs;
 }
 
 function getHoaSalesRec($conn,$parcelId,$saleDate) {
@@ -127,6 +135,8 @@ function getHoaSalesRec($conn,$parcelId,$saleDate) {
 			$hoaSalesRec->PADDR3 = $row["PADDR3"];
 			$hoaSalesRec->CreateTimestamp = $row["CreateTimestamp"];
 			$hoaSalesRec->NotificationFlag = $row["NotificationFlag"];
+			$hoaSalesRec->LastChangedBy = $row["LastChangedBy"];
+			$hoaSalesRec->LastChangedTs = $row["LastChangedTs"];
 		}
 		$result->close();
 		$stmt->close();
@@ -164,7 +174,9 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy) {
 			$hoaRec->Bankruptcy = $row["Bankruptcy"];
 			$hoaRec->Liens_2B_Released = $row["Liens_2B_Released"];
 			$hoaRec->Comments = $row["Comments"];
-	
+			$hoaRec->LastChangedBy = $row["LastChangedBy"];
+			$hoaRec->LastChangedTs = $row["LastChangedTs"];
+				
 			$hoaRec->ownersList = array();
 			$hoaRec->assessmentsList = array();
 		}
@@ -201,7 +213,9 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy) {
 				$hoaOwnerRec->Comments = $row["Comments"];
 				$hoaOwnerRec->EntryTimestamp = $row["EntryTimestamp"];
 				$hoaOwnerRec->UpdateTimestamp = $row["UpdateTimestamp"];
-	
+				$hoaOwnerRec->LastChangedBy = $row["LastChangedBy"];
+				$hoaOwnerRec->LastChangedTs = $row["LastChangedTs"];
+				
 				array_push($hoaRec->ownersList,$hoaOwnerRec);
 			}
 		} // End of Owners
@@ -230,7 +244,9 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy) {
 				$hoaAssessmentRec->DatePaid = truncDate($row["DatePaid"]);
 				$hoaAssessmentRec->PaymentMethod = $row["PaymentMethod"];
 				$hoaAssessmentRec->Comments = $row["Comments"];
-	
+				$hoaAssessmentRec->LastChangedBy = $row["LastChangedBy"];
+				$hoaAssessmentRec->LastChangedTs = $row["LastChangedTs"];
+				
 				array_push($hoaRec->assessmentsList,$hoaAssessmentRec);
 			}
 	

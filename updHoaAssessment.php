@@ -12,6 +12,8 @@ include 'commonUtil.php';
 // Include table record classes and db connection parameters
 include 'hoaDbCommon.php';
 
+	$username = $_SERVER['PHP_AUTH_USER'];
+
 	// If they are set, get input parameters from the REQUEST
 	$parcelId = getParamVal("parcelId");
 	$ownerId = getParamVal("ownerId");
@@ -27,15 +29,15 @@ include 'hoaDbCommon.php';
 	//--------------------------------------------------------------------------------------------------------
 	// Create connection to the database
 	//--------------------------------------------------------------------------------------------------------
-	$conn = new mysqli($host, $username, $password, $dbname);
+	$conn = new mysqli($host, $dbadmin, $password, $dbname);
 
 	// Check connection
 	if ($conn->connect_error) {
     	die("Connection failed: " . $conn->connect_error);
 	} 
 
-	$stmt = $conn->prepare("UPDATE hoa_assessments SET DuesAmt=?,DateDue=?,Paid=?,DatePaid=?,PaymentMethod=?,Comments=? WHERE Parcel_ID = ? AND OwnerID = ? AND FY = ? ; ");
-	$stmt->bind_param("ssissssss", $duesAmount,$dateDue,$paidBoolean,$datePaid,$paymentMethod,$assessmentsComments,$parcelId,$ownerId,$fy);
+	$stmt = $conn->prepare("UPDATE hoa_assessments SET DuesAmt=?,DateDue=?,Paid=?,DatePaid=?,PaymentMethod=?,Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND OwnerID = ? AND FY = ? AND ; ");
+	$stmt->bind_param("ssisssssss", $duesAmount,$dateDue,$paidBoolean,$datePaid,$paymentMethod,$assessmentsComments,$username,$parcelId,$ownerId,$fy);
 	$stmt->execute();
 	$stmt->close();
 	$conn->close();

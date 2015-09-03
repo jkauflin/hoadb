@@ -12,6 +12,8 @@ include 'commonUtil.php';
 // Include table record classes and db connection parameters
 include 'hoaDbCommon.php';
 
+	$username = $_SERVER['PHP_AUTH_USER'];
+
 	// If they are set, get input parameters from the REQUEST
 	$parcelId = getParamVal("parcelId");
 	$ownerId = getParamVal("ownerId");
@@ -33,7 +35,7 @@ include 'hoaDbCommon.php';
 	//--------------------------------------------------------------------------------------------------------
 	// Create connection to the database
 	//--------------------------------------------------------------------------------------------------------
-	$conn = new mysqli($host, $username, $password, $dbname);
+	$conn = new mysqli($host, $dbadmin, $password, $dbname);
 
 	// Check connection
 	if ($conn->connect_error) {
@@ -63,8 +65,8 @@ include 'hoaDbCommon.php';
 			`UpdateTimestamp` varchar(19) DEFAULT NULL,
 	*/
 	
-	$stmt = $conn->prepare("UPDATE hoa_owners SET CurrentOwner=?,Owner_Name1=?,Owner_Name2=?,DatePurchased=?,Mailing_Name=?,AlternateMailing=?,Alt_Address_Line1=?,Alt_Address_Line2=?,Alt_City=?,Alt_State=?,Alt_Zip=?,Owner_Phone=?,Comments=? WHERE Parcel_ID = ? AND OwnerID = ?; ");
-	$stmt->bind_param("issssisssssssss",$currentOwnerBoolean,$ownerName1,$ownerName2,$datePurchased,$mailingName,$alternateMailingBoolean,$addrLine1,$addrLine2,$altCity,$altState,$altZip,$ownerPhone,$ownerComments,$parcelId,$ownerId);
+	$stmt = $conn->prepare("UPDATE hoa_owners SET CurrentOwner=?,Owner_Name1=?,Owner_Name2=?,DatePurchased=?,Mailing_Name=?,AlternateMailing=?,Alt_Address_Line1=?,Alt_Address_Line2=?,Alt_City=?,Alt_State=?,Alt_Zip=?,Owner_Phone=?,Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND OwnerID = ?; ");
+	$stmt->bind_param("issssissssssssss",$currentOwnerBoolean,$ownerName1,$ownerName2,$datePurchased,$mailingName,$alternateMailingBoolean,$addrLine1,$addrLine2,$altCity,$altState,$altZip,$ownerPhone,$ownerComments,$username,$parcelId,$ownerId);
 	
 	$stmt->execute();
 	$stmt->close();
