@@ -6,12 +6,25 @@
  *----------------------------------------------------------------------------
  * Modification History
  * 2015-03-06 JJK 	Initial version with some common utilities 
+ * 2015-09-08 JJK	Added getAdminLevel to return an admin level based on
+ *                  username to control updates
  *============================================================================*/
 
-/*
-$username = $_SERVER['PHP_AUTH_USER'];
-$password = $_SERVER['PHP_AUTH_PW'];
-*/
+// common method to return admin level based on authenticated user name from the server
+function getAdminLevel() {
+	$adminLevel = 0;
+	if (isset($_SERVER['PHP_AUTH_USER'])) {
+		$username = strtolower(trim($_SERVER['PHP_AUTH_USER']));
+		// Just hard-code this check for now and put in the DB later
+		if ($username == 'president') {
+			$adminLevel = 4;
+		} else if ($username == 'treasurer') {
+			$adminLevel = 2;
+		}
+	}
+	
+	return $adminLevel;
+}
 
 // Set 0 or 1 according to the boolean value of a string
 function paramBoolVal($paramName) {
