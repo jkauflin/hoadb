@@ -12,6 +12,7 @@
  * 					email addresses and replacing non-printable characters
  * 2015-08-03 JJK	Modified to put the data parameters on the "a" element
  * 					and only response to clicks to the anchor
+ * 2015-09-08 JJK   Added GetSalesReport to show sales to HOA properties
  * 
  * Example error displayed in console
 ajax exception = SyntaxError: Unexpected token <
@@ -311,7 +312,7 @@ $(document).on("pageinit","#DetailPage",function(){
     $(document).on("click","#PropertyDetail tr td a",function(){
         waitCursor();
         var $this = $(this);
-        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-parcelId"),function(hoaRec){
+        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId"),function(hoaRec){
             $( ":mobile-pagecontainer" ).pagecontainer( "change", "#EditPage");
             formatPropertyDetailEdit(hoaRec);
         });
@@ -320,7 +321,7 @@ $(document).on("pageinit","#DetailPage",function(){
     $(document).on("click","#PropertyOwners tr td a",function(){
         waitCursor();
         var $this = $(this);
-        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-parcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
+        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
             $( ":mobile-pagecontainer" ).pagecontainer( "change", "#EditPage");
             formatOwnerDetailEdit(hoaRec);
         });
@@ -329,7 +330,7 @@ $(document).on("pageinit","#DetailPage",function(){
     $(document).on("click","#PropertyAssessments tr td a",function(){
         waitCursor();
         var $this = $(this);
-        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-parcelId")+"&fy="+$this.attr("data-FY"),function(hoaRec){
+        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&fy="+$this.attr("data-FY"),function(hoaRec){
             $( ":mobile-pagecontainer" ).pagecontainer( "change", "#EditPage");
             formatAssessmentDetailEdit(hoaRec);
         });
@@ -568,27 +569,115 @@ $(document).on("pageinit","#EditPage",function(){
 $(document).on("pageinit","#ReportsPage",function(){
 
 	$(document).on("click","#SalesReport",function(){
-		waitCursor();
-		
-        $("#PropertyListDisplay tbody").html("");
-        
-    	// Get the list
-        /*
-    	$.get("getSalesReport.php","salesYear="+$("#salesYear").val(),function(reportHtml){
-            $("#ReportHeader").html("HOA Residential Sales for "+$("#salesYear").val());
-            //$("#ReportListDisplay tbody").html(tr);
-            $("#ReportDisplay").html(reportHtml);
-    	});
-        */
-        
-        $("#ReportDisplay").html("Report Display test string");
+        waitCursor();
+        $("#ReportListDisplay tbody").html("");
 
+        var adminLevel = 0;
+        $.get("getAdminLevel.php",function(adminLevelVal){
+        	adminLevel = adminLevelVal
+        });
+
+    	// Get the list
+    	$.getJSON("getSalesReport.php",function(hoaSalesRecList){
+    		var tr = '';
+    	    rowId = 0;
+    		$.each(hoaSalesRecList, function(index, hoaSalesRec) {
+    			rowId = index + 1;
+    			if (index == 0) {
+    	    	    tr +=    '<tr>';
+    	    	    tr +=      '<th>Row</th>';
+    	    	    //tr +=      '<th>Parcel Id</th>';
+    	    	    tr +=  	   '<th>Sale Date</th>';
+    	    	    tr +=      '<th>Parcel Location</th>';
+    	    	    tr +=      '<th>Old Owner Name</th>';
+    	    	    tr +=      '<th>New Owner Name</th>';
+    	    	    tr +=      '<th>Mailing Name1</th>';
+    	    	    tr +=      '<th>Mailing Name2</th>';
+    	    	    //tr +=      '<th>Notification</th>';
+    	    	    tr +=    '</tr>';
+    			}
+    		    tr +=  '<tr>';
+    		    tr +=    '<td>'+rowId+'</td>';
+    		    //tr +=    '<td><a data-parcelId="'+hoaSalesRec.PARID+'" href="#">'+hoaSalesRec.PARID+'</a></td>';
+    		    
+    	    	if (adminLevel > 1) {
+        		    tr +=    '<td><a data-ParcelId="'+hoaSalesRec.PARID+'" data-SaleDate="'+hoaSalesRec.SALEDT+'" href="#EditPage">'+hoaSalesRec.SALEDT+'</a></td>';
+    	    	} else {
+        		    tr +=    '<td>'+hoaSalesRec.SALEDT+'</td>';
+    	    	}
+    		    tr +=    '<td>'+hoaSalesRec.PARCELLOCATION+'</td>';
+    		    tr +=    '<td>'+hoaSalesRec.OLDOWN+'</td>';
+    		    tr +=    '<td>'+hoaSalesRec.OWNERNAME1+'</td>';
+    		    tr +=    '<td>'+hoaSalesRec.MAILINGNAME1+'</td>';
+    		    tr +=    '<td>'+hoaSalesRec.MAILINGNAME2+'</td>';
+    		    //tr +=    '<td>'+hoaSalesRec.NotificationFlag+'</td>';
+    		    tr +=  '</tr>';
+    		});
+
+    		$("#ReportListDisplay tbody").html(tr);
+    	});
+        
         event.stopPropagation();
-		
-	});
-	  	
-	
+    });
+
 }); // End of $(document).on("pageinit","#ReportsPage",function(){
+
+$(document).on("click","#ReportListDisplay tr td a",function(){
+    waitCursor();
+    var $this = $(this);
+    $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&saleDate="+$this.attr("data-SaleDate"),function(hoaRec){
+        $( ":mobile-pagecontainer" ).pagecontainer( "change", "#EditPage");
+        formatOwnerSalesEdit(hoaRec);
+    });
+});	
+
+function formatOwnerSalesEdit(hoaRec){
+    var tr = '';
+    var checkedStr = '';
+    var buttonStr = '';
+    var ownerId = '';
+
+    // action or type of update
+    $("#EditPageHeader").text("Edit Owner");
+
+	$.each(hoaRec.ownersList, function(index, rec) {
+		ownerId = rec.OwnerID;
+		tr = '';
+	    tr += '<tr><th>Owner Id:</th><td>'+rec.OwnerID+'</td></tr>';
+	    tr += '<tr><th>Parcel Id:</th><td>'+rec.Parcel_ID+'</td></tr>';
+
+	    tr += '<tr><th>Current Owner: </th><td>'+setCheckboxEdit(rec.CurrentOwner,'CurrentOwnerCheckbox')+'</td></tr>';
+	    tr += '<tr><th>Owner Name1:</th><td>'+ setInputText("OwnerName1",rec.Owner_Name1,"50")+'</td></tr>';
+	    tr += '<tr><th>Owner Name2:</th><td>'+ setInputText("OwnerName2",rec.Owner_Name2,"50")+'</td></tr>';
+	    tr += '<tr><th>Date Purchased:</th><td>'+ setInputDate("DatePurchased",rec.DatePurchased,"10")+'</td></tr>';
+	    tr += '<tr><th>Mailing Name:</th><td>'+ setInputText("MailingName",rec.Mailing_Name,"50")+'</td></tr>';
+	    tr += '<tr><th>Alternate Mailing: </th><td>'+setCheckboxEdit(rec.AlternateMailing,'AlternateMailingCheckbox')+'</td></tr>';
+	    tr += '<tr><th>Address Line1:</th><td>'+ setInputText("AddrLine1",rec.Alt_Address_Line1,"50")+'</td></tr>';
+	    tr += '<tr><th>Address Line2:</th><td>'+ setInputText("AddrLine2",rec.Alt_Address_Line2,"50")+'</td></tr>';
+	    tr += '<tr><th>City:</th><td>'+ setInputText("AltCity",rec.Alt_City,"40")+'</td></tr>';
+	    tr += '<tr><th>State:</th><td>'+ setInputText("AltState",rec.Alt_State,"20")+'</td></tr>';
+	    tr += '<tr><th>Zip:</th><td>'+ setInputText("AltZip",rec.Alt_Zip,"20")+'</td></tr>';
+	    tr += '<tr><th>Owner Phone:</th><td>'+ setInputText("OwnerPhone",rec.Owner_Phone,"30")+'</td></tr>';
+	    tr += '<tr><th>Comments: </th><td>'+setInputText("OwnerComments",rec.Comments,"12")+'</td></tr>';
+	    
+	    tr += '<tr><th>Created:</th><td>'+rec.EntryTimestamp+'</td></tr>';
+	    tr += '<tr><th>Last Updated:</th><td>'+rec.UpdateTimestamp+'</td></tr>';
+	});
+
+    tr += '<tr><th></th><td>'+
+	  	  '<a id="SaveOwnerEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+ownerId+'" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-plus ui-btn-icon-left ui-corner-all">Save</a>' +
+	  	  '<a href="#" data-rel="back" class="ui-btn ui-mini ui-btn-inline ui-icon-delete ui-btn-icon-left ui-corner-all">Cancel</a>' +
+	  	  '</td></tr>';
+
+    $("#EditTable tbody").html(tr);
+
+    $(".Date").datetimepicker({
+        timepicker:false,
+        format:'Y-m-d'
+    });    
+
+} // End of function formatOwnerDetailEdit(hoaRec){
+
 
 $(document).on("pageinit","#AdminPage",function(){
 	$('#summernote').summernote();

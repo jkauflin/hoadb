@@ -16,6 +16,7 @@ include 'hoaDbCommon.php';
 	$parcelId = getParamVal("parcelId");
 	$ownerId = getParamVal("ownerId");
 	$fy = getParamVal("fy");
+	$saleDate = getParamVal("saleDate");
 	
 	//--------------------------------------------------------------------------------------------------------
 	// Create connection to the database
@@ -27,7 +28,7 @@ include 'hoaDbCommon.php';
 		die("Connection failed: " . $conn->connect_error);
 	}
 	
-	$hoaRec = getHoaRec($conn,$parcelId,$ownerId,$fy);
+	$hoaRec = getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate);
 	
 	$conn->close();
 	

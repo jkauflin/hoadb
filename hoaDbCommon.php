@@ -8,6 +8,7 @@
  * 2015-03-06 JJK 	Initial version to get data 
  * 2015-03-24 JJK	Included credentials files 
  * 2015-04-28 JJK	Added sales rec
+ * 2015-09-08 JJK	Added sales array to main HoaRec structure
  *============================================================================*/
 
 // Include db connection credentials
@@ -41,6 +42,7 @@ class HoaRec
   	 
 	public $ownersList;
 	public $assessmentsList;
+	public $salesList;
 }
 
 class HoaOwnerRec
@@ -145,8 +147,44 @@ function getHoaSalesRec($conn,$parcelId,$saleDate) {
 	return $hoaSalesRec;
 } // End of function getHoaSalesRec($conn,$parcelId,$saleDate) {
 
+function getHoaSalesRecList($conn) {
+	$hoaSalesRecList = array();
+	
+	$stmt = $conn->prepare("SELECT * FROM hoa_sales ORDER BY CreateTimestamp DESC; ");
+	$stmt->execute();
+	$result = $stmt->get_result();
 
-function getHoaRec($conn,$parcelId,$ownerId,$fy) {
+	if ($result->num_rows > 0) {
+		while($row = $result->fetch_assoc()) {
+			$hoaSalesRec = new HoaSalesRec();
+			$hoaSalesRec->PARID = $row["PARID"];
+			$hoaSalesRec->CONVNUM = $row["CONVNUM"];
+			$hoaSalesRec->SALEDT = $row["SALEDT"];
+			$hoaSalesRec->PRICE = $row["PRICE"];
+			$hoaSalesRec->OLDOWN = $row["OLDOWN"];
+			$hoaSalesRec->OWNERNAME1 = $row["OWNERNAME1"];
+			$hoaSalesRec->PARCELLOCATION = $row["PARCELLOCATION"];
+			$hoaSalesRec->MAILINGNAME1 = $row["MAILINGNAME1"];
+			$hoaSalesRec->MAILINGNAME2 = $row["MAILINGNAME2"];
+			$hoaSalesRec->PADDR1 = $row["PADDR1"];
+			$hoaSalesRec->PADDR2 = $row["PADDR2"];
+			$hoaSalesRec->PADDR3 = $row["PADDR3"];
+			$hoaSalesRec->CreateTimestamp = $row["CreateTimestamp"];
+			$hoaSalesRec->NotificationFlag = $row["NotificationFlag"];
+			$hoaSalesRec->LastChangedBy = $row["LastChangedBy"];
+			$hoaSalesRec->LastChangedTs = $row["LastChangedTs"];
+			
+			array_push($hoaSalesRecList,$hoaSalesRec);
+		}
+		$result->close();
+		$stmt->close();
+	}
+
+	return $hoaSalesRecList;
+} // End of function getHoaSalesRecList
+
+
+function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 
 	$hoaRec = new HoaRec();
 	
@@ -253,7 +291,45 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy) {
 		} // End of Assessments
 		$result->close();
 		$stmt->close();
-	
+		
+		// Get sales records for this parcel		
+		if (empty($saleDate)) {
+			$stmt = $conn->prepare("SELECT * FROM hoa_sales WHERE PARID = ? ORDER BY CreateTimestamp DESC; ");
+			$stmt->bind_param("s", $parcelId);
+		} else {
+			$stmt = $conn->prepare("SELECT * FROM hoa_sales WHERE PARID = ? AND SALEDT = ?; ");
+			$stmt->bind_param("ss", $parcelId,$saleDate);
+		}
+		$stmt->execute();
+		$result = $stmt->get_result();
+		
+		if ($result->num_rows > 0) {
+			while($row = $result->fetch_assoc()) {
+				$hoaSalesRec = new HoaSalesRec();
+				$hoaSalesRec->PARID = $row["PARID"];
+				$hoaSalesRec->CONVNUM = $row["CONVNUM"];
+				$hoaSalesRec->SALEDT = $row["SALEDT"];
+				$hoaSalesRec->PRICE = $row["PRICE"];
+				$hoaSalesRec->OLDOWN = $row["OLDOWN"];
+				$hoaSalesRec->OWNERNAME1 = $row["OWNERNAME1"];
+				$hoaSalesRec->PARCELLOCATION = $row["PARCELLOCATION"];
+				$hoaSalesRec->MAILINGNAME1 = $row["MAILINGNAME1"];
+				$hoaSalesRec->MAILINGNAME2 = $row["MAILINGNAME2"];
+				$hoaSalesRec->PADDR1 = $row["PADDR1"];
+				$hoaSalesRec->PADDR2 = $row["PADDR2"];
+				$hoaSalesRec->PADDR3 = $row["PADDR3"];
+				$hoaSalesRec->CreateTimestamp = $row["CreateTimestamp"];
+				$hoaSalesRec->NotificationFlag = $row["NotificationFlag"];
+				$hoaSalesRec->LastChangedBy = $row["LastChangedBy"];
+				$hoaSalesRec->LastChangedTs = $row["LastChangedTs"];
+		
+				array_push($hoaRec->salesList,$hoaSalesRec);
+			}
+		
+		} // End of Assessments
+		$result->close();
+		$stmt->close();
+
 	} else {
 		$result->close();
 		$stmt->close();

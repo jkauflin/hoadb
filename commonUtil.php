@@ -12,7 +12,8 @@
 
 // common method to return admin level based on authenticated user name from the server
 function getAdminLevel() {
-	$adminLevel = 0;
+	//$adminLevel = 0;
+	$adminLevel = 4;
 	if (isset($_SERVER['PHP_AUTH_USER'])) {
 		$username = strtolower(trim($_SERVER['PHP_AUTH_USER']));
 		// Just hard-code this check for now and put in the DB later
