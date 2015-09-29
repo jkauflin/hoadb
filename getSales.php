@@ -10,12 +10,15 @@
  * 2015-03-06 JJK 	Initial version to get data 
  * 2015-04-28 JJK	Got hoa_sales get and insert working
  * 2015-06-19 JJK	Abstracted some variables
+ * 2015-09-28 JJK	Added error handling to send email to admin and 
+ * 					updated for new sales table fields
  *============================================================================*/
 
 include 'commonUtil.php';
 // Include table record classes and db connection parameters
 include 'hoaDbCommon.php';
 
+$errorStr = '';
 $currTimestampStr = date("Y-m-d H:i:s");
 //JJK test, date = 2015-04-22 19:45:09
 // Get the year from the current system time
@@ -41,7 +44,9 @@ if (is_file($zipFileName)) {
 		$conn = new mysqli($host, $dbadmin, $password, $dbname);
 		// Check connection
 		if ($conn->connect_error) {
-			die("Connection failed: " . $conn->connect_error);
+			$errorStr = 'FILE: ' . __FILE__  . ', LINE: ' . __LINE__ . ', ERROR: ' . $conn->error ;
+			error_log($errorStr, 1, $adminEmailList);
+			die($errorStr);
 		}
 		
 		// Loop through all the records in the downloaded sales file and compare with HOA database parcels
@@ -60,26 +65,31 @@ if (is_file($zipFileName)) {
 					
 			$parcelId = $salesRecArray[0];
 			// Check if the Parcel Id from the sales record matches any in our HOA database
-			$hoaRec = getHoaRec($conn,$parcelId,"","");
+			//function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
+			$hoaRec = getHoaRec($conn,$parcelId,"","",$salesRecArray[2]);
 			if (empty($hoaRec->Parcel_ID)) {
 				// If the parcel id is not found in the HOA db, then just skip to the next one
 				continue;
 			}
 
+			// sales now included in this query and in hoaRec
+			
 			$hoaOwnerRec = $hoaRec->ownersList[0];
-			$hoaSalesRec = getHoaSalesRec($conn,$hoaRec->Parcel_ID,$salesRecArray[2]);
-				
+			$hoaSalesRec = $hoaRec->salesList[0]; 
+				//getHoaSalesRec($conn,$hoaRec->Parcel_ID,$salesRecArray[2]);
+			
+			
 			$addToOutput = false;
 			if (empty($hoaSalesRec->PARID)) {
-				//$stmt = $conn->prepare("UPDATE hoa_properties SET Member=?,Vacant=?,Rental=?,Managed=?,Foreclosure=?,Bankruptcy=?,Liens_2B_Released=?,Comments=? WHERE Parcel_ID = ? ; ");
-				// http://php.net/manual/en/mysqli.quickstart.prepared-statements.php
-				if (!( $stmt = $conn->prepare("INSERT INTO hoa_sales VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?); ") )) {
-					die("Prepare failed: " . $conn->error);
+				if (!( $stmt = $conn->prepare("INSERT INTO hoa_sales VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ") )) {
+					$errorStr = 'FILE: ' . __FILE__  . ', LINE: ' . __LINE__ . ', ERROR: ' . $conn->error ;
+					error_log($errorStr, 1, $adminEmailList);
+					die($errorStr);
 				}
 				
 				$NotificationFlag = 'Y';
 				if (!(
-						$stmt->bind_param("ssssssssssssss",
+						$stmt->bind_param("sssssssssssssss",
 								$salesRecArray[0],
 								$salesRecArray[1],
 								$salesRecArray[2],
@@ -93,14 +103,20 @@ if (is_file($zipFileName)) {
 								$salesRecArray[10],
 								$salesRecArray[11],
 								$currTimestampStr,
-								$NotificationFlag)
+								$NotificationFlag,
+								getUsername())
+						//LastChangedBy
+						//LastChangedTs
 				)) {
-					die("Bind failed: " . $conn->error);
+					$errorStr = 'FILE: ' . __FILE__  . ', LINE: ' . __LINE__ . ', ERROR: ' . $conn->error ;
+					error_log($errorStr, 1, $adminEmailList);
+					die($errorStr);
 				}
 					
 				if (!( $stmt->execute() )) {
-					//testMail("getSalesReport, Execute failed: " . $conn->error . ', LINE = ' . __LINE__);
-					die("Execute failed: " . $conn->error);
+					$errorStr = 'FILE: ' . __FILE__  . ', LINE: ' . __LINE__ . ', ERROR: ' . $conn->error ;
+					error_log($errorStr, 1, $adminEmailList);
+					die($errorStr);
 				}
 					
 				$stmt->close();
@@ -158,6 +174,8 @@ if (is_file($zipFileName)) {
 			sendHtmlEMail($salesReportEmailList,$subject,$messageStr);
 		}
 		
+		// maybe update the flags after the email is send successfully
+		
 		
 	} // End of If Zip file was opened
 	
@@ -165,26 +183,4 @@ if (is_file($zipFileName)) {
 	
 } // End of If the zip file was downloaded
 
-
-	// Delete the downloaded zip file
-	//unlink($zipFileName);
-	
-	/*
-	 while (!feof($fp)) {
-	//$contents .= fread($fp, 2);
-	$contents .= fread($fp, 2);
-	}
-	*/
-	/*
-	 while (($buffer = fgets($file, 4096)) !== false) {
-	echo $buffer;
-	}
-	$buffer = fgets($file, 4096);
-	$buffer = fgets($file, 4096);
-	echo $buffer;
-	
-	*/
-	//Write contents out to a file
-	//file_put_contents('t',$contents);
-	
 ?>

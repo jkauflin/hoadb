@@ -29,6 +29,7 @@ include 'hoaDbCommon.php';
 	}
 	
 	$hoaRec = getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate);
+	$hoaRec->adminLevel = getAdminLevel();
 	
 	$conn->close();
 	

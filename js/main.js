@@ -20,7 +20,9 @@ main.js:54 ajax exception xhr.responseText = <br />
 <b>Warning</b>:  mysqli::mysqli(): (HY000/1045): Access denied for user 'root'@'localhost' (using password: NO) in <b>/home/grhada5/public_html/hoadb/getHoaPropertiesList.php</b> on line <b>53</b><br />
 Connection failed: Access denied for user 'root'@'localhost' (using password: NO) * 
  * 
+ * 2015-09-25 JJK	Added adminLevel to HoaRec to control updates
  *============================================================================*/
+
 $.urlParam = function(name){
     var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
     if (results==null){
@@ -194,14 +196,9 @@ function setInputDate(idName,textVal,textSize){
 function formatPropertyDetailResults(hoaRec){
     var tr = '';
     var checkedStr = '';
-    var adminLevel = 0;
-
-    $.get("getAdminLevel.php",function(adminLevelVal){
-    	adminLevel = adminLevelVal
-    });
 
     // Get the admin level to see if user is allowed to edit data
-	if (adminLevel > 1) {
+	if (hoaRec.adminLevel > 1) {
 	    tr += '<tr><th>Parcel Id:</th><td><a data-ParcelId="'+hoaRec.Parcel_ID+'" href="#EditPage">'+hoaRec.Parcel_ID+'</a></td></tr>';
 	} else {
 	    tr += '<tr><th>Parcel Id:</th><td>'+hoaRec.Parcel_ID+'</a></td></tr>';
@@ -248,7 +245,7 @@ function formatPropertyDetailResults(hoaRec){
 		    tr = tr +   '<td>'+rec.OwnerID+'</td>';
 	    }
 	    */
-    	if (adminLevel > 1) {
+    	if (hoaRec.adminLevel > 1) {
     	    tr = tr +   '<td><a data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+rec.OwnerID+'" href="#EditPage">'+rec.Owner_Name1+' '+rec.Owner_Name2+'</a></td>';
     	} else {
     	    tr = tr +   '<td>'+rec.Owner_Name1+' '+rec.Owner_Name2+'</a></td>';
@@ -279,7 +276,7 @@ function formatPropertyDetailResults(hoaRec){
 		}
 	    tr = tr + '<tr>';
 	    tr = tr +   '<td>'+rec.OwnerID+'</td>';
-    	if (adminLevel > 1) {
+    	if (hoaRec.adminLevel > 1) {
     	    tr = tr +   '<td><a data-ParcelId="'+hoaRec.Parcel_ID+'" data-FY="'+rec.FY+'" href="#EditPage">'+rec.FY+'</a></td>';
     	} else {
     	    tr = tr +   '<td>'+rec.FY+'</a></td>';
@@ -571,11 +568,8 @@ $(document).on("pageinit","#ReportsPage",function(){
 	$(document).on("click","#SalesReport",function(){
         waitCursor();
         $("#ReportListDisplay tbody").html("");
-
-        var adminLevel = 0;
-        $.get("getAdminLevel.php",function(adminLevelVal){
-        	adminLevel = adminLevelVal
-        });
+        
+        adminLevel = 0;
 
     	// Get the list
     	$.getJSON("getSalesReport.php",function(hoaSalesRecList){

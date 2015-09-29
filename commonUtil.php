@@ -28,6 +28,15 @@ function getAdminLevel() {
 	return $adminLevel;
 }
 
+function getUsername() {
+	$username = 'unknown';
+	if (isset($_SERVER['PHP_AUTH_USER'])) {
+		$username = strtolower(trim($_SERVER['PHP_AUTH_USER']));
+	}
+	return $username;
+}
+
+
 // Set 0 or 1 according to the boolean value of a string
 function paramBoolVal($paramName) {
 	$retBoolean = 0;

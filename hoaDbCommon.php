@@ -43,6 +43,8 @@ class HoaRec
 	public $ownersList;
 	public $assessmentsList;
 	public $salesList;
+	
+	public $adminLevel;
 }
 
 class HoaOwnerRec
@@ -217,6 +219,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				
 			$hoaRec->ownersList = array();
 			$hoaRec->assessmentsList = array();
+			$hoaRec->salesList = array();
 		}
 		$result->close();
 		$stmt->close();
