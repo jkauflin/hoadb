@@ -12,7 +12,7 @@ include 'commonUtil.php';
 // Include table record classes and db connection parameters
 include 'hoaDbCommon.php';
 
-	$username = $_SERVER['PHP_AUTH_USER'];
+	$username = getUsername();
 
 	// If they are set, get input parameters from the REQUEST
 	$parcelId = getParamVal("parcelId");

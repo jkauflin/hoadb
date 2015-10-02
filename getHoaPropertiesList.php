@@ -44,6 +44,9 @@ include 'hoaDbCommon.php';
 	} elseif (!empty($checkNo)) {
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a WHERE p.Parcel_ID = o.Parcel_ID AND p.Parcel_ID = a.Parcel_ID AND o.CurrentOwner = 1 AND UPPER(a.Comments) ";
 		$paramStr = '%' . $checkNo . '%';
+	} else {
+		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 AND UPPER(p.Parcel_ID) ";
+		$paramStr = '%r%';
 	}
 	
 	$sql = $sql . "LIKE UPPER(?) ORDER BY p.Parcel_ID; ";

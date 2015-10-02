@@ -8,6 +8,7 @@
  * 2015-03-06 JJK 	Initial version with some common utilities 
  * 2015-09-08 JJK	Added getAdminLevel to return an admin level based on
  *                  username to control updates
+ * 2015-10-01 JJK	Added $fromEmailAddress to sendHtmlEMail                
  *============================================================================*/
 
 // common method to return admin level based on authenticated user name from the server
@@ -87,7 +88,7 @@ function downloadUrlToFile($url, $outFileName)
 	
 }
 
-function sendHtmlEMail($toStr,$subject,$messageStr) {
+function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
 	$message = '<html><head><title>' . $subject .'</title></head><body>' . $messageStr . '</body></html>';
 	
 	// Always set content-type when sending HTML email
@@ -96,6 +97,11 @@ function sendHtmlEMail($toStr,$subject,$messageStr) {
 	
 	// More headers
 	$headers .= 'From: ' . $fromEmailAddress . "\r\n";
+	/*
+	 $headers = 'From: webmaster@example.com' . "\r\n" .
+	 'Reply-To: webmaster@example.com' . "\r\n" .
+	 'X-Mailer: PHP/' . phpversion();
+	 */
 	
 	mail($toStr,$subject,$message,$headers);
 }

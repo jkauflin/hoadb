@@ -143,8 +143,8 @@ function getHoaSalesRec($conn,$parcelId,$saleDate) {
 			$hoaSalesRec->LastChangedTs = $row["LastChangedTs"];
 		}
 		$result->close();
-		$stmt->close();
 	}
+	$stmt->close();
 	
 	return $hoaSalesRec;
 } // End of function getHoaSalesRec($conn,$parcelId,$saleDate) {
@@ -179,9 +179,9 @@ function getHoaSalesRecList($conn) {
 			array_push($hoaSalesRecList,$hoaSalesRec);
 		}
 		$result->close();
-		$stmt->close();
 	}
-
+	$stmt->close();
+	
 	return $hoaSalesRecList;
 } // End of function getHoaSalesRecList
 

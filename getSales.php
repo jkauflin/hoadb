@@ -171,7 +171,7 @@ if (is_file($zipFileName)) {
 		if ($sendMessage) {
 			$subject = 'HOA Residential Sales in ' . $salesYear;
 			$messageStr = '<h2>HOA Residential Sales in ' . $salesYear . '</h2>' . $outputStr;
-			sendHtmlEMail($salesReportEmailList,$subject,$messageStr);
+			sendHtmlEMail($salesReportEmailList,$subject,$messageStr,$fromEmailAddress);
 		}
 		
 		// maybe update the flags after the email is send successfully
