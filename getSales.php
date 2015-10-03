@@ -81,15 +81,16 @@ if (is_file($zipFileName)) {
 			
 			$addToOutput = false;
 			if (empty($hoaSalesRec->PARID)) {
-				if (!( $stmt = $conn->prepare("INSERT INTO hoa_sales VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ") )) {
+				if (!( $stmt = $conn->prepare("INSERT INTO hoa_sales VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ") )) {
 					$errorStr = 'FILE: ' . __FILE__  . ', LINE: ' . __LINE__ . ', ERROR: ' . $conn->error ;
 					error_log($errorStr, 1, $adminEmailList);
 					die($errorStr);
 				}
 				
 				$NotificationFlag = 'Y';
+				$ProcessedFlag = 'N';
 				if (!(
-						$stmt->bind_param("sssssssssssssss",
+						$stmt->bind_param("ssssssssssssssss",
 								$salesRecArray[0],
 								$salesRecArray[1],
 								$salesRecArray[2],
@@ -104,6 +105,7 @@ if (is_file($zipFileName)) {
 								$salesRecArray[11],
 								$currTimestampStr,
 								$NotificationFlag,
+								$ProcessedFlag,
 								getUsername())
 						//LastChangedBy
 						//LastChangedTs

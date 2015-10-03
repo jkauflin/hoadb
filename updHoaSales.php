@@ -2,41 +2,38 @@
 /*==============================================================================
  * (C) Copyright 2015 John J Kauflin, All rights reserved. 
  *----------------------------------------------------------------------------
- * DESCRIPTION: Scheduled job to get sales information from the county
- * 				auditor site, find parcels in the hoa, update the hoa_sales
- * 				table, and email a report of new sales
+ * DESCRIPTION: 
  *----------------------------------------------------------------------------
  * Modification History
- * 2015-03-06 JJK 	Initial version to get data 
- * 2015-04-28 JJK	Got hoa_sales get and insert working
- * 2015-06-19 JJK	Abstracted some variables
+ * 2015-10-02 JJK 	Initial version to update Sales 
  *============================================================================*/
 
 include 'commonUtil.php';
 // Include table record classes and db connection parameters
 include 'hoaDbCommon.php';
 
-$currTimestampStr = date("Y-m-d H:i:s");
-//JJK test, date = 2015-04-22 19:45:09
+	$username = getUsername();
 
-	$notProcessedBoolean = paramBoolVal("notProcessedBoolean");
-
+	// If they are set, get input parameters from the REQUEST
+	$PARID = getParamVal("PARID");
+	$SALEDT = getParamVal("SALEDT");
+	
 	//--------------------------------------------------------------------------------------------------------
 	// Create connection to the database
 	//--------------------------------------------------------------------------------------------------------
 	$conn = new mysqli($host, $dbadmin, $password, $dbname);
+
 	// Check connection
 	if ($conn->connect_error) {
-		die("Connection failed: " . $conn->connect_error);
-	}
-	
-	$hoaSalesReportRec = getHoaSalesRecList($conn,$notProcessedBoolean);
-	$hoaSalesReportRec->adminLevel = getAdminLevel();
-	
-	
-	// Close db connection
+    	die("Connection failed: " . $conn->connect_error);
+	} 
+
+	$stmt = $conn->prepare("UPDATE hoa_sales SET ProcessedFlag='Y',LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE PARID = ? AND SALEDT = ? ; ");
+	$stmt->bind_param("sss",$username,$PARID,$SALEDT);	
+	$stmt->execute();
+	$stmt->close();
 	$conn->close();
 
-	echo json_encode($hoaSalesReportRec);
-
+	echo 'Update Successful - parcelId = ' . $PARID;
+	
 ?>

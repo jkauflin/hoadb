@@ -147,6 +147,12 @@ table, th, td {
 }
 */
 
+/* 2015-10-03 Custom styling for button in a table row */
+.ui-btn[linebtn] {
+    height: 22px !important;
+    padding: 0 3px 3px 3px !important;
+}
+
 
 /* ==========================================================================
    Media Queries
@@ -167,8 +173,8 @@ table, th, td {
 }
 
 @media screen and (min-width: 701px) {
-	.my-breakpoint.ui-grid-a .ui-block-a { width: 25%; }
-	.my-breakpoint.ui-grid-a .ui-block-b { width: 75%; }
+	.my-breakpoint.ui-grid-a .ui-block-a { width: 20%; }
+	.my-breakpoint.ui-grid-a .ui-block-b { width: 80%; }
 	
 	.my-breakpoint.ui-grid-b .ui-block-a { width: 20%; }
 	.my-breakpoint.ui-grid-b .ui-block-b { width: 25%; } 	

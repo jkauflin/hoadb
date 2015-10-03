@@ -111,8 +111,15 @@ class HoaSalesRec
 	public $PADDR3;
 	public $CreateTimestamp;
 	public $NotificationFlag;
-  	public $LastChangedBy;
+	public $ProcessedFlag;
+	public $LastChangedBy;
   	public $LastChangedTs;
+}
+
+class HoaSalesReportRec
+{
+	public $adminLevel;
+	public $salesList;
 }
 
 function getHoaSalesRec($conn,$parcelId,$saleDate) {
@@ -139,6 +146,7 @@ function getHoaSalesRec($conn,$parcelId,$saleDate) {
 			$hoaSalesRec->PADDR3 = $row["PADDR3"];
 			$hoaSalesRec->CreateTimestamp = $row["CreateTimestamp"];
 			$hoaSalesRec->NotificationFlag = $row["NotificationFlag"];
+			$hoaSalesRec->ProcessedFlag = $row["ProcessedFlag"];
 			$hoaSalesRec->LastChangedBy = $row["LastChangedBy"];
 			$hoaSalesRec->LastChangedTs = $row["LastChangedTs"];
 		}
@@ -149,10 +157,15 @@ function getHoaSalesRec($conn,$parcelId,$saleDate) {
 	return $hoaSalesRec;
 } // End of function getHoaSalesRec($conn,$parcelId,$saleDate) {
 
-function getHoaSalesRecList($conn) {
-	$hoaSalesRecList = array();
+function getHoaSalesRecList($conn,$notProcessedBoolean) {
+	$hoaSalesReportRec = new HoaSalesReportRec();
+	$hoaSalesReportRec->salesList = array();
 	
-	$stmt = $conn->prepare("SELECT * FROM hoa_sales ORDER BY CreateTimestamp DESC; ");
+	if ($notProcessedBoolean) {
+		$stmt = $conn->prepare("SELECT * FROM hoa_sales WHERE ProcessedFlag != 'Y' ORDER BY CreateTimestamp DESC; ");
+	} else {
+		$stmt = $conn->prepare("SELECT * FROM hoa_sales ORDER BY CreateTimestamp DESC; ");
+	}
 	$stmt->execute();
 	$result = $stmt->get_result();
 
@@ -173,16 +186,17 @@ function getHoaSalesRecList($conn) {
 			$hoaSalesRec->PADDR3 = $row["PADDR3"];
 			$hoaSalesRec->CreateTimestamp = $row["CreateTimestamp"];
 			$hoaSalesRec->NotificationFlag = $row["NotificationFlag"];
+			$hoaSalesRec->ProcessedFlag = $row["ProcessedFlag"];
 			$hoaSalesRec->LastChangedBy = $row["LastChangedBy"];
 			$hoaSalesRec->LastChangedTs = $row["LastChangedTs"];
 			
-			array_push($hoaSalesRecList,$hoaSalesRec);
+			array_push($hoaSalesReportRec->salesList,$hoaSalesRec);
 		}
 		$result->close();
 	}
 	$stmt->close();
 	
-	return $hoaSalesRecList;
+	return $hoaSalesReportRec;
 } // End of function getHoaSalesRecList
 
 
@@ -323,6 +337,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				$hoaSalesRec->PADDR3 = $row["PADDR3"];
 				$hoaSalesRec->CreateTimestamp = $row["CreateTimestamp"];
 				$hoaSalesRec->NotificationFlag = $row["NotificationFlag"];
+				$hoaSalesRec->ProcessedFlag = $row["ProcessedFlag"];
 				$hoaSalesRec->LastChangedBy = $row["LastChangedBy"];
 				$hoaSalesRec->LastChangedTs = $row["LastChangedTs"];
 		
