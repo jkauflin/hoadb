@@ -9,6 +9,8 @@
  * 2015-09-08 JJK	Added getAdminLevel to return an admin level based on
  *                  username to control updates
  * 2015-10-01 JJK	Added $fromEmailAddress to sendHtmlEMail                
+ * 2015-10-20 JJK   Added function wildCardStrFromTokens to build a wild
+ * 					card parameter string from the tokens in a string
  *============================================================================*/
 
 // common method to return admin level based on authenticated user name from the server
@@ -112,6 +114,21 @@ function truncDate($inStr) {
 	} else {
 		return $inStr;
 	}
+}
+
+// Create a wild card parameter string from the tokens in a string
+function wildCardStrFromTokens($inStr) {
+	$string = $inStr;
+	$token = strtok($string, " ");
+	$paramStr = '';
+	while ($token !== false)
+	{
+		$paramStr = $paramStr . '%' . $token;
+		$token = strtok(" ");
+	}
+	$paramStr = $paramStr . '%';
+	//error_log('$paramStr = ' . $paramStr);
+	return $paramStr;
 }
 
 ?>

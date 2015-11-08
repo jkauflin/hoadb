@@ -13,16 +13,10 @@
  * 2015-08-03 JJK	Modified to put the data parameters on the "a" element
  * 					and only response to clicks to the anchor
  * 2015-09-08 JJK   Added GetSalesReport to show sales to HOA properties
- * 
- * Example error displayed in console
-ajax exception = SyntaxError: Unexpected token <
-main.js:54 ajax exception xhr.responseText = <br />
-<b>Warning</b>:  mysqli::mysqli(): (HY000/1045): Access denied for user 'root'@'localhost' (using password: NO) in <b>/home/grhada5/public_html/hoadb/getHoaPropertiesList.php</b> on line <b>53</b><br />
-Connection failed: Access denied for user 'root'@'localhost' (using password: NO) * 
- * 
  * 2015-09-25 JJK	Added adminLevel to HoaRec to control updates
  * 2015-09-30 JJK	Added Search button
  * 2015-10-01 JJK	Added Create New Owner functionality
+ * add check to make sure current owner is set on new owners and removed from others
  *============================================================================*/
 
 $.urlParam = function(name){
@@ -121,7 +115,6 @@ $(document).on("pageinit","#SearchPage",function(){
     $("#SearchInput").change(function() {
         waitCursor();
         $("#PropertyListDisplay tbody").html("");
-        
     	// Get the list
     	$.getJSON("getHoaPropertiesList.php","parcelId="+cleanStr($("#parcelId").val())+
     										"&checkNo="+cleanStr($("#checkNo").val())+
@@ -129,42 +122,16 @@ $(document).on("pageinit","#SearchPage",function(){
     										"&ownerName="+cleanStr($("#ownerName").val())+
     										"&phoneNo="+cleanStr($("#phoneNo").val())+
     										"&altAddress="+cleanStr($("#altAddress").val()),function(hoaPropertyRecList){
-    		var tr = '';
-    	    rowId = 0;
-    		$.each(hoaPropertyRecList, function(index, hoaPropertyRec) {
-    			rowId = index + 1;
-    			if (index == 0) {
-    	    	    tr +=    '<tr>';
-    	    	    tr +=      '<th>Row</th>';
-    	    	    tr +=      '<th>Parcel Id</th>';
-    	    	    tr +=  	   '<th>Lot No</th>';
-    	    	    tr +=      '<th>Sub Div</th>';
-    	    	    tr +=      '<th>Parcel Location</th>';
-    	    	    tr +=      '<th>Owner Name</th>';
-    	    	    tr +=      '<th>Owner Phone</th>';
-    	    	    tr +=    '</tr>';
-    			}
-    		    tr +=  '<tr>';
-    		    tr +=    '<td>'+rowId+'</td>';
-    		    tr +=    '<td><a data-parcelId="'+hoaPropertyRec.parcelId+'" href="#">'+hoaPropertyRec.parcelId+'</a></td>';
-    		    tr +=    '<td>'+hoaPropertyRec.lotNo+'</td>';
-    		    tr +=    '<td>'+hoaPropertyRec.subDivParcel+'</td>';
-    		    tr +=    '<td>'+hoaPropertyRec.parcelLocation+'</td>';
-    		    tr +=    '<td>'+hoaPropertyRec.ownerName+'</td>';
-    		    tr +=    '<td>'+hoaPropertyRec.ownerPhone+'</td>';
-    		    tr +=  '</tr>';
-    		});
-
+    		displayPropertyList(hoaPropertyRecList);
             $("#PropertyListDisplay tbody").html(tr);
     	});
-        
         event.stopPropagation();
     });
-    
+
+    // Respond to the Search button click (because I can't figure out how to combine it with input change)
     $(document).on("click","#SearchButton",function(){
         waitCursor();
         $("#PropertyListDisplay tbody").html("");
-        
     	// Get the list
     	$.getJSON("getHoaPropertiesList.php","parcelId="+cleanStr($("#parcelId").val())+
     										"&checkNo="+cleanStr($("#checkNo").val())+
@@ -172,35 +139,8 @@ $(document).on("pageinit","#SearchPage",function(){
     										"&ownerName="+cleanStr($("#ownerName").val())+
     										"&phoneNo="+cleanStr($("#phoneNo").val())+
     										"&altAddress="+cleanStr($("#altAddress").val()),function(hoaPropertyRecList){
-    		var tr = '';
-    	    rowId = 0;
-    		$.each(hoaPropertyRecList, function(index, hoaPropertyRec) {
-    			rowId = index + 1;
-    			if (index == 0) {
-    	    	    tr +=    '<tr>';
-    	    	    tr +=      '<th>Row</th>';
-    	    	    tr +=      '<th>Parcel Id</th>';
-    	    	    tr +=  	   '<th>Lot No</th>';
-    	    	    tr +=      '<th>Sub Div</th>';
-    	    	    tr +=      '<th>Parcel Location</th>';
-    	    	    tr +=      '<th>Owner Name</th>';
-    	    	    tr +=      '<th>Owner Phone</th>';
-    	    	    tr +=    '</tr>';
-    			}
-    		    tr +=  '<tr>';
-    		    tr +=    '<td>'+rowId+'</td>';
-    		    tr +=    '<td><a data-parcelId="'+hoaPropertyRec.parcelId+'" href="#">'+hoaPropertyRec.parcelId+'</a></td>';
-    		    tr +=    '<td>'+hoaPropertyRec.lotNo+'</td>';
-    		    tr +=    '<td>'+hoaPropertyRec.subDivParcel+'</td>';
-    		    tr +=    '<td>'+hoaPropertyRec.parcelLocation+'</td>';
-    		    tr +=    '<td>'+hoaPropertyRec.ownerName+'</td>';
-    		    tr +=    '<td>'+hoaPropertyRec.ownerPhone+'</td>';
-    		    tr +=  '</tr>';
-    		});
-
-            $("#PropertyListDisplay tbody").html(tr);
+    		displayPropertyList(hoaPropertyRecList);
     	});
-        
         event.stopPropagation();
     });
 
@@ -216,6 +156,41 @@ $(document).on("pageinit","#SearchPage",function(){
     });
     
 });
+
+function displayPropertyList(hoaPropertyRecList) {
+	var tr = '<tr><td>No records found - try different search parameters</td></tr>';
+    rowId = 0;
+	$.each(hoaPropertyRecList, function(index, hoaPropertyRec) {
+		rowId = index + 1;
+		if (index == 0) {
+    		tr = '';
+    	    tr +=    '<tr>';
+    	    tr +=      '<th>Row</th>';
+    	    tr +=      '<th>Parcel Id</th>';
+    	    if ($(window).width() > 800) {
+	    	    tr +=  	   '<th>Lot No</th>';
+	    	    tr +=      '<th>Sub Div</th>';
+    	    }
+    	    tr +=      '<th>Parcel Location</th>';
+    	    tr +=      '<th>Owner Name</th>';
+    	    tr +=      '<th>Owner Phone</th>';
+    	    tr +=    '</tr>';
+		}
+	    tr +=  '<tr>';
+	    tr +=    '<td>'+rowId+'</td>';
+	    tr +=    '<td><a data-parcelId="'+hoaPropertyRec.parcelId+'" href="#">'+hoaPropertyRec.parcelId+'</a></td>';
+	    if ($(window).width() > 800) {
+		    tr +=    '<td>'+hoaPropertyRec.lotNo+'</td>';
+		    tr +=    '<td>'+hoaPropertyRec.subDivParcel+'</td>';
+	    }
+	    tr +=    '<td>'+hoaPropertyRec.parcelLocation+'</td>';
+	    tr +=    '<td>'+hoaPropertyRec.ownerName+'</td>';
+	    tr +=    '<td>'+hoaPropertyRec.ownerPhone+'</td>';
+	    tr +=  '</tr>';
+	});
+
+    $("#PropertyListDisplay tbody").html(tr);
+}
 
 function setCheckbox(checkVal){
 	var checkedStr = '';
@@ -339,12 +314,14 @@ function formatPropertyDetailResults(hoaRec){
 	});
     $("#PropertyAssessments tbody").html(tr);
     
-    var mcTreasURI = 'http://mctreas.org/master.cfm?parid='+hoaRec.Parcel_ID+'&taxyr='+TaxYear+'&own1='+ownName1;
-    $("#MCTreasLink").html('<a href="'+encodeURI(mcTreasURI)+'" class="ui-btn ui-mini ui-btn-inline ui-icon-action ui-btn-icon-left ui-corner-all" data-mini="true" target="_blank">County<br>Treasurer<br>Information</a>');    
+    if ($(window).width() > 600) {
+        var mcTreasURI = 'http://mctreas.org/master.cfm?parid='+hoaRec.Parcel_ID+'&taxyr='+TaxYear+'&own1='+ownName1;
+        $("#MCTreasLink").html('<a href="'+encodeURI(mcTreasURI)+'" class="ui-btn ui-mini ui-btn-inline ui-icon-action ui-btn-icon-left ui-corner-all" data-mini="true" target="_blank">County<br>Treasurer<br>Information</a>');    
 
-    var mcAuditorURI = 'http://www.mcrealestate.org/search/CommonSearch.aspx?mode=PARID';
-    //$("#MCAuditorLink").html('<a href="'+encodeURI(mcAuditorURI)+'" class="ui-btn ui-corner-all ui-mini btnMarginPad" target="_blank">Montgomery<br>County<br>Auditor</a>');    
-    $("#MCAuditorLink").html('<a href="'+encodeURI(mcAuditorURI)+'" class="ui-btn ui-mini ui-btn-inline ui-icon-action ui-btn-icon-left ui-corner-all" data-mini="true" target="_blank">County<br>Property<br>Information</a>');    
+        var mcAuditorURI = 'http://www.mcrealestate.org/search/CommonSearch.aspx?mode=PARID';
+        //$("#MCAuditorLink").html('<a href="'+encodeURI(mcAuditorURI)+'" class="ui-btn ui-corner-all ui-mini btnMarginPad" target="_blank">Montgomery<br>County<br>Auditor</a>');    
+        $("#MCAuditorLink").html('<a href="'+encodeURI(mcAuditorURI)+'" class="ui-btn ui-mini ui-btn-inline ui-icon-action ui-btn-icon-left ui-corner-all" data-mini="true" target="_blank">County<br>Property<br>Information</a>');    
+    }
 
 	if (hoaRec.adminLevel > 1) {
 	    $("#NewOwner").html('<br> <a id="NewOwnerButton" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+currOwnerID+'" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-user ui-btn-icon-left ui-corner-all">New Owner</a>');
@@ -414,7 +391,8 @@ function formatPropertyDetailEdit(hoaRec){
     tr += '<tr><th>City: </th><td>'+hoaRec.Property_City+'</td></tr>';
     tr += '<tr><th>State: </th><td>'+hoaRec.Property_State+'</td></tr>';
     tr += '<tr><th>Zip Code: </th><td>'+hoaRec.Property_Zip+'</td></tr>';
-    tr += '<tr><th>Member: </th><td>'+setCheckboxEdit(hoaRec.Member,'MemberCheckbox')+'</td></tr>';
+    //tr += '<tr><th>Member: </th><td>'+setCheckboxEdit(hoaRec.Member,'MemberCheckbox')+'</td></tr>';
+    tr += '<tr><th>Member: </th><td>'+setCheckbox(hoaRec.Member,'MemberCheckbox')+'</td></tr>';
     tr += '<tr><th>Vacant: </th><td>'+setCheckboxEdit(hoaRec.Vacant,'VacantCheckbox')+'</td></tr>';
     tr += '<tr><th>Rental: </th><td>'+setCheckboxEdit(hoaRec.Rental,'RentalCheckbox')+'</td></tr>';
     tr += '<tr><th>Managed: </th><td>'+setCheckboxEdit(hoaRec.Managed,'ManagedCheckbox')+'</td></tr>';
@@ -461,7 +439,7 @@ function formatOwnerDetailEdit(hoaRec,createNew){
     tr += '<tr><th>Parcel Id:</th><td>'+rec.Parcel_ID+'</td></tr>';
     
     if (salesRec != null) {
-        tr += '<tr><th>Current Owner: </th><td>'+setCheckboxEdit(rec.CurrentOwner,'CurrentOwnerCheckbox')+'</td><td><h4>Sales Information</h4></td></tr>';
+        tr += '<tr><th>Current Owner: </th><td>'+setCheckbox(rec.CurrentOwner,'CurrentOwnerCheckbox')+'</td><td><h4>Sales Information</h4></td></tr>';
         tr += '<tr><th>Owner Name1:</th><td>'+ setInputText("OwnerName1",rec.Owner_Name1,"50")+'</td><td>'+salesRec.OWNERNAME1+'</td></tr>';
         tr += '<tr><th>Owner Name2:</th><td>'+ setInputText("OwnerName2",rec.Owner_Name2,"50")+'</td></tr>';
         tr += '<tr><th>Date Purchased:</th><td>'+ setInputDate("DatePurchased",rec.DatePurchased,"10")+'</td><td>'+salesRec.SALEDT+'</td></tr>';
@@ -470,12 +448,8 @@ function formatOwnerDetailEdit(hoaRec,createNew){
         tr += '<tr><th>Address Line1:</th><td>'+ setInputText("AddrLine1",rec.Alt_Address_Line1,"50")+'</td><td>'+salesRec.PADDR1+'</td></tr>';
         tr += '<tr><th>Address Line2:</th><td>'+ setInputText("AddrLine2",rec.Alt_Address_Line2,"50")+'</td><td>'+salesRec.PADDR2+'</td></tr>';
         tr += '<tr><th>City:</th><td>'+ setInputText("AltCity",rec.Alt_City,"40")+'</td><td>'+salesRec.PADDR3+'</td></tr>';
-        tr += '<tr><th>State:</th><td>'+ setInputText("AltState",rec.Alt_State,"20")+'</td></tr>';
-        tr += '<tr><th>Zip:</th><td>'+ setInputText("AltZip",rec.Alt_Zip,"20")+'</td></tr>';
-        tr += '<tr><th>Owner Phone:</th><td>'+ setInputText("OwnerPhone",rec.Owner_Phone,"30")+'</td></tr>';
-        tr += '<tr><th>Comments: </th><td>'+setInputText("OwnerComments",rec.Comments,"12")+'</td></tr>';
     } else {
-        tr += '<tr><th>Current Owner: </th><td>'+setCheckboxEdit(rec.CurrentOwner,'CurrentOwnerCheckbox')+'</td></tr>';
+        tr += '<tr><th>Current Owner: </th><td>'+setCheckbox(rec.CurrentOwner,'CurrentOwnerCheckbox')+'</td></tr>';
         tr += '<tr><th>Owner Name1:</th><td>'+ setInputText("OwnerName1",rec.Owner_Name1,"50")+'</td></tr>';
         tr += '<tr><th>Owner Name2:</th><td>'+ setInputText("OwnerName2",rec.Owner_Name2,"50")+'</td></tr>';
         tr += '<tr><th>Date Purchased:</th><td>'+ setInputDate("DatePurchased",rec.DatePurchased,"10")+'</td></tr>';
@@ -484,11 +458,13 @@ function formatOwnerDetailEdit(hoaRec,createNew){
         tr += '<tr><th>Address Line1:</th><td>'+ setInputText("AddrLine1",rec.Alt_Address_Line1,"50")+'</td></tr>';
         tr += '<tr><th>Address Line2:</th><td>'+ setInputText("AddrLine2",rec.Alt_Address_Line2,"50")+'</td></tr>';
         tr += '<tr><th>City:</th><td>'+ setInputText("AltCity",rec.Alt_City,"40")+'</td></tr>';
-        tr += '<tr><th>State:</th><td>'+ setInputText("AltState",rec.Alt_State,"20")+'</td></tr>';
-        tr += '<tr><th>Zip:</th><td>'+ setInputText("AltZip",rec.Alt_Zip,"20")+'</td></tr>';
-        tr += '<tr><th>Owner Phone:</th><td>'+ setInputText("OwnerPhone",rec.Owner_Phone,"30")+'</td></tr>';
-        tr += '<tr><th>Comments: </th><td>'+setInputText("OwnerComments",rec.Comments,"12")+'</td></tr>';
     }
+    tr += '<tr><th>State:</th><td>'+ setInputText("AltState",rec.Alt_State,"20")+'</td></tr>';
+    tr += '<tr><th>Zip:</th><td>'+ setInputText("AltZip",rec.Alt_Zip,"20")+'</td></tr>';
+    tr += '<tr><th>Owner Phone:</th><td>'+ setInputText("OwnerPhone",rec.Owner_Phone,"30")+'</td></tr>';
+    tr += '<tr><th>Comments: </th><td>'+setInputText("OwnerComments",rec.Comments,"12")+'</td></tr>';
+    tr += '<tr><th>Last Changed:</th><td>'+rec.LastChangedTs+'</td></tr>';
+    tr += '<tr><th>Changed by:</th><td>'+rec.LastChangedBy+'</td></tr>';
     
 	if (createNew) {
 	    tr += '<tr><th></th><td>'+
@@ -496,9 +472,6 @@ function formatOwnerDetailEdit(hoaRec,createNew){
 	  	  '<a href="#" data-rel="back" class="ui-btn ui-mini ui-btn-inline ui-icon-delete ui-btn-icon-left ui-corner-all">Cancel</a>' +
 	  	  '</td></tr>';
 	} else {
-	    tr += '<tr><th>Created:</th><td>'+rec.EntryTimestamp+'</td></tr>';
-	    tr += '<tr><th>Last Updated:</th><td>'+rec.UpdateTimestamp+'</td></tr>';
-
 	    tr += '<tr><th></th><td>'+
 	  	  '<a id="SaveOwnerEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+ownerId+'" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-plus ui-btn-icon-left ui-corner-all">Save</a>' +
 	  	  '<a href="#" data-rel="back" class="ui-btn ui-mini ui-btn-inline ui-icon-delete ui-btn-icon-left ui-corner-all">Cancel</a>' +
@@ -538,6 +511,8 @@ function formatAssessmentDetailEdit(hoaRec){
     tr += '<tr><th>Date Paid:</th><td>'+setInputDate("DatePaid",rec.DatePaid,"10")+'</td></tr>';
     tr += '<tr><th>Payment Method:</th><td>'+setInputText("PaymentMethod",rec.PaymentMethod,"20")+'</td></tr>';
     tr += '<tr><th>Comments: </th><td>'+setInputText("AssessmentsComments",rec.Comments,"10")+'</td></tr>';
+    tr += '<tr><th>Last Changed:</th><td>'+rec.LastChangedTs+'</td></tr>';
+    tr += '<tr><th>Changed by:</th><td>'+rec.LastChangedBy+'</td></tr>';
 
     tr += '<tr><th></th><td>'+
 	  	  '<a id="SaveAssessmentEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+ownerId+'" data-FY="'+fy+'" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-plus ui-btn-icon-left ui-corner-all">Save</a>' +
@@ -599,12 +574,12 @@ $(document).on("pageinit","#EditPage",function(){
         var $parcelId = $this.attr("data-parcelId");
         var $ownerId = $this.attr("data-OwnerId");
 
-        var $currentOwnerBoolean = $("#CurrentOwnerCheckbox").is(":checked");
+        //var $currentOwnerBoolean = $("#CurrentOwnerCheckbox").is(":checked");
         var $alternateMailingBoolean = $("#AlternateMailingCheckbox").is(":checked");
 
         $.get("updHoaOwner.php","parcelId="+$parcelId+
         						 "&ownerId="+$ownerId+
-        						 "&currentOwnerBoolean="+$currentOwnerBoolean+
+        						 //"&currentOwnerBoolean="+$currentOwnerBoolean+
         						 "&ownerName1="+cleanStr($("#OwnerName1").val())+
         						 "&ownerName2="+cleanStr($("#OwnerName2").val())+
         						 "&datePurchased="+cleanStr($("#DatePurchased").val())+

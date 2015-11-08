@@ -59,12 +59,12 @@
                   		<!-- 
                     	<input type="text" name="parcelId"      id="parcelId"       placeholder="Parcel Id (R35617399 0001)" data-mini="true" autofocus>
                   		 -->
-                    	<input type="text" name="parcelId"      id="parcelId"       placeholder="Parcel Id (R35617399 0001)" data-mini="true">
-                    	<input type="text" name="address"      	id="address"       	placeholder="Property Address" data-mini="true">
-                    	<input type="text" name="ownerName"     id="ownerName"      placeholder="Owner Name (Last First)" data-mini="true">
-                    	<input type="text" name="phoneNo"      	id="phoneNo"       	placeholder="Phone Number" data-mini="true">
-                    	<input type="text" name="altAddress"	id="altAddress"     placeholder="Alternate Address" data-mini="true">
-                    	<input type="text" name="checkNo"      	id="checkNo"		placeholder="Check Number" data-mini="true">
+                    	<input type="text" name="parcelId"      id="parcelId"       placeholder="Parcel Id (R35617399 0001)" data-mini="true" data-clear-btn="true">
+                    	<input type="text" name="address"      	id="address"       	placeholder="Property Address" data-mini="true" data-clear-btn="true">
+                    	<input type="text" name="ownerName"     id="ownerName"      placeholder="Owner Name (Last First)" data-mini="true" data-clear-btn="true">
+                    	<input type="text" name="phoneNo"      	id="phoneNo"       	placeholder="Phone Number" data-mini="true" data-clear-btn="true">
+                    	<input type="text" name="altAddress"	id="altAddress"     placeholder="Alternate Address" data-mini="true" data-clear-btn="true">
+                    	<input type="text" name="checkNo"      	id="checkNo"		placeholder="Check Number" data-mini="true" data-clear-btn="true">
                     	
                     	<a id="SearchButton" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-plus ui-btn-icon-left ui-corner-all">Search</a>
                     	
@@ -73,6 +73,11 @@
 			    <div class="ui-block-b">
                 	<h4>Properties List</h4>
                 	<div class="ajaxError"></div>
+                	<!-- 
+		            <table id="PropertyListDisplay" class="evenLineHighlight" style="width:100%">
+		            <table id="PropertyListDisplay" data-role="table" data-mode="columntoggle" class="ui-responsive evenLineHighlight">
+		            <table id="PropertyListDisplay" data-role="table" data-mode="columntoggle" class="ui-responsive">
+                	 -->
 		            <table id="PropertyListDisplay" class="evenLineHighlight" style="width:100%">
 		            	<tbody>
 		               	</tbody>
@@ -168,7 +173,7 @@
 			    	<h3>Reports</h3>
                   	<div id="ReportInput" class="ui-field-contain">
                   		<!-- 
-                    	<input type="text" name="salesYesr"      id="salesYear"       placeholder="Sales Year" value="2015" data-mini="true">
+                    	<input type="text" name="salesYesr"      id="salesYear"       placeholder="Sales Year" value="2015" data-mini="true" data-clear-btn="true">
                   		 -->
        					<a id="SalesReport" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-bullets ui-btn-icon-left ui-corner-all" data-mini="true">Show Sales</a>
        					<a id="SalesNewOwnerReport" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-user ui-btn-icon-left ui-corner-all" data-mini="true">New Owners</a>

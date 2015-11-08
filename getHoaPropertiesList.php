@@ -5,7 +5,9 @@
  * DESCRIPTION: 
  *----------------------------------------------------------------------------
  * Modification History
- * 2015-03-09 JJK 	Initial version to get properties list 
+ * 2015-03-09 JJK 	Initial version to get properties list
+ * 2015-10-20 JJK	Improved the search by adding wildCardStrFromTokens
+ * 					function to build wildcard parameter string from tokens 
  *============================================================================*/
 
 include 'commonUtil.php';
@@ -28,28 +30,32 @@ include 'hoaDbCommon.php';
 	
 	if (!empty($parcelId)) {
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 AND UPPER(p.Parcel_ID) ";
-		$paramStr = '%' . $parcelId . '%';
+		$paramStr = wildCardStrFromTokens($parcelId);
 	} elseif (!empty($address)) {
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 AND UPPER(p.Parcel_Location) ";
-		$paramStr = '%' . $address . '%';
+		$paramStr = wildCardStrFromTokens($address);
 	} elseif (!empty($ownerName)) {
-		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND UPPER(CONCAT(o.Owner_Name1,o.Owner_Name2,o.Mailing_Name)) ";
-		$paramStr = '%' . $ownerName . '%';
+		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND UPPER(CONCAT(o.Owner_Name1,' ',o.Owner_Name2,' ',o.Mailing_Name)) ";
+		// Check if a tokenized string was entered, break it into token and put wildcards between each token?
+		// search need to be bullitproof if you are using it for members
+		$paramStr = wildCardStrFromTokens($ownerName);
 	} elseif (!empty($phoneNo)) {
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND UPPER(o.Owner_Phone) ";
-		$paramStr = '%' . $phoneNo . '%';
+		$paramStr = wildCardStrFromTokens($phoneNo);
 	} elseif (!empty($altAddress)) {
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND UPPER(o.Alt_Address_Line1) ";
-		$paramStr = '%' . $altAddress . '%';
+		$paramStr = wildCardStrFromTokens($altAddress);
 	} elseif (!empty($checkNo)) {
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a WHERE p.Parcel_ID = o.Parcel_ID AND p.Parcel_ID = a.Parcel_ID AND o.CurrentOwner = 1 AND UPPER(a.Comments) ";
-		$paramStr = '%' . $checkNo . '%';
+		$paramStr = wildCardStrFromTokens($checkNo);
 	} else {
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 AND UPPER(p.Parcel_ID) ";
+		// Hardcode the default to find all parcels
 		$paramStr = '%r%';
 	}
 	
 	$sql = $sql . "LIKE UPPER(?) ORDER BY p.Parcel_ID; ";
+	//error_log('$sql = ' . $sql);
 	
 	
 	// Create connection

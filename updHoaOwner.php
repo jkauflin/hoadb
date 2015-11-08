@@ -19,7 +19,7 @@ include 'hoaDbCommon.php';
 	$parcelId = getParamVal("parcelId");
 	$ownerId = getParamVal("ownerId");
 
-	$currentOwnerBoolean = paramBoolVal("currentOwnerBoolean");
+	//$currentOwnerBoolean = paramBoolVal("currentOwnerBoolean");
 	$ownerName1 = getParamVal("ownerName1");
 	$ownerName2 = getParamVal("ownerName2");
 	$datePurchased = getParamVal("datePurchased");
@@ -110,14 +110,23 @@ include 'hoaDbCommon.php';
 			LastChangedBy	varchar(40)	utf8_general_ci		Yes	NULL
 			LastChangedTs	datetime			No	CURRENT_TIMESTAMP	
 	*/
+		// Turn current owner "off" on all other owners
+		$currentOwnerBoolean = 0;
+		$stmt = $conn->prepare("UPDATE hoa_owners SET CurrentOwner=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? ; ");
+		$stmt->bind_param("iss",$currentOwnerBoolean,$username,$parcelId);
+		$stmt->execute();
+		$stmt->close();
+		
+		// Make new owners the current owner
+		$currentOwnerBoolean = 1;
 		$sqlStr = 'INSERT INTO hoa_owners (OwnerID,Parcel_ID,CurrentOwner,Owner_Name1,Owner_Name2,DatePurchased,Mailing_Name,AlternateMailing,Alt_Address_Line1,Alt_Address_Line2,Alt_City,Alt_State,Alt_Zip,Owner_Phone,Comments,LastChangedBy,LastChangedTs) ';
 		$sqlStr = $sqlStr . ' VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ';
 		$stmt = $conn->prepare($sqlStr);
 		$stmt->bind_param("ssissssissssssss",$maxOwnerID,$parcelId,$currentOwnerBoolean,$ownerName1,$ownerName2,$datePurchased,$mailingName,$alternateMailingBoolean,$addrLine1,$addrLine2,$altCity,$altState,$altZip,$ownerPhone,$ownerComments,$username);
 		
 	} else {
-		$stmt = $conn->prepare("UPDATE hoa_owners SET CurrentOwner=?,Owner_Name1=?,Owner_Name2=?,DatePurchased=?,Mailing_Name=?,AlternateMailing=?,Alt_Address_Line1=?,Alt_Address_Line2=?,Alt_City=?,Alt_State=?,Alt_Zip=?,Owner_Phone=?,Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND OwnerID = ?; ");
-		$stmt->bind_param("issssissssssssss",$currentOwnerBoolean,$ownerName1,$ownerName2,$datePurchased,$mailingName,$alternateMailingBoolean,$addrLine1,$addrLine2,$altCity,$altState,$altZip,$ownerPhone,$ownerComments,$username,$parcelId,$ownerId);
+		$stmt = $conn->prepare("UPDATE hoa_owners SET Owner_Name1=?,Owner_Name2=?,DatePurchased=?,Mailing_Name=?,AlternateMailing=?,Alt_Address_Line1=?,Alt_Address_Line2=?,Alt_City=?,Alt_State=?,Alt_Zip=?,Owner_Phone=?,Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND OwnerID = ?; ");
+		$stmt->bind_param("ssssissssssssss",$ownerName1,$ownerName2,$datePurchased,$mailingName,$alternateMailingBoolean,$addrLine1,$addrLine2,$altCity,$altState,$altZip,$ownerPhone,$ownerComments,$username,$parcelId,$ownerId);
 	}
 	
 	$stmt->execute();

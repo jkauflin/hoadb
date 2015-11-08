@@ -173,8 +173,8 @@ table, th, td {
 }
 
 @media screen and (min-width: 701px) {
-	.my-breakpoint.ui-grid-a .ui-block-a { width: 20%; }
-	.my-breakpoint.ui-grid-a .ui-block-b { width: 80%; }
+	.my-breakpoint.ui-grid-a .ui-block-a { width: 27%; }
+	.my-breakpoint.ui-grid-a .ui-block-b { width: 73%; }
 	
 	.my-breakpoint.ui-grid-b .ui-block-a { width: 20%; }
 	.my-breakpoint.ui-grid-b .ui-block-b { width: 25%; } 	

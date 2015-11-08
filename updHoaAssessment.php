@@ -36,7 +36,7 @@ include 'hoaDbCommon.php';
     	die("Connection failed: " . $conn->connect_error);
 	} 
 
-	$stmt = $conn->prepare("UPDATE hoa_assessments SET DuesAmt=?,DateDue=?,Paid=?,DatePaid=?,PaymentMethod=?,Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND OwnerID = ? AND FY = ? AND ; ");
+	$stmt = $conn->prepare("UPDATE hoa_assessments SET DuesAmt=?,DateDue=?,Paid=?,DatePaid=?,PaymentMethod=?,Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND OwnerID = ? AND FY = ? ; ");
 	$stmt->bind_param("ssisssssss", $duesAmount,$dateDue,$paidBoolean,$datePaid,$paymentMethod,$assessmentsComments,$username,$parcelId,$ownerId,$fy);
 	$stmt->execute();
 	$stmt->close();
