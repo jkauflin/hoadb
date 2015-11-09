@@ -123,7 +123,6 @@ $(document).on("pageinit","#SearchPage",function(){
     										"&phoneNo="+cleanStr($("#phoneNo").val())+
     										"&altAddress="+cleanStr($("#altAddress").val()),function(hoaPropertyRecList){
     		displayPropertyList(hoaPropertyRecList);
-            $("#PropertyListDisplay tbody").html(tr);
     	});
         event.stopPropagation();
     });
