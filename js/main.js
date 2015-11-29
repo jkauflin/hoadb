@@ -230,6 +230,7 @@ function formatPropertyDetailResults(hoaRec){
     tr += '<tr><th>City: </th><td>'+hoaRec.Property_City+'</td></tr>';
     tr += '<tr><th>State: </th><td>'+hoaRec.Property_State+'</td></tr>';
     tr += '<tr><th>Zip Code: </th><td>'+hoaRec.Property_Zip+'</td></tr>';
+    tr += '<tr><th>Total Due: </th><td>$'+hoaRec.TotalDue+'</td></tr>';
     tr += '<tr><th>Member: </th><td>'+setCheckbox(hoaRec.Member)+'</td></tr>';
     tr += '<tr><th>Vacant: </th><td>'+setCheckbox(hoaRec.Vacant)+'</td></tr>';
     tr += '<tr><th>Rental: </th><td>'+setCheckbox(hoaRec.Rental)+'</td></tr>';

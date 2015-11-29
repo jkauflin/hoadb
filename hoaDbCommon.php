@@ -9,6 +9,10 @@
  * 2015-03-24 JJK	Included credentials files 
  * 2015-04-28 JJK	Added sales rec
  * 2015-09-08 JJK	Added sales array to main HoaRec structure
+ * 2015-11-28 JJK   Added $TotalDue for the total amount due by a property 
+ *                  and got it adding the unpaid assessments (using a 
+ *                  regular expression replace to convert the string to
+ *                  a numberic value)
  *============================================================================*/
 
 // Include db connection credentials
@@ -45,6 +49,7 @@ class HoaRec
 	public $salesList;
 	
 	public $adminLevel;
+	public $TotalDue;
 }
 
 class HoaOwnerRec
@@ -203,6 +208,9 @@ function getHoaSalesRecList($conn,$notProcessedBoolean) {
 function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 
 	$hoaRec = new HoaRec();
+
+	// TBD - calculate
+	$hoaRec->TotalDue = 0.00;
 	
 	$stmt = $conn->prepare("SELECT * FROM hoa_properties WHERE Parcel_ID = ? ; ");
 	$stmt->bind_param("s", $parcelId);
@@ -303,6 +311,19 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				$hoaAssessmentRec->LastChangedTs = $row["LastChangedTs"];
 				
 				array_push($hoaRec->assessmentsList,$hoaAssessmentRec);
+				
+				// TBD - finish this logic 11/28/2015 JJK
+				if (!$hoaAssessmentRec->Paid) {
+					//error_log('gettype($hoaAssessmentRec->DuesAmt) = '.gettype($hoaAssessmentRec->DuesAmt));
+					//error_log('DuesAmt = '.$hoaAssessmentRec->DuesAmt);
+					//$str = '$$1\09.0/1::a/bb';
+					//error_log('BEFORE = '.$str);
+					// Replace every ascii character except decimal and digits with a null
+					$numericStr = preg_replace('/[\x01-\x2D\x2F\x3A-\x7F]+/', '', $hoaAssessmentRec->DuesAmt);
+					//error_log('AFTER = '.$numericStr);
+					// add to toal
+					$hoaRec->TotalDue = $hoaRec->TotalDue + floatval($numericStr);
+				}
 			}
 	
 		} // End of Assessments
@@ -348,6 +369,10 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 		$result->close();
 		$stmt->close();
 
+		
+		// Total due
+		
+		
 	} else {
 		$result->close();
 		$stmt->close();
