@@ -323,8 +323,10 @@ function formatPropertyDetailResults(hoaRec){
         $("#MCAuditorLink").html('<a href="'+encodeURI(mcAuditorURI)+'" class="ui-btn ui-mini ui-btn-inline ui-icon-action ui-btn-icon-left ui-corner-all" data-mini="true" target="_blank">County<br>Property<br>Information</a>');    
     }
 
-	if (hoaRec.adminLevel > 1) {
-	    $("#NewOwner").html('<br> <a id="NewOwnerButton" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+currOwnerID+'" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-user ui-btn-icon-left ui-corner-all">New Owner</a>');
+    $("#DuesStatement").html('<a id="DuesStatementButton" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+currOwnerID+'" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-check ui-btn-icon-left ui-corner-all">Dues Statement</a>');
+
+    if (hoaRec.adminLevel > 1) {
+	    $("#NewOwner").html('<a id="NewOwnerButton" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+currOwnerID+'" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-user ui-btn-icon-left ui-corner-all">New Owner</a>');
 	    //$("#AddAssessment").html('<a id="AddAssessmentButton" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-plus ui-btn-icon-left ui-corner-all">Add Assessment</a>');
 	}
 
@@ -352,6 +354,14 @@ $(document).on("pageinit","#DetailPage",function(){
             $( ":mobile-pagecontainer" ).pagecontainer( "change", "#EditPage");
     		createNew = false;
             formatOwnerDetailEdit(hoaRec,createNew);
+        });
+    });	
+    $(document).on("click","#DuesStatementButton",function(){
+        waitCursor();
+        var $this = $(this);
+        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
+            $( ":mobile-pagecontainer" ).pagecontainer( "change", "#DuesStatementPage");
+            formatDuesStatementResults(hoaRec);
         });
     });	
     $(document).on("click","#NewOwnerButton",function(){
@@ -527,6 +537,51 @@ function formatAssessmentDetailEdit(hoaRec){
     });    
 
 } // End of function formatAssessmentDetailEdit(hoaRec){
+
+function formatDuesStatementResults(hoaRec) {
+    var tr = '';
+    var checkedStr = '';
+
+    tr += '<tr><th>Parcel Id:</th><td>'+hoaRec.Parcel_ID+'</a></td></tr>';
+    tr += '<tr><th>Lot No:</th><td>'+hoaRec.LotNo+'</td></tr>';
+    tr += '<tr><th>Sub Division: </th><td>'+hoaRec.SubDivParcel+'</td></tr>';
+    tr += '<tr><th>Location: </th><td>'+hoaRec.Parcel_Location+'</td></tr>';
+    tr += '<tr><th>City: </th><td>'+hoaRec.Property_City+'</td></tr>';
+    tr += '<tr><th>State: </th><td>'+hoaRec.Property_State+'</td></tr>';
+    tr += '<tr><th>Zip Code: </th><td>'+hoaRec.Property_Zip+'</td></tr>';
+    tr += '<tr><th>Total Due: </th><td>$'+hoaRec.TotalDue+'</td></tr>';
+    $("#DuesStatementPropertyTable tbody").html(tr);
+
+    // if total > 0
+    // format how needed by payment gateway
+    tr = '<a id="DuesStatementPayButton" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-shop ui-btn-icon-left ui-corner-all">Pay Total Due</a>';
+    $("#DuesStatementPay").html(tr);
+    
+	var TaxYear = '';
+    tr = '';
+	$.each(hoaRec.assessmentsList, function(index, rec) {
+		if (index == 0) {
+    	    tr = tr +   '<tr>';
+    	    tr = tr +     '<th>Year</th>';
+    	    tr = tr +     '<th>Dues Amt</th>';
+    	    tr = tr +     '<th>Date Due</th>';
+    	    tr = tr +     '<th>Paid</th>';
+    	    tr = tr +     '<th>Date Paid</th>';
+    	    tr = tr +   '</tr>';
+    	    TaxYear = rec.DateDue.substring(0,4);
+		}
+	    tr = tr + '<tr>';
+    	tr = tr +   '<td>'+rec.FY+'</a></td>';
+	    tr = tr +   '<td>'+rec.DuesAmt+'</td>';
+	    tr = tr +   '<td>'+rec.DateDue.substring(0,10)+'</td>';
+	    tr = tr +   '<td>'+setCheckbox(rec.Paid)+'</td>';
+	    tr = tr +   '<td>'+rec.DatePaid.substring(0,10)+'</td>';
+	    tr = tr + '</tr>';
+	});
+
+	$("#DuesStatementAssessmentsTable tbody").html(tr);
+
+} // End of function formatDuesStatementResults(hoaRec){
 
 
 $(document).on("pageinit","#EditPage",function(){

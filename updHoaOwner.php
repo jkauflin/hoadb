@@ -117,6 +117,12 @@ include 'hoaDbCommon.php';
 		$stmt->execute();
 		$stmt->close();
 		
+		// Remove the property from the Sales new owners list
+		$stmt = $conn->prepare("UPDATE hoa_sales SET ProcessedFlag='Y',LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE PARID = ? ; ");
+		$stmt->bind_param("ss",$username,$parcelId);
+		$stmt->execute();
+		$stmt->close();
+		
 		// Make new owners the current owner
 		$currentOwnerBoolean = 1;
 		$sqlStr = 'INSERT INTO hoa_owners (OwnerID,Parcel_ID,CurrentOwner,Owner_Name1,Owner_Name2,DatePurchased,Mailing_Name,AlternateMailing,Alt_Address_Line1,Alt_Address_Line2,Alt_City,Alt_State,Alt_Zip,Owner_Phone,Comments,LastChangedBy,LastChangedTs) ';
