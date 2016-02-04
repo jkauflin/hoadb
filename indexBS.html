@@ -1,0 +1,328 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang=""> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8" lang=""> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9" lang=""> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang=""> <!--<![endif]-->
+<head>
+	<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<title>HOA db</title>
+	<meta name="keywords" 		content="homewowners association database hoa db" />
+	<meta name="description"	content="This is the Homeowners Association database" />
+	<meta name="Author" 		content="John J Kauflin"/>
+	<meta name="viewport" 		content="width=device-width, initial-scale=1">
+
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <!-- 
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+	<link rel="stylesheet" href="css/themes/grha-jquery-mobile-theme.min.css" />
+	<link rel="stylesheet" href="css/themes/jquery.mobile.icons.min.css" />
+	<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.1/css/bootstrap.min.css" /> 
+	<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" />
+
+    <link rel="stylesheet" href="css/summernote.css" />
+    <link rel="stylesheet" href="css/jquery.datetimepicker.css"/>
+    <link rel="stylesheet" href="css/normalize.min.css">
+	-->
+	
+	<link rel="stylesheet" href="css/bootstrap-theme.min.css">
+	<link rel="stylesheet" href="css/main.css" />
+
+    <script src="js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
+
+	<!-- 
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+	<script>window.jQuery || document.write('<script src="js/vendor/jquery-1.11.2.min.js"><\/script>')</script>
+	<script src="js/vendor/modernizr-2.8.3.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>	
+	<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.1/js/bootstrap.min.js"></script> 
+ 	<script src="js/vendor/summernote.min.js"></script>
+    <script src="js/vendor/jquery.datetimepicker.js"></script>
+	<script src="js/plugins.js"></script>
+	<script src="js/main.js"></script>
+	 -->
+</head>
+<body>
+	<!--[if lt IE 8]>
+    	<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+
+	<div data-role="page" id="SearchPage" data-theme="a">
+		<div data-role="header" data-position="fixed">
+			<div align="center">
+				<img src="images/header-photo.jpg" alt="GRHA header photo" height='80px' />
+			</div>
+			<div id="HeaderNav" data-role="navbar">
+		      	<ul>
+					<li><a href="#SearchPage" data-icon="info">Search</a></li>
+					<li><a href="#DetailPage" data-icon="edit">Detail</a></li>
+					<li><a href="#ReportsPage" data-icon="bullets">Reports</a></li>
+					<li><a href="#AdminPage" data-icon="gear">Admin</a></li>
+					<li><a href="#UsersPage" data-icon="user">Users</a></li>
+		      	</ul>
+		    </div>
+		</div>
+
+		<div role="main" class="ui-content">
+			<div class="ui-grid-a my-breakpoint">
+			    <div class="ui-block-a">
+                	<h3>Search</h3>
+                  	<div id="SearchInput" class="ui-field-contain">
+                  		<!-- 
+                    	<input type="text" name="parcelId"      id="parcelId"       placeholder="Parcel Id (R35617399 0001)" data-mini="true" autofocus>
+                  		 -->
+                    	<input type="text" name="parcelId"      id="parcelId"       placeholder="Parcel Id (R35617399 0001)" data-mini="true" data-clear-btn="true">
+                    	<input type="text" name="address"      	id="address"       	placeholder="Property Address" data-mini="true" data-clear-btn="true">
+                    	<input type="text" name="ownerName"     id="ownerName"      placeholder="Owner Name (Last First)" data-mini="true" data-clear-btn="true">
+                    	<input type="text" name="phoneNo"      	id="phoneNo"       	placeholder="Phone Number" data-mini="true" data-clear-btn="true">
+                    	<input type="text" name="altAddress"	id="altAddress"     placeholder="Alternate Address" data-mini="true" data-clear-btn="true">
+                    	<input type="text" name="checkNo"      	id="checkNo"		placeholder="Check Number" data-mini="true" data-clear-btn="true">
+                    	
+                    	<a id="SearchButton" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-plus ui-btn-icon-left ui-corner-all">Search</a>
+                    	
+                  	</div>
+				</div>
+			    <div class="ui-block-b">
+                	<h4>Properties List</h4>
+                	<div class="ajaxError"></div>
+                	<!-- 
+		            <table id="PropertyListDisplay" class="evenLineHighlight" style="width:100%">
+		            <table id="PropertyListDisplay" data-role="table" data-mode="columntoggle" class="ui-responsive evenLineHighlight">
+		            <table id="PropertyListDisplay" data-role="table" data-mode="columntoggle" class="ui-responsive">
+                	 -->
+		            <table id="PropertyListDisplay" class="evenLineHighlight" style="width:100%">
+		            	<tbody>
+		               	</tbody>
+		           	</table>
+				</div>
+			</div>
+		
+		</div><!-- /main -->
+	</div><!-- /SearchPage -->
+
+
+	<div data-role="page" id="DetailPage" data-theme="a">
+		<div data-role="header" data-position="fixed">
+			<div align="center">
+				<img src="images/header-photo.jpg" alt="GRHA header photo" height='80px' />
+			</div>
+			<div id="HeaderNav" data-role="navbar">
+		      	<ul>
+					<li><a href="#SearchPage" data-icon="info">Search</a></li>
+					<li><a href="#DetailPage" data-icon="edit">Detail</a></li>
+					<li><a href="#ReportsPage" data-icon="bullets">Reports</a></li>
+					<li><a href="#AdminPage" data-icon="gear">Admin</a></li>
+					<li><a href="#UsersPage" data-icon="user">Users</a></li>
+		      	</ul>
+		    </div>
+		</div>
+		
+		<div role="main" class="ui-content">
+			<div class="ui-grid-b my-breakpoint">
+			    <div class="ui-block-a">
+                	<h3>Detail</h3>
+                  	<div id="MCTreasLink">
+                  	</div>
+                  	<p>
+                  		<div id="MCAuditorLink">
+                  		</div>
+                	</p>
+                	<div id="ButtonInstructions">(Click buttons to go to Treasurer <br>and Auditor web sites)</div>
+
+                  	<div id="DuesStatement">
+                  	</div>
+                  	<div id="NewOwner">
+                  	</div>
+                  	<div id="AddAssessment">
+                  	</div>
+                	
+				</div>
+			    <div class="ui-block-b">
+	                <h4>Property Detail</h4>
+                	<div class="ajaxError"></div>
+	                <table id="PropertyDetail" class="evenLineHighlight">
+	                  <tbody>
+	                  </tbody>
+	                </table>
+				</div>
+			    <div class="ui-block-c">
+	                <h4>Owners</h4>
+	                <table id="PropertyOwners" class="evenLineHighlight">
+	                  <tbody>
+	                  </tbody>
+	                </table>
+	                <h4>Assessments</h4>
+	                <table id="PropertyAssessments" class="evenLineHighlight">
+	                  <tbody>
+	                  </tbody>
+	                </table>
+				</div>
+			</div>
+			
+		</div><!-- /main -->
+	</div><!-- Detail page -->
+
+	<div data-role="page" id="ReportsPage" data-theme="a">
+		<!-- 
+		<div data-role="header" data-position="fixed">
+		 -->
+		<div data-role="header" >
+			<div align="center">
+				<img src="images/header-photo.jpg" alt="John Kauflin header photo" height='80px' />
+			</div>
+			<div id="HeaderNav" data-role="navbar">
+		      	<ul>
+					<li><a href="#SearchPage" data-icon="info">Search</a></li>
+					<li><a href="#DetailPage" data-icon="edit">Detail</a></li>
+					<li><a href="#ReportsPage" data-icon="bullets">Reports</a></li>
+					<li><a href="#AdminPage" data-icon="gear">Admin</a></li>
+					<li><a href="#UsersPage" data-icon="user">Users</a></li>
+		      	</ul>
+		    </div>
+		</div>
+		
+		<div role="main" class="ui-content">
+			<div class="ui-grid-a my-breakpoint">
+			    <div class="ui-block-a">
+			    	<h3>Reports</h3>
+                  	<div id="ReportInput" class="ui-field-contain">
+                  		<!-- 
+                    	<input type="text" name="salesYesr"      id="salesYear"       placeholder="Sales Year" value="2015" data-mini="true" data-clear-btn="true">
+                  		 -->
+       					<a id="SalesReport" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-bullets ui-btn-icon-left ui-corner-all" data-mini="true">Show Sales</a>
+       					<a id="SalesNewOwnerReport" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-user ui-btn-icon-left ui-corner-all" data-mini="true">New Owners</a>
+                  	</div>
+				</div>
+			    <div class="ui-block-b">
+                	<h4 id="ReportHeader"></h4>
+                	<div class="ajaxError"></div>
+                	<div id="ReportDisplay"></div>
+		            <table id="ReportListDisplay" class="evenLineHighlight" style="width:100%">
+		            	<tbody>
+		               	</tbody>
+		           	</table>
+				</div>
+			</div>
+		</div><!-- /main -->
+	</div><!-- Reports page -->
+
+	<div data-role="page" id="AdminPage" data-theme="a">
+		<div data-role="header" data-position="fixed">
+			<div align="center">
+				<img src="images/header-photo.jpg" alt="John Kauflin header photo" height='80px' />
+			</div>
+			<div id="HeaderNav" data-role="navbar">
+		      	<ul>
+					<li><a href="#SearchPage" data-icon="info">Search</a></li>
+					<li><a href="#DetailPage" data-icon="edit">Detail</a></li>
+					<li><a href="#ReportsPage" data-icon="bullets">Reports</a></li>
+					<li><a href="#AdminPage" data-icon="gear">Admin</a></li>
+					<li><a href="#UsersPage" data-icon="user">Users</a></li>
+		      	</ul>
+		    </div>
+		</div>
+		
+		<div role="main" class="ui-content">
+			<div class="ui-grid-a my-breakpoint">
+			    <div class="ui-block-a">
+			    	<h3>Admin</h3>
+	  				
+				</div>
+			    <div class="ui-block-b">
+                	<div class="ajaxError"></div>
+			    
+			    	<div id="summernote">Hello Summernote</div>
+			    
+				</div>
+			</div>
+		</div><!-- /main -->
+	</div><!-- Admin page -->
+
+	<div data-role="page" id="UsersPage" data-theme="a">
+		<div data-role="header" data-position="fixed">
+			<div align="center">
+				<img src="images/header-photo.jpg" alt="John Kauflin header photo" height='80px' />
+			</div>
+			<div id="HeaderNav" data-role="navbar">
+		      	<ul>
+					<li><a href="#SearchPage" data-icon="info">Search</a></li>
+					<li><a href="#DetailPage" data-icon="edit">Detail</a></li>
+					<li><a href="#ReportsPage" data-icon="bullets">Reports</a></li>
+					<li><a href="#AdminPage" data-icon="gear">Admin</a></li>
+					<li><a href="#UsersPage" data-icon="user">Users</a></li>
+		      	</ul>
+		    </div>
+		</div>
+		
+		<div role="main" class="ui-content">
+			<div class="ui-grid-a my-breakpoint">
+			    <div class="ui-block-a">
+			    	<h3>Users</h3>
+                	<div class="ajaxError"></div>
+	  				
+				</div>
+			    <div class="ui-block-b">
+
+			    
+				</div>
+			</div>
+		</div><!-- /main -->
+	</div><!-- Users page -->
+	
+	
+	<div data-role="page" data-dialog="true" id="EditPage">
+		<div data-role="content">
+    		<a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
+
+	    	<h4 id="EditPageHeader"></h4>
+                	<div class="ajaxError"></div>
+	        <table id="EditTable">
+	        	<tbody>
+	        	</tbody>
+	        </table>
+
+		</div>
+	</div><!-- /EditPage -->
+
+	<div data-role="page" data-dialog="true" id="DuesStatementPage" data-theme="b">
+		<div data-role="content">
+    		<a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
+
+			<img src="images/header-photo.jpg" alt="GRHA header photo" height='80px' />
+
+	    	<h3>GRHA Dues Statement</h3>
+            <div class="ajaxError"></div>
+	        <table id="DuesStatementPropertyTable" class="evenLineHighlight">
+	        	<tbody>
+	        	</tbody>
+	        </table>
+            <div id="DuesStatementPay">
+            </div>
+	    	<h4>Payment history</h4>
+	        <table id="DuesStatementAssessmentsTable" class="evenLineHighlight">
+	        	<tbody>
+	        	</tbody>
+	        </table>
+
+		</div>
+	</div><!-- /DuesStatementPage -->
+	
+    	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.11.2.min.js"><\/script>')</script>
+        <script src="js/vendor/bootstrap.min.js"></script>
+        <script src="js/main.js"></script>
+
+        <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+        <!-- 
+        <script>
+            (function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+            function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+            e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+            e.src='//www.google-analytics.com/analytics.js';
+            r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+            ga('create','UA-XXXXX-X','auto');ga('send','pageview');
+        </script>
+         -->
+
+</body>
+</html>
