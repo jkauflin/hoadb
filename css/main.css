@@ -3,7 +3,16 @@
    ========================================================================== */
 
 body {
-	padding-top: 50px;
+	/* This is needed with a fixed head to get the content to show underneath */
+	padding-top: 60px;
 	padding-bottom: 20px;
+	
+	/*
+	min-height: 2000px;
+	*/
 }
 
+/*
+  .navbar a.navbar-brand {padding: 9px 15px 8px; }
+  */
+  
