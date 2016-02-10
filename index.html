@@ -21,6 +21,8 @@
 
 </head>
 <body>
+
+
 	<!--[if lt IE 8]>
     	<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
@@ -57,18 +59,53 @@
 
 	<div class="container-fluid">
 		<div class="tab-content">
+		
 	        <div class="tab-pane active" id="SearchPage">
-	             <h4>Search</h4>
-	                
 				<div class="row">
-				  <div class="col-sm-4">.col-sm-4
+				  <div class="col-sm-4">
+				  	<h4>Search</h4>
+				  	
+                  	<div id="SearchInput" >
+                  		<!-- 
+                    	<input type="text" name="parcelId"      id="parcelId"       placeholder="Parcel Id (R35617399 0001)" data-mini="true" autofocus>
+                    	<input type="text" name="parcelId"      id="parcelId"       placeholder="Parcel Id (R35617399 0001)" data-mini="true" data-clear-btn="true">
+                    	
+                    	<div class="form-group">
+  							<label for="parcelId">Parcel Id:</label>
+                    		<input type="text" class="form-control" name="parcelId"      id="parcelId"       placeholder="Parcel Id (R35617399 0001)">
+						</div>
+                  		 -->
+                  		 
+                    	<div class="form-group">
+                    		<input type="text" class="form-control" name="parcelId"      id="parcelId"       placeholder="Parcel Id (R35617399 0001)">
+                    		<input type="text" class="form-control" name="address"      	id="address"       	placeholder="Property Address" >
+                    		<input type="text" class="form-control" name="ownerName"     id="ownerName"      placeholder="Owner Name (Last First)" >
+                    		<input type="text" class="form-control" name="phoneNo"      	id="phoneNo"       	placeholder="Phone Number" >
+                    		<input type="text" class="form-control" name="altAddress"	id="altAddress"     placeholder="Alternate Address" >
+                    		<input type="text" class="form-control" name="checkNo"      	id="checkNo"		placeholder="Check Number" >
+						</div>
+                    	
+                    	<!-- 
+                    	<input type="text" name="address"      	id="address"       	placeholder="Property Address" data-mini="true" data-clear-btn="true">
+                    	<input type="text" name="ownerName"     id="ownerName"      placeholder="Owner Name (Last First)" data-mini="true" data-clear-btn="true">
+                    	<input type="text" name="phoneNo"      	id="phoneNo"       	placeholder="Phone Number" data-mini="true" data-clear-btn="true">
+                    	<input type="text" name="altAddress"	id="altAddress"     placeholder="Alternate Address" data-mini="true" data-clear-btn="true">
+                    	<input type="text" name="checkNo"      	id="checkNo"		placeholder="Check Number" data-mini="true" data-clear-btn="true">
+                    	 -->
+                    	<button id="SearchButton" type="button" class="btn btn-default">Search</button>
+				  	</div>
+				  	
+				  	
 				  </div>
-				  <div class="col-sm-8">.col-sm-8
+				  <div class="col-sm-8">
+                	<h4>Properties List</h4>
+                	<div class="ajaxError"></div>
 				  </div>
 				</div>	                
 	                
 	                
-	        </div>
+	        </div><!-- end of Search -->
+	        
 	        <div class="tab-pane" id="DetailPage">
 	             <h4>Detail</h4>
 				<div class="row">
@@ -77,19 +114,23 @@
 				  <div class="col-sm-8">.col-sm-8
 				  </div>
 				</div>	                
-	        </div>
+	        </div><!-- end of Detail -->
+	        
 	        <div class="tab-pane" id="ReportsPage">
 	             <h4>Reports</h4>
 	            <p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames
 	                ac turpis egestas.</p>
-	        </div>
+	        </div><!-- end of Reports -->
+	        
 	        <div class="tab-pane" id="AdminPage">
 	             <h4>Admin</h4>
 	            <p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames
 	                ac turpis egestas.</p>
-	        </div>
-		</div><!-- tab content -->
-	</div><!-- end of container -->
+	        </div><!-- end of Admin -->
+	        
+		</div><!-- end of main tab content -->
+	</div><!-- end of main container -->
+
 
 	  <!-- Modal -->
 	  <div class="modal fade" id="aboutDialog" role="dialog">
@@ -116,6 +157,7 @@
         <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.11.2.min.js"><\/script>')</script>
         <script src="js/vendor/bootstrap.min.js"></script>
         <script src="js/main.js"></script>
+
 
         <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
         <!-- 

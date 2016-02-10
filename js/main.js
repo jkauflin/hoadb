@@ -112,13 +112,7 @@ $(document).ready(function(){
 	
 	
 	
-	
-	
-	
-	
 }); // $(document).ready(function(){
-
-	
 
 
 $(document).on("pageinit","#SearchPage",function(){
@@ -833,23 +827,3 @@ $(document).on("pageinit","#AdminPage",function(){
 $(document).on("pageinit","#UsersPage",function(){
 });
 
-
-// no, not sending json to the server, just a string
-//contentType: "application/json; charset=utf-8",
-/*
-$.ajax({
-    url: 'updHoaDbData.php',
-    data: hoaRec,
-    type: 'POST',
-    async: false,
-    dataType: 'json',
-    cache: false,
-    success:function(data, textStatus, jqXHR){
-        console.log('AJAX SUCCESS');
-    }, 
-    complete : function(data, textStatus, jqXHR){
-        console.log('AJAX COMPLETE');
-    }
-});
-*/
-//$hoaRec = $_POST['hoaRec'];
