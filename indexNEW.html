@@ -1,0 +1,173 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang=""> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8" lang=""> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9" lang=""> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang=""> <!--<![endif]-->
+<head>
+	<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<title>HOA db</title>
+	<meta name="keywords" 		content="homewowners association database hoa db" />
+	<meta name="description"	content="This is the Homeowners Association database" />
+	<meta name="Author" 		content="John J Kauflin"/>
+	<meta name="viewport" 		content="width=device-width, initial-scale=1">
+
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	<link rel="stylesheet" href="css/bootstrap-theme.min.css">
+	<link rel="stylesheet" href="css/main.css" />
+
+    <script src="js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
+
+</head>
+<body>
+
+
+	<!--[if lt IE 8]>
+    	<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+
+  	<!-- Fixed navbar -->
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+
+          <a class="navbar-brand" style="outline: 0" data-toggle="modal" href="#aboutDialog">
+          	<img style="margin-top: -10px; margin-right: 5px; alt="Brand logo photo" src="images/logo-photo.jpg">
+          	</a>
+
+          <a class="navbar-brand visible-sm" style="outline: 0" data-toggle="modal" href="#aboutDialog">Gander Rd HOA</a>
+          <a class="navbar-brand visible-md" style="outline: 0" data-toggle="modal" href="#aboutDialog">Gander Rd Homeowners</a>
+          <a class="navbar-brand visible-lg" style="outline: 0" data-toggle="modal" href="#aboutDialog">Gander Road Homeowners Association</a>
+
+			<ul class="nav nav-pills pull-left" style="margin-top: 5px;">
+					<li class="active"><a href="#SearchPage" data-toggle="pill"><span class="glyphicon glyphicon-search"></span> Search</a></li>
+					<li><a href="#DetailPage" data-toggle="pill"><span class="glyphicon glyphicon-list-alt"></span> Detail</a></li>
+					<li><a href="#ReportsPage" data-toggle="pill"><span class="glyphicon glyphicon-signal"></span> Reports</a></li>
+					<li><a href="#AdminPage" data-toggle="pill"><span class="glyphicon glyphicon-user"></span> Admin</a></li>
+			</ul>
+        </div> <!-- navbar-header -->
+
+		<ul class="nav navbar-nav navbar-right hidden-xs">
+      		<li><a href="#"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
+      		<li><a href="#"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+    	</ul>
+
+      </div> <!-- container-fluid -->
+    </nav>
+
+
+	<div class="container-fluid">
+		<div class="tab-content">
+		
+	        <div class="tab-pane active" id="SearchPage">
+				<div class="row">
+				  <div class="col-sm-4">
+				  	<h4>Search</h4>
+				  	
+                  	<div id="SearchInput" >
+                  		<!-- 
+                    	<input type="text" name="parcelId"      id="parcelId"       placeholder="Parcel Id (R35617399 0001)" data-mini="true" autofocus>
+                    	<input type="text" name="parcelId"      id="parcelId"       placeholder="Parcel Id (R35617399 0001)" data-mini="true" data-clear-btn="true">
+                    	
+                    	<div class="form-group">
+  							<label for="parcelId">Parcel Id:</label>
+                    		<input type="text" class="form-control" name="parcelId"      id="parcelId"       placeholder="Parcel Id (R35617399 0001)">
+						</div>
+                  		 -->
+                  		 
+                    	<div class="form-group"><input type="text" class="form-control" name="parcelId"      id="parcelId"       placeholder="Parcel Id (R35617399 0001)"></div>
+                    	<div class="form-group"><input type="text" class="form-control" name="address"      	id="address"       	placeholder="Property Address" ></div>
+                    	<div class="form-group"><input type="text" class="form-control" name="ownerName"     id="ownerName"      placeholder="Owner Name (Last First)" ></div>
+                    	<div class="form-group"><input type="text" class="form-control" name="phoneNo"      	id="phoneNo"       	placeholder="Phone Number" ></div>
+                    	<div class="form-group"><input type="text" class="form-control" name="altAddress"	id="altAddress"     placeholder="Alternate Address" ></div>
+                    	<div class="form-group"><input type="text" class="form-control" name="checkNo"      	id="checkNo"		placeholder="Check Number" ></div>
+                    	
+                    	<!-- 
+                    	<input type="text" name="address"      	id="address"       	placeholder="Property Address" data-mini="true" data-clear-btn="true">
+                    	<input type="text" name="ownerName"     id="ownerName"      placeholder="Owner Name (Last First)" data-mini="true" data-clear-btn="true">
+                    	<input type="text" name="phoneNo"      	id="phoneNo"       	placeholder="Phone Number" data-mini="true" data-clear-btn="true">
+                    	<input type="text" name="altAddress"	id="altAddress"     placeholder="Alternate Address" data-mini="true" data-clear-btn="true">
+                    	<input type="text" name="checkNo"      	id="checkNo"		placeholder="Check Number" data-mini="true" data-clear-btn="true">
+                    	 -->
+                    	<button id="SearchButton" type="button" class="btn btn-default">Search</button>
+				  	</div>
+				  	
+				  	
+				  </div>
+				  <div class="col-sm-8">
+                	<h4>Properties List</h4>
+                	<div class="ajaxError"></div>
+				  </div>
+				</div>	                
+	                
+	                
+	        </div><!-- end of Search -->
+	        
+	        <div class="tab-pane" id="DetailPage">
+	             <h4>Detail</h4>
+				<div class="row">
+				  <div class="col-sm-4">.col-sm-4
+				  </div>
+				  <div class="col-sm-8">.col-sm-8
+				  </div>
+				</div>	                
+	        </div><!-- end of Detail -->
+	        
+	        <div class="tab-pane" id="ReportsPage">
+	             <h4>Reports</h4>
+	            <p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames
+	                ac turpis egestas.</p>
+	        </div><!-- end of Reports -->
+	        
+	        <div class="tab-pane" id="AdminPage">
+	             <h4>Admin</h4>
+	            <p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames
+	                ac turpis egestas.</p>
+	        </div><!-- end of Admin -->
+	        
+		</div><!-- end of main tab content -->
+	</div><!-- end of main container -->
+
+
+	  <!-- Modal -->
+	  <div class="modal fade" id="aboutDialog" role="dialog">
+	    <div class="modal-dialog modal-lg">
+	      <div class="modal-content">
+	        <div class="modal-header">
+	          <button type="button" class="close" data-dismiss="modal">&times;</button>
+	          
+	          <h4 class="modal-title">          	<img style="margin-top: -10px; margin-right: 5px; alt="Brand logo photo" src="images/logo-photo.jpg">
+	          Gander Road Homoeowners Association</h4>
+	        </div>
+	        <div class="modal-body">
+	          <p>This is a large modal.</p>
+	        </div>
+	        <div class="modal-footer">
+	          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+	        </div>
+	      </div>
+	    </div>
+	  </div>
+
+	
+    	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.11.2.min.js"><\/script>')</script>
+        <script src="js/vendor/bootstrap.min.js"></script>
+        <script src="js/main.js"></script>
+
+
+        <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+        <!-- 
+        <script>
+            (function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+            function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+            e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+            e.src='//www.google-analytics.com/analytics.js';
+            r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+            ga('create','UA-XXXXX-X','auto');ga('send','pageview');
+        </script>
+         -->
+
+</body>
+</html>
