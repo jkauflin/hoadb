@@ -7,3 +7,12 @@ body {
 	padding-bottom: 20px;
 }
 
+/* Turn off the outline on clicks to brand anchors */
+a.navbar-brand {
+	outline: 0;
+}
+
+
+img#header-image {
+	margin-top: -10px; margin-right: 5px;
+}
