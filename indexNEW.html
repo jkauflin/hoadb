@@ -76,23 +76,20 @@
 				  	<h4>Search</h4>
 				  	
                   	<div id="SearchInput" >
-                    	<div class="form-group"><input type="text" class="form-control resetval" name="parcelId"    	id="parcelId" 	placeholder="Parcel Id (R35617399 0001)"></div>
-                    	<div class="form-group"><input type="text" class="form-control resetval" name="address"      id="address"   	placeholder="Property Address" ></div>
-                    	<div class="form-group"><input type="text" class="form-control resetval" name="ownerName"    id="ownerName" 	placeholder="Owner Name (Last First)" ></div>
-                    	<div class="form-group"><input type="text" class="form-control resetval" name="phoneNo"      id="phoneNo"   	placeholder="Phone Number" ></div>
+                    	<div class="form-group"><input type="text" class="form-control resetval" name="parcelId"  	id="parcelId" 	placeholder="Parcel Id (R35617399 0001)"></div>
+                    	<div class="form-group"><input type="text" class="form-control resetval" name="address"     id="address"   	placeholder="Property Address" ></div>
+                    	<div class="form-group"><input type="text" class="form-control resetval" name="ownerName"   id="ownerName" 	placeholder="Owner Name (Last First)" ></div>
+                    	<div class="form-group"><input type="text" class="form-control resetval" name="phoneNo"     id="phoneNo"   	placeholder="Phone Number" ></div>
                     	<div class="form-group"><input type="text" class="form-control resetval" name="altAddress"	id="altAddress"	placeholder="Alternate Address"></div>
-                    	<div class="form-group"><input type="text" class="form-control resetval" name="checkNo"      id="checkNo"	placeholder="Check Number"></div>
+                    	<div class="form-group"><input type="text" class="form-control resetval" name="checkNo"     id="checkNo"	placeholder="Check Number"></div>
                     	
                     	<button id="SearchButton" type="button" class="btn btn-default">Search</button>
 				  	</div>
 				  	
 				  </div>
 				  <div class="col-sm-9">
-                	<h4>Properties List</h4>
+                	<h4>Properties List NEW</h4>
                 	<div class="ajaxError"></div>
-                	<!-- 
-		            <table id="PropertyListDisplay" class="evenLineHighlight" style="width:100%">
-                	 -->
 		            <table id="PropertyListDisplay" class="table table-striped table-condensed">
 		            	<tbody>
 		               	</tbody>
@@ -103,12 +100,23 @@
 	                
 	        </div><!-- end of Search -->
 	        
+	        
+	        
 	        <div class="tab-pane" id="DetailPage">
 	             <h4>Detail</h4>
 				<div class="row">
-				  <div class="col-sm-4">.col-sm-4
+				  <div class="col-sm-4">.col-sm-3
 				  </div>
-				  <div class="col-sm-8">.col-sm-8
+				  <div class="col-sm-8">
+				  
+	                <h4>Property Detail</h4>
+                	<div class="ajaxError"></div>
+	                <table id="PropertyDetail" class="evenLineHighlight">
+	                  <tbody>
+	                  </tbody>
+	                </table>
+				  
+				  
 				  </div>
 				</div>	                
 	        </div><!-- end of Detail -->

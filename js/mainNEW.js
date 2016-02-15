@@ -142,84 +142,6 @@ $(document).ready(function(){
     */
 
 	
-	
-    $("#SearchInput").change(function() {
-        waitCursor();
-        $("#PropertyListDisplay tbody").html("");
-    	// Get the list
-    	$.getJSON("getHoaPropertiesList.php","parcelId="+cleanStr($("#parcelId").val())+
-    										"&checkNo="+cleanStr($("#checkNo").val())+
-    										"&address="+cleanStr($("#address").val())+
-    										"&ownerName="+cleanStr($("#ownerName").val())+
-    										"&phoneNo="+cleanStr($("#phoneNo").val())+
-    										"&altAddress="+cleanStr($("#altAddress").val()),function(hoaPropertyRecList){
-    		displayPropertyList(hoaPropertyRecList);
-    	});
-        event.stopPropagation();
-    });
-	
-    $(document).on("click","#SearchButton",function(){
-        waitCursor();
-        $("#PropertyListDisplay tbody").html("");
-    	// Get the list
-    	$.getJSON("getHoaPropertiesList.php","parcelId="+cleanStr($("#parcelId").val())+
-    										"&checkNo="+cleanStr($("#checkNo").val())+
-    										"&address="+cleanStr($("#address").val())+
-    										"&ownerName="+cleanStr($("#ownerName").val())+
-    										"&phoneNo="+cleanStr($("#phoneNo").val())+
-    										"&altAddress="+cleanStr($("#altAddress").val()),function(hoaPropertyRecList){
-    		displayPropertyList(hoaPropertyRecList);
-    	});
-        event.stopPropagation();
-    });
-    
-
-	
-}); // $(document).ready(function(){
-
-
-
-function displayPropertyList(hoaPropertyRecList) {
-	var tr = '<tr><td>No records found - try different search parameters</td></tr>';
-    rowId = 0;
-	$.each(hoaPropertyRecList, function(index, hoaPropertyRec) {
-		rowId = index + 1;
-		if (index == 0) {
-    		tr = '';
-    	    tr +=    '<tr>';
-    	    tr +=      '<th>Row</th>';
-    	    tr +=      '<th>Parcel Id</th>';
-    	    if ($(window).width() > 800) {
-	    	    tr +=  	   '<th>Lot No</th>';
-	    	    tr +=      '<th>Sub Div</th>';
-    	    }
-    	    tr +=      '<th>Parcel Location</th>';
-    	    tr +=      '<th>Owner Name</th>';
-    	    tr +=      '<th>Owner Phone</th>';
-    	    tr +=    '</tr>';
-		}
-	    tr +=  '<tr>';
-	    tr +=    '<td>'+rowId+'</td>';
-	    tr +=    '<td><a data-parcelId="'+hoaPropertyRec.parcelId+'" href="#">'+hoaPropertyRec.parcelId+'</a></td>';
-	    if ($(window).width() > 800) {
-		    tr +=    '<td>'+hoaPropertyRec.lotNo+'</td>';
-		    tr +=    '<td>'+hoaPropertyRec.subDivParcel+'</td>';
-	    }
-	    tr +=    '<td>'+hoaPropertyRec.parcelLocation+'</td>';
-	    tr +=    '<td>'+hoaPropertyRec.ownerName+'</td>';
-	    tr +=    '<td>'+hoaPropertyRec.ownerPhone+'</td>';
-	    tr +=  '</tr>';
-	});
-
-    $("#PropertyListDisplay tbody").html(tr);
-}
-
-
-
-
-
-
-$(document).on("pageinit","#SearchPage",function(){
     // Respond to any change in values and call service
     $("#SearchInput").change(function() {
         waitCursor();
@@ -252,20 +174,66 @@ $(document).on("pageinit","#SearchPage",function(){
         event.stopPropagation();
     });
 
+    // Respond to clicking on a property by reading details and display on detail tab
     $(document).on("click","#PropertyListDisplay tr td a",function(){
         waitCursor();
         var $this = $(this);
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-parcelId"),function(hoaRec){
+        	
         	// Let the new page initialize first
-            $( ":mobile-pagecontainer" ).pagecontainer( "change", "#DetailPage");
+            //$( ":mobile-pagecontainer" ).pagecontainer( "change", "#DetailPage");
+            
+	         //$('.nav-tabs a[href="#DetailPage"]').tab('show');
+	         $('#navbar a[href="#DetailPage"]').tab('show');
+            
+            
             // Then fill it with new content
             formatPropertyDetailResults(hoaRec);
+            
         });
     });
-    
-});
+
+	
+}); // $(document).ready(function(){
 
 
+
+function displayPropertyList(hoaPropertyRecList) {
+    //$("#PropertyListDisplay tbody").html("");
+	var tr = '<tr><td>No records found - try different search parameters</td></tr>';
+    rowId = 0;
+	$.each(hoaPropertyRecList, function(index, hoaPropertyRec) {
+		rowId = index + 1;
+		if (index == 0) {
+    		tr = '';
+    	    tr +=    '<tr>';
+    	    tr +=      '<th>Row</th>';
+    	    tr +=      '<th>Parcel Id</th>';
+    	    if ($(window).width() > 800) {
+	    	    tr +=  	   '<th>Lot No</th>';
+	    	    tr +=      '<th>Sub Div</th>';
+    	    }
+    	    tr +=      '<th>Parcel Location</th>';
+    	    tr +=      '<th>Owner Name</th>';
+    	    tr +=      '<th>Owner Phone</th>';
+    	    tr +=    '</tr>';
+		}
+	    tr +=  '<tr>';
+	    tr +=    '<td>'+rowId+'</td>';
+	    tr +=    '<td><a data-parcelId="'+hoaPropertyRec.parcelId+'" href="#">'+hoaPropertyRec.parcelId+'</a></td>';
+	    if ($(window).width() > 800) {
+		    tr +=    '<td>'+hoaPropertyRec.lotNo+'</td>';
+		    tr +=    '<td>'+hoaPropertyRec.subDivParcel+'</td>';
+	    }
+	    tr +=    '<td>'+hoaPropertyRec.parcelLocation+'</td>';
+	    tr +=    '<td>'+hoaPropertyRec.ownerName+'</td>';
+	    tr +=    '<td>'+hoaPropertyRec.ownerPhone+'</td>';
+	    tr +=  '</tr>';
+	});
+
+    $("#PropertyListDisplay tbody").html(tr);
+    //$("#PropertyListDisplay > tbody").append(tr);
+}
 
 function formatPropertyDetailResults(hoaRec){
     var tr = '';
