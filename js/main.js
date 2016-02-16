@@ -803,7 +803,7 @@ function formatSalesReportList(notProcessedBoolean){
 		    
 	    	if (hoaSalesReportRec.adminLevel > 1 && notProcessedBoolean) {
     		    tr +=    '<td><a data-ParcelId="'+hoaSalesRec.PARID+'" data-SaleDate="'+hoaSalesRec.SALEDT+'" data-Action="Process" href="#">'+hoaSalesRec.SALEDT+'</a>';
-    		    tr +=    '    <a data-ParcelId="'+hoaSalesRec.PARID+'" data-SaleDate="'+hoaSalesRec.SALEDT+'" data-Action="Ignore" href="#" class="btn btn-default" role="button">Ignore</a></td>';
+    		    tr +=    '    <a data-ParcelId="'+hoaSalesRec.PARID+'" data-SaleDate="'+hoaSalesRec.SALEDT+'" data-Action="Ignore" href="#" class="btn btn-default btn-xs" role="button">Ignore</a></td>';
 	    	} else {
     		    tr +=    '<td>'+hoaSalesRec.SALEDT+'</td>';
 	    	}
