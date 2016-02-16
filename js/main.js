@@ -179,17 +179,10 @@ $(document).ready(function(){
         waitCursor();
         var $this = $(this);
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-parcelId"),function(hoaRec){
-        	
         	// Let the new page initialize first
-            //$( ":mobile-pagecontainer" ).pagecontainer( "change", "#DetailPage");
-            
-	         //$('.nav-tabs a[href="#DetailPage"]').tab('show');
 	         $('#navbar a[href="#DetailPage"]').tab('show');
-            
-            
             // Then fill it with new content
             formatPropertyDetailResults(hoaRec);
-            
         });
     });
 
@@ -200,7 +193,6 @@ $(document).ready(function(){
         waitCursor();
         var $this = $(this);
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId"),function(hoaRec){
-            //$( ":mobile-pagecontainer" ).pagecontainer( "change", "#EditPage");
             $("#EditPage").modal();
             formatPropertyDetailEdit(hoaRec);
         });
@@ -210,7 +202,6 @@ $(document).ready(function(){
         waitCursor();
         var $this = $(this);
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
-            //$( ":mobile-pagecontainer" ).pagecontainer( "change", "#EditPage");
             $("#EditPage").modal();
     		createNew = false;
             formatOwnerDetailEdit(hoaRec,createNew);
@@ -220,7 +211,6 @@ $(document).ready(function(){
         waitCursor();
         var $this = $(this);
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
-            //$( ":mobile-pagecontainer" ).pagecontainer( "change", "#DuesStatementPage");
             $("#DuesStatementPage").modal();
             formatDuesStatementResults(hoaRec);
         });
@@ -229,7 +219,6 @@ $(document).ready(function(){
         waitCursor();
         var $this = $(this);
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
-            //$( ":mobile-pagecontainer" ).pagecontainer( "change", "#EditPage");
             $("#EditPage").modal();
     		createNew = true;
             formatOwnerDetailEdit(hoaRec,createNew);
@@ -240,7 +229,6 @@ $(document).ready(function(){
         waitCursor();
         var $this = $(this);
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&fy="+$this.attr("data-FY"),function(hoaRec){
-            //$( ":mobile-pagecontainer" ).pagecontainer( "change", "#EditPage");
             $("#EditPage").modal();
             formatAssessmentDetailEdit(hoaRec);
         });
@@ -276,8 +264,8 @@ $(document).ready(function(){
         	
         	// Re-read the updated data for the Detail page display
             $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
-                //$( ":mobile-pagecontainer" ).pagecontainer( "change", "#DetailPage");
                 $("#EditPage").modal("hide");
+   	         	$('#navbar a[href="#DetailPage"]').tab('show');
                 formatPropertyDetailResults(hoaRec);
             });
         }); // End of $.get("updHoaDbData.php","parcelId="+$parcelId+
@@ -313,7 +301,8 @@ $(document).ready(function(){
 
         	// Re-read the updated data for the Detail page display
             $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
-                $( ":mobile-pagecontainer" ).pagecontainer( "change", "#DetailPage");
+                $("#EditPage").modal("hide");
+   	         	$('#navbar a[href="#DetailPage"]').tab('show');
                 formatPropertyDetailResults(hoaRec);
             });
         }); // End of $.get("updHoaDbData.php","parcelId="+$parcelId+
@@ -343,7 +332,8 @@ $(document).ready(function(){
 
         	// Re-read the updated data for the Detail page display
             $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
-                $( ":mobile-pagecontainer" ).pagecontainer( "change", "#DetailPage");
+                $("#EditPage").modal("hide");
+   	         	$('#navbar a[href="#DetailPage"]').tab('show');
                 formatPropertyDetailResults(hoaRec);
             });
         }); // End of $.get("updHoaDbData.php","parcelId="+$parcelId+
@@ -389,7 +379,7 @@ $(document).ready(function(){
 
 	    } else {
 	        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&saleDate="+$this.attr("data-SaleDate"),function(hoaRec){
-	            $( ":mobile-pagecontainer" ).pagecontainer( "change", "#EditPage");
+	            $("#EditPage").modal();
 	            formatOwnerDetailEdit(hoaRec,true);
 	        });
 	    }
@@ -619,8 +609,7 @@ function formatPropertyDetailEdit(hoaRec){
     tr += '<tr><th>Comments: </th><td>'+setInputText("PropertyComments",hoaRec.Comments,"80")+'</td></tr>';
     
     tr += '<tr><th></th><td>'+
-    	  '<a id="SavePropertyEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-plus ui-btn-icon-left ui-corner-all">Save</a>' +
-          '<a href="#" data-rel="back" class="ui-btn ui-mini ui-btn-inline ui-icon-delete ui-btn-icon-left ui-corner-all">Cancel</a>' +
+    	  '<a id="SavePropertyEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" href="#" class="btn btn-default" role="button">Save</a>' +
           '</td></tr>';
 
     $("#EditTable tbody").html(tr);
@@ -685,13 +674,11 @@ function formatOwnerDetailEdit(hoaRec,createNew){
     
 	if (createNew) {
 	    tr += '<tr><th></th><td>'+
-	  	  '<a id="SaveOwnerEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="NEW" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-plus ui-btn-icon-left ui-corner-all">Create New</a>' +
-	  	  '<a href="#" data-rel="back" class="ui-btn ui-mini ui-btn-inline ui-icon-delete ui-btn-icon-left ui-corner-all">Cancel</a>' +
+	  	  '<a id="SaveOwnerEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="NEW" href="#" class="btn btn-default" role="button">Create New</a>' +
 	  	  '</td></tr>';
 	} else {
 	    tr += '<tr><th></th><td>'+
-	  	  '<a id="SaveOwnerEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+ownerId+'" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-plus ui-btn-icon-left ui-corner-all">Save</a>' +
-	  	  '<a href="#" data-rel="back" class="ui-btn ui-mini ui-btn-inline ui-icon-delete ui-btn-icon-left ui-corner-all">Cancel</a>' +
+	  	  '<a id="SaveOwnerEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+ownerId+'" href="#" class="btn btn-default" role="button">Save</a>' +
 	  	  '</td></tr>';
 	}
 
@@ -732,8 +719,7 @@ function formatAssessmentDetailEdit(hoaRec){
     tr += '<tr><th>Changed by:</th><td>'+rec.LastChangedBy+'</td></tr>';
 
     tr += '<tr><th></th><td>'+
-	  	  '<a id="SaveAssessmentEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+ownerId+'" data-FY="'+fy+'" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-plus ui-btn-icon-left ui-corner-all">Save</a>' +
-	  	  '<a href="#" data-rel="back" class="ui-btn ui-mini ui-btn-inline ui-icon-delete ui-btn-icon-left ui-corner-all">Cancel</a>' +
+	  	  '<a id="SaveAssessmentEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+ownerId+'" data-FY="'+fy+'" href="#" class="btn btn-default" role="button">Save</a>' +
 	  	  '</td></tr>';
 
 	$("#EditTable tbody").html(tr);
@@ -761,7 +747,7 @@ function formatDuesStatementResults(hoaRec) {
 
     // if total > 0
     // format how needed by payment gateway
-    tr = '<a id="DuesStatementPayButton" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-shop ui-btn-icon-left ui-corner-all">Pay Total Due</a>';
+    tr = '<a id="DuesStatementPayButton" href="#" class="btn btn-default" role="button">Pay Total Due</a>';
     $("#DuesStatementPay").html(tr);
     
 	var TaxYear = '';
@@ -817,7 +803,7 @@ function formatSalesReportList(notProcessedBoolean){
 		    
 	    	if (hoaSalesReportRec.adminLevel > 1 && notProcessedBoolean) {
     		    tr +=    '<td><a data-ParcelId="'+hoaSalesRec.PARID+'" data-SaleDate="'+hoaSalesRec.SALEDT+'" data-Action="Process" href="#">'+hoaSalesRec.SALEDT+'</a>';
-    		    tr +=    '    <a data-ParcelId="'+hoaSalesRec.PARID+'" data-SaleDate="'+hoaSalesRec.SALEDT+'" data-Action="Ignore" href="#" linebtn class="ui-btn ui-mini ui-btn-inline ui-corner-all">Ignore</a></td>';
+    		    tr +=    '    <a data-ParcelId="'+hoaSalesRec.PARID+'" data-SaleDate="'+hoaSalesRec.SALEDT+'" data-Action="Ignore" href="#" class="btn btn-default" role="button">Ignore</a></td>';
 	    	} else {
     		    tr +=    '<td>'+hoaSalesRec.SALEDT+'</td>';
 	    	}
