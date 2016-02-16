@@ -193,7 +193,235 @@ $(document).ready(function(){
         });
     });
 
+
+    // Response to Detail link clicks
+	// *** 8/3/2015 fix so it only reacts to the clicks on the property one
+    $(document).on("click","#PropertyDetail tr td a",function(){
+        waitCursor();
+        var $this = $(this);
+        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId"),function(hoaRec){
+            $( ":mobile-pagecontainer" ).pagecontainer( "change", "#EditPage");
+            formatPropertyDetailEdit(hoaRec);
+        });
+    });	
+
+    $(document).on("click","#PropertyOwners tr td a",function(){
+        waitCursor();
+        var $this = $(this);
+        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
+            $( ":mobile-pagecontainer" ).pagecontainer( "change", "#EditPage");
+    		createNew = false;
+            formatOwnerDetailEdit(hoaRec,createNew);
+        });
+    });	
+    $(document).on("click","#DuesStatementButton",function(){
+        waitCursor();
+        var $this = $(this);
+        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
+            $( ":mobile-pagecontainer" ).pagecontainer( "change", "#DuesStatementPage");
+            formatDuesStatementResults(hoaRec);
+        });
+    });	
+    $(document).on("click","#NewOwnerButton",function(){
+        waitCursor();
+        var $this = $(this);
+        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
+            $( ":mobile-pagecontainer" ).pagecontainer( "change", "#EditPage");
+    		createNew = true;
+            formatOwnerDetailEdit(hoaRec,createNew);
+        });
+    });	
 	
+    $(document).on("click","#PropertyAssessments tr td a",function(){
+        waitCursor();
+        var $this = $(this);
+        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&fy="+$this.attr("data-FY"),function(hoaRec){
+            $( ":mobile-pagecontainer" ).pagecontainer( "change", "#EditPage");
+            formatAssessmentDetailEdit(hoaRec);
+        });
+    });	
+    
+
+	// Functions for EditPage - respond to requests for update
+	$(document).on("click","#SavePropertyEdit",function(){
+        waitCursor();
+    	
+        var $this = $(this);
+        var $parcelId = $this.attr("data-parcelId");
+        var $memberBoolean = $("#MemberCheckbox").is(":checked");
+        var $vacantBoolean = $("#VacantCheckbox").is(":checked");
+        var $rentalBoolean = $("#RentalCheckbox").is(":checked");
+        var $managedBoolean = $("#ManagedCheckbox").is(":checked");
+        var $foreclosureBoolean = $("#ForeclosureCheckbox").is(":checked");
+        var $bankruptcyBoolean = $("#BankruptcyCheckbox").is(":checked");
+        var $liensBoolean = $("#LiensCheckbox").is(":checked");
+
+        //$.getJSON("updHoaDbData.php","parcelId="+$this.attr("data-parcelId"),function(hoaRec){
+        $.get("updHoaProperty.php","parcelId="+$parcelId+
+        						 "&memberBoolean="+$memberBoolean+
+        						 "&vacantBoolean="+$vacantBoolean+
+        						 "&rentalBoolean="+$rentalBoolean+
+        						 "&managedBoolean="+$managedBoolean+
+        						 "&foreclosureBoolean="+$foreclosureBoolean+
+        						 "&bankruptcyBoolean="+$bankruptcyBoolean+
+        						 "&liensBoolean="+$liensBoolean+
+        						 "&propertyComments="+cleanStr($("#PropertyComments").val()),function(results){
+
+        	//console.log("After updHoaProperty");
+        	
+        	// Re-read the updated data for the Detail page display
+            $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
+                $( ":mobile-pagecontainer" ).pagecontainer( "change", "#DetailPage");
+                formatPropertyDetailResults(hoaRec);
+            });
+        }); // End of $.get("updHoaDbData.php","parcelId="+$parcelId+
+
+       	
+    });	// End of $(document).on("click","#SavePropertyEdit",function(){
+
+    $(document).on("click","#SaveOwnerEdit",function(){
+        waitCursor();
+    	
+        var $this = $(this);
+        var $parcelId = $this.attr("data-parcelId");
+        var $ownerId = $this.attr("data-OwnerId");
+
+        //var $currentOwnerBoolean = $("#CurrentOwnerCheckbox").is(":checked");
+        var $alternateMailingBoolean = $("#AlternateMailingCheckbox").is(":checked");
+
+        $.get("updHoaOwner.php","parcelId="+$parcelId+
+        						 "&ownerId="+$ownerId+
+        						 //"&currentOwnerBoolean="+$currentOwnerBoolean+
+        						 "&ownerName1="+cleanStr($("#OwnerName1").val())+
+        						 "&ownerName2="+cleanStr($("#OwnerName2").val())+
+        						 "&datePurchased="+cleanStr($("#DatePurchased").val())+
+        						 "&mailingName="+cleanStr($("#MailingName").val())+
+           						 "&alternateMailingBoolean="+$alternateMailingBoolean+
+           						 "&addrLine1="+cleanStr($("#AddrLine1").val())+
+        						 "&addrLine2="+cleanStr($("#AddrLine2").val())+
+        						 "&altCity="+cleanStr($("#AltCity").val())+
+        						 "&altState="+cleanStr($("#AltState").val())+
+        						 "&altZip="+cleanStr($("#AltZip").val())+
+        						 "&ownerPhone="+cleanStr($("#OwnerPhone").val())+
+        						 "&ownerComments="+cleanStr($("#OwnerComments").val()),function(results){
+
+        	// Re-read the updated data for the Detail page display
+            $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
+                $( ":mobile-pagecontainer" ).pagecontainer( "change", "#DetailPage");
+                formatPropertyDetailResults(hoaRec);
+            });
+        }); // End of $.get("updHoaDbData.php","parcelId="+$parcelId+
+
+    });	// End of $(document).on("click","#SaveOwnerEdit",function(){
+
+
+    $(document).on("click","#SaveAssessmentEdit",function(){
+        waitCursor();
+    	
+        var $this = $(this);
+        var $parcelId = $this.attr("data-parcelId");
+        var $ownerId = $this.attr("data-OwnerId");
+        var $fy = $this.attr("data-FY");
+
+        var $paidBoolean = $("#PaidCheckbox").is(":checked");
+
+        $.get("updHoaAssessment.php","parcelId="+$parcelId+
+				 					 "&ownerId="+$ownerId+
+				 					 "&fy="+$fy+
+        						 "&duesAmount="+cleanStr($("#DuesAmount").val())+
+        						 "&dateDue="+cleanStr($("#DateDue").val())+
+        						 "&paidBoolean="+$paidBoolean+
+        						 "&datePaid="+cleanStr($("#DatePaid").val())+
+        						 "&paymentMethod="+cleanStr($("#PaymentMethod").val())+
+        						 "&assessmentsComments="+cleanStr($("#AssessmentsComments").val()),function(results){
+
+        	// Re-read the updated data for the Detail page display
+            $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
+                $( ":mobile-pagecontainer" ).pagecontainer( "change", "#DetailPage");
+                formatPropertyDetailResults(hoaRec);
+            });
+        }); // End of $.get("updHoaDbData.php","parcelId="+$parcelId+
+
+    });	// End of $(document).on("click","#SaveAssessmentEdit",function(){
+
+
+	$(document).on("click","#SalesReport",function(){
+        waitCursor();
+        $("#ReportListDisplay tbody").html("");
+        
+    	// Get the list
+	    formatSalesReportList(false);
+        
+        event.stopPropagation();
+    });
+
+	
+	$(document).on("click","#SalesNewOwnerReport",function(){
+	    waitCursor();
+	    $("#ReportListDisplay tbody").html("");
+	    
+		// Get the list
+	    formatSalesReportList(true);
+	    
+	    event.stopPropagation();
+	});
+	
+	$(document).on("click","#ReportListDisplay tr td a",function(){
+	    waitCursor();
+	    var $this = $(this);
+	    if ($this.attr("data-Action") == "Ignore") {
+	    	// update flag
+
+	    	var $parcelId = $this.attr("data-ParcelId");
+	    	var $saleDate = $this.attr("data-SaleDate");
+
+	        $.get("updHoaSales.php","PARID="+$parcelId+
+					 "&SALEDT="+$saleDate,function(results){
+	        	// Re-read the update data and re-display sales list
+	    	    formatSalesReportList(true);
+	        }); // End of $.get("updHoaSales.php","parcelId="+$parcelId+
+
+	    } else {
+	        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&saleDate="+$this.attr("data-SaleDate"),function(hoaRec){
+	            $( ":mobile-pagecontainer" ).pagecontainer( "change", "#EditPage");
+	            formatOwnerDetailEdit(hoaRec,true);
+	        });
+	    }
+	});	// End of $(document).on("click","#ReportListDisplay tr td a",function(){
+
+	
+	// Meeting minutes experiment
+	$('#summernote').summernote();
+
+	$.get("getFile.php","",function(response){
+		$('#summernote').code(response);
+	});
+	
+	
+	//$('.summernote').summernote({
+	/*
+	$('#summernote').summernote({
+		  height: 300,                 // set editor height
+
+		  minHeight: null,             // set minimum height of editor
+		  maxHeight: null,             // set maximum height of editor
+
+		  focus: true,                 // set focus to editable area after initializing summernote
+	});
+	*/
+	
+	/*
+	Get the HTML contents of the first summernote in the set of matched elements.
+
+	var sHTML = $('.summernote').code();
+	Get the HTML content of the second summernote with jQuery eq.
+
+	var sHTML = $('.summernote').eq(1).code();
+	A string of HTML to set as the content of each matched element.
+
+	$('.summernote').code(sHTML);
+	*/
+
 }); // $(document).ready(function(){
 
 
@@ -339,74 +567,24 @@ function formatPropertyDetailResults(hoaRec){
     
     if ($(window).width() > 600) {
         var mcTreasURI = 'http://mctreas.org/master.cfm?parid='+hoaRec.Parcel_ID+'&taxyr='+TaxYear+'&own1='+ownName1;
-        $("#MCTreasLink").html('<a href="'+encodeURI(mcTreasURI)+'" class="ui-btn ui-mini ui-btn-inline ui-icon-action ui-btn-icon-left ui-corner-all" data-mini="true" target="_blank">County<br>Treasurer<br>Information</a>');    
+        $("#MCTreasLink").html('<a href="'+encodeURI(mcTreasURI)+'" class="btn btn-default" role="button" target="_blank">County<br>Treasurer<br>Information</a>');    
 
         var mcAuditorURI = 'http://www.mcrealestate.org/search/CommonSearch.aspx?mode=PARID';
-        //$("#MCAuditorLink").html('<a href="'+encodeURI(mcAuditorURI)+'" class="ui-btn ui-corner-all ui-mini btnMarginPad" target="_blank">Montgomery<br>County<br>Auditor</a>');    
-        $("#MCAuditorLink").html('<a href="'+encodeURI(mcAuditorURI)+'" class="ui-btn ui-mini ui-btn-inline ui-icon-action ui-btn-icon-left ui-corner-all" data-mini="true" target="_blank">County<br>Property<br>Information</a>');    
+        $("#MCAuditorLink").html('<a href="'+encodeURI(mcAuditorURI)+'" class="btn btn-default" role="button" target="_blank">County<br>Property<br>Information</a>');    
     }
 
-    $("#DuesStatement").html('<a id="DuesStatementButton" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+currOwnerID+'" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-check ui-btn-icon-left ui-corner-all">Dues Statement</a>');
+    $("#DuesStatement").html('<a id="DuesStatementButton" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+currOwnerID+'" href="#" class="btn btn-default" role="button">Dues Statement</a>');
 
     if (hoaRec.adminLevel > 1) {
-	    $("#NewOwner").html('<a id="NewOwnerButton" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+currOwnerID+'" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-user ui-btn-icon-left ui-corner-all">New Owner</a>');
-	    //$("#AddAssessment").html('<a id="AddAssessmentButton" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-plus ui-btn-icon-left ui-corner-all">Add Assessment</a>');
+	    $("#NewOwner").html('<a id="NewOwnerButton" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+currOwnerID+'" href="#" class="btn btn-default" role="button">New Owner</a>');
+	    //$("#AddAssessment").html('<a id="AddAssessmentButton" href="#" class="btn btn-default" role="button">Add Assessment</a>');
 	}
 
+//	<a href="#" class="btn btn-info" role="button">Link Button</a>    
+//	<button id="SearchButton" type="button" class="btn btn-default">Search</button>
 		
 } // End of function formatDetailResults(hoaRec){
 
-
-$(document).on("pageinit","#DetailPage",function(){
-	
-    // Response to Detail link clicks
-	// *** 8/3/2015 fix so it only reacts to the clicks on the property one
-    $(document).on("click","#PropertyDetail tr td a",function(){
-        waitCursor();
-        var $this = $(this);
-        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId"),function(hoaRec){
-            $( ":mobile-pagecontainer" ).pagecontainer( "change", "#EditPage");
-            formatPropertyDetailEdit(hoaRec);
-        });
-    });	
-
-    $(document).on("click","#PropertyOwners tr td a",function(){
-        waitCursor();
-        var $this = $(this);
-        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
-            $( ":mobile-pagecontainer" ).pagecontainer( "change", "#EditPage");
-    		createNew = false;
-            formatOwnerDetailEdit(hoaRec,createNew);
-        });
-    });	
-    $(document).on("click","#DuesStatementButton",function(){
-        waitCursor();
-        var $this = $(this);
-        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
-            $( ":mobile-pagecontainer" ).pagecontainer( "change", "#DuesStatementPage");
-            formatDuesStatementResults(hoaRec);
-        });
-    });	
-    $(document).on("click","#NewOwnerButton",function(){
-        waitCursor();
-        var $this = $(this);
-        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
-            $( ":mobile-pagecontainer" ).pagecontainer( "change", "#EditPage");
-    		createNew = true;
-            formatOwnerDetailEdit(hoaRec,createNew);
-        });
-    });	
-	
-    $(document).on("click","#PropertyAssessments tr td a",function(){
-        waitCursor();
-        var $this = $(this);
-        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&fy="+$this.attr("data-FY"),function(hoaRec){
-            $( ":mobile-pagecontainer" ).pagecontainer( "change", "#EditPage");
-            formatAssessmentDetailEdit(hoaRec);
-        });
-    });	
-
-}); // End of $(document).on("pageinit","#DetailPage",function(){
 
 function formatPropertyDetailEdit(hoaRec){
     var tr = '';
@@ -607,139 +785,6 @@ function formatDuesStatementResults(hoaRec) {
 } // End of function formatDuesStatementResults(hoaRec){
 
 
-$(document).on("pageinit","#EditPage",function(){
-	// Functions for EditPage - respond to requests for update
-	$(document).on("click","#SavePropertyEdit",function(){
-        waitCursor();
-    	
-        var $this = $(this);
-        var $parcelId = $this.attr("data-parcelId");
-        var $memberBoolean = $("#MemberCheckbox").is(":checked");
-        var $vacantBoolean = $("#VacantCheckbox").is(":checked");
-        var $rentalBoolean = $("#RentalCheckbox").is(":checked");
-        var $managedBoolean = $("#ManagedCheckbox").is(":checked");
-        var $foreclosureBoolean = $("#ForeclosureCheckbox").is(":checked");
-        var $bankruptcyBoolean = $("#BankruptcyCheckbox").is(":checked");
-        var $liensBoolean = $("#LiensCheckbox").is(":checked");
-
-        //$.getJSON("updHoaDbData.php","parcelId="+$this.attr("data-parcelId"),function(hoaRec){
-        $.get("updHoaProperty.php","parcelId="+$parcelId+
-        						 "&memberBoolean="+$memberBoolean+
-        						 "&vacantBoolean="+$vacantBoolean+
-        						 "&rentalBoolean="+$rentalBoolean+
-        						 "&managedBoolean="+$managedBoolean+
-        						 "&foreclosureBoolean="+$foreclosureBoolean+
-        						 "&bankruptcyBoolean="+$bankruptcyBoolean+
-        						 "&liensBoolean="+$liensBoolean+
-        						 "&propertyComments="+cleanStr($("#PropertyComments").val()),function(results){
-
-        	//console.log("After updHoaProperty");
-        	
-        	// Re-read the updated data for the Detail page display
-            $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
-                $( ":mobile-pagecontainer" ).pagecontainer( "change", "#DetailPage");
-                formatPropertyDetailResults(hoaRec);
-            });
-        }); // End of $.get("updHoaDbData.php","parcelId="+$parcelId+
-
-       	
-    });	// End of $(document).on("click","#SavePropertyEdit",function(){
-
-    $(document).on("click","#SaveOwnerEdit",function(){
-        waitCursor();
-    	
-        var $this = $(this);
-        var $parcelId = $this.attr("data-parcelId");
-        var $ownerId = $this.attr("data-OwnerId");
-
-        //var $currentOwnerBoolean = $("#CurrentOwnerCheckbox").is(":checked");
-        var $alternateMailingBoolean = $("#AlternateMailingCheckbox").is(":checked");
-
-        $.get("updHoaOwner.php","parcelId="+$parcelId+
-        						 "&ownerId="+$ownerId+
-        						 //"&currentOwnerBoolean="+$currentOwnerBoolean+
-        						 "&ownerName1="+cleanStr($("#OwnerName1").val())+
-        						 "&ownerName2="+cleanStr($("#OwnerName2").val())+
-        						 "&datePurchased="+cleanStr($("#DatePurchased").val())+
-        						 "&mailingName="+cleanStr($("#MailingName").val())+
-           						 "&alternateMailingBoolean="+$alternateMailingBoolean+
-           						 "&addrLine1="+cleanStr($("#AddrLine1").val())+
-        						 "&addrLine2="+cleanStr($("#AddrLine2").val())+
-        						 "&altCity="+cleanStr($("#AltCity").val())+
-        						 "&altState="+cleanStr($("#AltState").val())+
-        						 "&altZip="+cleanStr($("#AltZip").val())+
-        						 "&ownerPhone="+cleanStr($("#OwnerPhone").val())+
-        						 "&ownerComments="+cleanStr($("#OwnerComments").val()),function(results){
-
-        	// Re-read the updated data for the Detail page display
-            $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
-                $( ":mobile-pagecontainer" ).pagecontainer( "change", "#DetailPage");
-                formatPropertyDetailResults(hoaRec);
-            });
-        }); // End of $.get("updHoaDbData.php","parcelId="+$parcelId+
-
-    });	// End of $(document).on("click","#SaveOwnerEdit",function(){
-
-
-    $(document).on("click","#SaveAssessmentEdit",function(){
-        waitCursor();
-    	
-        var $this = $(this);
-        var $parcelId = $this.attr("data-parcelId");
-        var $ownerId = $this.attr("data-OwnerId");
-        var $fy = $this.attr("data-FY");
-
-        var $paidBoolean = $("#PaidCheckbox").is(":checked");
-
-        $.get("updHoaAssessment.php","parcelId="+$parcelId+
-				 					 "&ownerId="+$ownerId+
-				 					 "&fy="+$fy+
-        						 "&duesAmount="+cleanStr($("#DuesAmount").val())+
-        						 "&dateDue="+cleanStr($("#DateDue").val())+
-        						 "&paidBoolean="+$paidBoolean+
-        						 "&datePaid="+cleanStr($("#DatePaid").val())+
-        						 "&paymentMethod="+cleanStr($("#PaymentMethod").val())+
-        						 "&assessmentsComments="+cleanStr($("#AssessmentsComments").val()),function(results){
-
-        	// Re-read the updated data for the Detail page display
-            $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
-                $( ":mobile-pagecontainer" ).pagecontainer( "change", "#DetailPage");
-                formatPropertyDetailResults(hoaRec);
-            });
-        }); // End of $.get("updHoaDbData.php","parcelId="+$parcelId+
-
-    });	// End of $(document).on("click","#SaveAssessmentEdit",function(){
-
-    
-}); // End of $(document).on("pageinit","#EditPage",function(){
-
-
-$(document).on("pageinit","#ReportsPage",function(){
-
-	$(document).on("click","#SalesReport",function(){
-        waitCursor();
-        $("#ReportListDisplay tbody").html("");
-        
-    	// Get the list
-	    formatSalesReportList(false);
-        
-        event.stopPropagation();
-    });
-
-	
-	$(document).on("click","#SalesNewOwnerReport",function(){
-	    waitCursor();
-	    $("#ReportListDisplay tbody").html("");
-	    
-		// Get the list
-	    formatSalesReportList(true);
-	    
-	    event.stopPropagation();
-	});
-	
-	
-}); // End of $(document).on("pageinit","#ReportsPage",function(){
-
 
 function formatSalesReportList(notProcessedBoolean){
 	$.getJSON("getSalesReport.php","notProcessedBoolean="+notProcessedBoolean,function(hoaSalesReportRec){
@@ -782,66 +827,4 @@ function formatSalesReportList(notProcessedBoolean){
 		$("#ReportListDisplay tbody").html(tr);
 	});
 }
-
-$(document).on("click","#ReportListDisplay tr td a",function(){
-    waitCursor();
-    var $this = $(this);
-    if ($this.attr("data-Action") == "Ignore") {
-    	// update flag
-
-    	var $parcelId = $this.attr("data-ParcelId");
-    	var $saleDate = $this.attr("data-SaleDate");
-
-        $.get("updHoaSales.php","PARID="+$parcelId+
-				 "&SALEDT="+$saleDate,function(results){
-        	// Re-read the update data and re-display sales list
-    	    formatSalesReportList(true);
-        }); // End of $.get("updHoaSales.php","parcelId="+$parcelId+
-
-    } else {
-        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&saleDate="+$this.attr("data-SaleDate"),function(hoaRec){
-            $( ":mobile-pagecontainer" ).pagecontainer( "change", "#EditPage");
-            formatOwnerDetailEdit(hoaRec,true);
-        });
-    }
-});	// End of $(document).on("click","#ReportListDisplay tr td a",function(){
-
-
-
-$(document).on("pageinit","#AdminPage",function(){
-	$('#summernote').summernote();
-
-	$.get("getFile.php","",function(response){
-		$('#summernote').code(response);
-	});
-	
-	
-	//$('.summernote').summernote({
-	/*
-	$('#summernote').summernote({
-		  height: 300,                 // set editor height
-
-		  minHeight: null,             // set minimum height of editor
-		  maxHeight: null,             // set maximum height of editor
-
-		  focus: true,                 // set focus to editable area after initializing summernote
-	});
-	*/
-	
-	/*
-	Get the HTML contents of the first summernote in the set of matched elements.
-
-	var sHTML = $('.summernote').code();
-	Get the HTML content of the second summernote with jQuery eq.
-
-	var sHTML = $('.summernote').eq(1).code();
-	A string of HTML to set as the content of each matched element.
-
-	$('.summernote').code(sHTML);
-	*/
-
-});
-
-$(document).on("pageinit","#UsersPage",function(){
-});
 
