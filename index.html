@@ -13,6 +13,7 @@
 	<meta name="viewport" 		content="width=device-width, initial-scale=1">
 
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="stylesheet" href="css/jquery.datetimepicker.css"/>
 	<link rel="stylesheet" href="css/bootstrap.min.css">
 	<link rel="stylesheet" href="css/bootstrap-theme.min.css">
 	<link rel="stylesheet" href="css/main.css" />
@@ -25,7 +26,7 @@
     	<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
 
-    <nav class="navbar navbar-default navbar-fixed-top">
+<nav class="navbar navbar-default navbar-fixed-top">
       <div class="container-fluid">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -35,10 +36,9 @@
             <span class="icon-bar"></span>
           </button>
           <a class="navbar-brand" data-toggle="modal" href="#aboutDialog"><img id="header-image" alt="Brand logo photo" src="images/logo-photo.jpg"></a>
-          <a class="navbar-brand visible-xs" style="outline: 0" data-toggle="modal" href="#aboutDialog">Gander Rd HOA</a>
-          <a class="navbar-brand visible-sm" style="outline: 0" data-toggle="modal" href="#aboutDialog">Gander Rd HOA</a>
-          <a class="navbar-brand visible-md" style="outline: 0" data-toggle="modal" href="#aboutDialog">Gander Rd Homeowners</a>
-          <a class="navbar-brand visible-lg" style="outline: 0" data-toggle="modal" href="#aboutDialog">Gander Road Homeowners Association</a>
+          <a class="navbar-brand visible-xs" style="outline: 0" data-toggle="modal" href="#aboutDialog">HOA Database</a>
+          <a class="navbar-brand visible-sm" style="outline: 0" data-toggle="modal" href="#aboutDialog">Gander Rd - HOA Database</a>
+          <a class="navbar-brand visible-md visible-lg" style="outline: 0" data-toggle="modal" href="#aboutDialog">Gander Road Homeowners Association - HOA Database</a>
         </div> <!-- navbar-header -->
 
         <div id="navbar" class="navbar-collapse collapse">
@@ -66,15 +66,15 @@
         </div> <!-- navbar-collapse (controlled by the collapse toggle button) -->
 
       </div> <!-- container-fluid -->
-    </nav>
+</nav><!-- <nav class="navbar navbar-default navbar-fixed-top"> -->
 
 
-	<div class="container-fluid">
-		<div class="tab-content">
+<div class="container-fluid">
+	<div class="tab-content">
 		
-	        <div class="tab-pane active" id="SearchPage">
-				<div class="row">
-				  <div class="col-sm-3">
+		<div class="tab-pane active" id="SearchPage">
+			<div class="row">
+				  <div class="col-sm-4 col-md-3">
 				  	<h4>Search</h4>
 				  	
                   	<div id="SearchInput" >
@@ -89,7 +89,7 @@
 				  	</div>
 				  	
 				  </div>
-				  <div class="col-sm-9">
+				  <div class="col-sm-8 col-md-9">
                 	<h4>Properties List</h4>
                 	<div class="ajaxError"></div>
 		            <table id="PropertyListDisplay" class="table table-striped table-condensed">
@@ -97,49 +97,49 @@
 		               	</tbody>
 		           	</table>
 				  </div>
-				</div>	                
-	                
-	                
-	        </div><!-- end of Search -->
+			</div><!-- row -->	                
+	    </div><!-- end of Search tab -->
 	        
 	        
-	        
-	        <div class="tab-pane" id="DetailPage">
-				<div class="row">
-				  <div class="col-sm-2">
-	             	<h4>Detail</h4>
-                  	<div id="MCTreasLink">
-                  	</div>
-                  	<p>
-                  		<div id="MCAuditorLink">
-                  		</div>
-                	</p>
-                	<div id="ButtonInstructions">(Click buttons to go to Treasurer <br>and Auditor web sites)</div>
+	    <div class="tab-pane" id="DetailPage">
+			<div class="row">
+				<div class="col-sm-5 col-md-4">
+					<div class="row">
+				  		<div class="col-xs-6 col-sm-5">
+			             	<h4>Detail</h4>
+		                  	<div id="MCTreasLink">
+		                  	</div>
+		                  	<p>
+		                  		<div id="MCAuditorLink">
+		                  		</div>
+		                	</p>
+		                	<div id="ButtonInstructions"></div>
+							<p>
+		                  	<div id="DuesStatement">
+		                  	</div>
+		                  	</p>
+		                  	<p>
+		                  	<div id="NewOwner">
+		                  	</div>
+		                  	</p>
+		                  	<div id="AddAssessment">
+		                  	</div>
+		            	</div><!-- col -->
+		            	
+    					<div class="col-xs-6 col-sm-7">
+	                		<h4>Property Detail</h4>
+                			<div class="ajaxError"></div>
+	                		<table id="PropertyDetail" class="">
+	                  			<tbody>
+	                  			</tbody>
+	                		</table>
+						</div>
+		            	
+		        	</div><!-- row -->
+				</div>
+				  
+				  <div class="col-sm-7 col-md-8">
 
-					<p>
-                  	<div id="DuesStatement">
-                  	</div>
-                  	</p>
-                  	<p>
-                  	<div id="NewOwner">
-                  	</div>
-                  	</p>
-                  	<div id="AddAssessment">
-                  	</div>
-	             	
-				  </div>
-				  <div class="col-sm-10">
-
-						<div class="row">
-    						<div class="col-sm-3">
-	                			<h4>Property Detail</h4>
-                				<div class="ajaxError"></div>
-	                			<table id="PropertyDetail" class="">
-	                  				<tbody>
-	                  				</tbody>
-	                			</table>
-							</div>
-						    <div class="col-sm-9">
 				                <h4>Owners</h4>
 				                <table id="PropertyOwners" class="table table-striped table-condensed">
 				                  <tbody>
@@ -150,27 +150,28 @@
 				                  <tbody>
 				                  </tbody>
 				                </table>
-							</div>						
-						</div><!-- row -->
 				  		
 				  </div>
-				</div><!-- row -->	                
-	        </div><!-- end of Detail -->
+			</div><!-- row -->	                
+		</div><!-- end of Detail -->
 	        
 	        <div class="tab-pane" id="ReportsPage">
 
 				<div class="row">
-				    <div class="col-sm-3">
-				    	<h3>Reports</h3>
-	                  	<div id="ReportInput" class="ui-field-contain">
+				    <div class="col-sm-2">
+				    	<h4>Reports</h4>
+	                  	<div id="ReportInput">
 	                  		<!-- 
 	                    	<input type="text" name="salesYesr"      id="salesYear"       placeholder="Sales Year" value="2015" data-mini="true" data-clear-btn="true">
 	                  		 -->
-	       					<a id="SalesReport" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-bullets ui-btn-icon-left ui-corner-all" data-mini="true">Show Sales</a>
-	       					<a id="SalesNewOwnerReport" href="#" class="ui-btn ui-mini ui-btn-inline ui-icon-user ui-btn-icon-left ui-corner-all" data-mini="true">New Owners</a>
+	                  		 <p>
+	       					<a id="SalesReport" href="#" class="btn btn-default" role="button">Show Sales</a>
+	       					</p>
+	       					<a id="SalesNewOwnerReport" href="#" class="btn btn-default" role="button">New Owners</a>
+	       					<h5 id="ReportsInstructions"></h5>
 	                  	</div>
 					</div>
-				    <div class="col-sm-9">
+				    <div class="col-sm-10">
 	                	<h4 id="ReportHeader"></h4>
 	                	<div class="ajaxError"></div>
 	                	<div id="ReportDisplay"></div>
@@ -188,12 +189,12 @@
 	             
 	        </div><!-- end of Admin -->
 	        
-		</div><!-- end of main tab content -->
-	</div><!-- end of main container -->
+	</div><!-- end of main tab content -->
+</div><!-- end of main container -->
 
 
-	  <!-- Modal -->
-	  <div class="modal fade" id="aboutDialog" role="dialog">
+<!-- Modal -->
+<div class="modal fade" id="aboutDialog" role="dialog">
 	    <div class="modal-dialog modal-lg">
 	      <div class="modal-content">
 	        <div class="modal-header">
@@ -210,10 +211,10 @@
 	        </div>
 	      </div>
 	    </div>
-	  </div>
+</div><!-- <div class="modal fade" id="aboutDialog" role="dialog"> -->
 
 
-	<div id="EditPage" class="modal fade" role="dialog" >
+<div id="EditPage" class="modal fade" role="dialog" >
 	    <div class="modal-dialog modal-lg">
 	      <div class="modal-content">
 	        <div class="modal-header">
@@ -227,7 +228,7 @@
 	          
 	    	<h4 id="EditPageHeader"></h4>
            <div class="ajaxError"></div>
-	        <table id="EditTable">
+	        <table id="EditTable" class="table table-condensed">
 	        	<tbody>
 	        	</tbody>
 	        </table>
@@ -239,9 +240,9 @@
 	        </div>
 	      </div>
 	    </div>
-	</div><!-- /EditPage -->
+</div><!-- /EditPage -->
 
-	<div id="DuesStatementPage" class="modal fade" role="dialog">
+<div id="DuesStatementPage" class="modal fade" role="dialog">
 	    <div class="modal-dialog modal-lg">
 	      <div class="modal-content">
 	        <div class="modal-header">
@@ -255,14 +256,14 @@
 
 	    	<h3>GRHA Dues Statement</h3>
             <div class="ajaxError"></div>
-	        <table id="DuesStatementPropertyTable" class="table">
+	        <table id="DuesStatementPropertyTable" class="table table-condensed">
 	        	<tbody>
 	        	</tbody>
 	        </table>
             <div id="DuesStatementPay">
             </div>
 	    	<h4>Payment history</h4>
-	        <table id="DuesStatementAssessmentsTable" class="table">
+	        <table id="DuesStatementAssessmentsTable" class="table table-condensed">
 	        	<tbody>
 	        	</tbody>
 	        </table>
@@ -274,14 +275,15 @@
 	        </div>
 	      </div>
 	    </div>
-	</div><!-- /DuesStatementPage -->
+</div><!-- /DuesStatementPage -->
 	
 
-    	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-        <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.11.2.min.js"><\/script>')</script>
-        <script src="js/vendor/bootstrap.min.js"></script>
-        <script src="js/vendor/bootstrap-add-clear.min.js"></script>
-        <script src="js/main.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="js/vendor/jquery-1.11.2.min.js"><\/script>')</script>
+<script src="js/vendor/bootstrap.min.js"></script>
+<script src="js/vendor/bootstrap-add-clear.min.js"></script>
+<script src="js/vendor/jquery.datetimepicker.js"></script>
+<script src="js/main.js"></script>
 
 
         <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
