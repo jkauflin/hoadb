@@ -19,6 +19,7 @@
  * 					add check to make sure current owner is set on new owners
  * 					and removed from others
  * 2016-02-09 JJK	Switching from JQuery Mobile to Twitter Bootstrap
+ * 2016-02-21 JJK   Test new Git
  *============================================================================*/
 
 $.urlParam = function(name){
