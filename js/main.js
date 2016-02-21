@@ -569,13 +569,13 @@ function formatPropertyDetailResults(hoaRec){
 	});
     $("#PropertyAssessments tbody").html(tr);
     
-    if ($(window).width() > 600) {
+//    if ($(window).width() > 600) {
         var mcTreasURI = 'http://mctreas.org/master.cfm?parid='+hoaRec.Parcel_ID+'&taxyr='+TaxYear+'&own1='+ownName1;
-        $("#MCTreasLink").html('<a href="'+encodeURI(mcTreasURI)+'" class="btn btn-default" role="button" target="_blank">County<br>Treasurer<br>Information</a>');    
+        $("#MCTreasLink").html('<a href="'+encodeURI(mcTreasURI)+'" class="btn btn-default" role="button" target="_blank">County<br>Treasurer</a>');    
 
         var mcAuditorURI = 'http://www.mcrealestate.org/search/CommonSearch.aspx?mode=PARID';
-        $("#MCAuditorLink").html('<a href="'+encodeURI(mcAuditorURI)+'" class="btn btn-default" role="button" target="_blank">County<br>Property<br>Information</a>');    
-    }
+        $("#MCAuditorLink").html('<a href="'+encodeURI(mcAuditorURI)+'" class="btn btn-default" role="button" target="_blank">County<br>Property</a>');    
+  //  }
 
     $("#ButtonInstructions").html("(Click buttons to go to Treasurer <br>and Auditor web sites)");
     
