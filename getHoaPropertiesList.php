@@ -18,6 +18,7 @@ include 'hoaDbCommon.php';
 	
 	// If they are set, get input parameters from the REQUEST
 	$parcelId = getParamVal("parcelId");
+	$lotNo = getParamVal("lotNo");
 	$address = getParamVal("address");
 	$ownerName = getParamVal("ownerName");
 	$phoneNo = getParamVal("phoneNo");
@@ -31,6 +32,9 @@ include 'hoaDbCommon.php';
 	if (!empty($parcelId)) {
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 AND UPPER(p.Parcel_ID) ";
 		$paramStr = wildCardStrFromTokens($parcelId);
+	} elseif (!empty($lotNo)) {
+		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 AND p.LotNo ";
+		$paramStr = wildCardStrFromTokens($lotNo);
 	} elseif (!empty($address)) {
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 AND UPPER(p.Parcel_Location) ";
 		$paramStr = wildCardStrFromTokens($address);
