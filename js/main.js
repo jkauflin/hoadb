@@ -21,6 +21,7 @@
  * 2016-02-09 JJK	Switching from JQuery Mobile to Twitter Bootstrap
  * 2016-02-21 JJK   Test new Git
  * 2016-02-26 JJK   Added search by Lot No and adjusted displays for mobile
+ * 2016-03-01 JJK
  *============================================================================*/
 
 $.urlParam = function(name){
