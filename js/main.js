@@ -113,9 +113,7 @@ $(document).ready(function(){
 	});
 
     // Using addClear plug-in function to add a clear button on input text fields
-    $(function(){
-    	  $(":input").addClear();
-    });
+	$(".resetval").addClear();
 
     // http://xdsoft.net/jqplugins/datetimepicker/
     /*
