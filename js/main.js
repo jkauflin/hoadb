@@ -53,31 +53,23 @@ function cleanStr(inStr) {
 	return inStr.replace(regexNonPrintableChars,'');
 }
 
-
 function waitCursor() {
     $('*').css('cursor', 'progress');
     $(".ajaxError").html("");
 }
 
+/*
+commented out because it messed up the cursor in other functions - put it individually around JSON services
 $(document).ajaxComplete(function(event, request, settings) {
     $('*').css('cursor', 'default');
 });
+*/
 
 $(document).ajaxError(function(e, xhr, settings, exception) {
 	console.log("ajax exception = "+exception);
 	console.log("ajax exception xhr.responseText = "+xhr.responseText);
     $(".ajaxError").html("An Error has occurred (see console log)");
 });
-
-
-// This is a functions that scrolls to #id
-function scrollTo(id)
-{
-    // Only scroll if on mobile device
-    if ($(window).width() < 601 && id) {
-        $('html,body').animate({scrollTop: $("#"+id).offset().top},'slow');
-    }
-}
 
 function setCheckbox(checkVal){
 	var checkedStr = '';
@@ -103,7 +95,7 @@ function setInputDate(idName,textVal,textSize){
 
 $(document).ready(function(){
 	
-	$("#DisplayWidth").text("width = "+$(window).width());
+	//$("#DisplayWidth").text("width = "+$(window).width());
 	
 	// Auto-close the collapse menu after clicking a non-dropdown menu item (in the bootstrap nav header)
 	$(document).on('click','.navbar-collapse.in',function(e) {
@@ -158,6 +150,7 @@ $(document).ready(function(){
     										"&ownerName="+cleanStr($("#ownerName").val())+
     										"&phoneNo="+cleanStr($("#phoneNo").val())+
     										"&altAddress="+cleanStr($("#altAddress").val()),function(hoaPropertyRecList){
+    	    $('*').css('cursor', 'default');
     		displayPropertyList(hoaPropertyRecList);
     	});
         event.stopPropagation();
@@ -175,6 +168,7 @@ $(document).ready(function(){
     										"&ownerName="+cleanStr($("#ownerName").val())+
     										"&phoneNo="+cleanStr($("#phoneNo").val())+
     										"&altAddress="+cleanStr($("#altAddress").val()),function(hoaPropertyRecList){
+    	    $('*').css('cursor', 'default');
     		displayPropertyList(hoaPropertyRecList);
     	});
         event.stopPropagation();
@@ -183,16 +177,21 @@ $(document).ready(function(){
     // Respond to clicking on a property by reading details and display on detail tab
     $(document).on("click","#PropertyListDisplay tr td a",function(){
         waitCursor();
+        $("#PropertyDetail tbody").html("");
+    	$("#PropertyOwners tbody").html("");
+        $("#PropertyAssessments tbody").html("");
         var $this = $(this);
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-parcelId"),function(hoaRec){
         	// Let the new page initialize first
 	         $('#navbar a[href="#DetailPage"]').tab('show');
             // Then fill it with new content
+	    	    $('*').css('cursor', 'default');
             formatPropertyDetailResults(hoaRec);
         });
     });
 
 
+    
     // Response to Detail link clicks
 	// *** 8/3/2015 fix so it only reacts to the clicks on the property one
     $(document).on("click","#PropertyDetail tr td a",function(){
@@ -200,6 +199,7 @@ $(document).ready(function(){
         var $this = $(this);
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId"),function(hoaRec){
             $("#EditPage").modal();
+    	    $('*').css('cursor', 'default');
             formatPropertyDetailEdit(hoaRec);
         });
     });	
@@ -210,6 +210,7 @@ $(document).ready(function(){
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
             $("#EditPage").modal();
     		createNew = false;
+    	    $('*').css('cursor', 'default');
             formatOwnerDetailEdit(hoaRec,createNew);
         });
     });	
@@ -218,6 +219,7 @@ $(document).ready(function(){
         var $this = $(this);
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
             $("#DuesStatementPage").modal();
+    	    $('*').css('cursor', 'default');
             formatDuesStatementResults(hoaRec);
         });
     });	
@@ -227,6 +229,7 @@ $(document).ready(function(){
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
             $("#EditPage").modal();
     		createNew = true;
+    	    $('*').css('cursor', 'default');
             formatOwnerDetailEdit(hoaRec,createNew);
         });
     });	
@@ -236,6 +239,7 @@ $(document).ready(function(){
         var $this = $(this);
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&fy="+$this.attr("data-FY"),function(hoaRec){
             $("#EditPage").modal();
+    	    $('*').css('cursor', 'default');
             formatAssessmentDetailEdit(hoaRec);
         });
     });	
@@ -272,6 +276,7 @@ $(document).ready(function(){
             $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
                 $("#EditPage").modal("hide");
    	         	$('#navbar a[href="#DetailPage"]').tab('show');
+   	    	    $('*').css('cursor', 'default');
                 formatPropertyDetailResults(hoaRec);
             });
         }); // End of $.get("updHoaDbData.php","parcelId="+$parcelId+
@@ -309,6 +314,7 @@ $(document).ready(function(){
             $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
                 $("#EditPage").modal("hide");
    	         	$('#navbar a[href="#DetailPage"]').tab('show');
+   	    	    $('*').css('cursor', 'default');
                 formatPropertyDetailResults(hoaRec);
             });
         }); // End of $.get("updHoaDbData.php","parcelId="+$parcelId+
@@ -340,6 +346,7 @@ $(document).ready(function(){
             $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
                 $("#EditPage").modal("hide");
    	         	$('#navbar a[href="#DetailPage"]').tab('show');
+   	    	    $('*').css('cursor', 'default');
                 formatPropertyDetailResults(hoaRec);
             });
         }); // End of $.get("updHoaDbData.php","parcelId="+$parcelId+
@@ -354,6 +361,7 @@ $(document).ready(function(){
 	    $("#ReportsInstructions").html("");
         
     	// Get the list
+	    $('*').css('cursor', 'default');
 	    formatSalesReportList(false);
         
         event.stopPropagation();
@@ -367,6 +375,7 @@ $(document).ready(function(){
 	    $("#ReportsInstructions").html("(Click on <b>Sale Date</b> to Create a New Owner, or <b>Ignore</b> to bypass)");
 
 		// Get the list
+	    $('*').css('cursor', 'default');
 	    formatSalesReportList(true);
 	    
 	    event.stopPropagation();
@@ -384,6 +393,7 @@ $(document).ready(function(){
 	        $.get("updHoaSales.php","PARID="+$parcelId+
 					 "&SALEDT="+$saleDate,function(results){
 	        	// Re-read the update data and re-display sales list
+	    	    $('*').css('cursor', 'default');
 	    	    formatSalesReportList(true);
 	        }); // End of $.get("updHoaSales.php","parcelId="+$parcelId+
 
@@ -435,9 +445,6 @@ $(document).ready(function(){
 
 
 function displayPropertyList(hoaPropertyRecList) {
-	var wwidth = $(window).width();
-    //$("#PropertyListDisplay tbody").html("");
-	//console.log("Window.width = "+$(window).width());
 	var tr = '<tr><td>No records found - try different search parameters</td></tr>';
     rowId = 0;
 	$.each(hoaPropertyRecList, function(index, hoaPropertyRec) {
@@ -446,46 +453,31 @@ function displayPropertyList(hoaPropertyRecList) {
     		tr = '';
     	    tr +=    '<tr>';
 
-    	    if (wwidth < 400) {
-        	    tr +=      '<th>Row</th>';
-        	    tr +=      '<th>Parcel</th>';
-	    	    tr +=  	   '<th>Lot</th>';
-        	    tr +=      '<th>Loc</th>';
-    	    } else {
         	    tr +=      '<th>Row</th>';
         	    tr +=      '<th>Parcel Id</th>';
-	    	    tr +=  	   '<th>Lot No</th>';
-        	    tr +=      '<th>Parcel Location</th>';
-        	    tr +=      '<th>Owner Name</th>';
-        	    if ($(window).width() > 1200) {
-            	    tr +=      '<th>Owner Phone</th>';
-        	    }
-    	    }
+	    	    tr +=  	   '<th class="hidden-xs hidden-sm">Lot No</th>';
+        	    tr +=      '<th>Location</th>';
+        	    tr +=      '<th class="hidden-xs">Owner Name</th>';
+            	    tr +=      '<th class="visible-lg">Owner Phone</th>';
 
     	    tr +=    '</tr>';
 		}
 	    tr +=  '<tr>';
 	    tr +=    '<td>'+rowId+'</td>';
 	    tr +=    '<td><a data-parcelId="'+hoaPropertyRec.parcelId+'" href="#">'+hoaPropertyRec.parcelId+'</a></td>';
-	    tr +=    '<td>'+hoaPropertyRec.lotNo+'</td>';
+	    tr +=    '<td class="hidden-xs hidden-sm">'+hoaPropertyRec.lotNo+'</td>';
 	    tr +=    '<td>'+hoaPropertyRec.parcelLocation+'</td>';
-	    if (wwidth >= 400) {
-		    tr +=    '<td>'+hoaPropertyRec.ownerName+'</td>';
-		    if ($(window).width() > 1200) {
-			    tr +=    '<td>'+hoaPropertyRec.ownerPhone+'</td>';
-		    }
-	    }
+		    tr +=    '<td class="hidden-xs">'+hoaPropertyRec.ownerName+'</td>';
+			    tr +=    '<td class="visible-lg">'+hoaPropertyRec.ownerPhone+'</td>';
 	    tr +=  '</tr>';
 	});
 
     $("#PropertyListDisplay tbody").html(tr);
-    //$("#PropertyListDisplay > tbody").append(tr);
 }
 
 function formatPropertyDetailResults(hoaRec){
     var tr = '';
     var checkedStr = '';
-	var wwidth = $(window).width();
 
     // Get the admin level to see if user is allowed to edit data
 	if (hoaRec.adminLevel > 1) {
@@ -519,18 +511,12 @@ function formatPropertyDetailResults(hoaRec){
 		if (index == 0) {
     	    tr = tr +   '<tr>';
     	    
-    	    if (wwidth < 400) {
         	    tr = tr +     '<th>OwnId</th>';
         	    tr = tr +     '<th>Owner</th>';
         	    tr = tr +     '<th>Phone</th>';
-    	    } else {
-        	    tr = tr +     '<th>OwnId</th>';
-        	    tr = tr +     '<th>Owner</th>';
-        	    tr = tr +     '<th>Phone Number</th>';
-        	    tr = tr +     '<th>Date Purchased</th>';
-        	    tr = tr +     '<th>Alt Address</th>';
-        	    tr = tr +     '<th>Comments</th>';
-    	    }
+        	    tr = tr +     '<th class="hidden-xs">Date Purchased</th>';
+        	    tr = tr +     '<th class="hidden-xs">Alt Address</th>';
+        	    tr = tr +     '<th class="hidden-xs">Comments</th>';
     	    
     	    tr = tr +   '</tr>';
     	    ownName1 = rec.Owner_Name1;
@@ -554,11 +540,9 @@ function formatPropertyDetailResults(hoaRec){
     	}
 	    tr = tr +   '<td>'+rec.Owner_Phone+'</td>';
 	    
-	    if (wwidth >= 400) {
-		    tr = tr +   '<td>'+rec.DatePurchased.substring(0,10)+'</td>';
-		    tr = tr +   '<td>'+rec.Alt_Address_Line1+'</td>';
-		    tr = tr +   '<td>'+rec.Comments+'</td>';
-	    }
+		    tr = tr +   '<td class="hidden-xs">'+rec.DatePurchased.substring(0,10)+'</td>';
+		    tr = tr +   '<td class="hidden-xs">'+rec.Alt_Address_Line1+'</td>';
+		    tr = tr +   '<td class="hidden-xs">'+rec.Comments+'</td>';
 
 	    tr = tr + '</tr>';
 	});
@@ -569,22 +553,14 @@ function formatPropertyDetailResults(hoaRec){
 	$.each(hoaRec.assessmentsList, function(index, rec) {
 		if (index == 0) {
     	    tr = tr +   '<tr>';
-    	    if (wwidth < 400) {
-        	    tr = tr +     '<th>OwnId</th>';
-        	    tr = tr +     '<th>Year</th>';
-        	    tr = tr +     '<th>Dues</th>';
-        	    tr = tr +     '<th>Paid</th>';
-        	    tr = tr +     '<th>Date Paid</th>';
-    	    } else {
         	    tr = tr +     '<th>OwnId</th>';
         	    tr = tr +     '<th>Year</th>';
         	    tr = tr +     '<th>Dues Amt</th>';
         	    tr = tr +     '<th>Paid</th>';
         	    tr = tr +     '<th>Date Paid</th>';
-        	    tr = tr +     '<th>Date Due</th>';
-        	    tr = tr +     '<th>Payment</th>';
-        	    tr = tr +     '<th>Comments</th>';
-    	    }
+        	    tr = tr +     '<th class="hidden-xs">Date Due</th>';
+        	    tr = tr +     '<th class="hidden-xs">Payment</th>';
+        	    tr = tr +     '<th class="hidden-xs">Comments</th>';
     	    tr = tr +   '</tr>';
     	    TaxYear = rec.DateDue.substring(0,4);
 		}
@@ -598,29 +574,23 @@ function formatPropertyDetailResults(hoaRec){
 	    tr = tr +   '<td>'+rec.DuesAmt+'</td>';
 	    tr = tr +   '<td>'+setCheckbox(rec.Paid)+'</td>';
 	    tr = tr +   '<td>'+rec.DatePaid.substring(0,10)+'</td>';
-	    if (wwidth >= 400) {
-		    tr = tr +   '<td>'+rec.DateDue.substring(0,10)+'</td>';
-	    	tr = tr +   '<td>'+rec.PaymentMethod+'</td>';
-	    	tr = tr +   '<td>'+rec.Comments+'</td>';
-	    }
+		    tr = tr +   '<td class="hidden-xs">'+rec.DateDue.substring(0,10)+'</td>';
+	    	tr = tr +   '<td class="hidden-xs">'+rec.PaymentMethod+'</td>';
+	    	tr = tr +   '<td class="hidden-xs">'+rec.Comments+'</td>';
 	    tr = tr + '</tr>';
 	});
     $("#PropertyAssessments tbody").html(tr);
     
-//    if (wwidth < 400) {
-
     var mcTreasURI = 'http://mctreas.org/master.cfm?parid='+hoaRec.Parcel_ID+'&taxyr='+TaxYear+'&own1='+ownName1;
-    $("#MCTreasLink").html('<a href="'+encodeURI(mcTreasURI)+'" class="btn btn-default" role="button" target="_blank">County<br>Treasurer</a>');    
+    $("#MCTreasLink").html('<a href="'+encodeURI(mcTreasURI)+'" class="btn btn-primary" role="button" target="_blank">County<br>Treasurer</a>');    
 
     var mcAuditorURI = 'http://www.mcrealestate.org/search/CommonSearch.aspx?mode=PARID';
-    $("#MCAuditorLink").html('<a href="'+encodeURI(mcAuditorURI)+'" class="btn btn-default" role="button" target="_blank">County<br>Property</a>');    
+    $("#MCAuditorLink").html('<a href="'+encodeURI(mcAuditorURI)+'" class="btn btn-primary" role="button" target="_blank">County<br>Property</a>');    
 
-    $("#ButtonInstructions").html("(Click buttons to go to Treasurer <br>and Auditor web sites)");
-    
     $("#DuesStatement").html('<a id="DuesStatementButton" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+currOwnerID+'" href="#" class="btn btn-success" role="button">Dues Statement</a>');
 
     if (hoaRec.adminLevel > 1) {
-	    $("#NewOwner").html('<a id="NewOwnerButton" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+currOwnerID+'" href="#" class="btn btn-default" role="button">New Owner</a>');
+	    $("#NewOwner").html('<a id="NewOwnerButton" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+currOwnerID+'" href="#" class="btn btn-primary" role="button">New Owner</a>');
 	    //$("#AddAssessment").html('<a id="AddAssessmentButton" href="#" class="btn btn-default" role="button">Add Assessment</a>');
 	}
 

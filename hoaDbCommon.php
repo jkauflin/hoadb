@@ -13,14 +13,28 @@
  *                  and got it adding the unpaid assessments (using a 
  *                  regular expression replace to convert the string to
  *                  a numberic value)
+ * 2016-03-28 JJK	Added getComm to return a database connection and moved
+ * 					the hoaDbCred include inside it to access the variables	
  *============================================================================*/
 
-// Include db connection credentials
-include 'hoaDbCred.php';
-//$host = '127.0.0.1';
-//$dbadmin = "root";
-//$password = "";
-//$dbname = "<name of the mysql database>";
+function getConn() {
+	// Include db connection credentials
+	include 'hoaDbCred.php';
+	// This include will have the following variable set
+	//$host = 'localhost';
+	//$dbadmin = "username";
+	//$password = "password";
+	//$dbname = "<name of the mysql database>";
+	
+	// User variables set in the db connection credentials include and open a connection
+	$conn = new mysqli($host, $dbadmin, $password, $dbname);
+	// Check connection
+	if ($conn->connect_error) {
+		die("Connection failed: " . $conn->connect_error);
+	}
+	return $conn;
+}
+
 
 class HoaRec
 {
@@ -130,6 +144,7 @@ class HoaSalesReportRec
 function getHoaSalesRec($conn,$parcelId,$saleDate) {
 	$hoaSalesRec = new HoaSalesRec();
 	
+	$conn = getConn();
 	$stmt = $conn->prepare("SELECT * FROM hoa_sales WHERE PARID = ? AND SALEDT = ?; ");
 	$stmt->bind_param("ss", $parcelId,$saleDate);
 	$stmt->execute();
@@ -166,6 +181,7 @@ function getHoaSalesRecList($conn,$notProcessedBoolean) {
 	$hoaSalesReportRec = new HoaSalesReportRec();
 	$hoaSalesReportRec->salesList = array();
 	
+	$conn = getConn();
 	if ($notProcessedBoolean) {
 		$stmt = $conn->prepare("SELECT * FROM hoa_sales WHERE ProcessedFlag != 'Y' ORDER BY CreateTimestamp DESC; ");
 	} else {
@@ -212,6 +228,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 	// TBD - calculate
 	$hoaRec->TotalDue = 0.00;
 	
+	$conn = getConn();
 	$stmt = $conn->prepare("SELECT * FROM hoa_properties WHERE Parcel_ID = ? ; ");
 	$stmt->bind_param("s", $parcelId);
 	$stmt->execute();

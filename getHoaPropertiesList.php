@@ -14,8 +14,6 @@ include 'commonUtil.php';
 // Include table record classes and db connection parameters
 include 'hoaDbCommon.php';
 
-	$outputArray = array();
-	
 	// If they are set, get input parameters from the REQUEST
 	$parcelId = getParamVal("parcelId");
 	$lotNo = getParamVal("lotNo");
@@ -61,38 +59,31 @@ include 'hoaDbCommon.php';
 	$sql = $sql . "LIKE UPPER(?) ORDER BY p.Parcel_ID; ";
 	//error_log('$sql = ' . $sql);
 	
-	
-	// Create connection
-	$conn = new mysqli($host, $dbadmin, $password, $dbname);
-
-	// Check connection
-	if ($conn->connect_error) {
-    	die("Connection failed: " . $conn->connect_error);
-	} 
-
+	$conn = getConn();
 	$stmt = $conn->prepare($sql);
 	$stmt->bind_param("s", $paramStr);
 	$stmt->execute();
 	$result = $stmt->get_result();
-
+	
+	$outputArray = array();
 	if ($result->num_rows > 0) {
-    	while($row = $result->fetch_assoc()) {
+		while($row = $result->fetch_assoc()) {
 			$hoaPropertyRec = new HoaPropertyRec();
-			
+	
 			$hoaPropertyRec->parcelId = $row["Parcel_ID"];
 			$hoaPropertyRec->lotNo = $row["LotNo"];
 			$hoaPropertyRec->subDivParcel = $row["SubDivParcel"];
 			$hoaPropertyRec->parcelLocation = $row["Parcel_Location"];
 			$hoaPropertyRec->ownerName = $row["Owner_Name1"] . ' ' . $row["Owner_Name2"];
 			$hoaPropertyRec->ownerPhone = $row["Owner_Phone"];
-			
+	
 			array_push($outputArray,$hoaPropertyRec);
 		}
-    }
+	}
 	
 	$stmt->close();
-    $conn->close();
-
+	$conn->close();
+	
 	echo json_encode($outputArray);
 
 ?>
