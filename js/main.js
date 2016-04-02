@@ -139,6 +139,7 @@ $(document).ready(function(){
 
 	
     // Respond to any change in values and call service
+	/* Let's try turning off the trigger of just hitting enter on an input for now (confusing with mobile text input)
     $("#SearchInput").change(function() {
         waitCursor();
         $("#PropertyListDisplay tbody").html("");
@@ -155,7 +156,8 @@ $(document).ready(function(){
     	});
         event.stopPropagation();
     });
-
+	*/
+	
     // Respond to the Search button click (because I can't figure out how to combine it with input change)
     $(document).on("click","#SearchButton",function(){
         waitCursor();
@@ -443,7 +445,6 @@ $(document).ready(function(){
 
 
 
-
 function displayPropertyList(hoaPropertyRecList) {
 	var tr = '<tr><td>No records found - try different search parameters</td></tr>';
     rowId = 0;
@@ -452,14 +453,12 @@ function displayPropertyList(hoaPropertyRecList) {
 		if (index == 0) {
     		tr = '';
     	    tr +=    '<tr>';
-
-        	    tr +=      '<th>Row</th>';
-        	    tr +=      '<th>Parcel Id</th>';
-	    	    tr +=  	   '<th class="hidden-xs hidden-sm">Lot No</th>';
-        	    tr +=      '<th>Location</th>';
-        	    tr +=      '<th class="hidden-xs">Owner Name</th>';
-            	    tr +=      '<th class="visible-lg">Owner Phone</th>';
-
+        	tr +=      '<th>Row</th>';
+        	tr +=      '<th>Parcel Id</th>';
+	    	tr +=  	   '<th class="hidden-xs hidden-sm">Lot No</th>';
+        	tr +=      '<th>Location</th>';
+        	tr +=      '<th class="hidden-xs">Owner Name</th>';
+            tr +=      '<th class="visible-lg">Owner Phone</th>';
     	    tr +=    '</tr>';
 		}
 	    tr +=  '<tr>';
@@ -467,8 +466,8 @@ function displayPropertyList(hoaPropertyRecList) {
 	    tr +=    '<td><a data-parcelId="'+hoaPropertyRec.parcelId+'" href="#">'+hoaPropertyRec.parcelId+'</a></td>';
 	    tr +=    '<td class="hidden-xs hidden-sm">'+hoaPropertyRec.lotNo+'</td>';
 	    tr +=    '<td>'+hoaPropertyRec.parcelLocation+'</td>';
-		    tr +=    '<td class="hidden-xs">'+hoaPropertyRec.ownerName+'</td>';
-			    tr +=    '<td class="visible-lg">'+hoaPropertyRec.ownerPhone+'</td>';
+		tr +=    '<td class="hidden-xs">'+hoaPropertyRec.ownerName+'</td>';
+	    tr +=    '<td class="visible-lg">'+hoaPropertyRec.ownerPhone+'</td>';
 	    tr +=  '</tr>';
 	});
 
@@ -486,15 +485,15 @@ function formatPropertyDetailResults(hoaRec){
 	    tr += '<tr><th>Parcel Id:</th><td>'+hoaRec.Parcel_ID+'</a></td></tr>';
 	}
     tr += '<tr><th>Lot No:</th><td>'+hoaRec.LotNo+'</td></tr>';
-    tr += '<tr><th>Sub Division: </th><td>'+hoaRec.SubDivParcel+'</td></tr>';
+    tr += '<tr><th class="hidden-xs hidden-sm">Sub Division: </th><td class="hidden-xs hidden-sm">'+hoaRec.SubDivParcel+'</td></tr>';
     tr += '<tr><th>Location: </th><td>'+hoaRec.Parcel_Location+'</td></tr>';
-    tr += '<tr><th>Street No: </th><td>'+hoaRec.Property_Street_No+'</td></tr>';
-    tr += '<tr><th>Street Name: </th><td>'+hoaRec.Property_Street_Name+'</td></tr>';
-    tr += '<tr><th>City: </th><td>'+hoaRec.Property_City+'</td></tr>';
-    tr += '<tr><th>State: </th><td>'+hoaRec.Property_State+'</td></tr>';
-    tr += '<tr><th>Zip Code: </th><td>'+hoaRec.Property_Zip+'</td></tr>';
+    tr += '<tr><th class="hidden-xs hidden-sm">Street No: </th><td class="hidden-xs hidden-sm">'+hoaRec.Property_Street_No+'</td></tr>';
+    tr += '<tr><th class="hidden-xs hidden-sm">Street Name: </th><td class="hidden-xs hidden-sm">'+hoaRec.Property_Street_Name+'</td></tr>';
+    tr += '<tr><th class="hidden-xs">City: </th><td class="hidden-xs">'+hoaRec.Property_City+'</td></tr>';
+    tr += '<tr><th class="hidden-xs">State: </th><td class="hidden-xs">'+hoaRec.Property_State+'</td></tr>';
+    tr += '<tr><th class="hidden-xs">Zip Code: </th><td class="hidden-xs">'+hoaRec.Property_Zip+'</td></tr>';
     tr += '<tr><th>Total Due: </th><td>$'+hoaRec.TotalDue+'</td></tr>';
-    tr += '<tr><th>Member: </th><td>'+setCheckbox(hoaRec.Member)+'</td></tr>';
+    tr += '<tr><th class="hidden-xs hidden-sm">Member: </th><td class="hidden-xs hidden-sm">'+setCheckbox(hoaRec.Member)+'</td></tr>';
     tr += '<tr><th>Vacant: </th><td>'+setCheckbox(hoaRec.Vacant)+'</td></tr>';
     tr += '<tr><th>Rental: </th><td>'+setCheckbox(hoaRec.Rental)+'</td></tr>';
     tr += '<tr><th>Managed: </th><td>'+setCheckbox(hoaRec.Managed)+'</td></tr>';
@@ -510,14 +509,12 @@ function formatPropertyDetailResults(hoaRec){
 	$.each(hoaRec.ownersList, function(index, rec) {
 		if (index == 0) {
     	    tr = tr +   '<tr>';
-    	    
-        	    tr = tr +     '<th>OwnId</th>';
-        	    tr = tr +     '<th>Owner</th>';
-        	    tr = tr +     '<th>Phone</th>';
-        	    tr = tr +     '<th class="hidden-xs">Date Purchased</th>';
-        	    tr = tr +     '<th class="hidden-xs">Alt Address</th>';
-        	    tr = tr +     '<th class="hidden-xs">Comments</th>';
-    	    
+        	tr = tr +     '<th>OwnId</th>';
+        	tr = tr +     '<th>Owner</th>';
+        	tr = tr +     '<th>Phone</th>';
+        	tr = tr +     '<th class="hidden-xs">Date Purchased</th>';
+        	tr = tr +     '<th class="hidden-xs">Alt Address</th>';
+        	tr = tr +     '<th class="hidden-xs">Comments</th>';
     	    tr = tr +   '</tr>';
     	    ownName1 = rec.Owner_Name1;
     	    currOwnerID = rec.OwnerID;
@@ -539,11 +536,9 @@ function formatPropertyDetailResults(hoaRec){
     	    tr = tr +   '<td>'+rec.Owner_Name1+' '+rec.Owner_Name2+'</a></td>';
     	}
 	    tr = tr +   '<td>'+rec.Owner_Phone+'</td>';
-	    
-		    tr = tr +   '<td class="hidden-xs">'+rec.DatePurchased.substring(0,10)+'</td>';
-		    tr = tr +   '<td class="hidden-xs">'+rec.Alt_Address_Line1+'</td>';
-		    tr = tr +   '<td class="hidden-xs">'+rec.Comments+'</td>';
-
+		tr = tr +   '<td class="hidden-xs">'+rec.DatePurchased.substring(0,10)+'</td>';
+		tr = tr +   '<td class="hidden-xs">'+rec.Alt_Address_Line1+'</td>';
+		tr = tr +   '<td class="hidden-xs">'+rec.Comments+'</td>';
 	    tr = tr + '</tr>';
 	});
 	$("#PropertyOwners tbody").html(tr);
@@ -553,14 +548,14 @@ function formatPropertyDetailResults(hoaRec){
 	$.each(hoaRec.assessmentsList, function(index, rec) {
 		if (index == 0) {
     	    tr = tr +   '<tr>';
-        	    tr = tr +     '<th>OwnId</th>';
-        	    tr = tr +     '<th>Year</th>';
-        	    tr = tr +     '<th>Dues Amt</th>';
-        	    tr = tr +     '<th>Paid</th>';
-        	    tr = tr +     '<th>Date Paid</th>';
-        	    tr = tr +     '<th class="hidden-xs">Date Due</th>';
-        	    tr = tr +     '<th class="hidden-xs">Payment</th>';
-        	    tr = tr +     '<th class="hidden-xs">Comments</th>';
+        	tr = tr +     '<th>OwnId</th>';
+        	tr = tr +     '<th>Year</th>';
+        	tr = tr +     '<th>Dues Amt</th>';
+        	tr = tr +     '<th>Paid</th>';
+        	tr = tr +     '<th>Date Paid</th>';
+        	tr = tr +     '<th class="hidden-xs hidden-sm">Date Due</th>';
+        	tr = tr +     '<th class="hidden-xs">Payment</th>';
+        	tr = tr +     '<th class="hidden-xs">Comments</th>';
     	    tr = tr +   '</tr>';
     	    TaxYear = rec.DateDue.substring(0,4);
 		}
@@ -574,9 +569,9 @@ function formatPropertyDetailResults(hoaRec){
 	    tr = tr +   '<td>'+rec.DuesAmt+'</td>';
 	    tr = tr +   '<td>'+setCheckbox(rec.Paid)+'</td>';
 	    tr = tr +   '<td>'+rec.DatePaid.substring(0,10)+'</td>';
-		    tr = tr +   '<td class="hidden-xs">'+rec.DateDue.substring(0,10)+'</td>';
-	    	tr = tr +   '<td class="hidden-xs">'+rec.PaymentMethod+'</td>';
-	    	tr = tr +   '<td class="hidden-xs">'+rec.Comments+'</td>';
+		tr = tr +   '<td class="hidden-xs hidden-sm">'+rec.DateDue.substring(0,10)+'</td>';
+	    tr = tr +   '<td class="hidden-xs">'+rec.PaymentMethod+'</td>';
+	    tr = tr +   '<td class="hidden-xs">'+rec.Comments+'</td>';
 	    tr = tr + '</tr>';
 	});
     $("#PropertyAssessments tbody").html(tr);
@@ -821,7 +816,7 @@ function formatSalesReportList(notProcessedBoolean){
 		    
 	    	if (hoaSalesReportRec.adminLevel > 1 && notProcessedBoolean) {
     		    tr +=    '<td><a data-ParcelId="'+hoaSalesRec.PARID+'" data-SaleDate="'+hoaSalesRec.SALEDT+'" data-Action="Process" href="#">'+hoaSalesRec.SALEDT+'</a>';
-    		    tr +=    '    <a data-ParcelId="'+hoaSalesRec.PARID+'" data-SaleDate="'+hoaSalesRec.SALEDT+'" data-Action="Ignore" href="#" class="btn btn-default btn-xs" role="button">Ignore</a></td>';
+    		    tr +=    '    <a data-ParcelId="'+hoaSalesRec.PARID+'" data-SaleDate="'+hoaSalesRec.SALEDT+'" data-Action="Ignore" href="#" class="btn btn-warning btn-xs" role="button">Ignore</a></td>';
 	    	} else {
     		    tr +=    '<td>'+hoaSalesRec.SALEDT+'</td>';
 	    	}

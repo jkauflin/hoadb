@@ -21,15 +21,7 @@ $currTimestampStr = date("Y-m-d H:i:s");
 
 	$notProcessedBoolean = paramBoolVal("notProcessedBoolean");
 
-	//--------------------------------------------------------------------------------------------------------
-	// Create connection to the database
-	//--------------------------------------------------------------------------------------------------------
-	$conn = new mysqli($host, $dbadmin, $password, $dbname);
-	// Check connection
-	if ($conn->connect_error) {
-		die("Connection failed: " . $conn->connect_error);
-	}
-	
+	$conn = getConn();
 	$hoaSalesReportRec = getHoaSalesRecList($conn,$notProcessedBoolean);
 	$hoaSalesReportRec->adminLevel = getAdminLevel();
 	
