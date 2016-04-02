@@ -12,6 +12,7 @@
  * 2015-06-19 JJK	Abstracted some variables
  * 2015-09-28 JJK	Added error handling to send email to admin and 
  * 					updated for new sales table fields
+ * 2016-04-02 JJK	Added getConn() function
  *============================================================================*/
 
 include 'commonUtil.php';
@@ -41,13 +42,16 @@ if (is_file($zipFileName)) {
 		//--------------------------------------------------------------------------------------------------------
 		// Create connection to the database
 		//--------------------------------------------------------------------------------------------------------
-		$conn = new mysqli($host, $dbadmin, $password, $dbname);
+		$conn = getConn();
+		/*		
+		new mysqli($host, $dbadmin, $password, $dbname);
 		// Check connection
 		if ($conn->connect_error) {
 			$errorStr = 'FILE: ' . __FILE__  . ', LINE: ' . __LINE__ . ', ERROR: ' . $conn->error ;
 			error_log($errorStr, 1, $adminEmailList);
 			die($errorStr);
 		}
+		*/
 		
 		// Loop through all the records in the downloaded sales file and compare with HOA database parcels
 		$recCnt = 0;
