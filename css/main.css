@@ -9,7 +9,13 @@ body {
 }
 
 img#header-image {
-	margin-top: -10px; margin-right: 5px;
+	margin-top: -10px; 
+	margin-right: 5px;
+}
+
+input.form-control {
+	margin-top: 10px;
+	margin-right: 10px;
 }
 
 /* Turn off the outline on clicks to brand anchors */

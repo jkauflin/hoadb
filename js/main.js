@@ -21,7 +21,7 @@
  * 2016-02-09 JJK	Switching from JQuery Mobile to Twitter Bootstrap
  * 2016-02-21 JJK   Test new Git
  * 2016-02-26 JJK   Added search by Lot No and adjusted displays for mobile
- * 2016-03-01 JJK
+ * 2016-04-03 JJK	Working on input fields
  *============================================================================*/
 
 $.urlParam = function(name){
@@ -76,20 +76,25 @@ function setCheckbox(checkVal){
 	if (checkVal == 1) {
 		checkedStr = 'checked=true';
 	}
-	return '<input type="checkbox" data-mini="true" '+checkedStr+' disabled="disabled">';
+	return '<input type="checkbox" '+checkedStr+' disabled="disabled">';
 }
 function setCheckboxEdit(checkVal,idName){
 	var checkedStr = '';
 	if (checkVal == 1) {
 		checkedStr = 'checked=true';
 	}
-	return '<input id="'+idName+'" type="checkbox" data-mini="true" '+checkedStr+'>';
+	return '<input id="'+idName+'" type="checkbox" '+checkedStr+'>';
 }
 function setInputText(idName,textVal,textSize){
-	return '<div class="form-group"><input id="'+idName+'" type="text" class="form-control resetval" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'"></div>';
+//	return '<div class="form-group"><input id="'+idName+'" type="text" class="form-control resetval" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'"></div>';
+	return '<input id="'+idName+'" type="text" class="form-control resetval" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'">';
+	
+//	$(".resetval").addClear();
+
 }
 function setInputDate(idName,textVal,textSize){
-	return '<input id="'+idName+'" class="Date" type="text" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" placeholder="YYYY-MM-DD" data-mini="true" >';
+	//return '<input id="'+idName+'" type="text" class="Date form-control" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" placeholder="YYYY-MM-DD">';
+	return '<input id="'+idName+'" type="text" class="form-control" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" placeholder="YYYY-MM-DD">';
 }
 
 
@@ -139,7 +144,6 @@ $(document).ready(function(){
 
 	
     // Respond to any change in values and call service
-	/* Let's try turning off the trigger of just hitting enter on an input for now (confusing with mobile text input)
     $("#SearchInput").change(function() {
         waitCursor();
         $("#PropertyListDisplay tbody").html("");
@@ -156,8 +160,7 @@ $(document).ready(function(){
     	});
         event.stopPropagation();
     });
-	*/
-	
+
     // Respond to the Search button click (because I can't figure out how to combine it with input change)
     $(document).on("click","#SearchButton",function(){
         waitCursor();
@@ -267,8 +270,6 @@ $(document).ready(function(){
         						 "&bankruptcyBoolean="+$bankruptcyBoolean+
         						 "&liensBoolean="+$liensBoolean+
         						 "&propertyComments="+cleanStr($("#PropertyComments").val()),function(results){
-
-        	//console.log("After updHoaProperty");
         	
         	// Re-read the updated data for the Detail page display
             $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
@@ -278,13 +279,10 @@ $(document).ready(function(){
    	         	$('#navbar a[href="#DetailPage"]').tab('show');
             });
         }); // End of $.get("updHoaDbData.php","parcelId="+$parcelId+
-
-       	
     });	// End of $(document).on("click","#SavePropertyEdit",function(){
 
     $(document).on("click","#SaveOwnerEdit",function(){
         waitCursor();
-    	
         var $this = $(this);
         var $parcelId = $this.attr("data-parcelId");
         var $ownerId = $this.attr("data-OwnerId");
@@ -316,18 +314,14 @@ $(document).ready(function(){
    	         	$('#navbar a[href="#DetailPage"]').tab('show');
             });
         }); // End of $.get("updHoaDbData.php","parcelId="+$parcelId+
-
     });	// End of $(document).on("click","#SaveOwnerEdit",function(){
-
 
     $(document).on("click","#SaveAssessmentEdit",function(){
         waitCursor();
-    	
         var $this = $(this);
         var $parcelId = $this.attr("data-parcelId");
         var $ownerId = $this.attr("data-OwnerId");
         var $fy = $this.attr("data-FY");
-
         var $paidBoolean = $("#PaidCheckbox").is(":checked");
 
         $.get("updHoaAssessment.php","parcelId="+$parcelId+
@@ -491,7 +485,7 @@ function formatPropertyDetailResults(hoaRec){
     tr += '<tr><th class="hidden-xs">Zip Code: </th><td class="hidden-xs">'+hoaRec.Property_Zip+'</td></tr>';
     tr += '<tr><th>Total Due: </th><td>$'+hoaRec.TotalDue+'</td></tr>';
     tr += '<tr><th>Comments: </th><td>'+hoaRec.Comments+'</td></tr>';
-    /*
+    
     tr += '<tr><th class="hidden-xs hidden-sm">Member: </th><td class="hidden-xs hidden-sm">'+setCheckbox(hoaRec.Member)+'</td></tr>';
     tr += '<tr><th>Vacant: </th><td>'+setCheckbox(hoaRec.Vacant)+'</td></tr>';
     tr += '<tr><th>Rental: </th><td>'+setCheckbox(hoaRec.Rental)+'</td></tr>';
@@ -499,7 +493,7 @@ function formatPropertyDetailResults(hoaRec){
     tr += '<tr><th>Foreclosure: </th><td>'+setCheckbox(hoaRec.Foreclosure)+'</td></tr>';
     tr += '<tr><th>Bankruptcy: </th><td>'+setCheckbox(hoaRec.Bankruptcy)+'</td></tr>';
     tr += '<tr><th>ToBe Released: </th><td>'+setCheckbox(hoaRec.Liens_2B_Released)+'</td></tr>';
-	*/
+	/*
     tr += '<tr><th class="hidden-xs hidden-sm">Member: </th><td class="hidden-xs hidden-sm">'+setCheckbox(hoaRec.Member)+'</td>';
     tr += '<th>Vacant: </th><td>'+setCheckbox(hoaRec.Vacant)+'</td>';
     tr += '<th>Rental: </th><td>'+setCheckbox(hoaRec.Rental)+'</td>';
@@ -507,7 +501,7 @@ function formatPropertyDetailResults(hoaRec){
     tr += '<th>Foreclosure: </th><td>'+setCheckbox(hoaRec.Foreclosure)+'</td>';
     tr += '<th>Bankruptcy: </th><td>'+setCheckbox(hoaRec.Bankruptcy)+'</td>';
     tr += '<th>ToBe Released: </th><td>'+setCheckbox(hoaRec.Liens_2B_Released)+'</td></tr>';
-    
+    */
     $("#PropertyDetail tbody").html(tr);
     
     var own1 = '';
@@ -609,6 +603,7 @@ function formatPropertyDetailEdit(hoaRec){
     // action or type of update
     $("#EditPageHeader").text("Edit Property");
     
+	tr += '<div class="form-group">';
     tr += '<tr><th>Parcel Id:</th><td>'+hoaRec.Parcel_ID+'</td></tr>';
     tr += '<tr><th>Lot No:</th><td>'+hoaRec.LotNo+'</td></tr>';
     tr += '<tr><th>Sub Division: </th><td>'+hoaRec.SubDivParcel+'</td></tr>';
@@ -627,12 +622,14 @@ function formatPropertyDetailEdit(hoaRec){
     tr += '<tr><th>Bankruptcy: </th><td>'+setCheckboxEdit(hoaRec.Bankruptcy,'BankruptcyCheckbox')+'</td></tr>';
     tr += '<tr><th>ToBe Released: </th><td>'+setCheckboxEdit(hoaRec.Liens_2B_Released,'LiensCheckbox')+'</td></tr>';
     tr += '<tr><th>Comments: </th><td>'+setInputText("PropertyComments",hoaRec.Comments,"80")+'</td></tr>';
-    
-    tr += '<tr><th></th><td>'+
-    	  '<a id="SavePropertyEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" href="#" class="btn btn-primary" role="button">Save</a>' +
-          ' <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> </td></tr>';
-
-    $("#EditTable tbody").html(tr);
+	tr += '</div>'
+	$("#EditTable tbody").html(tr);
+		
+	tr = '<form class="form-inline" role="form">'+
+		 '<a id="SavePropertyEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" href="#" class="btn btn-primary" role="button">Save</a>'+
+		          		'<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>'+
+		          		'</form>';
+    $("#EditPageButton").html(tr);
 
 } // End of function formatPropertyDetailEdit(hoaRec){
 
@@ -657,6 +654,7 @@ function formatOwnerDetailEdit(hoaRec,createNew){
 
 	ownerId = rec.OwnerID;
 	tr = '';
+	tr += '<div class="form-group">';
 	if (createNew) {
 	    tr += '<tr><th>Owner Id:</th><td>CREATE NEW OWNER</td></tr>';
 	} else {
@@ -665,15 +663,15 @@ function formatOwnerDetailEdit(hoaRec,createNew){
     tr += '<tr><th>Parcel Id:</th><td>'+rec.Parcel_ID+'</td></tr>';
     
     if (salesRec != null) {
-        tr += '<tr><th>Current Owner: </th><td>'+setCheckbox(rec.CurrentOwner,'CurrentOwnerCheckbox')+'</td><td><h4>Sales Information</h4></td></tr>';
-        tr += '<tr><th>Owner Name1:</th><td>'+ setInputText("OwnerName1",rec.Owner_Name1,"50")+'</td><td>'+salesRec.OWNERNAME1+'</td></tr>';
+        tr += '<tr><th>Current Owner: </th><td>'+setCheckbox(rec.CurrentOwner,'CurrentOwnerCheckbox')+'</td><td>&nbsp;&nbsp;<h4>Sales Information</h4></td></tr>';
+        tr += '<tr><th>Owner Name1:</th><td>'+ setInputText("OwnerName1",rec.Owner_Name1,"50")+'</td><td>&nbsp;&nbsp;'+salesRec.OWNERNAME1+'</td></tr>';
         tr += '<tr><th>Owner Name2:</th><td>'+ setInputText("OwnerName2",rec.Owner_Name2,"50")+'</td></tr>';
-        tr += '<tr><th>Date Purchased:</th><td>'+ setInputDate("DatePurchased",rec.DatePurchased,"10")+'</td><td>'+salesRec.SALEDT+'</td></tr>';
-        tr += '<tr><th>Mailing Name:</th><td>'+ setInputText("MailingName",rec.Mailing_Name,"50")+'</td><td>'+salesRec.MAILINGNAME1+' '+salesRec.MAILINGNAME2+'</td></tr>';
+        tr += '<tr><th>Date Purchased:</th><td>'+ setInputDate("DatePurchased",rec.DatePurchased,"10")+'</td><td>&nbsp;&nbsp;'+salesRec.SALEDT+'</td></tr>';
+        tr += '<tr><th>Mailing Name:</th><td>'+ setInputText("MailingName",rec.Mailing_Name,"50")+'</td><td>&nbsp;&nbsp;'+salesRec.MAILINGNAME1+' '+salesRec.MAILINGNAME2+'</td></tr>';
         tr += '<tr><th>Alternate Mailing: </th><td>'+setCheckboxEdit(rec.AlternateMailing,'AlternateMailingCheckbox')+'</td></tr>';
-        tr += '<tr><th>Address Line1:</th><td>'+ setInputText("AddrLine1",rec.Alt_Address_Line1,"50")+'</td><td>'+salesRec.PADDR1+'</td></tr>';
-        tr += '<tr><th>Address Line2:</th><td>'+ setInputText("AddrLine2",rec.Alt_Address_Line2,"50")+'</td><td>'+salesRec.PADDR2+'</td></tr>';
-        tr += '<tr><th>City:</th><td>'+ setInputText("AltCity",rec.Alt_City,"40")+'</td><td>'+salesRec.PADDR3+'</td></tr>';
+        tr += '<tr><th>Address Line1:</th><td>'+ setInputText("AddrLine1",rec.Alt_Address_Line1,"50")+'</td><td>&nbsp;&nbsp;'+salesRec.PADDR1+'</td></tr>';
+        tr += '<tr><th>Address Line2:</th><td>'+ setInputText("AddrLine2",rec.Alt_Address_Line2,"50")+'</td><td>&nbsp;&nbsp;'+salesRec.PADDR2+'</td></tr>';
+        tr += '<tr><th>City:</th><td>'+ setInputText("AltCity",rec.Alt_City,"40")+'</td><td>&nbsp;&nbsp;'+salesRec.PADDR3+'</td></tr>';
     } else {
         tr += '<tr><th>Current Owner: </th><td>'+setCheckbox(rec.CurrentOwner,'CurrentOwnerCheckbox')+'</td></tr>';
         tr += '<tr><th>Owner Name1:</th><td>'+ setInputText("OwnerName1",rec.Owner_Name1,"50")+'</td></tr>';
@@ -691,23 +689,28 @@ function formatOwnerDetailEdit(hoaRec,createNew){
     tr += '<tr><th>Comments: </th><td>'+setInputText("OwnerComments",rec.Comments,"12")+'</td></tr>';
     tr += '<tr><th>Last Changed:</th><td>'+rec.LastChangedTs+'</td></tr>';
     tr += '<tr><th>Changed by:</th><td>'+rec.LastChangedBy+'</td></tr>';
-    
-	if (createNew) {
-	    tr += '<tr><th></th><td>'+
-	  	  '<a id="SaveOwnerEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="NEW" href="#" class="btn btn-primary" role="button">Create New</a>' +
-	  	  '</td></tr>';
-	} else {
-	    tr += '<tr><th></th><td>'+
-	  	  '<a id="SaveOwnerEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+ownerId+'" href="#" class="btn btn-primary" role="button">Save</a>' +
-	  	  '</td></tr>';
-	}
-
+	tr += '</div>';
     $("#EditTable tbody").html(tr);
 
+	tr = '<form class="form-inline" role="form">';
+	if (createNew) {
+//	    tr += '<tr><th></th><td>'+
+		tr += '<a id="SaveOwnerEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="NEW" href="#" class="btn btn-primary" role="button">Create New</a>';
+//	  	  '</td></tr>';
+	} else {
+//	    tr += '<tr><th></th><td>'+
+		tr += '<a id="SaveOwnerEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+ownerId+'" href="#" class="btn btn-primary" role="button">Save</a>';
+//	  	  '</td></tr>';
+	}
+	tr += '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button></form>';
+	$("#EditPageButton").html(tr);
+
+	/*
     $(".Date").datetimepicker({
         timepicker:false,
         format:'Y-m-d'
-    });    
+    });
+    */    
 
 } // End of function formatOwnerDetailEdit(hoaRec){
 
@@ -725,6 +728,7 @@ function formatAssessmentDetailEdit(hoaRec){
 	ownerId = rec.OwnerID;
 	fy = rec.FY;
 	tr = '';
+	tr += '<div class="form-group">';
     tr += '<tr><th>Fiscal Year:</th><td>'+rec.FY+'</td></tr>';
     tr += '<tr><th>Owner Id:</th><td>'+rec.OwnerID+'</td></tr>';
     tr += '<tr><th>Parcel Id:</th><td>'+rec.Parcel_ID+'</td></tr>';
@@ -737,18 +741,22 @@ function formatAssessmentDetailEdit(hoaRec){
     tr += '<tr><th>Comments: </th><td>'+setInputText("AssessmentsComments",rec.Comments,"10")+'</td></tr>';
     tr += '<tr><th>Last Changed:</th><td>'+rec.LastChangedTs+'</td></tr>';
     tr += '<tr><th>Changed by:</th><td>'+rec.LastChangedBy+'</td></tr>';
-
-    tr += '<tr><th></th><td>'+
-	  	  '<a id="SaveAssessmentEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+ownerId+'" data-FY="'+fy+'" href="#" class="btn btn-primary" role="button">Save</a>' +
-	  	  '</td></tr>';
-
+	tr += '</div>';
 	$("#EditTable tbody").html(tr);
 
+	tr = '<form class="form-inline" role="form">'+
+	  '<a id="SaveAssessmentEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+ownerId+'" data-FY="'+fy+'" href="#" class="btn btn-primary" role="button">Save</a>' +
+	          		'<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>'+
+	          		'</form>';
+	$("#EditPageButton").html(tr);
+
+	/*
     $(".Date").datetimepicker({
         timepicker:false,
         format:'Y-m-d'
     });    
-
+	*/
+	
 } // End of function formatAssessmentDetailEdit(hoaRec){
 
 function formatDuesStatementResults(hoaRec) {

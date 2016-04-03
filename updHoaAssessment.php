@@ -29,13 +29,7 @@ include 'hoaDbCommon.php';
 	//--------------------------------------------------------------------------------------------------------
 	// Create connection to the database
 	//--------------------------------------------------------------------------------------------------------
-	$conn = new mysqli($host, $dbadmin, $password, $dbname);
-
-	// Check connection
-	if ($conn->connect_error) {
-    	die("Connection failed: " . $conn->connect_error);
-	} 
-
+	$conn = getConn();
 	$stmt = $conn->prepare("UPDATE hoa_assessments SET DuesAmt=?,DateDue=?,Paid=?,DatePaid=?,PaymentMethod=?,Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND OwnerID = ? AND FY = ? ; ");
 	$stmt->bind_param("ssisssssss", $duesAmount,$dateDue,$paidBoolean,$datePaid,$paymentMethod,$assessmentsComments,$username,$parcelId,$ownerId,$fy);
 	$stmt->execute();

@@ -398,4 +398,133 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 	return $hoaRec;
 } // End of function getHoaRec($conn,$parcelId,$ownerId,$fy) {
 
+function getHoaRec2($conn,$parcelId) {
+
+	$hoaRec = new HoaRec();
+
+	// TBD - calculate
+	$hoaRec->TotalDue = 0.00;
+
+	$conn = getConn();
+	$stmt = $conn->prepare("SELECT * FROM hoa_properties WHERE Parcel_ID = ? ; ");
+	$stmt->bind_param("s", $parcelId);
+	$stmt->execute();
+	$result = $stmt->get_result();
+
+	if ($result->num_rows > 0) {
+		while($row = $result->fetch_assoc()) {
+			$hoaRec->Parcel_ID = $row["Parcel_ID"];
+			$hoaRec->LotNo = $row["LotNo"];
+			$hoaRec->SubDivParcel = $row["SubDivParcel"];
+			$hoaRec->Parcel_Location = $row["Parcel_Location"];
+			$hoaRec->Property_Street_No = $row["Property_Street_No"];
+			$hoaRec->Property_Street_Name = $row["Property_Street_Name"];
+			$hoaRec->Property_City = $row["Property_City"];
+			$hoaRec->Property_State = $row["Property_State"];
+			$hoaRec->Property_Zip = $row["Property_Zip"];
+
+			$hoaRec->ownersList = array();
+			$hoaRec->assessmentsList = array();
+			$hoaRec->salesList = array();
+		}
+		$result->close();
+		$stmt->close();
+
+		/*
+		if (empty($ownerId)) {
+			$stmt = $conn->prepare("SELECT * FROM hoa_owners WHERE Parcel_ID = ? ORDER BY OwnerID DESC ; ");
+			$stmt->bind_param("s", $parcelId);
+		} else {
+			$stmt = $conn->prepare("SELECT * FROM hoa_owners WHERE Parcel_ID = ? AND OwnerID = ? ORDER BY OwnerID DESC ; ");
+			$stmt->bind_param("ss", $parcelId,$ownerId);
+		}
+		$stmt->execute();
+		$result = $stmt->get_result();
+
+		if ($result->num_rows > 0) {
+			while($row = $result->fetch_assoc()) {
+				$hoaOwnerRec = new HoaOwnerRec();
+				$hoaOwnerRec->OwnerID = $row["OwnerID"];
+				$hoaOwnerRec->Parcel_ID = $row["Parcel_ID"];
+				$hoaOwnerRec->CurrentOwner = $row["CurrentOwner"];
+				$hoaOwnerRec->Owner_Name1 = $row["Owner_Name1"];
+				$hoaOwnerRec->Owner_Name2 = $row["Owner_Name2"];
+				$hoaOwnerRec->DatePurchased = truncDate($row["DatePurchased"]);
+				$hoaOwnerRec->Mailing_Name = $row["Mailing_Name"];
+				$hoaOwnerRec->AlternateMailing = $row["AlternateMailing"];
+				$hoaOwnerRec->Alt_Address_Line1 = $row["Alt_Address_Line1"];
+				$hoaOwnerRec->Alt_Address_Line2 = $row["Alt_Address_Line2"];
+				$hoaOwnerRec->Alt_City = $row["Alt_City"];
+				$hoaOwnerRec->Alt_State = $row["Alt_State"];
+				$hoaOwnerRec->Alt_Zip = $row["Alt_Zip"];
+				$hoaOwnerRec->Owner_Phone = $row["Owner_Phone"];
+				$hoaOwnerRec->Comments = $row["Comments"];
+				$hoaOwnerRec->EntryTimestamp = $row["EntryTimestamp"];
+				$hoaOwnerRec->UpdateTimestamp = $row["UpdateTimestamp"];
+				$hoaOwnerRec->LastChangedBy = $row["LastChangedBy"];
+				$hoaOwnerRec->LastChangedTs = $row["LastChangedTs"];
+
+				array_push($hoaRec->ownersList,$hoaOwnerRec);
+			}
+		} // End of Owners
+		$result->close();
+		$stmt->close();
+		*/
+		
+		if (empty($fy)) {
+			$stmt = $conn->prepare("SELECT * FROM hoa_assessments WHERE Parcel_ID = ? ORDER BY FY DESC ; ");
+			$stmt->bind_param("s", $parcelId);
+		} else {
+			$stmt = $conn->prepare("SELECT * FROM hoa_assessments WHERE Parcel_ID = ? AND FY = ? ORDER BY FY DESC ; ");
+			$stmt->bind_param("ss", $parcelId,$fy);
+		}
+		$stmt->execute();
+		$result = $stmt->get_result();
+
+		if ($result->num_rows > 0) {
+			while($row = $result->fetch_assoc()) {
+				$hoaAssessmentRec = new HoaAssessmentRec();
+				$hoaAssessmentRec->OwnerID = $row["OwnerID"];
+				$hoaAssessmentRec->Parcel_ID = $row["Parcel_ID"];
+				$hoaAssessmentRec->FY = $row["FY"];
+				$hoaAssessmentRec->DuesAmt = $row["DuesAmt"];
+				$hoaAssessmentRec->DateDue = truncDate($row["DateDue"]);
+				$hoaAssessmentRec->Paid = $row["Paid"];
+				$hoaAssessmentRec->DatePaid = truncDate($row["DatePaid"]);
+				$hoaAssessmentRec->PaymentMethod = $row["PaymentMethod"];
+				$hoaAssessmentRec->Comments = $row["Comments"];
+				$hoaAssessmentRec->LastChangedBy = $row["LastChangedBy"];
+				$hoaAssessmentRec->LastChangedTs = $row["LastChangedTs"];
+
+				array_push($hoaRec->assessmentsList,$hoaAssessmentRec);
+
+				// TBD - finish this logic 11/28/2015 JJK
+				if (!$hoaAssessmentRec->Paid) {
+					//error_log('gettype($hoaAssessmentRec->DuesAmt) = '.gettype($hoaAssessmentRec->DuesAmt));
+					//error_log('DuesAmt = '.$hoaAssessmentRec->DuesAmt);
+					//$str = '$$1\09.0/1::a/bb';
+					//error_log('BEFORE = '.$str);
+					// Replace every ascii character except decimal and digits with a null
+					$numericStr = preg_replace('/[\x01-\x2D\x2F\x3A-\x7F]+/', '', $hoaAssessmentRec->DuesAmt);
+					//error_log('AFTER = '.$numericStr);
+					// add to toal
+					$hoaRec->TotalDue = $hoaRec->TotalDue + floatval($numericStr);
+				}
+			}
+
+		} // End of Assessments
+		$result->close();
+		$stmt->close();
+
+		// Total due
+
+
+	} else {
+		$result->close();
+		$stmt->close();
+	} // End of Properties
+
+	return $hoaRec;
+} // End of function getHoaRec2($conn,$parcelId) {
+
 ?>

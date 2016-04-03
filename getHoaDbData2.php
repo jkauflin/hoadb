@@ -5,29 +5,25 @@
  * DESCRIPTION: 
  *----------------------------------------------------------------------------
  * Modification History
- * 2015-10-02 JJK 	Initial version to update Sales 
+ * 2015-03-06 JJK 	Initial version to get data 
  *============================================================================*/
 
 include 'commonUtil.php';
 // Include table record classes and db connection parameters
 include 'hoaDbCommon.php';
 
-	$username = getUsername();
-
 	// If they are set, get input parameters from the REQUEST
-	$PARID = getParamVal("PARID");
-	$SALEDT = getParamVal("SALEDT");
+	$parcelId = getParamVal("parcelId");
 	
 	//--------------------------------------------------------------------------------------------------------
 	// Create connection to the database
 	//--------------------------------------------------------------------------------------------------------
 	$conn = getConn();
-	$stmt = $conn->prepare("UPDATE hoa_sales SET ProcessedFlag='Y',LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE PARID = ? AND SALEDT = ? ; ");
-	$stmt->bind_param("sss",$username,$PARID,$SALEDT);	
-	$stmt->execute();
-	$stmt->close();
-	$conn->close();
-
-	echo 'Update Successful - parcelId = ' . $PARID;
+	$hoaRec = getHoaRec2($conn,$parcelId);
+	$hoaRec->adminLevel = getAdminLevel();
 	
+	$conn->close();
+	
+	echo json_encode($hoaRec);
+
 ?>
