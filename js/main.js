@@ -87,14 +87,14 @@ function setCheckboxEdit(checkVal,idName){
 }
 function setInputText(idName,textVal,textSize){
 //	return '<div class="form-group"><input id="'+idName+'" type="text" class="form-control resetval" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'"></div>';
-	return '<input id="'+idName+'" type="text" class="form-control resetval" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'">';
+	return '<input id="'+idName+'" type="text" class="form-control input-sm resetval" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'">';
 	
 //	$(".resetval").addClear();
 
 }
 function setInputDate(idName,textVal,textSize){
 	//return '<input id="'+idName+'" type="text" class="Date form-control" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" placeholder="YYYY-MM-DD">';
-	return '<input id="'+idName+'" type="text" class="form-control" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" placeholder="YYYY-MM-DD">';
+	return '<input id="'+idName+'" type="text" class="form-control input-sm" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" placeholder="YYYY-MM-DD">';
 }
 
 
@@ -349,7 +349,6 @@ $(document).ready(function(){
 	$(document).on("click","#SalesReport",function(){
         waitCursor();
 	    $("#ReportHeader").html("County Reported Sales of HOA properties");
-        $("#ReportListDisplay tbody").html("");
 	    $("#ReportsInstructions").html("");
         
     	// Get the list
@@ -660,7 +659,7 @@ function formatOwnerDetailEdit(hoaRec,createNew){
 	} else {
 	    tr += '<tr><th>Owner Id:</th><td>'+rec.OwnerID+'</td></tr>';
 	}
-    tr += '<tr><th>Parcel Id:</th><td>'+rec.Parcel_ID+'</td></tr>';
+    tr += '<tr><th>Location:</th><td>'+hoaRec.Parcel_Location+'</td></tr>';
     
     if (salesRec != null) {
         tr += '<tr><th>Current Owner: </th><td>'+setCheckbox(rec.CurrentOwner,'CurrentOwnerCheckbox')+'</td><td>&nbsp;&nbsp;<h4>Sales Information</h4></td></tr>';
@@ -808,43 +807,53 @@ function formatDuesStatementResults(hoaRec) {
 
 function formatSalesReportList(notProcessedBoolean){
 	$.getJSON("getSalesReport.php","notProcessedBoolean="+notProcessedBoolean,function(hoaSalesReportRec){
-		var tr = '';
-	    rowId = 0;
+
+		var reportListDisplay = $("#ReportListDisplay tbody");
+		reportListDisplay.empty();
+		
 		$.each(hoaSalesReportRec.salesList, function(index, hoaSalesRec) {
 			rowId = index + 1;
 			if (index == 0) {
-	    	    tr +=    '<tr>';
-	    	    tr +=      '<th>Row</th>';
-	    	    //tr +=      '<th>Parcel Id</th>';
-	    	    tr +=  	   '<th>Sale Date</th>';
-	    	    tr +=      '<th>Parcel Location</th>';
-	    	    tr +=      '<th>Old Owner Name</th>';
-	    	    tr +=      '<th>New Owner Name</th>';
-	    	    tr +=      '<th>Mailing Name1</th>';
-	    	    tr +=      '<th>Mailing Name2</th>';
-	    	    //tr +=      '<th>Notification</th>';
-	    	    tr +=    '</tr>';
+				$('<tr>')
+				.append($('<th>').html('Row'))
+				.append($('<th>').html('Sale Date'))
+				.append($('<th>').html('Parcel Location'))
+				.append($('<th>').html('Old Owner Name'))
+				.append($('<th>').html('New Owner Name'))
+				.append($('<th>').html('Mailing Name1'))
+				.append($('<th>').html('Mailing Name2'))
+				.appendTo(reportListDisplay);		
 			}
-		    tr +=  '<tr>';
-		    tr +=    '<td>'+rowId+'</td>';
-		    //tr +=    '<td><a data-parcelId="'+hoaSalesRec.PARID+'" href="#">'+hoaSalesRec.PARID+'</a></td>';
-		    
+
+			var tr = $('<tr>');
+			tr.append($('<td>').html(index+1))
 	    	if (hoaSalesReportRec.adminLevel > 1 && notProcessedBoolean) {
-    		    tr +=    '<td><a data-ParcelId="'+hoaSalesRec.PARID+'" data-SaleDate="'+hoaSalesRec.SALEDT+'" data-Action="Process" href="#">'+hoaSalesRec.SALEDT+'</a>';
-    		    tr +=    '    <a data-ParcelId="'+hoaSalesRec.PARID+'" data-SaleDate="'+hoaSalesRec.SALEDT+'" data-Action="Ignore" href="#" class="btn btn-warning btn-xs" role="button">Ignore</a></td>';
+    			tr.append($('<td>')
+    					.append($('<a>').attr('href',"#")
+    									.attr('data-ParcelId',hoaSalesRec.PARID)
+    									.attr('data-SaleDate',hoaSalesRec.SALEDT)
+    									.attr('data-Action',"Process")
+    									.html(hoaSalesRec.SALEDT))
+    					.append($('<a>').attr('data-ParcelId',hoaSalesRec.PARID)
+    									.attr('data-SaleDate',hoaSalesRec.SALEDT)
+    									.attr('data-Action',"Ignore")
+    									.attr('href',"#")
+    									.attr('class',"btn btn-warning btn-xs")
+    									.attr('role',"button")
+    									.html("Ignore")) );
 	    	} else {
-    		    tr +=    '<td>'+hoaSalesRec.SALEDT+'</td>';
+    			tr.append($('<td>').html(hoaSalesRec.SALEDT));
 	    	}
-		    tr +=    '<td>'+hoaSalesRec.PARCELLOCATION+'</td>';
-		    tr +=    '<td>'+hoaSalesRec.OLDOWN+'</td>';
-		    tr +=    '<td>'+hoaSalesRec.OWNERNAME1+'</td>';
-		    tr +=    '<td>'+hoaSalesRec.MAILINGNAME1+'</td>';
-		    tr +=    '<td>'+hoaSalesRec.MAILINGNAME2+'</td>';
-		    //tr +=    '<td>'+hoaSalesRec.NotificationFlag+'</td>';
-		    tr +=  '</tr>';
+
+			tr.append($('<td>').html(hoaSalesRec.PARCELLOCATION))
+			.append($('<td>').html(hoaSalesRec.OLDOWN))
+			.append($('<td>').html(hoaSalesRec.OWNERNAME1))
+			.append($('<td>').html(hoaSalesRec.MAILINGNAME1))
+			.append($('<td>').html(hoaSalesRec.MAILINGNAME2));
+		    
+		    tr.appendTo(reportListDisplay);		
 		});
 
-		$("#ReportListDisplay tbody").html(tr);
 	});
-}
+} // function formatSalesReportList(notProcessedBoolean){
 

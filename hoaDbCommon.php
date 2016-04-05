@@ -143,7 +143,7 @@ class HoaSalesReportRec
 
 function getHoaSalesRec($conn,$parcelId,$saleDate) {
 	$hoaSalesRec = new HoaSalesRec();
-	
+
 	$conn = getConn();
 	$stmt = $conn->prepare("SELECT * FROM hoa_sales WHERE PARID = ? AND SALEDT = ?; ");
 	$stmt->bind_param("ss", $parcelId,$saleDate);
@@ -169,6 +169,9 @@ function getHoaSalesRec($conn,$parcelId,$saleDate) {
 			$hoaSalesRec->ProcessedFlag = $row["ProcessedFlag"];
 			$hoaSalesRec->LastChangedBy = $row["LastChangedBy"];
 			$hoaSalesRec->LastChangedTs = $row["LastChangedTs"];
+			
+			fputcsv($output, $row);
+			
 		}
 		$result->close();
 	}
