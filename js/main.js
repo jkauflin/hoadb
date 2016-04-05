@@ -22,6 +22,8 @@
  * 2016-02-21 JJK   Test new Git
  * 2016-02-26 JJK   Added search by Lot No and adjusted displays for mobile
  * 2016-04-03 JJK	Working on input fields
+ * 2016-04-05 JJK   Adding Admin function for adding yearly dues assessments
+ * 					Adding Liens
  *============================================================================*/
 
 $.urlParam = function(name){
@@ -94,12 +96,11 @@ function setInputText(idName,textVal,textSize){
 }
 function setInputDate(idName,textVal,textSize){
 	//return '<input id="'+idName+'" type="text" class="Date form-control" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" placeholder="YYYY-MM-DD">';
-	return '<input id="'+idName+'" type="text" class="form-control input-sm" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" placeholder="YYYY-MM-DD">';
+	return '<input id="'+idName+'" type="text" class="form-control input-sm Date" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" placeholder="YYYY-MM-DD">';
 }
 
 
 $(document).ready(function(){
-	
 	//$("#DisplayWidth").text("width = "+$(window).width());
 	
 	// Auto-close the collapse menu after clicking a non-dropdown menu item (in the bootstrap nav header)
@@ -112,37 +113,11 @@ $(document).ready(function(){
     // Using addClear plug-in function to add a clear button on input text fields
 	$(".resetval").addClear();
 
-    // http://xdsoft.net/jqplugins/datetimepicker/
-    /*
-    $(".DateTime").datetimepicker({
-        format:'Y-m-d H:i'
-    });    
     $(".Date").datetimepicker({
         timepicker:false,
         format:'Y-m-d'
-    });    
-    jQuery('#datetimepicker6').datetimepicker({
-    	  timepicker:false,
-    	  onChangeDateTime:function(dp,$input){
-    	    alert($input.val())
-    	  }
-    	});
-    	
-    $(".Date").datetimepicker({
-        timepicker:false,
-        format:'Y-m-d',
-  	  	onChangeDateTime:function(dp,$input){
-  	  		alert($input.val())
-  	  	}
-    $(".Date").datetimepicker({
-        timepicker:false,
-        format:'Y-m-d'
-    });    
-    });    
-        <input type="text" class="Date" name="ErrBeginDateTime" id="ErrBeginDateTime"  placeholder="Begin Date (YYYY-MM-DD)" data-mini="true">
-    */
+    });
 
-	
     // Respond to any change in values and call service
     $("#SearchInput").change(function() {
         waitCursor();
@@ -179,6 +154,7 @@ $(document).ready(function(){
         event.stopPropagation();
     });
 
+    
     // Respond to clicking on a property by reading details and display on detail tab
     $(document).on("click","#PropertyListDisplay tr td a",function(){
         waitCursor();
@@ -431,6 +407,50 @@ $(document).ready(function(){
 	$('.summernote').code(sHTML);
 	*/
 
+    // Respond to the Search button click (because I can't figure out how to combine it with input change)
+    $(document).on("click","#AddAssessmentsButton",function(){
+        waitCursor();
+        // Validate add assessments (check access permissions, timing, year, and amount)
+        // get confirmation message back
+        var FY = cleanStr($("#AddAssessmentsYear").val());
+        var duesAmt = cleanStr($("#DuesAmt").val());
+    	$.getJSON("adminValidate.php","action=AddAssessments"+
+    										"&FY="+FY+
+    										"&duesAmt="+duesAmt,function(adminRec){
+    	    $("#ConfirmationMessage").html(adminRec.message);
+    	    
+    	    var confirmationButton = $("#ConfirmationButton");
+    	    confirmationButton.empty();
+    	    var buttonForm = $('<form>').prop('class',"form-inline").attr('role',"form");
+    	    // If the action was Valid, append an action button
+    	    if (adminRec.result == "Valid") {
+        	    buttonForm.append($('<button>').prop('id',"AdminExecute").prop('class',"btn btn-danger").attr('type',"button").attr('data-dismiss',"modal").html('Continue')
+	    								.attr('data-action',"AddAssessments").attr('data-FY',FY).attr('data-duesAmt',duesAmt));
+    	    }
+    	    buttonForm.append($('<button>').prop('class',"btn btn-default").attr('type',"button").attr('data-dismiss',"modal").html('Close'));
+    	    confirmationButton.append(buttonForm);
+    	    
+    	    $('*').css('cursor', 'default');
+            $("#ConfirmationModal").modal();
+    	});
+        event.stopPropagation();
+    });
+
+    // Respond to the Continue click for an Admin Execute function 
+    $(document).on("click","#AdminExecute",function(){
+        var $this = $(this);
+        waitCursor();
+        var FY = cleanStr($("#AddAssessmentsYear").val());
+    	$.getJSON("adminExecute.php","action="+$this.attr("data-action")+
+    										"&FY="+$this.attr("data-FY")+
+    										"&duesAmt="+$this.attr("data-duesAmt"),function(adminRec){
+    	    $('*').css('cursor', 'default');
+    	    $("#ResultMessage").html(adminRec.message);
+    	});
+        event.stopPropagation();
+    });
+
+
 }); // $(document).ready(function(){
 
 
@@ -492,15 +512,7 @@ function formatPropertyDetailResults(hoaRec){
     tr += '<tr><th>Foreclosure: </th><td>'+setCheckbox(hoaRec.Foreclosure)+'</td></tr>';
     tr += '<tr><th>Bankruptcy: </th><td>'+setCheckbox(hoaRec.Bankruptcy)+'</td></tr>';
     tr += '<tr><th>ToBe Released: </th><td>'+setCheckbox(hoaRec.Liens_2B_Released)+'</td></tr>';
-	/*
-    tr += '<tr><th class="hidden-xs hidden-sm">Member: </th><td class="hidden-xs hidden-sm">'+setCheckbox(hoaRec.Member)+'</td>';
-    tr += '<th>Vacant: </th><td>'+setCheckbox(hoaRec.Vacant)+'</td>';
-    tr += '<th>Rental: </th><td>'+setCheckbox(hoaRec.Rental)+'</td>';
-    tr += '<th>Managed: </th><td>'+setCheckbox(hoaRec.Managed)+'</td>';
-    tr += '<th>Foreclosure: </th><td>'+setCheckbox(hoaRec.Foreclosure)+'</td>';
-    tr += '<th>Bankruptcy: </th><td>'+setCheckbox(hoaRec.Bankruptcy)+'</td>';
-    tr += '<th>ToBe Released: </th><td>'+setCheckbox(hoaRec.Liens_2B_Released)+'</td></tr>';
-    */
+
     $("#PropertyDetail tbody").html(tr);
     
     var own1 = '';
@@ -549,7 +561,7 @@ function formatPropertyDetailResults(hoaRec){
 		if (index == 0) {
     	    tr = tr +   '<tr>';
         	tr = tr +     '<th>OwnId</th>';
-        	tr = tr +     '<th>Year</th>';
+        	tr = tr +     '<th>FY</th>';
         	tr = tr +     '<th>Dues Amt</th>';
         	tr = tr +     '<th>Paid</th>';
         	tr = tr +     '<th>Date Paid</th>';
@@ -589,9 +601,6 @@ function formatPropertyDetailResults(hoaRec){
 	    //$("#AddAssessment").html('<a id="AddAssessmentButton" href="#" class="btn btn-default" role="button">Add Assessment</a>');
 	}
 
-//	<a href="#" class="btn btn-info" role="button">Link Button</a>    
-//	<button id="SearchButton" type="button" class="btn btn-default">Search</button>
-		
 } // End of function formatDetailResults(hoaRec){
 
 
@@ -704,12 +713,10 @@ function formatOwnerDetailEdit(hoaRec,createNew){
 	tr += '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button></form>';
 	$("#EditPageButton").html(tr);
 
-	/*
     $(".Date").datetimepicker({
         timepicker:false,
         format:'Y-m-d'
     });
-    */    
 
 } // End of function formatOwnerDetailEdit(hoaRec){
 
@@ -749,12 +756,10 @@ function formatAssessmentDetailEdit(hoaRec){
 	          		'</form>';
 	$("#EditPageButton").html(tr);
 
-	/*
     $(".Date").datetimepicker({
         timepicker:false,
         format:'Y-m-d'
     });    
-	*/
 	
 } // End of function formatAssessmentDetailEdit(hoaRec){
 

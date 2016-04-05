@@ -63,14 +63,6 @@
 				  	<h4>Search</h4>
 				  	
                   	<div id="SearchInput" >
-                  	<!-- 
-                    	<div class="form-group"><input type="text" class="form-control resetval" name="parcelId"  	id="parcelId" 	placeholder="Parcel Id (R35617399 0001)"></div>
-                    	<div class="form-group"><input type="text" class="form-control resetval" name="lotNo"     	id="lotNo"		placeholder="Lot Number"></div>
-                    	<div class="form-group"><input type="text" class="form-control resetval" name="address"     id="address"   	placeholder="Property Address" ></div>
-                    	<div class="form-group"><input type="text" class="form-control resetval" name="ownerName"   id="ownerName" 	placeholder="Owner Name (Last First)" ></div>
-                    	<div class="form-group"><input type="text" class="form-control resetval" name="phoneNo"     id="phoneNo"   	placeholder="Phone Number" ></div>
-                    	<div class="form-group"><input type="text" class="form-control resetval" name="altAddress"	id="altAddress"	placeholder="Alternate Address"></div>
-                  	 -->
                     	<div class="form-group">
                     		<input type="text" class="form-control resetval" name="parcelId"  	id="parcelId" 	placeholder="Parcel Id (R35617399 0001)">
                     		<input type="text" class="form-control resetval" name="lotNo"     	id="lotNo"		placeholder="Lot Number">
@@ -143,8 +135,7 @@
 			</div><!-- row -->	                
 		</div><!-- end of Detail -->
 	        
-	        <div class="tab-pane" id="ReportsPage">
-
+	    <div class="tab-pane" id="ReportsPage">
 				<div class="row">
 				    <div class="col-sm-2">
 				    	<h4>Reports</h4>
@@ -169,13 +160,41 @@
 			           	</table>
 					</div>
 				</div>
-	                
-	        </div><!-- end of Reports -->
+	    </div><!-- end of Reports -->
 	        
-	        <div class="tab-pane" id="AdminPage">
-	             <h4>Admin</h4>
-	             
-	        </div><!-- end of Admin -->
+	    <div class="tab-pane" id="AdminPage">
+			<div class="row">
+				<div class="col-sm-5 col-md-4">
+				  	<h4>Admin</h4>
+
+		             <div id="AddAssessmentsInput" >
+	                    <div class="form-group" style="margin-right:100px;">
+                    		<input type="text" class="form-control resetval" name="DuesAmt"     	id="DuesAmt"		placeholder="Dues Amount">
+						      <label for="AddAssessmentsYear">Fiscal Year for which to add Assessments:</label>
+						      <select class="form-control" id="AddAssessmentsYear">
+						        <option>2017</option>
+						        <option>2018</option>
+						        <option>2019</option>
+						        <option>2020</option>
+						        <option>2021</option>
+						        <option>2022</option>
+						        <option>2023</option>
+						        <option>2024</option>
+						        <option>2025</option>
+						      </select>                    		
+	                    </div>
+	                    <button id="AddAssessmentsButton" type="button" class="btn btn-primary">Add Assessments</button>
+					 </div>
+				  	
+				  </div>
+				  <div class="col-sm-7 col-md-8">
+                	<h4>Results</h4>
+                	<div class="ajaxError"></div>
+                	<div id="ResultMessage"></div>
+				  </div>
+			</div><!-- row -->	                
+
+	     </div><!-- end of Admin -->
 	        
 	</div><!-- end of main tab content -->
 </div><!-- end of main container -->
@@ -223,6 +242,23 @@
 	        </div>
 	        <div class="modal-footer">
 	        	<div id="EditPageButton">
+	        	</div>
+	        </div>
+	      </div>
+	    </div>
+</div><!-- /EditPage -->
+
+<div id="ConfirmationModal" class="modal fade" role="dialog" >
+	    <div class="modal-dialog modal-sm">
+	      <div class="modal-content">
+	        <div class="modal-header">
+	          <button type="button" class="close" data-dismiss="modal">&times;</button>
+	          <h3 class="modal-title">Confirmation</h3>
+	        </div>
+	        <div id="ConfirmationMessage" class="modal-body">
+	        </div>
+	        <div class="modal-footer">
+	        	<div id="ConfirmationButton">
 	        	</div>
 	        </div>
 	      </div>

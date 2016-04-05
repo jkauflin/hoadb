@@ -15,6 +15,7 @@
  *                  a numberic value)
  * 2016-03-28 JJK	Added getComm to return a database connection and moved
  * 					the hoaDbCred include inside it to access the variables	
+ * 2016-04-05 JJK	Added HoaLienRec
  *============================================================================*/
 
 function getConn() {
@@ -104,6 +105,26 @@ class HoaAssessmentRec
   	public $LastChangedTs;
 }
 
+class HoaLienRec
+{
+	public $OwnerID;
+	public $Parcel_ID;
+	public $FY;
+	public $LienRefNo;
+	public $DateFiled;
+	public $Disposition;
+	public $FilingFee;
+	public $ReleaseFee;
+	public $DateReleased;
+	public $DatePaid;
+	public $AmountPaid;
+	public $FilingFeeInterest;
+	public $AssessmentInterest;
+	public $Comments;
+	public $LastChangedBy;
+	public $LastChangedTs;
+}
+
 class HoaPropertyRec
 {
 	public $parcelId;
@@ -141,6 +162,12 @@ class HoaSalesReportRec
 	public $salesList;
 }
 
+class AdminRec
+{
+	public $result;
+	public $message;
+}
+
 function getHoaSalesRec($conn,$parcelId,$saleDate) {
 	$hoaSalesRec = new HoaSalesRec();
 
@@ -169,9 +196,6 @@ function getHoaSalesRec($conn,$parcelId,$saleDate) {
 			$hoaSalesRec->ProcessedFlag = $row["ProcessedFlag"];
 			$hoaSalesRec->LastChangedBy = $row["LastChangedBy"];
 			$hoaSalesRec->LastChangedTs = $row["LastChangedTs"];
-			
-			fputcsv($output, $row);
-			
 		}
 		$result->close();
 	}
