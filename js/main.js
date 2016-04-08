@@ -564,7 +564,7 @@ function formatPropertyDetailResults(hoaRec){
         	tr = tr +     '<th>FY</th>';
         	tr = tr +     '<th>Dues Amt</th>';
         	tr = tr +     '<th>Paid</th>';
-        	tr = tr +     '<th>Date Paid</th>';
+        	tr = tr +     '<th class="hidden-xs">Date Paid</th>';
         	tr = tr +     '<th class="hidden-xs hidden-sm">Date Due</th>';
         	tr = tr +     '<th class="hidden-xs">Payment</th>';
         	tr = tr +     '<th class="hidden-xs">Comments</th>';
@@ -580,7 +580,7 @@ function formatPropertyDetailResults(hoaRec){
     	}
 	    tr = tr +   '<td>'+rec.DuesAmt+'</td>';
 	    tr = tr +   '<td>'+setCheckbox(rec.Paid)+'</td>';
-	    tr = tr +   '<td>'+rec.DatePaid.substring(0,10)+'</td>';
+	    tr = tr +   '<td class="hidden-xs">'+rec.DatePaid.substring(0,10)+'</td>';
 		tr = tr +   '<td class="hidden-xs hidden-sm">'+rec.DateDue.substring(0,10)+'</td>';
 	    tr = tr +   '<td class="hidden-xs">'+rec.PaymentMethod+'</td>';
 	    tr = tr +   '<td class="hidden-xs">'+rec.Comments+'</td>';
@@ -735,21 +735,62 @@ function formatAssessmentDetailEdit(hoaRec){
 	fy = rec.FY;
 	tr = '';
 	tr += '<div class="form-group">';
-    tr += '<tr><th>Fiscal Year:</th><td>'+rec.FY+'</td></tr>';
-    tr += '<tr><th>Owner Id:</th><td>'+rec.OwnerID+'</td></tr>';
-    tr += '<tr><th>Parcel Id:</th><td>'+rec.Parcel_ID+'</td></tr>';
+    tr += '<tr><th>Fiscal Year: </th><td>'+rec.FY+'</td></tr>';
+    tr += '<tr><th>Owner Id: </th><td>'+rec.OwnerID+'</td></tr>';
+    tr += '<tr><th>Parcel Id: </th><td>'+rec.Parcel_ID+'</td></tr>';
     
-    tr += '<tr><th>Dues Amount:</th><td>'+setInputText("DuesAmount",rec.DuesAmt,"10")+'</td></tr>';
-    tr += '<tr><th>Date Due:</th><td>'+setInputDate("DateDue",rec.DateDue,"10")+'</td></tr>';
+    tr += '<tr><th>Dues Amount: </th><td>'+setInputText("DuesAmount",rec.DuesAmt,"10")+'</td></tr>';
+    tr += '<tr><th>Date Due: </th><td>'+setInputDate("DateDue",rec.DateDue,"10")+'</td></tr>';
     tr += '<tr><th>Paid: </th><td>'+setCheckboxEdit(rec.Paid,'PaidCheckbox')+'</td></tr>';
-    tr += '<tr><th>Date Paid:</th><td>'+setInputDate("DatePaid",rec.DatePaid,"10")+'</td></tr>';
-    tr += '<tr><th>Payment Method:</th><td>'+setInputText("PaymentMethod",rec.PaymentMethod,"20")+'</td></tr>';
+    tr += '<tr><th>Date Paid: </th><td>'+setInputDate("DatePaid",rec.DatePaid,"10")+'</td></tr>';
+    tr += '<tr><th>Payment Method: </th><td>'+setInputText("PaymentMethod",rec.PaymentMethod,"20")+'</td></tr>';
     tr += '<tr><th>Comments: </th><td>'+setInputText("AssessmentsComments",rec.Comments,"10")+'</td></tr>';
-    tr += '<tr><th>Last Changed:</th><td>'+rec.LastChangedTs+'</td></tr>';
-    tr += '<tr><th>Changed by:</th><td>'+rec.LastChangedBy+'</td></tr>';
+    tr += '<tr><th>Last Changed: </th><td>'+rec.LastChangedTs+'</td></tr>';
+    tr += '<tr><th>Changed by: </th><td>'+rec.LastChangedBy+'</td></tr>';
 	tr += '</div>';
 	$("#EditTable tbody").html(tr);
 
+	tr = '';
+	tr += '<div class="form-group">';
+    tr += '<tr><th>Lien: </th><td>'+setCheckboxEdit(rec.Lien,'LienCheckbox')+'</td></tr>';
+    tr += '<tr><th>LienRefNo: </th><td>'+setInputText("LienRefNo",rec.LienRefNo,"10")+'</td></tr>';
+    tr += '<tr><th>DateFiled: </th><td>'+setInputDate("DateFiled",rec.DateFiled,"10")+'</td></tr>';
+    tr += '<tr><th>Disposition: </th><td>'+setInputText("Disposition",rec.Disposition,"10")+'</td></tr>';
+    tr += '<tr><th>FilingFee: </th><td>'+setInputText("FilingFee",rec.FilingFee,"10")+'</td></tr>';
+    tr += '<tr><th>ReleaseFee: </th><td>'+setInputText("ReleaseFee",rec.ReleaseFee,"10")+'</td></tr>';
+    tr += '<tr><th>DateReleased: </th><td>'+setInputDate("DateReleased",rec.DateReleased,"10")+'</td></tr>';
+    tr += '<tr><th>LienDatePaid: </th><td>'+setInputDate("LienDatePaid",rec.LienDatePaid,"10")+'</td></tr>';
+    tr += '<tr><th>AmountPaid: </th><td>'+setInputText("AmountPaid",rec.AmountPaid,"10")+'</td></tr>';
+    tr += '<tr><th>StopInterestCalc: </th><td>'+setCheckboxEdit(rec.StopInterestCalc,'StopInterestCalcCheckbox')+'</td></tr>';
+    tr += '<tr><th>FilingFeeInterest: </th><td>'+setInputText("FilingFeeInterest",rec.FilingFeeInterest,"10")+'</td></tr>';
+    tr += '<tr><th>AssessmentInterest: </th><td>'+setInputText("AssessmentInterest",rec.AssessmentInterest,"10")+'</td></tr>';
+    tr += '<tr><th>LienComment: </th><td>'+setInputText("LienComment",rec.LienComment,"10")+'</td></tr>';
+	tr += '</div>';
+	$("#EditTable2 tbody").html(tr);
+
+	/*
+	var editTable2 = $("#EditTable2 tbody");
+	editTable2.empty();
+	editTable2.append($('<div>').prop('class',"form-group")
+			.append($('<tr>')
+					.append($('<th>').html('Lien: ')).append($('<td>').html(setCheckboxEdit(rec.Lien,'Lien')))
+					.append($('<th>').html('Lien Ref No: ')).append($('<td>').html(setInputText("LienRefNo",rec.LienRefNo,"10")))
+					.append($('<th>').html('Date Filed: ')).append($('<td>').html(setInputDate("DateFiled",rec.DateFiled,"10")))
+					.append($('<th>').html('Disposition: ')).append($('<td>').html(setInputText("Disposition",rec.Disposition,"10")))
+					.append($('<th>').html('Filing Fee: ')).append($('<td>').html(setInputText("FilingFee",rec.FilingFee,"10")))
+					.append($('<th>').html('Release Fee: ')).append($('<td>').html(setInputText("ReleaseFee",rec.ReleaseFee,"10")))
+					.append($('<th>').html('Date Released: ')).append($('<td>').html(setInputDate("DateReleased",rec.DateReleased,"10")))
+					.append($('<th>').html('Lien Date Paid: ')).append($('<td>').html(setInputDate("LienDatePaid",rec.LienDatePaid,"10")))
+					.append($('<th>').html('Amount Paid: ')).append($('<td>').html(setInputText("AmountPaid",rec.AmountPaid,"10")))
+					.append($('<th>').html('Stop Interest Calc: ')).append($('<td>').html(setCheckboxEdit(rec.StopInterestCalc,'StopInterestCalc')))
+					.append($('<th>').html('Filing Fee Interest: ')).append($('<td>').html(setInputText("FilingFeeInterest",rec.FilingFeeInterest,"10")))
+					.append($('<th>').html('Assessment Interest: ')).append($('<td>').html(setInputText("AssessmentInterest",rec.AssessmentInterest,"10")))
+					.append($('<th>').html('Lien Comment: ')).append($('<td>').html(setInputText("LienComment",rec.LienComment,"10")))
+			)
+	);
+	*/
+//	Lien,LienRefNo,DateFiled,Disposition,FilingFee,ReleaseFee,DateReleased,LienDatePaid,AmountPaid,StopInterestCalc,FilingFeeInterest,AssessmentInterest,LienComment,
+	
 	tr = '<form class="form-inline" role="form">'+
 	  '<a id="SaveAssessmentEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+ownerId+'" data-FY="'+fy+'" href="#" class="btn btn-primary" role="button">Save</a>' +
 	          		'<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>'+

@@ -6,7 +6,8 @@
  * 				parameters, timing, etc.)
  *----------------------------------------------------------------------------
  * Modification History
- * 2016-04-05 JJK 	Added check for AddAssessments 
+ * 2016-04-05 JJK 	Added Add AddAssessments
+ * 2016-04-07 JJK	Added new Lien fields 
  *============================================================================*/
 
 include 'commonUtil.php';
@@ -51,6 +52,21 @@ if ($action == "AddAssessments") {
 			$Paid = 0;
 			$DatePaid = "";
 			$PaymentMethod = "";
+			
+			$Lien = 0;
+			$LienRefNo = "";
+			$DateFiled = "";
+			$Disposition = "";
+			$FilingFee = "";
+			$ReleaseFee = "";
+			$DateReleased = "";
+			$LienDatePaid = "";
+			$AmountPaid = "";
+			$StopInterestCalc = 0;
+			$FilingFeeInterest = "";
+			$AssessmentInterest = "";
+			$LienComment = "";
+				
 			$LotNo = 0;
 			$SubDivParcel = 0;
 			$Parcel_Location = "";
@@ -67,21 +83,22 @@ if ($action == "AddAssessments") {
 			$Property_Zip = "";
 			$Comments = "";
 		
-			$sqlStr = 'INSERT INTO hoa_assessments (OwnerID,Parcel_ID,FY,DuesAmt,DateDue,Paid,DatePaid,PaymentMethod,LotNo,SubDivParcel,Parcel_Location,Mailing_Name,
-													Address_Line1,Address_Line2,Address_City,Address_State,Address_Zip,Property_Street_No,Property_Street_Name,
-													Property_City,Property_State,Property_Zip,Comments,LastChangedBy,LastChangedTs) ';
-			$sqlStr = $sqlStr . ' VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ';
+			$sqlStr = 'INSERT INTO hoa_assessments (OwnerID,Parcel_ID,FY,DuesAmt,DateDue,Paid,DatePaid,PaymentMethod,
+							Lien,LienRefNo,DateFiled,Disposition,FilingFee,ReleaseFee,DateReleased,LienDatePaid,AmountPaid,StopInterestCalc,FilingFeeInterest,AssessmentInterest,LienComment,
+							LotNo,SubDivParcel,Parcel_Location,Mailing_Name,Address_Line1,Address_Line2,Address_City,Address_State,Address_Zip,Property_Street_No,Property_Street_Name,
+							Property_City,Property_State,Property_Zip,Comments,LastChangedBy,LastChangedTs) ';
+			$sqlStr = $sqlStr . ' VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ';
 			$stmt = $conn->prepare($sqlStr);
 			//error_log("stmt = ".$stmt);
-			$stmt->bind_param("isississiisssssssissssss",$OwnerID,$Parcel_ID,$FY,$DuesAmt,$DateDue,$Paid,$DatePaid,$PaymentMethod,$LotNo,$SubDivParcel,$Parcel_Location,$Mailing_Name,$Address_Line1,$Address_Line2,$Address_City,$Address_State,$Address_Zip,$Property_Street_No,$Property_Street_Name,$Property_City,$Property_State,$Property_Zip,$Comments,$username);
+			$stmt->bind_param("isissississssssssisssiisssssssissssss",$OwnerID,$Parcel_ID,$FY,$DuesAmt,$DateDue,$Paid,$DatePaid,$PaymentMethod,
+					$Lien,$LienRefNo,$DateFiled,$Disposition,$FilingFee,$ReleaseFee,$DateReleased,$LienDatePaid,$AmountPaid,$StopInterestCalc,$FilingFeeInterest,$AssessmentInterest,$LienComment,
+					$LotNo,$SubDivParcel,$Parcel_Location,$Mailing_Name,$Address_Line1,$Address_Line2,$Address_City,$Address_State,$Address_Zip,$Property_Street_No,$Property_Street_Name,$Property_City,$Property_State,$Property_Zip,$Comments,$username);
 			
 			while($row = $result->fetch_assoc()) {
 				$cnt = $cnt + 1;
 
 				$Parcel_ID = $row["Parcel_ID"];
 				$OwnerID = $row["OwnerID"];
-					
-				// lien table		`OwnerID`, `Parcel_ID`, `FY`, `LienRefNo`, `DateFiled`, `Disposition`, `FilingFee`, `ReleaseFee`, `DateReleased`, `DatePaid`, `AmountPaid`, `FilingFeeInterest`, `AssessmentInterest`, `Comments`, `LastChangedBy`, `LastChangedTs
 					
 				if (!$stmt->execute()) {
 					error_log("Add Assessment Execute failed: " . $stmt->errno . ", Error = " . $stmt->error);
