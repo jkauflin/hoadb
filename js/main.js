@@ -102,6 +102,43 @@ function setInputDate(idName,textVal,textSize){
 
 $(document).ready(function(){
 	//$("#DisplayWidth").text("width = "+$(window).width());
+
+	/*
+	var doc = new jsPDF();
+	doc.setFontSize(40);
+	doc.text(35, 25, "Octonyan loves jsPDF");
+
+	var doc = new jsPDF();
+	doc.text(20, 20, 'Hello world!');
+	doc.text(20, 30, 'This is client-side Javascript, pumping out a PDF.');
+	//2nd page
+	doc.addPage('a6','l');
+	doc.text(20, 20, 'Do you like that?');
+
+	
+	
+	var string = doc.output('bloburi');
+$('.preview-pane').attr('src', string);
+	
+
+doc.save(file + '.pdf');
+
+
+//Optional - set properties on the document
+doc.setProperties({
+    title: 'Title',
+    subject: 'This is the subject',
+    author: 'James Hall',
+    keywords: 'generated, javascript, web 2.0, ajax',
+    creator: 'MEEE'
+});
+
+// Output as Data URI
+doc.save('Test.pdf');
+
+*/
+
+
 	
 	// Auto-close the collapse menu after clicking a non-dropdown menu item (in the bootstrap nav header)
 	$(document).on('click','.navbar-collapse.in',function(e) {
