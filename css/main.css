@@ -49,3 +49,9 @@ li {
 	list-style-type: none;
 }
 
+/* for PDF display */
+
+.modal.in .modal-dialog {
+  transform: none; /*translate(0px, 0px);*/
+}
+

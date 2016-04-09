@@ -103,42 +103,6 @@ function setInputDate(idName,textVal,textSize){
 $(document).ready(function(){
 	//$("#DisplayWidth").text("width = "+$(window).width());
 
-	/*
-	var doc = new jsPDF();
-	doc.setFontSize(40);
-	doc.text(35, 25, "Octonyan loves jsPDF");
-
-	var doc = new jsPDF();
-	doc.text(20, 20, 'Hello world!');
-	doc.text(20, 30, 'This is client-side Javascript, pumping out a PDF.');
-	//2nd page
-	doc.addPage('a6','l');
-	doc.text(20, 20, 'Do you like that?');
-
-	
-	
-	var string = doc.output('bloburi');
-$('.preview-pane').attr('src', string);
-	
-
-doc.save(file + '.pdf');
-
-
-//Optional - set properties on the document
-doc.setProperties({
-    title: 'Title',
-    subject: 'This is the subject',
-    author: 'James Hall',
-    keywords: 'generated, javascript, web 2.0, ajax',
-    creator: 'MEEE'
-});
-
-// Output as Data URI
-doc.save('Test.pdf');
-
-*/
-
-
 	
 	// Auto-close the collapse menu after clicking a non-dropdown menu item (in the bootstrap nav header)
 	$(document).on('click','.navbar-collapse.in',function(e) {
@@ -488,6 +452,57 @@ doc.save('Test.pdf');
     });
 
 
+	/*
+    // Portrait, millimeters, A4 format
+	var doc = new jsPDF('p', 'mm', 'a4');
+	doc.setProperties({
+	    title: 'Test JJK Doc',
+	    subject: 'This is the subject',
+	    author: 'John Kauflin',
+	    keywords: 'generated, javascript, web 2.0, ajax',
+	    creator: 'MEEE'
+	});
+	doc.setFontSize(40);
+	doc.text(35, 25, "John K loves jsPDF");
+	doc.addPage('a4','p');
+	doc.text(35, 25, "John K loves 2nd Page");
+
+	// Output as Data URI
+	doc.save('JJKTest.pdf');
+
+	var pdfStr = doc.output('bloburi'); 
+	//var pdfStr = doc.output('datauristring');
+	//console.log("pdfStr = "+pdfStr);
+	//$('.preview-pane').attr('src', string);
+
+		$("#docFileDisplay").empty();
+  		var iframeHeight = $(window).height()-220;
+		var iframeHtml = '<iframe id="docFileFrame" src="'+pdfStr+'" width="100%" height="'+iframeHeight.toString()+'" frameborder="0" allowtransparency="true"></iframe>';  				
+  		$("#docFileDisplay").html(iframeHtml);
+  		// Display the modal window with the iframe
+    	$("#docModal").modal("show");    	
+    	
+  <div class="progress">
+    <div class="progress-bar" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:70%">
+      70%
+    </div>
+  </div>
+    	
+    	
+	*/
+	
+    $(document).on("click",".docModal",function(){
+    	var $this = $(this);
+  		$("#docFilename").html($this.attr('data-filename'));
+  		$("#docFileDisplay").empty();
+  		var iframeHeight = $(window).height()-220;
+		var iframeHtml = '<iframe id="docFileFrame" src="'+$this.attr("data-filePath")+'" width="100%" height="'+iframeHeight.toString()+'" frameborder="0" allowtransparency="true"></iframe>';  				
+  		$("#docFileDisplay").html(iframeHtml);
+  		// Display the modal window with the iframe
+    	$("#docModal").modal("show");    	
+	});	
+
+    
 }); // $(document).ready(function(){
 
 

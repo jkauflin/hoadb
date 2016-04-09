@@ -40,6 +40,15 @@ function getUsername() {
 	return $username;
 }
 
+function strToUSD($inStr) {
+	// Replace every ascii character except decimal and digits with a null
+	$numericStr = preg_replace('/[\x01-\x2D\x2F\x3A-\x7F]+/', '', $inStr);
+	// Convert to a float value and round down to 2 digits
+	//return round(floatval($numericStr),2,PHP_ROUND_HALF_DOWN);
+	return round(floatval($numericStr),2);
+}
+
+
 
 // Set 0 or 1 according to the boolean value of a string
 function paramBoolVal($paramName) {

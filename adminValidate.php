@@ -22,7 +22,7 @@ $adminRec->message = "";
 
 $action = getParamVal("action");
 $FY = getParamVal("FY");
-$duesAmt = getParamVal("duesAmt");
+$duesAmt = strToUSD(getParamVal("duesAmt"));
 
 $adminLevel = getAdminLevel();
 
@@ -31,7 +31,7 @@ if ($action == "AddAssessments") {
 		$adminRec->message = "You do not have permissions to Add Assessments.";
 		$adminRec->result = "Not Valid";
 	} else {
-		$adminRec->message = "Are you sure you want to add assessment for Fiscal Year " . $FY . ' with Dues Amount of ' . $duesAmt;
+		$adminRec->message = "Are you sure you want to add assessment for Fiscal Year " . $FY . ' with Dues Amount of $' . $duesAmt;
 		$adminRec->result = "Valid";
 	}
 }
