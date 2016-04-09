@@ -409,13 +409,16 @@ $(document).ready(function(){
 	$('.summernote').code(sHTML);
 	*/
 
-    $(document).on("click","#AddAssessmentsButton",function(){
+    $(document).on("click",".AdminButton",function(){
         waitCursor();
+	    var $this = $(this);
+
         // Validate add assessments (check access permissions, timing, year, and amount)
         // get confirmation message back
-        var FY = cleanStr($("#AddAssessmentsYear").val());
+        var FY = cleanStr($("#FiscalYear").val());
         var duesAmt = cleanStr($("#DuesAmt").val());
-    	$.getJSON("adminValidate.php","action=AddAssessments"+
+        
+    	$.getJSON("adminValidate.php","action="+$this.attr('id')+
     										"&FY="+FY+
     										"&duesAmt="+duesAmt,function(adminRec){
     	    $("#ConfirmationMessage").html(adminRec.message);
@@ -426,7 +429,7 @@ $(document).ready(function(){
     	    // If the action was Valid, append an action button
     	    if (adminRec.result == "Valid") {
         	    buttonForm.append($('<button>').prop('id',"AdminExecute").prop('class',"btn btn-danger").attr('type',"button").attr('data-dismiss',"modal").html('Continue')
-	    								.attr('data-action',"AddAssessments").attr('data-FY',FY).attr('data-duesAmt',duesAmt));
+	    								.attr('data-action',$this.attr('id')).attr('data-FY',FY).attr('data-duesAmt',duesAmt));
     	    }
     	    buttonForm.append($('<button>').prop('class',"btn btn-default").attr('type',"button").attr('data-dismiss',"modal").html('Close'));
     	    confirmationButton.append(buttonForm);
@@ -437,52 +440,66 @@ $(document).ready(function(){
         event.stopPropagation();
     });
 
-    $(document).on("click","#DuesStatementsButton",function(){
-        waitCursor();
-        // Validate add assessments (check access permissions, timing, year, and amount)
-        // get confirmation message back
-        //var FY = cleanStr($("#AddAssessmentsYear").val());
-        //var duesAmt = cleanStr($("#DuesAmt").val());
-        var FY = '2017';
-        var duesAmt = '35.35';
-    	$.getJSON("adminValidate.php","action=DuesStatements"+
-    										"&FY="+FY+
-    										"&duesAmt="+duesAmt,function(adminRec){
-    	    $("#ConfirmationMessage").html(adminRec.message);
-    	    
-    	    var confirmationButton = $("#ConfirmationButton");
-    	    confirmationButton.empty();
-    	    var buttonForm = $('<form>').prop('class',"form-inline").attr('role',"form");
-    	    // If the action was Valid, append an action button
-    	    if (adminRec.result == "Valid") {
-        	    buttonForm.append($('<button>').prop('id',"AdminExecute").prop('class',"btn btn-danger").attr('type',"button").attr('data-dismiss',"modal").html('Continue')
-	    								.attr('data-action',"DuesStatements").attr('data-FY',FY).attr('data-duesAmt',duesAmt));
-    	    }
-    	    buttonForm.append($('<button>').prop('class',"btn btn-default").attr('type',"button").attr('data-dismiss',"modal").html('Close'));
-    	    confirmationButton.append(buttonForm);
-    	    
-    	    $('*').css('cursor', 'default');
-            $("#ConfirmationModal").modal();
-    	});
-        event.stopPropagation();
-    });
-    
     // Respond to the Continue click for an Admin Execute function 
     $(document).on("click","#AdminExecute",function(){
         var $this = $(this);
         waitCursor();
-        var FY = cleanStr($("#AddAssessmentsYear").val());
-    	$.getJSON("adminExecute.php","action="+$this.attr("data-action")+
+        
+        var action = $this.attr("data-action");
+        // dues and add
+
+
+    	$.getJSON("adminExecute.php","action="+action+
     										"&FY="+$this.attr("data-FY")+
     										"&duesAmt="+$this.attr("data-duesAmt"),function(adminRec){
     	    $('*').css('cursor', 'default');
     	    $("#ResultMessage").html(adminRec.message);
     	    
-    	    console.log("adminRec.hoaRecList = "+adminRec.hoaRecList.length);
-    	    
-    	    // Loop
-    	    //$('#AdminProgress').attr('aria-valuenow',x).html(' of 542');
-    	    
+    	    if (action == 'DuesStatements') {
+    	        // Portrait, millimeters, A4 format
+    	    	var doc = new jsPDF('p', 'mm', 'a4');
+    	    	doc.setProperties({
+    	    	    title: 'Test JJK Doc',
+    	    	    subject: 'This is the subject',
+    	    	    author: 'John Kauflin',
+    	    	    keywords: 'generated, javascript, web 2.0, ajax',
+    	    	    creator: 'MEEE'
+    	    	});
+    			doc.setFontSize(30);
+    			doc.text(35, 25, "John K loves jsPDF");
+    	    	
+    		    var progress = $('<div>').prop('class',"progress");
+
+    		    var recTotal = adminRec.hoaPropertyRecList.length;
+        	    //console.log("adminRec.hoaPropertyRecList = "+adminRec.hoaPropertyRecList.length);
+        	    var percentDone = 0;
+        	    
+        		$.each(adminRec.hoaPropertyRecList, function(index, hoaPropertyRec) {
+        			/*
+        		    tr +=    '<td><a data-parcelId="'+hoaPropertyRec.parcelId+'" href="#">'+hoaPropertyRec.parcelId+'</a></td>';
+        		    tr +=    '<td class="hidden-xs hidden-sm">'+hoaPropertyRec.lotNo+'</td>';
+        		    tr +=    '<td>'+hoaPropertyRec.parcelLocation+'</td>';
+        			tr +=    '<td class="hidden-xs">'+hoaPropertyRec.ownerName+'</td>';
+        		    tr +=    '<td class="visible-lg">'+hoaPropertyRec.ownerPhone+'</td>';
+        		    */
+        			
+        			doc.addPage('a4','p');
+        			doc.text(25, 15, "Page = "+index);
+        			doc.text(35, 25, "Parcel Id = "+hoaPropertyRec.parcelId);
+        			
+        			/*
+            	    percentDone = Math.round(index/recTotal);
+            	    var progressBar = $('<div>').prop('class',"progress-bar").attr('role',"progressbar").attr('aria-valuenow',percentDone).attr('aria-valuemin',"0").attr('aria-valuemax',recTotal)
+            	    		.css('width',percentDone).html(percentDone+"%");
+            	    progress.html(progressBar+" of "+recTotal);
+            	  	$("#AdminProgress").html(progress);
+            	  	*/
+        		});
+
+    			// Output as Data URI
+    			doc.save('JJKTestDuesStatements.pdf');
+        		
+    	    } // End of if ($action == 'DuesStatements') {
     	    
     	});
         event.stopPropagation();
@@ -540,9 +557,7 @@ $(document).ready(function(){
 
 function displayPropertyList(hoaPropertyRecList) {
 	var tr = '<tr><td>No records found - try different search parameters</td></tr>';
-    rowId = 0;
 	$.each(hoaPropertyRecList, function(index, hoaPropertyRec) {
-		rowId = index + 1;
 		if (index == 0) {
     		tr = '';
     	    tr +=    '<tr>';
@@ -555,7 +570,7 @@ function displayPropertyList(hoaPropertyRecList) {
     	    tr +=    '</tr>';
 		}
 	    tr +=  '<tr>';
-	    tr +=    '<td>'+rowId+'</td>';
+	    tr +=    '<td>'+(index+1)+'</td>';
 	    tr +=    '<td><a data-parcelId="'+hoaPropertyRec.parcelId+'" href="#">'+hoaPropertyRec.parcelId+'</a></td>';
 	    tr +=    '<td class="hidden-xs hidden-sm">'+hoaPropertyRec.lotNo+'</td>';
 	    tr +=    '<td>'+hoaPropertyRec.parcelLocation+'</td>';

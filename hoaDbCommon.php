@@ -163,7 +163,7 @@ class AdminRec
 	public $result;
 	public $message;
 	
-	public $hoaRecList;
+	public $hoaPropertyRecList;
 }
 
 function getHoaSalesRec($conn,$parcelId,$saleDate) {

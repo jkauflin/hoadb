@@ -167,11 +167,10 @@
 				<div class="col-sm-5 col-md-4">
 				  	<h4>Admin</h4>
 
-		             <div id="AddAssessmentsInput" >
-	                    <div class="form-group" style="margin-right:100px;">
+	                <div class="form-group" style="margin-right:100px;">
                     		<input type="text" class="form-control resetval" name="DuesAmt"     	id="DuesAmt"		placeholder="Dues Amount">
-						      <label for="AddAssessmentsYear">Fiscal Year for which to add Assessments:</label>
-						      <select class="form-control" id="AddAssessmentsYear">
+						      <label for="FiscalYear">Fiscal Year for which to add Assessments:</label>
+						      <select class="form-control" id="FiscalYear">
 						        <option>2017</option>
 						        <option>2018</option>
 						        <option>2019</option>
@@ -182,21 +181,20 @@
 						        <option>2024</option>
 						        <option>2025</option>
 						      </select>                    		
-	                    </div>
-	                    <button id="AddAssessmentsButton" type="button" class="btn btn-primary">Add Assessments</button>
-					 </div>
+	                </div>
 
-	                    <button id="DuesStatementsButton" type="button" class="btn btn-primary">Dues Statements</button>
+	            	<form class="form-inline" role="form">
+	                    <button id="AddAssessments" type="button" class="btn btn-primary AdminButton">Add Assessments</button>
+	                    <button id="DuesStatements" type="button" class="btn btn-primary AdminButton">Dues Statements</button>
+		         	</form>
+	                    
 				  	
 				  </div>
 				  <div class="col-sm-7 col-md-8">
                 	<h4>Results</h4>
                 	<div class="ajaxError"></div>
-                	<div id="ResultMessage"></div>
-                	<div class="progress">
-						<div id="AdminProgress" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="542" style="width:70%">
-					  	</div>
-					</div>
+                	<div id="ResultMessage" style="margin-top:10px;"></div>
+                	<div id="AdminProgress" style="margin-top:10px;"></div>
                 	
 				  </div>
 			</div><!-- row -->	                
