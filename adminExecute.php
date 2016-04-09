@@ -25,6 +25,7 @@ $fiscalYear = getParamVal("FY");
 $duesAmt = getParamVal("duesAmt");
 
 $adminLevel = getAdminLevel();
+$conn = getConn();
 
 if ($action == "AddAssessments") {
 	if ($adminLevel < 2) {
@@ -34,7 +35,6 @@ if ($action == "AddAssessments") {
 
 		// Loop through all the member properties
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";		
-		$conn = getConn();
 		$stmt = $conn->prepare($sql);
 		$stmt->execute();
 		$result = $stmt->get_result();
@@ -108,23 +108,52 @@ if ($action == "AddAssessments") {
 		}		
 		
 		$stmt->close();
-		$conn->close();		
 		
 		$adminRec->message = "Added assessments for Fiscal Year " . $FY . ' and a Dues Amount of ' . $duesAmt . ' for ' . $cnt . ' members, OwnerID = ' . $OwnerID;
 		$adminRec->result = "Valid";
 	}
 // End of if ($action == "AddAssessments") {
-} else if ($action == "new action") {
-	
+} else if ($action == "DuesStatements") {
+
+	$outputArray = array();
+
+		// Loop through all the member properties
+		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";		
+		$stmt = $conn->prepare($sql);
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$stmt->close();
+		
+		$cnt = 0;
+		if ($result->num_rows > 0) {
+			while($row = $result->fetch_assoc()) {
+				$cnt = $cnt + 1;
+
+				$Parcel_ID = $row["Parcel_ID"];
+				$OwnerID = $row["OwnerID"];
+				//$FY = $row["Own"];
+				/*					
+				if (!$stmt->execute()) {
+					error_log("Execute failed: " . $stmt->errno . ", Error = " . $stmt->error);
+					echo "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
+				}
+				*/
+
+				$hoaRec = getHoaRec($conn,$Parcel_ID,$OwnerID,NULL,NULL);
+				array_push($outputArray,$hoaRec);
+				
+			}
+			
+			$adminRec->hoaRecList = $outputArray;
+			
+		}
+
+		$adminRec->message = "Completed Dues Statement";
+		$adminRec->result = "Valid";
 }
-	/*
-	$conn = getConn();
-	$hoaSalesReportRec = getHoaSalesRecList($conn,$notProcessedBoolean);
-	
 	
 	// Close db connection
 	$conn->close();
-	*/
 
 	echo json_encode($adminRec);
 ?>

@@ -34,6 +34,14 @@ if ($action == "AddAssessments") {
 		$adminRec->message = "Are you sure you want to add assessment for Fiscal Year " . $FY . ' with Dues Amount of $' . $duesAmt;
 		$adminRec->result = "Valid";
 	}
+} else if ($action == "DuesStatements") {
+	if ($adminLevel < 2) {
+		$adminRec->message = "You do not have permissions to Add Assessments.";
+		$adminRec->result = "Not Valid";
+	} else {
+		$adminRec->message = "Continue with Dues Statements test?";
+		$adminRec->result = "Valid";
+	}
 }
 	/*
 	$conn = getConn();

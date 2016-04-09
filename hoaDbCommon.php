@@ -15,7 +15,7 @@
  *                  a numberic value)
  * 2016-03-28 JJK	Added getComm to return a database connection and moved
  * 					the hoaDbCred include inside it to access the variables	
- * 2016-04-05 JJK	Added HoaLienRec
+ * 2016-04-05 JJK	Lien fields to the Assessments record
  *============================================================================*/
 
 function getConn() {
@@ -162,6 +162,8 @@ class AdminRec
 {
 	public $result;
 	public $message;
+	
+	public $hoaRecList;
 }
 
 function getHoaSalesRec($conn,$parcelId,$saleDate) {
@@ -251,7 +253,12 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 	// TBD - calculate
 	$hoaRec->TotalDue = 0.00;
 	
-	$conn = getConn();
+	$connPassed = true;
+	if ($conn == NULL) {
+		$connPassed = false;
+		$conn = getConn();
+	}
+	
 	$stmt = $conn->prepare("SELECT * FROM hoa_properties WHERE Parcel_ID = ? ; ");
 	$stmt->bind_param("s", $parcelId);
 	$stmt->execute();
@@ -487,6 +494,10 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 		$result->close();
 		$stmt->close();
 	} // End of Properties
+
+	if (!$connPassed) {
+		$conn->close();
+	}
 	
 	return $hoaRec;
 } // End of function getHoaRec($conn,$parcelId,$ownerId,$fy) {

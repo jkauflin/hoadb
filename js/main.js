@@ -24,6 +24,7 @@
  * 2016-04-03 JJK	Working on input fields
  * 2016-04-05 JJK   Adding Admin function for adding yearly dues assessments
  * 					Adding Liens
+ * 2016-04-09 JJK   Adding Dues Statement processing
  *============================================================================*/
 
 $.urlParam = function(name){
@@ -408,7 +409,6 @@ $(document).ready(function(){
 	$('.summernote').code(sHTML);
 	*/
 
-    // Respond to the Search button click (because I can't figure out how to combine it with input change)
     $(document).on("click","#AddAssessmentsButton",function(){
         waitCursor();
         // Validate add assessments (check access permissions, timing, year, and amount)
@@ -437,6 +437,36 @@ $(document).ready(function(){
         event.stopPropagation();
     });
 
+    $(document).on("click","#DuesStatementsButton",function(){
+        waitCursor();
+        // Validate add assessments (check access permissions, timing, year, and amount)
+        // get confirmation message back
+        //var FY = cleanStr($("#AddAssessmentsYear").val());
+        //var duesAmt = cleanStr($("#DuesAmt").val());
+        var FY = '2017';
+        var duesAmt = '35.35';
+    	$.getJSON("adminValidate.php","action=DuesStatements"+
+    										"&FY="+FY+
+    										"&duesAmt="+duesAmt,function(adminRec){
+    	    $("#ConfirmationMessage").html(adminRec.message);
+    	    
+    	    var confirmationButton = $("#ConfirmationButton");
+    	    confirmationButton.empty();
+    	    var buttonForm = $('<form>').prop('class',"form-inline").attr('role',"form");
+    	    // If the action was Valid, append an action button
+    	    if (adminRec.result == "Valid") {
+        	    buttonForm.append($('<button>').prop('id',"AdminExecute").prop('class',"btn btn-danger").attr('type',"button").attr('data-dismiss',"modal").html('Continue')
+	    								.attr('data-action',"DuesStatements").attr('data-FY',FY).attr('data-duesAmt',duesAmt));
+    	    }
+    	    buttonForm.append($('<button>').prop('class',"btn btn-default").attr('type',"button").attr('data-dismiss',"modal").html('Close'));
+    	    confirmationButton.append(buttonForm);
+    	    
+    	    $('*').css('cursor', 'default');
+            $("#ConfirmationModal").modal();
+    	});
+        event.stopPropagation();
+    });
+    
     // Respond to the Continue click for an Admin Execute function 
     $(document).on("click","#AdminExecute",function(){
         var $this = $(this);
@@ -447,6 +477,13 @@ $(document).ready(function(){
     										"&duesAmt="+$this.attr("data-duesAmt"),function(adminRec){
     	    $('*').css('cursor', 'default');
     	    $("#ResultMessage").html(adminRec.message);
+    	    
+    	    console.log("adminRec.hoaRecList = "+adminRec.hoaRecList.length);
+    	    
+    	    // Loop
+    	    //$('#AdminProgress').attr('aria-valuenow',x).html(' of 542');
+    	    
+    	    
     	});
         event.stopPropagation();
     });
@@ -482,15 +519,9 @@ $(document).ready(function(){
   		// Display the modal window with the iframe
     	$("#docModal").modal("show");    	
     	
-  <div class="progress">
-    <div class="progress-bar" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:70%">
-      70%
-    </div>
-  </div>
-    	
-    	
 	*/
-	
+
+    
     $(document).on("click",".docModal",function(){
     	var $this = $(this);
   		$("#docFilename").html($this.attr('data-filename'));
