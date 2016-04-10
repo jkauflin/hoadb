@@ -301,6 +301,8 @@ $(document).ready(function(){
         var $ownerId = $this.attr("data-OwnerId");
         var $fy = $this.attr("data-FY");
         var $paidBoolean = $("#PaidCheckbox").is(":checked");
+        var $lienBoolean = $("#LienCheckbox").is(":checked");
+        var $stopInterestCalcBoolean = $("#StopInterestCalcCheckbox").is(":checked");
 
         $.get("updHoaAssessment.php","parcelId="+$parcelId+
 				 					 "&ownerId="+$ownerId+
@@ -310,7 +312,20 @@ $(document).ready(function(){
         						 "&paidBoolean="+$paidBoolean+
         						 "&datePaid="+cleanStr($("#DatePaid").val())+
         						 "&paymentMethod="+cleanStr($("#PaymentMethod").val())+
-        						 "&assessmentsComments="+cleanStr($("#AssessmentsComments").val()),function(results){
+        						 "&assessmentsComments="+cleanStr($("#AssessmentsComments").val())+
+        						 "&lienBoolean="+$lienBoolean+
+        						 "&lienRefNo="+cleanStr($("#LienRefNo").val())+
+        						 "&dateFiled="+cleanStr($("#DateFiled").val())+
+        						 "&disposition="+cleanStr($("#Disposition").val())+
+        						 "&filingFee="+cleanStr($("#FilingFee").val())+
+        						 "&releaseFee="+cleanStr($("#ReleaseFee").val())+
+        						 "&dateReleased="+cleanStr($("#DateReleased").val())+
+        						 "&lienDatePaid="+cleanStr($("#LienDatePaid").val())+
+        						 "&amountPaid="+cleanStr($("#AmountPaid").val())+
+        						 "&stopInterestCalcBoolean="+$stopInterestCalcBoolean+
+        						 "&filingFeeInterest="+cleanStr($("#FilingFeeInterest").val())+
+        						 "&assessmentInterest="+cleanStr($("#AssessmentInterest").val())+
+        						 "&lienComment="+cleanStr($("#LienComment").val()),function(results){
 
         	// Re-read the updated data for the Detail page display
             $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
@@ -695,7 +710,7 @@ function formatPropertyDetailResults(hoaRec){
     $("#DuesStatement").html('<a id="DuesStatementButton" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+currOwnerID+'" href="#" class="btn btn-success" role="button">Dues Statement</a>');
 
     if (hoaRec.adminLevel > 1) {
-	    $("#NewOwner").html('<a id="NewOwnerButton" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+currOwnerID+'" href="#" class="btn btn-primary" role="button">New Owner</a>');
+	    $("#NewOwner").html('<a id="NewOwnerButton" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+currOwnerID+'" href="#" class="btn btn-warning" role="button">New Owner</a>');
 	    //$("#AddAssessment").html('<a id="AddAssessmentButton" href="#" class="btn btn-default" role="button">Add Assessment</a>');
 	}
 

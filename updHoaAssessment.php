@@ -25,14 +25,44 @@ include 'hoaDbCommon.php';
 	$datePaid = getParamVal("datePaid");
 	$paymentMethod = getParamVal("paymentMethod");
 	$assessmentsComments = getParamVal("assessmentsComments");
+
+	$lienBoolean = paramBoolVal("lienBoolean");
+	$lienRefNo = getParamVal("lienRefNo");
+	$dateFiled = getParamVal("dateFiled");
+	$disposition = getParamVal("disposition");
+	$filingFee = getParamVal("filingFee");
+	$releaseFee = getParamVal("releaseFee");
+	$dateReleased = getParamVal("dateReleased");
+	$lienDatePaid = getParamVal("lienDatePaid");
+	$amountPaid = getParamVal("amountPaid");
+	$stopInterestCalcBoolean = paramBoolVal("stopInterestCalcBoolean");
+	$filingFeeInterest = getParamVal("filingFeeInterest");
+	$assessmentInterest = getParamVal("assessmentInterest");
+	$lienComment = getParamVal("lienComment");
 	
 	//--------------------------------------------------------------------------------------------------------
 	// Create connection to the database
 	//--------------------------------------------------------------------------------------------------------
 	$conn = getConn();
-	$stmt = $conn->prepare("UPDATE hoa_assessments SET DuesAmt=?,DateDue=?,Paid=?,DatePaid=?,PaymentMethod=?,Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND OwnerID = ? AND FY = ? ; ");
-	$stmt->bind_param("ssisssssss", $duesAmount,$dateDue,$paidBoolean,$datePaid,$paymentMethod,$assessmentsComments,$username,$parcelId,$ownerId,$fy);
-	$stmt->execute();
+	
+	error_log("$lienRefNo = ".$lienRefNo);
+	
+	$stmt = $conn->prepare("UPDATE hoa_assessments SET DuesAmt=?,DateDue=?,Paid=?,DatePaid=?,PaymentMethod=?,"+
+							"Lien=?,LienRefNo=?,DateFiled=?,Disposition=?,FilingFee=?,ReleaseFee=?,DateReleased=?,LienDatePaid=?,AmountPaid=?,"+
+							"StopInterestCalc=?,FilingFeeInterest=?,AssessmentInterest=?,LienComment=?,"+	
+							"Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND OwnerID = ? AND FY = ? ; ");
+	$stmt->bind_param("ssississssssssissssssss", $duesAmount,$dateDue,$paidBoolean,$datePaid,$paymentMethod,
+						$lienBoolean,$lienRefNo,$dateFiled,$disposition,$filingFee,$releaseFee,$dateReleased,$lienDatePaid,$amountPaid,
+						$stopInterestCalcBoolean,$filingFeeInterest,$assessmentInterest,$lienComment,
+						$assessmentsComments,$username,$parcelId,$ownerId,$fy);
+	//$stmt->execute();
+
+				if (!$stmt->execute()) {
+					error_log("Add Assessment Execute failed: " . $stmt->errno . ", Error = " . $stmt->error);
+					echo "Add Assessment Execute failed: (" . $stmt->errno . ") " . $stmt->error;
+				}
+	
+	
 	$stmt->close();
 	$conn->close();
 
