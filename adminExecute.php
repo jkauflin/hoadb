@@ -44,7 +44,7 @@ if ($action == "AddAssessments") {
 			$Parcel_ID = "";
 			$FY = intval($fiscalYear);
 			$DuesAmt = '$' . strval($duesAmt);
-			$DateDue = strval($fiscalYear) . "-10-01";
+			$DateDue = strval($fiscalYear-1) . "-10-01";
 			$Paid = 0;
 			$DatePaid = "";
 			$PaymentMethod = "";

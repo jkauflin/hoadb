@@ -1,6 +1,6 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2015 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2016 John J Kauflin, All rights reserved. 
  *----------------------------------------------------------------------------
  * DESCRIPTION: 
  *----------------------------------------------------------------------------
@@ -15,7 +15,8 @@
  *                  a numberic value)
  * 2016-03-28 JJK	Added getComm to return a database connection and moved
  * 					the hoaDbCred include inside it to access the variables	
- * 2016-04-05 JJK	Lien fields to the Assessments record
+ * 2016-04-05 JJK	Added Lien fields to the Assessments record
+ * 2016-04-10 JJK	Working on Dues Total calculation (with Lien info)
  *============================================================================*/
 
 function getConn() {
@@ -62,6 +63,7 @@ class HoaRec
   	 
 	public $ownersList;
 	public $assessmentsList;
+	public $totalDuesCalcList;
 	public $salesList;
 	
 	public $adminLevel;
@@ -98,6 +100,7 @@ class HoaAssessmentRec
   	public $FY;
   	public $DuesAmt;
   	public $DateDue;
+  	public $DuesDue;
   	public $Paid;
   	public $DatePaid;
   	public $PaymentMethod;
@@ -165,6 +168,13 @@ class AdminRec
 	
 	public $hoaPropertyRecList;
 }
+
+class TotalDuesCalcRec
+{
+	public $calcDesc;
+	public $calcValue;
+}
+
 
 function getHoaSalesRec($conn,$parcelId,$saleDate) {
 	$hoaSalesRec = new HoaSalesRec();
@@ -288,6 +298,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				
 			$hoaRec->ownersList = array();
 			$hoaRec->assessmentsList = array();
+			$hosRec->totalDuesCalcList = array();
 			$hoaRec->salesList = array();
 		}
 		$result->close();
@@ -353,6 +364,33 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				$hoaAssessmentRec->Paid = $row["Paid"];
 				$hoaAssessmentRec->DatePaid = truncDate($row["DatePaid"]);
 				$hoaAssessmentRec->PaymentMethod = $row["PaymentMethod"];
+				
+				$hoaAssessmentRec->DuesDue = 0;
+				if (!$hoaAssessmentRec->Paid) {
+					if ($dateDue=date_create($hoaAssessmentRec->DateDue)) {
+						// Current System datetime
+						$currSysDate=date_create();
+						if ($currSysDate > $dateDue) {
+							$hoaAssessmentRec->DuesDue = 1;
+						}
+						/*
+						$diff=date_diff($date1,$date2,true);
+						error_log('date1=' . date_format($date1,"Y-m-d") . ', date2=' . date_format($date2,"Y-m-d") . ", diff days = " . $diff->days);
+						$diff=date_diff($date1,$date2,false);
+						error_log('date1=' . date_format($date1,"Y-m-d") . ', date2=' . date_format($date2,"Y-m-d") . ", diff days = " . $diff->days);
+						
+						
+						$diff=date_diff($date2,$date1,true);
+						error_log('date2=' . date_format($date2,"Y-m-d") . ', date1=' . date_format($date1,"Y-m-d") . ", diff days = " . $diff->days);
+						$diff=date_diff($date2,$date1,false);
+						error_log('date2=' . date_format($date2,"Y-m-d") . ', date1=' . date_format($date1,"Y-m-d") . ", diff days = " . $diff->days);
+						
+						if ($diff->days > 0) {
+							$hoaAssessmentRec->DuesDue = 1;
+						}
+						*/
+					}
+				}
 				
 				$hoaAssessmentRec->Lien = $row["Lien"];
 				$hoaAssessmentRec->LienRefNo = $row["LienRefNo"];
@@ -427,23 +465,56 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				 */
 
 				
+				// Only do the Total calc if FY is empty - need to check all years
+				//if (empty($fy)) {
+				
 				// TBD - finish this logic 11/28/2015 JJK
 				if (!$hoaAssessmentRec->Paid) {
 					//error_log('gettype($hoaAssessmentRec->DuesAmt) = '.gettype($hoaAssessmentRec->DuesAmt));
 					//error_log('DuesAmt = '.$hoaAssessmentRec->DuesAmt);
 					//$str = '$$1\09.0/1::a/bb';
 					//error_log('BEFORE = '.$str);
+
 					// Replace every ascii character except decimal and digits with a null
 					$numericStr = preg_replace('/[\x01-\x2D\x2F\x3A-\x7F]+/', '', $hoaAssessmentRec->DuesAmt);
+
+					
+					
 					//error_log('AFTER = '.$numericStr);
 					// add to toal
+					// >>> add to payment calc array
 					$hoaRec->TotalDue = $hoaRec->TotalDue + floatval($numericStr);
+
+					
+					if ($hoaAssessmentRec->DuesDue) {
+						// calculate interest
+						// or maybe only if there is a lien
+					}
+					
+					$totalDuesCalcRec = new TotalDuesCalcRec();
+					$totalDuesCalcRec->calcDesc = '';
+					$totalDuesCalcRec->calcValue = 0.0;
+					
+					array_push($hosRec->totalDuesCalcList,$totalDuesCalcRec);
+						
 					
 					//round(,2,PHP_ROUND_HALF_DOWN);
+					
+					// add interest since the Due Date
 				}
+				
+				// If there is an Open Lien (not Paid, Released, or Closed)
+				if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open') {
+
+					// calc interest - start date   WHEN TO CALC INTEREST
+					// unpaid fee amount and interest since the Filing Date
+					
+				} // if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open') {
+				
 			}
 	
 		} // End of Assessments
+		
 		$result->close();
 		$stmt->close();
 		

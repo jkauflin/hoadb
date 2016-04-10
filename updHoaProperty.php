@@ -42,8 +42,6 @@ include 'hoaDbCommon.php';
 	$stmt->close();
 	$conn->close();
 
-	//echo json_encode($hoaRec);
-	//echo 'Update Successful - member = ' . $memberBoolean . ', vacant = ' . $vacantBoolean . ', rental = ' . $rentalBoolean . ', managed = ' . $managedBoolean . ', foreclosure = ' . $foreclosureBoolean . ', bankruptcy = ' . $bankruptcyBoolean . ', liens = ' . $liensBoolean;
-	echo 'Update Successful - propertyComments = ' . $propertyComments . ', parcelId = ' . $parcelId;
+	echo 'Update Successful, parcelId = ' . $parcelId;
 	
 ?>

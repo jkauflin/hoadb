@@ -100,6 +100,14 @@ function setInputDate(idName,textVal,textSize){
 	return '<input id="'+idName+'" type="text" class="form-control input-sm Date" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" placeholder="YYYY-MM-DD">';
 }
 
+function setSelectOption(optVal,currVal) {
+	var outOpt = '<option value="'+optVal+'">'+optVal+'</option>';
+	if (optVal == currVal) {
+		outOpt = '<option value="'+optVal+'" selected>'+optVal+'</option>';
+	}
+	return outOpt;
+}
+
 
 $(document).ready(function(){
 	//$("#DisplayWidth").text("width = "+$(window).width());
@@ -669,8 +677,13 @@ function formatPropertyDetailResults(hoaRec){
 	$("#PropertyOwners tbody").html(tr);
 
 	var TaxYear = '';
+	var LienButton = '';
+	var ButtonType = '';
     tr = '';
 	$.each(hoaRec.assessmentsList, function(index, rec) {
+		LienButton = '';
+		ButtonType = '';
+		
 		if (index == 0) {
     	    tr = tr +   '<tr>';
         	tr = tr +     '<th>OwnId</th>';
@@ -684,6 +697,7 @@ function formatPropertyDetailResults(hoaRec){
     	    tr = tr +   '</tr>';
     	    TaxYear = rec.DateDue.substring(0,4);
 		}
+		
 	    tr = tr + '<tr>';
 	    tr = tr +   '<td>'+rec.OwnerID+'</td>';
     	if (hoaRec.adminLevel > 1) {
@@ -691,7 +705,25 @@ function formatPropertyDetailResults(hoaRec){
     	} else {
     	    tr = tr +   '<td>'+rec.FY+'</a></td>';
     	}
-	    tr = tr +   '<td>'+rec.DuesAmt+'</td>';
+
+    	// Check to add the Lien button
+    	if (rec.Lien) {
+    		if (rec.Disposition == 'Open') {
+        		ButtonType = 'btn-danger';
+    		} else if (rec.Disposition == 'Paid') {
+        		ButtonType = 'btn-success';
+    		} else {
+        		ButtonType = 'btn-default';
+    		}
+    	    LienButton = '<a data-ParcelId="'+hoaRec.Parcel_ID+'" data-FY="'+rec.FY+'" href="#" class="btn '+ButtonType+' btn-xs" role="button">Lien</a>';
+    	} else {
+    		// If NOT PAID and past the due date, add a Create Lien button to go to edit
+        	if (!rec.Paid && rec.DuesDue) {
+        	    LienButton = '<a data-ParcelId="'+hoaRec.Parcel_ID+'" data-FY="'+rec.FY+'" href="#" class="btn btn-warning btn-xs" role="button">Create Lien</a>';
+        	}
+    	}
+		tr = tr +   '<td>'+rec.DuesAmt+' '+LienButton+'</td>';
+
 	    tr = tr +   '<td>'+setCheckbox(rec.Paid)+'</td>';
 	    tr = tr +   '<td class="hidden-xs">'+rec.DatePaid.substring(0,10)+'</td>';
 		tr = tr +   '<td class="hidden-xs hidden-sm">'+rec.DateDue.substring(0,10)+'</td>';
@@ -745,7 +777,9 @@ function formatPropertyDetailEdit(hoaRec){
     tr += '<tr><th>Comments: </th><td>'+setInputText("PropertyComments",hoaRec.Comments,"80")+'</td></tr>';
 	tr += '</div>'
 	$("#EditTable tbody").html(tr);
-		
+
+	$("#EditTable2 tbody").html('');
+
 	tr = '<form class="form-inline" role="form">'+
 		 '<a id="SavePropertyEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" href="#" class="btn btn-primary" role="button">Save</a>'+
 		          		'<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>'+
@@ -813,6 +847,8 @@ function formatOwnerDetailEdit(hoaRec,createNew){
 	tr += '</div>';
     $("#EditTable tbody").html(tr);
 
+	$("#EditTable2 tbody").html('');
+
 	tr = '<form class="form-inline" role="form">';
 	if (createNew) {
 //	    tr += '<tr><th></th><td>'+
@@ -868,7 +904,17 @@ function formatAssessmentDetailEdit(hoaRec){
     tr += '<tr><th>Lien: </th><td>'+setCheckboxEdit(rec.Lien,'LienCheckbox')+'</td></tr>';
     tr += '<tr><th>LienRefNo: </th><td>'+setInputText("LienRefNo",rec.LienRefNo,"10")+'</td></tr>';
     tr += '<tr><th>DateFiled: </th><td>'+setInputDate("DateFiled",rec.DateFiled,"10")+'</td></tr>';
-    tr += '<tr><th>Disposition: </th><td>'+setInputText("Disposition",rec.Disposition,"10")+'</td></tr>';
+
+    var selectOption = '<select class="form-control" id="Disposition" style="margin-top:8px;">'
+        					+setSelectOption("",rec.Disposition)
+        					+setSelectOption("Open",rec.Disposition)
+        					+setSelectOption("Paid",rec.Disposition)
+        					+setSelectOption("Released",rec.Disposition)
+        					+setSelectOption("Closed",rec.Disposition)
+        					+'</select>';                    		
+    tr += '<tr><th>Disposition: </th><td>'+selectOption+'</td></tr>';
+    //tr += '<tr><th>Disposition: </th><td>'+setInputText("Disposition",rec.Disposition,"10")+'</td></tr>';
+    
     tr += '<tr><th>FilingFee: </th><td>'+setInputText("FilingFee",rec.FilingFee,"10")+'</td></tr>';
     tr += '<tr><th>ReleaseFee: </th><td>'+setInputText("ReleaseFee",rec.ReleaseFee,"10")+'</td></tr>';
     tr += '<tr><th>DateReleased: </th><td>'+setInputDate("DateReleased",rec.DateReleased,"10")+'</td></tr>';
@@ -923,11 +969,9 @@ function formatDuesStatementResults(hoaRec) {
 
     tr += '<tr><th>Parcel Id:</th><td>'+hoaRec.Parcel_ID+'</a></td></tr>';
     tr += '<tr><th>Lot No:</th><td>'+hoaRec.LotNo+'</td></tr>';
-    tr += '<tr><th>Sub Division: </th><td>'+hoaRec.SubDivParcel+'</td></tr>';
+    //tr += '<tr><th>Sub Division: </th><td>'+hoaRec.SubDivParcel+'</td></tr>';
     tr += '<tr><th>Location: </th><td>'+hoaRec.Parcel_Location+'</td></tr>';
-    tr += '<tr><th>City: </th><td>'+hoaRec.Property_City+'</td></tr>';
-    tr += '<tr><th>State: </th><td>'+hoaRec.Property_State+'</td></tr>';
-    tr += '<tr><th>Zip Code: </th><td>'+hoaRec.Property_Zip+'</td></tr>';
+    tr += '<tr><th>City State Zip: </th><td>'+hoaRec.Property_City+', '+hoaRec.Property_State+' '+hoaRec.Property_Zip+'</td></tr>';
     tr += '<tr><th>Total Due: </th><td>$'+hoaRec.TotalDue+'</td></tr>';
     $("#DuesStatementPropertyTable tbody").html(tr);
 
