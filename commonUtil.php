@@ -11,6 +11,8 @@
  * 2015-10-01 JJK	Added $fromEmailAddress to sendHtmlEMail                
  * 2015-10-20 JJK   Added function wildCardStrFromTokens to build a wild
  * 					card parameter string from the tokens in a string
+ * 2016-04-10 JJK	Added calcCompoundInterest to calculate compound 
+ * 					interests for the total dues calculation
  *============================================================================*/
 
 // common method to return admin level based on authenticated user name from the server
@@ -158,15 +160,17 @@ function calcCompoundInterest($principal,$startDate) {
 	$currSysDate = date_create();
 
 	// Difference between passed date and current system date
-	$diff = date_diff($startDate,date_create(),true);
+	$diff = date_diff(date_create($startDate),date_create(),true);
 	//error_log('date1=' . date_format($date1,"Y-m-d") . ', date2=' . date_format($date2,"Y-m-d") . ", diff days = " . $diff->days);
 
 	// Time in fractional years
-	$time = floatval($diff->days) / 365.0
+	$time = floatval($diff->days) / 365.0;
 
-	$interestAmount = round($principal * pow((1+($rate/$annualFrequency)),($annualFrequency*$time)),2);
+	$A = floatval($principal) * pow((1+($rate/$annualFrequency)),($annualFrequency*$time));
+	// Subtract the original principal to get just the interest
+	$interestAmount = round(($A - $principal),2);
 
-	error_log("diff days = " . $diff->days . ", time = " . $time . ", interest = " . $interestAmount);
+	//error_log("diff days = " . $diff->days . ", time = " . $time . ", A = " . $A . ", interest = " . $interestAmount);
 
 				/*
 //Monthly
@@ -187,7 +191,7 @@ function calcCompoundInterest($principal,$startDate) {
 
 } // End of function calcCompoundInterest($principal,$startDate) {
 
-				
+				/*
 				$date1=date_create("2015-12-25");
 				$date2=date_create("2016-01-05");
 				$diff=date_diff($date1,$date2);
