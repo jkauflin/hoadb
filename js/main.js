@@ -24,7 +24,7 @@
  * 2016-04-03 JJK	Working on input fields
  * 2016-04-05 JJK   Adding Admin function for adding yearly dues assessments
  * 					Adding Liens
- * 2016-04-09 JJK   Adding Dues Statement processing
+ * 2016-04-09 JJK   Adding Dues Statement calculation display logic
  *============================================================================*/
 
 $.urlParam = function(name){
@@ -979,6 +979,16 @@ function formatDuesStatementResults(hoaRec) {
     // format how needed by payment gateway
     tr = '<a id="DuesStatementPayButton" href="#" class="btn btn-success" role="button">Pay Total Due</a>';
     $("#DuesStatementPay").html(tr);
+
+    tr = '';
+	$.each(hoaRec.totalDuesCalcList, function(index, rec) {
+	    tr = tr + '<tr>';
+    	tr = tr +   '<td>'+rec.calcDesc+'</a></td>';
+	    tr = tr +   '<td>$</td>';
+	    tr = tr +   '<td>'+rec.calcValue+'</td>';
+	    tr = tr + '</tr>';
+	});
+	$("#DuesStatementCalculationTable tbody").html(tr);
     
 	var TaxYear = '';
     tr = '';

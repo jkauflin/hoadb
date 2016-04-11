@@ -298,7 +298,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				
 			$hoaRec->ownersList = array();
 			$hoaRec->assessmentsList = array();
-			$hosRec->totalDuesCalcList = array();
+			$hoaRec->totalDuesCalcList = array();
 			$hoaRec->salesList = array();
 		}
 		$result->close();
@@ -413,57 +413,6 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				array_push($hoaRec->assessmentsList,$hoaAssessmentRec);
 
 				
-				/*
-				 A = the future value of the investment/loan, including interest
-				 P = the principal investment amount (the initial deposit or loan amount)
-				 r = the annual interest rate (decimal)
-				 n = the number of times that interest is compounded per year
-				 t = the number of years the money is invested or borrowed for
-				 A = P(1+r/n)^nt
-				 */
-				/*
-				// Annaul percentage rate (i.e. 6%)
-				$rate = 0.06;
-				// Starting principal value
-				$principal = 100.0;
-				// Frequency of compounding (1 = yearly, 12 = monthly)
-				$annualFrequency = 12.0;
-				// Time in number of years
-				//$time = 10;
-				
-				echo "Compounded Monthly";
-				for ($time = 1; $time <= 10; $time++) {
-					$principalWithInterest = round($principal * pow((1+($rate/$annualFrequency)),($annualFrequency*$time)),2,PHP_ROUND_HALF_DOWN);
-					echo "<br>Year = $time ($principal * pow((1+($rate/$annualFrequency)),($annualFrequency*$time)) = " . $principalWithInterest;
-				}
-				
-				$annualFrequency = 1.0;
-				echo "<br><br>Compounded Yearly";
-				for ($time = 1; $time <= 10; $time++) {
-					$principalWithInterest = round($principal * pow((1+($rate/$annualFrequency)),($annualFrequency*$time)),2,PHP_ROUND_HALF_DOWN);
-					echo "<br>Year = $time ($principal * pow((1+($rate/$annualFrequency)),($annualFrequency*$time)) = " . $principalWithInterest;
-				}
-				
-				
-				$date1=date_create("2015-12-25");
-				$date2=date_create("2016-01-05");
-				$diff=date_diff($date1,$date2);
-				*/
-				//echo "<br><br>diff days = " . $diff->days;
-				
-				/*
-				 $date1 = new DateTime("2013-08-07");
-				 $date2 = new DateTime("2013-08-09");
-				 echo "<br><br> diff days = " . $date1->diff($date2)->days;
-				*/
-				//(string)$diff->format('%R%a');
-				
-				/*
-				 $d1=strtotime("July 04");
-				 $d2=ceil(($d1-time())/60/60/24);
-				 echo "There are " . $d2 ." days until 4th of July.";
-				 */
-
 				
 				// Only do the Total calc if FY is empty - need to check all years
 				//if (empty($fy)) {
@@ -478,29 +427,14 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 					// Replace every ascii character except decimal and digits with a null
 					$numericStr = preg_replace('/[\x01-\x2D\x2F\x3A-\x7F]+/', '', $hoaAssessmentRec->DuesAmt);
 
-					
-					
 					//error_log('AFTER = '.$numericStr);
 					// add to toal
-					// >>> add to payment calc array
-					$hoaRec->TotalDue = $hoaRec->TotalDue + floatval($numericStr);
-
-					
-					if ($hoaAssessmentRec->DuesDue) {
-						// calculate interest
-						// or maybe only if there is a lien
-					}
+					$hoaRec->TotalDue = $hoaRec->TotalDue + round(floatval($numericStr),2);
 					
 					$totalDuesCalcRec = new TotalDuesCalcRec();
-					$totalDuesCalcRec->calcDesc = '';
-					$totalDuesCalcRec->calcValue = 0.0;
-					
-					array_push($hosRec->totalDuesCalcList,$totalDuesCalcRec);
-						
-					
-					//round(,2,PHP_ROUND_HALF_DOWN);
-					
-					// add interest since the Due Date
+					$totalDuesCalcRec->calcDesc = 'FY ' . $hoaAssessmentRec->FY . ' Assessment (due ' . $hoaAssessmentRec->DateDue . ')';
+					$totalDuesCalcRec->calcValue = round(floatval($numericStr),2);
+					array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 				}
 				
 				// If there is an Open Lien (not Paid, Released, or Closed)
@@ -508,7 +442,57 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 
 					// calc interest - start date   WHEN TO CALC INTEREST
 					// unpaid fee amount and interest since the Filing Date
+
+					if ($hoaAssessmentRec->FilingFee > 0) {
+						// shouldn't have to do this for the ones that are stored as Decimal right???  shouldn't have to parse, floatval, or round
+						//$numericStr = preg_replace('/[\x01-\x2D\x2F\x3A-\x7F]+/', '', $hoaAssessmentRec->DuesAmt);
+						$hoaRec->TotalDue = $hoaRec->TotalDue + $hoaAssessmentRec->FilingFee;
+						$totalDuesCalcRec = new TotalDuesCalcRec();
+						$totalDuesCalcRec->calcDesc = 'FY ' . $hoaAssessmentRec->FY . ' Assessment Lien Filing Fee';
+						$totalDuesCalcRec->calcValue = $hoaAssessmentRec->FilingFee;
+						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
+					}
 					
+					// If stopping dynamic interest calculation just take the stored value, else calculate the interest
+					if ($hoaAssessmentRec->StopInterestCalc) {
+						// if > 0
+						$hoaRec->TotalDue = $hoaRec->TotalDue + $hoaAssessmentRec->FilingFeeInterest;
+						$totalDuesCalcRec = new TotalDuesCalcRec();
+						$totalDuesCalcRec->calcDesc = '%6 Interest on Filing Fees (since ' . $hoaAssessmentRec->DateFiled . ')';
+						$totalDuesCalcRec->calcValue = $hoaAssessmentRec->FilingFeeInterest;
+						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
+					} else {
+					
+						// compound interest calc - starting value, %, start date
+					
+						$hoaRec->TotalDue = $hoaRec->TotalDue + $hoaAssessmentRec->FilingFeeInterest;
+						$totalDuesCalcRec = new TotalDuesCalcRec();
+						$totalDuesCalcRec->calcDesc = '%6 Interest on Filing Fees (since ' . $hoaAssessmentRec->DateFiled . ')';
+						$totalDuesCalcRec->calcValue = $hoaAssessmentRec->FilingFeeInterest;
+						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
+					}
+
+					if ($hoaAssessmentRec->ReleaseFee > 0) {
+						$hoaRec->TotalDue = $hoaRec->TotalDue + $hoaAssessmentRec->ReleaseFee;
+						$totalDuesCalcRec = new TotalDuesCalcRec();
+						$totalDuesCalcRec->calcDesc = 'FY ' . $hoaAssessmentRec->FY . ' Assessment Lien Release Fee';
+						$totalDuesCalcRec->calcValue = $hoaAssessmentRec->ReleaseFee;
+						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
+					}
+
+				/*
+				$hoaAssessmentRec->DateFiled = $row["DateFiled"];
+				$hoaAssessmentRec->Disposition = $row["Disposition"];
+				$hoaAssessmentRec->FilingFee = $row["FilingFee"];
+				$hoaAssessmentRec->ReleaseFee = $row["ReleaseFee"];
+				$hoaAssessmentRec->DateReleased = $row["DateReleased"];
+				$hoaAssessmentRec->LienDatePaid = $row["LienDatePaid"];
+				$hoaAssessmentRec->AmountPaid = $row["AmountPaid"];
+				$hoaAssessmentRec->StopInterestCalc = $row["StopInterestCalc"];
+				$hoaAssessmentRec->FilingFeeInterest = $row["FilingFeeInterest"];
+				$hoaAssessmentRec->AssessmentInterest = $row["AssessmentInterest"];
+				*/
+
 				} // if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open') {
 				
 			}
