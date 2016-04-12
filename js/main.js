@@ -96,10 +96,10 @@ function setInputDate(idName,textVal,textSize){
 	//return '<input id="'+idName+'" type="text" class="Date form-control" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" placeholder="YYYY-MM-DD">';
 	return '<input id="'+idName+'" type="text" class="form-control input-sm Date" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" placeholder="YYYY-MM-DD">';
 }
-function setSelectOption(optVal,currVal) {
-	var outOpt = '<option value="'+optVal+'">'+optVal+'</option>';
+function setSelectOption(optVal,currVal,bg) {
+	var outOpt = '<option class="'+bg+'" value="'+optVal+'">'+optVal+'</option>';
 	if (optVal == currVal) {
-		outOpt = '<option value="'+optVal+'" selected>'+optVal+'</option>';
+		outOpt = '<option class="'+bg+'" value="'+optVal+'" selected>'+optVal+'</option>';
 	}
 	return outOpt;
 }
@@ -696,6 +696,7 @@ function formatPropertyDetailResults(hoaRec){
         	tr = tr +     '<th>OwnId</th>';
         	tr = tr +     '<th>FY</th>';
         	tr = tr +     '<th>Dues Amt</th>';
+        	tr = tr +     '<th>Lien</th>';
         	tr = tr +     '<th>Paid</th>';
         	tr = tr +     '<th class="hidden-xs">Date Paid</th>';
         	tr = tr +     '<th class="hidden-xs hidden-sm">Date Due</th>';
@@ -729,7 +730,9 @@ function formatPropertyDetailResults(hoaRec){
         	    LienButton = '<a data-ParcelId="'+hoaRec.Parcel_ID+'" data-FY="'+rec.FY+'" href="#" class="btn btn-warning btn-xs" role="button">Create Lien</a>';
         	}
     	}
-		tr = tr +   '<td>'+rec.DuesAmt+' '+LienButton+'</td>';
+		//tr = tr +   '<td>'+rec.DuesAmt+' '+LienButton+'</td>';
+		tr = tr +   '<td>'+rec.DuesAmt+'</td>';
+		tr = tr +   '<td>'+LienButton+'</td>';
 
 	    tr = tr +   '<td>'+setCheckbox(rec.Paid)+'</td>';
 	    tr = tr +   '<td class="hidden-xs">'+rec.DatePaid.substring(0,10)+'</td>';
@@ -913,11 +916,11 @@ function formatAssessmentDetailEdit(hoaRec){
     tr += '<tr><th>DateFiled: </th><td>'+setInputDate("DateFiled",rec.DateFiled,"10")+'</td></tr>';
 
     var selectOption = '<select class="form-control" id="Disposition" style="margin-top:8px;">'
-        					+setSelectOption("",rec.Disposition)
-        					+setSelectOption("Open",rec.Disposition)
-        					+setSelectOption("Paid",rec.Disposition)
-        					+setSelectOption("Released",rec.Disposition)
-        					+setSelectOption("Closed",rec.Disposition)
+        					+setSelectOption("",rec.Disposition,"")
+        					+setSelectOption("Open",rec.Disposition,"bg-danger")
+        					+setSelectOption("Paid",rec.Disposition,"bg-success")
+        					+setSelectOption("Released",rec.Disposition,"bg-info")
+        					+setSelectOption("Closed",rec.Disposition,"bg-warning")
         					+'</select>';                    		
     tr += '<tr><th>Disposition: </th><td>'+selectOption+'</td></tr>';
     //tr += '<tr><th>Disposition: </th><td>'+setInputText("Disposition",rec.Disposition,"10")+'</td></tr>';
