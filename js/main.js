@@ -91,15 +91,11 @@ function setCheckboxEdit(checkVal,idName){
 function setInputText(idName,textVal,textSize){
 //	return '<div class="form-group"><input id="'+idName+'" type="text" class="form-control resetval" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'"></div>';
 	return '<input id="'+idName+'" type="text" class="form-control input-sm resetval" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'">';
-	
-//	$(".resetval").addClear();
-
 }
 function setInputDate(idName,textVal,textSize){
 	//return '<input id="'+idName+'" type="text" class="Date form-control" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" placeholder="YYYY-MM-DD">';
 	return '<input id="'+idName+'" type="text" class="form-control input-sm Date" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" placeholder="YYYY-MM-DD">';
 }
-
 function setSelectOption(optVal,currVal) {
 	var outOpt = '<option value="'+optVal+'">'+optVal+'</option>';
 	if (optVal == currVal) {
@@ -359,7 +355,6 @@ $(document).ready(function(){
         event.stopPropagation();
     });
 
-	
 	$(document).on("click","#SalesNewOwnerReport",function(){
 	    waitCursor();
 	    $("#ReportHeader").html("County Reported Sales of HOA properties (for New Owner maintenance)");
@@ -480,7 +475,8 @@ $(document).ready(function(){
     	    
     	    if (action == 'DuesStatements') {
     	        // Portrait, millimeters, A4 format
-    	    	var doc = new jsPDF('p', 'mm', 'a4');
+    	    	//var doc = new jsPDF('p', 'mm', 'a4');
+    	    	var doc = new jsPDF('p', 'in', 'letter');
     	    	doc.setProperties({
     	    	    title: 'Test JJK Doc',
     	    	    subject: 'This is the subject',
@@ -488,39 +484,50 @@ $(document).ready(function(){
     	    	    keywords: 'generated, javascript, web 2.0, ajax',
     	    	    creator: 'MEEE'
     	    	});
-    			doc.setFontSize(30);
-    			doc.text(35, 25, "John K loves jsPDF");
-    	    	
-    		    var progress = $('<div>').prop('class',"progress");
+    			doc.setFontSize(20);
+    			doc.text(1, 1, "John K loves jsPDF");
 
-    		    var recTotal = adminRec.hoaPropertyRecList.length;
-        	    //console.log("adminRec.hoaPropertyRecList = "+adminRec.hoaPropertyRecList.length);
-        	    var percentDone = 0;
-        	    
-        		$.each(adminRec.hoaPropertyRecList, function(index, hoaPropertyRec) {
-        			/*
-        		    tr +=    '<td><a data-parcelId="'+hoaPropertyRec.parcelId+'" href="#">'+hoaPropertyRec.parcelId+'</a></td>';
-        		    tr +=    '<td class="hidden-xs hidden-sm">'+hoaPropertyRec.lotNo+'</td>';
-        		    tr +=    '<td>'+hoaPropertyRec.parcelLocation+'</td>';
-        			tr +=    '<td class="hidden-xs">'+hoaPropertyRec.ownerName+'</td>';
-        		    tr +=    '<td class="visible-lg">'+hoaPropertyRec.ownerPhone+'</td>';
-        		    */
-        			
-        			doc.addPage('a4','p');
-        			doc.text(25, 15, "Page = "+index);
-        			doc.text(35, 25, "Parcel Id = "+hoaPropertyRec.parcelId);
-        			
-        			/*
-            	    percentDone = Math.round(index/recTotal);
-            	    var progressBar = $('<div>').prop('class',"progress-bar").attr('role',"progressbar").attr('aria-valuenow',percentDone).attr('aria-valuemin',"0").attr('aria-valuemax',recTotal)
-            	    		.css('width',percentDone).html(percentDone+"%");
-            	    progress.html(progressBar+" of "+recTotal);
-            	  	$("#AdminProgress").html(progress);
-            	  	*/
-        		});
+    			var logoImgData = '';
+    	    	$.get("getLogoImgData.php",function(logoImgData){
+        		    var progress = $('<div>').prop('class',"progress");
 
-    			// Output as Data URI
-    			doc.save('JJKTestDuesStatements.pdf');
+        		    var recTotal = adminRec.hoaPropertyRecList.length;
+            	    //console.log("adminRec.hoaPropertyRecList = "+adminRec.hoaPropertyRecList.length);
+            	    var percentDone = 0;
+            	    
+            		$.each(adminRec.hoaPropertyRecList, function(index, hoaPropertyRec) {
+            			/*
+            		    tr +=    '<td><a data-parcelId="'+hoaPropertyRec.parcelId+'" href="#">'+hoaPropertyRec.parcelId+'</a></td>';
+            		    tr +=    '<td class="hidden-xs hidden-sm">'+hoaPropertyRec.lotNo+'</td>';
+            		    tr +=    '<td>'+hoaPropertyRec.parcelLocation+'</td>';
+            			tr +=    '<td class="hidden-xs">'+hoaPropertyRec.ownerName+'</td>';
+            		    tr +=    '<td class="visible-lg">'+hoaPropertyRec.ownerPhone+'</td>';
+            		    */
+            			
+            			doc.addPage('letter','p');
+            			doc.addImage(logoImgData, 'JPEG', 0.5, 0.5, 1.5, 1.5);
+            			
+            			doc.setFontSize(12);
+            			doc.text(0.5, 10.5, "Page = "+index);
+            			doc.setFontSize(16);
+            			doc.text(0.5, 10.8, "Parcel Id = "+hoaPropertyRec.parcelId);
+            			
+            			
+            			/*
+                	    percentDone = Math.round(index/recTotal);
+                	    var progressBar = $('<div>').prop('class',"progress-bar").attr('role',"progressbar").attr('aria-valuenow',percentDone).attr('aria-valuemin',"0").attr('aria-valuemax',recTotal)
+                	    		.css('width',percentDone).html(percentDone+"%");
+                	    progress.html(progressBar+" of "+recTotal);
+                	  	$("#AdminProgress").html(progress);
+                	  	*/
+            		});
+
+        			// Output as Data URI
+        			doc.save('JJKTestDuesStatements.pdf');
+    	    		
+    	    		
+    	    	});
+
         		
     	    } // End of if ($action == 'DuesStatements') {
     	    
@@ -985,7 +992,7 @@ function formatDuesStatementResults(hoaRec) {
 	    tr = tr + '<tr>';
     	tr = tr +   '<td>'+rec.calcDesc+'</a></td>';
 	    tr = tr +   '<td>$</td>';
-	    tr = tr +   '<td>'+rec.calcValue+'</td>';
+	    tr = tr +   '<td align="right">'+rec.calcValue+'</td>';
 	    tr = tr + '</tr>';
 	});
 	$("#DuesStatementCalculationTable tbody").html(tr);

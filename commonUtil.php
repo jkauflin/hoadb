@@ -140,6 +140,7 @@ function wildCardStrFromTokens($inStr) {
 	return $paramStr;
 }
 
+function calcCompoundInterest($principal,$startDate) {
 				/*
 				 A = the future value of the investment/loan, including interest
 				 P = the principal investment amount (the initial deposit or loan amount)
@@ -148,7 +149,6 @@ function wildCardStrFromTokens($inStr) {
 				 t = the number of years the money is invested or borrowed for
 				 A = P(1+r/n)^nt
 				 */
-function calcCompoundInterest($principal,$startDate) {
 	$interestAmount = 0.0;
 	// Annaul percentage rate (i.e. 6%)
 	$rate = 0.06;
@@ -190,28 +190,5 @@ function calcCompoundInterest($principal,$startDate) {
 	return $interestAmount;
 
 } // End of function calcCompoundInterest($principal,$startDate) {
-
-				/*
-				$date1=date_create("2015-12-25");
-				$date2=date_create("2016-01-05");
-				$diff=date_diff($date1,$date2);
-				*/
-				//echo "<br><br>diff days = " . $diff->days;
-				
-				/*
-				 $date1 = new DateTime("2013-08-07");
-				 $date2 = new DateTime("2013-08-09");
-				 echo "<br><br> diff days = " . $date1->diff($date2)->days;
-				*/
-				//(string)$diff->format('%R%a');
-				
-				/*
-				 $d1=strtotime("July 04");
-				 $d2=ceil(($d1-time())/60/60/24);
-				 echo "There are " . $d2 ." days until 4th of July.";
-				 */
-
-
-
 
 ?>

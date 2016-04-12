@@ -411,25 +411,18 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				$hoaAssessmentRec->LastChangedTs = $row["LastChangedTs"];
 				
 				array_push($hoaRec->assessmentsList,$hoaAssessmentRec);
-
 				
 				
 				// Only do the Total calc if FY is empty - need to check all years
 				//if (empty($fy)) {
 				
-				// TBD - finish this logic 11/28/2015 JJK
+				//-------------------------------------------------------------------------------------------------------------------------------
+				// Logic to calculate the Total Due from assessments and liens
+				//-------------------------------------------------------------------------------------------------------------------------------
 				$duesAmt = 0.0;
 				if (!$hoaAssessmentRec->Paid) {
-					//error_log('gettype($hoaAssessmentRec->DuesAmt) = '.gettype($hoaAssessmentRec->DuesAmt));
-					//error_log('DuesAmt = '.$hoaAssessmentRec->DuesAmt);
-					//$str = '$$1\09.0/1::a/bb';
-					//error_log('BEFORE = '.$str);
-
 					// Replace every ascii character except decimal and digits with a null
 					$duesAmt = round(floatval( preg_replace('/[\x01-\x2D\x2F\x3A-\x7F]+/', '', $hoaAssessmentRec->DuesAmt) ),2);
-
-					//error_log('AFTER = '.$numericStr);
-					// add to total
 					$hoaRec->TotalDue += $duesAmt;
 					
 					$totalDuesCalcRec = new TotalDuesCalcRec();
@@ -438,11 +431,14 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 					array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 
 					if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open') {
-						$hoaAssessmentRec->AssessmentInterest = calcCompoundInterest($duesAmt,$hoaAssessmentRec->DateDue);
+						// If still calculating interest dynamically calculate the compound interest						
+						if (!$hoaAssessmentRec->StopInterestCalc) {
+							$hoaAssessmentRec->AssessmentInterest = calcCompoundInterest($duesAmt,$hoaAssessmentRec->DateDue);
+						}
 						
 						$hoaRec->TotalDue = $hoaRec->TotalDue + $hoaAssessmentRec->AssessmentInterest;
 						$totalDuesCalcRec = new TotalDuesCalcRec();
-						$totalDuesCalcRec->calcDesc = '%6 Interest on Assessment (since ' . $hoaAssessmentRec->DateDue . ')';
+						$totalDuesCalcRec->calcDesc = '%6 Interest on FY ' . $hoaAssessmentRec->FY . ' Assessment (since ' . $hoaAssessmentRec->DateDue . ')';
 						$totalDuesCalcRec->calcValue = $hoaAssessmentRec->AssessmentInterest;
 						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 					}
@@ -464,46 +460,25 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 						
 						// If stopping dynamic interest calculation just take the stored value, else calculate the interest
-						if ($hoaAssessmentRec->StopInterestCalc) {
-							if ($hoaAssessmentRec->FilingFeeInterest > 0) {
-								$hoaRec->TotalDue += $hoaAssessmentRec->FilingFeeInterest;
-								$totalDuesCalcRec = new TotalDuesCalcRec();
-								$totalDuesCalcRec->calcDesc = '%6 Interest on Filing Fees (since ' . $hoaAssessmentRec->DateFiled . ')';
-								$totalDuesCalcRec->calcValue = $hoaAssessmentRec->FilingFeeInterest;
-								array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
-							}
-						} else {
+						if (!$hoaAssessmentRec->StopInterestCalc) {
 							$hoaAssessmentRec->FilingFeeInterest = calcCompoundInterest($hoaAssessmentRec->FilingFee,$hoaAssessmentRec->DateFiled);
-								
-							$hoaRec->TotalDue = $hoaRec->TotalDue + $hoaAssessmentRec->FilingFeeInterest;
-							$totalDuesCalcRec = new TotalDuesCalcRec();
-							$totalDuesCalcRec->calcDesc = '%6 Interest on Filing Fees (since ' . $hoaAssessmentRec->DateFiled . ')';
-							$totalDuesCalcRec->calcValue = $hoaAssessmentRec->FilingFeeInterest;
-							array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 						}
-					}
-					
 
+						$hoaRec->TotalDue += $hoaAssessmentRec->FilingFeeInterest;
+						$totalDuesCalcRec = new TotalDuesCalcRec();
+						$totalDuesCalcRec->calcDesc = '%6 Interest on Filing Fees (since ' . $hoaAssessmentRec->DateFiled . ')';
+						$totalDuesCalcRec->calcValue = $hoaAssessmentRec->FilingFeeInterest;
+						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
+						
+					} // End of if ($hoaAssessmentRec->FilingFee > 0) {
+					
 					if ($hoaAssessmentRec->ReleaseFee > 0) {
-						$hoaRec->TotalDue = $hoaRec->TotalDue + $hoaAssessmentRec->ReleaseFee;
+						$hoaRec->TotalDue += $hoaAssessmentRec->ReleaseFee;
 						$totalDuesCalcRec = new TotalDuesCalcRec();
 						$totalDuesCalcRec->calcDesc = 'FY ' . $hoaAssessmentRec->FY . ' Assessment Lien Release Fee';
 						$totalDuesCalcRec->calcValue = $hoaAssessmentRec->ReleaseFee;
 						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 					}
-
-				/*
-				$hoaAssessmentRec->DateFiled = $row["DateFiled"];
-				$hoaAssessmentRec->Disposition = $row["Disposition"];
-				$hoaAssessmentRec->FilingFee = $row["FilingFee"];
-				$hoaAssessmentRec->ReleaseFee = $row["ReleaseFee"];
-				$hoaAssessmentRec->DateReleased = $row["DateReleased"];
-				$hoaAssessmentRec->LienDatePaid = $row["LienDatePaid"];
-				$hoaAssessmentRec->AmountPaid = $row["AmountPaid"];
-				$hoaAssessmentRec->StopInterestCalc = $row["StopInterestCalc"];
-				$hoaAssessmentRec->FilingFeeInterest = $row["FilingFeeInterest"];
-				$hoaAssessmentRec->AssessmentInterest = $row["AssessmentInterest"];
-				*/
 
 				} // if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open') {
 				
