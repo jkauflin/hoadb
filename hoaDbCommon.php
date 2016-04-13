@@ -528,10 +528,6 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 		$result->close();
 		$stmt->close();
 
-		
-		// Total due
-		
-		
 	} else {
 		$result->close();
 		$stmt->close();
@@ -661,9 +657,6 @@ function getHoaRec2($conn,$parcelId) {
 		} // End of Assessments
 		$result->close();
 		$stmt->close();
-
-		// Total due
-
 
 	} else {
 		$result->close();

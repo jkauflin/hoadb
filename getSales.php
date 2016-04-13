@@ -43,15 +43,6 @@ if (is_file($zipFileName)) {
 		// Create connection to the database
 		//--------------------------------------------------------------------------------------------------------
 		$conn = getConn();
-		/*		
-		new mysqli($host, $dbadmin, $password, $dbname);
-		// Check connection
-		if ($conn->connect_error) {
-			$errorStr = 'FILE: ' . __FILE__  . ', LINE: ' . __LINE__ . ', ERROR: ' . $conn->error ;
-			error_log($errorStr, 1, $adminEmailList);
-			die($errorStr);
-		}
-		*/
 		
 		// Loop through all the records in the downloaded sales file and compare with HOA database parcels
 		$recCnt = 0;

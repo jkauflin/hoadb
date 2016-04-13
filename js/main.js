@@ -393,6 +393,20 @@ $(document).ready(function(){
 	    }
 	});	// End of $(document).on("click","#ReportListDisplay tr td a",function(){
 
+
+	$(document).on("click","#DuesReport",function(){
+        waitCursor();
+	    $("#ReportHeader").html("Dues Report");
+	    $("#ReportsInstructions").html("");
+        
+    	// Get the list
+	    console.log("Dues report");
+	    $('*').css('cursor', 'default');
+	    //formatSalesReportList(false);
+        
+        event.stopPropagation();
+    });
+
 	
 	// Meeting minutes experiment
 	/*
@@ -1056,6 +1070,7 @@ function formatSalesReportList(notProcessedBoolean){
     									.attr('data-ParcelId',hoaSalesRec.PARID)
     									.attr('data-SaleDate',hoaSalesRec.SALEDT)
     									.attr('data-Action',"Process")
+    									.prop('style','margin-right:7px;')
     									.html(hoaSalesRec.SALEDT))
     					.append($('<a>').attr('data-ParcelId',hoaSalesRec.PARID)
     									.attr('data-SaleDate',hoaSalesRec.SALEDT)
