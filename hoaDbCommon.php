@@ -17,6 +17,7 @@
  * 					the hoaDbCred include inside it to access the variables	
  * 2016-04-05 JJK	Added Lien fields to the Assessments record
  * 2016-04-10 JJK	Working on Dues Total calculation (with Lien info)
+ * 2016-04-13 JJK	Added sales download filename and email functions
  *============================================================================*/
 
 function getConn() {
@@ -36,6 +37,25 @@ function getConn() {
 		die("Connection failed: " . $conn->connect_error);
 	}
 	return $conn;
+}
+
+function getConfigVal($configName) {
+	// Include db connection credentials (use for site specific config values for now)
+	include 'hoaDbCred.php';
+	
+	$configVal = "";
+	
+	if ($configName == "countySalesDataUrl") {
+		$configVal = $countySalesDataUrl;	
+	} if ($configName == "fromEmailAddress") {
+		$configVal = $fromEmailAddress;
+	} if ($configName == "salesReportEmailList") {
+		$configVal = $salesReportEmailList;
+	} if ($configName == "adminEmailList") {
+		$configVal = $adminEmailList;
+	}
+	
+	return $configVal;
 }
 
 

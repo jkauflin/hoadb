@@ -1,6 +1,6 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2015 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2016 John J Kauflin, All rights reserved. 
  *----------------------------------------------------------------------------
  * DESCRIPTION: Scheduled job to get sales information from the county
  * 				auditor site, find parcels in the hoa, update the hoa_sales
@@ -13,6 +13,7 @@
  * 2015-09-28 JJK	Added error handling to send email to admin and 
  * 					updated for new sales table fields
  * 2016-04-02 JJK	Added getConn() function
+ * 2016-04-13 JJK   Checked function and added getConfigVal calss
  *============================================================================*/
 
 include 'commonUtil.php';
@@ -25,7 +26,7 @@ $currTimestampStr = date("Y-m-d H:i:s");
 // Get the year from the current system time
 $salesYear = substr($currTimestampStr,0,4);
 
-$url = $countySalesDataUrl . $salesYear . '.zip';
+$url = getConfigVal("countySalesDataUrl") . $salesYear . '.zip';
 $zipFileName = 'SALES_' . $salesYear . '.zip';
 downloadUrlToFile($url, $zipFileName);
 
@@ -78,7 +79,7 @@ if (is_file($zipFileName)) {
 			if (empty($hoaSalesRec->PARID)) {
 				if (!( $stmt = $conn->prepare("INSERT INTO hoa_sales VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ") )) {
 					$errorStr = 'FILE: ' . __FILE__  . ', LINE: ' . __LINE__ . ', ERROR: ' . $conn->error ;
-					error_log($errorStr, 1, $adminEmailList);
+					error_log($errorStr, 1, getConfigVal("adminEmailList"));
 					die($errorStr);
 				}
 				
@@ -106,13 +107,13 @@ if (is_file($zipFileName)) {
 						//LastChangedTs
 				)) {
 					$errorStr = 'FILE: ' . __FILE__  . ', LINE: ' . __LINE__ . ', ERROR: ' . $conn->error ;
-					error_log($errorStr, 1, $adminEmailList);
+					error_log($errorStr, 1, getConfigVal("adminEmailList"));
 					die($errorStr);
 				}
 					
 				if (!( $stmt->execute() )) {
 					$errorStr = 'FILE: ' . __FILE__  . ', LINE: ' . __LINE__ . ', ERROR: ' . $conn->error ;
-					error_log($errorStr, 1, $adminEmailList);
+					error_log($errorStr, 1, getConfigVal("adminEmailList"));
 					die($errorStr);
 				}
 					
@@ -168,7 +169,7 @@ if (is_file($zipFileName)) {
 		if ($sendMessage) {
 			$subject = 'HOA Residential Sales in ' . $salesYear;
 			$messageStr = '<h2>HOA Residential Sales in ' . $salesYear . '</h2>' . $outputStr;
-			sendHtmlEMail($salesReportEmailList,$subject,$messageStr,$fromEmailAddress);
+			sendHtmlEMail(getConfigVal("salesReportEmailList"),$subject,$messageStr,getConfigVal("fromEmailAddress"));
 		}
 		
 		// maybe update the flags after the email is send successfully

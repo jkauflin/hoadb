@@ -72,15 +72,12 @@ function getParamVal($paramName) {
 
 function downloadUrlToFile($url, $outFileName)
 {
-	//file_put_contents($xmlFileName, fopen($link, 'r'));
-	//copy($link, $xmlFileName); // download xml file
-
 	if (is_file($url)) {
 		copy($url, $outFileName); // download xml file
 	} else {
 		$options = array(
 				CURLOPT_FILE    => fopen($outFileName, 'w'),
-				CURLOPT_TIMEOUT =>  30, // set this to 30 minutes so we do not timeout on big files
+				CURLOPT_TIMEOUT =>  10, // set this to 10 minutes so we do not timeout on big files
 				CURLOPT_URL     => $url
 		);
 		//CURLOPT_TIMEOUT =>  28800, // set this to 8 hours so we dont timeout on big files
@@ -90,13 +87,6 @@ function downloadUrlToFile($url, $outFileName)
 		curl_exec($ch);
 		curl_close($ch);
 	}
-	
-	/* loop through elements in a value array
-	 foreach($valArray as $x => $x_value) {
-	 echo "Key=" . $x . ", Value=" . $x_value;
-	 echo "<br>";
-	 }
-	 */
 }
 
 function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
