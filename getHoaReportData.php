@@ -14,26 +14,33 @@ include 'hoaDbCommon.php';
 
 $username = getUsername();
 
-$adminRec = new AdminRec();
-$adminRec->result = "Not Valid";
-$adminRec->message = "";
+$reportName = getParamVal("reportName");
+//$fiscalYear = getParamVal("FY");
 
-$action = getParamVal("action");
-$fiscalYear = getParamVal("FY");
-$duesAmt = strToUSD(getParamVal("duesAmt"));
-
-$adminLevel = getAdminLevel();
+$outputArray = array();
 $conn = getConn();
 
-if ($action == "AddAssessments") {
+if ($reportName == "AddAssessments") {
 
 // End of if ($action == "AddAssessments") {
-} else if ($action == "DuesStatements") {
+} else if ($reportName == "UnpaidDuesReport") {
 
-	$outputArray = array();
-
+	$parcelId = "";
+	$ownerId = "";
+	$fy = "2017";
+	$saleDate = "SKIP";
+	
+	
+	// try to get the parameters into the initial select query to limit the records it then tries to get from the getHoaRec
+	
+	
 		// Loop through all the member properties
-		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";		
+		//$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";		
+		//$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a WHERE p.Parcel_ID = o.Parcel_ID AND p.Parcel_ID = a.Parcel_ID AND o.CurrentOwner = 1 AND UPPER(a.Comments) ";
+		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " . 
+				"WHERE p.Parcel_ID = o.Parcel_ID AND p.Parcel_ID = a.Parcel_ID AND o.CurrentOwner = 1 " .
+				"AND a.FY = 2017 AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
+		
 		$stmt = $conn->prepare($sql);
 		$stmt->execute();
 		$result = $stmt->get_result();
@@ -44,55 +51,20 @@ if ($action == "AddAssessments") {
 			while($row = $result->fetch_assoc()) {
 				$cnt = $cnt + 1;
 
-				//$Parcel_ID = $row["Parcel_ID"];
-				//$OwnerID = $row["OwnerID"];
-				//$FY = $row["Own"];
-				/*					
-				if (!$stmt->execute()) {
-					error_log("Execute failed: " . $stmt->errno . ", Error = " . $stmt->error);
-					echo "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
-				}
-				*/
-			
-				//if ($cnt < 101) {
-					//$hoaRec = getHoaRec($conn,$Parcel_ID,$OwnerID,NULL,NULL);
-					//array_push($outputArray,$hoaRec);
-				//}
+				$parcelId = $row["Parcel_ID"];
+				$ownerId = $row["OwnerID"];
 				
-				$hoaPropertyRec = new HoaPropertyRec();
+				$hoaRec = getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate);
 				
-				$hoaPropertyRec->parcelId = $row["Parcel_ID"];
-				$hoaPropertyRec->lotNo = $row["LotNo"];
-				$hoaPropertyRec->subDivParcel = $row["SubDivParcel"];
-				$hoaPropertyRec->parcelLocation = $row["Parcel_Location"];
-				$hoaPropertyRec->ownerName = $row["Owner_Name1"] . ' ' . $row["Owner_Name2"];
-				$hoaPropertyRec->ownerPhone = $row["Owner_Phone"];
-				
-				array_push($outputArray,$hoaPropertyRec);
+				array_push($outputArray,$hoaRec);
 			}
 			
-			/*
-			$serializedArray = serialize($outputArray);
-			if (function_exists('mb_strlen')) {
-				$size = mb_strlen($serializedArray, '8bit');
-			} else {
-				$size = strlen($serializedArray);
-			}
-			
-			error_log("END Array cnt = " . count($outputArray) . ', size = ' . round($size/1000,0) . 'K bytes');
-			[09-Apr-2016 22:26:04 Europe/Paris] BEG Array
-			[09-Apr-2016 22:26:12 Europe/Paris] END Array cnt = 542, size = 5209K bytes				
-			*/
-			
-			$adminRec->hoaPropertyRecList = $outputArray;
 		}
 
-		$adminRec->message = "Completed data lookup Dues Statements";
-		$adminRec->result = "Valid";
-}
+} // End of } else if ($reportName == "DuesReport") {
 	
-	// Close db connection
-	$conn->close();
+// Close db connection
+$conn->close();
 
-	echo json_encode($adminRec);
+echo json_encode($outputArray);
 ?>

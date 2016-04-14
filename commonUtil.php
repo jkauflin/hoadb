@@ -181,4 +181,17 @@ function calcCompoundInterest($principal,$startDate) {
 
 } // End of function calcCompoundInterest($principal,$startDate) {
 
+/*
+ $serializedArray = serialize($outputArray);
+ if (function_exists('mb_strlen')) {
+ $size = mb_strlen($serializedArray, '8bit');
+ } else {
+ $size = strlen($serializedArray);
+ }
+ 	
+ error_log("END Array cnt = " . count($outputArray) . ', size = ' . round($size/1000,0) . 'K bytes');
+ [09-Apr-2016 22:26:04 Europe/Paris] BEG Array
+ [09-Apr-2016 22:26:12 Europe/Paris] END Array cnt = 542, size = 5209K bytes
+ */
+
 ?>

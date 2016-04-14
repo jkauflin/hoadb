@@ -25,6 +25,7 @@
  * 2016-04-05 JJK   Adding Admin function for adding yearly dues assessments
  * 					Adding Liens
  * 2016-04-09 JJK   Adding Dues Statement calculation display logic
+ * 2016-04-14 JJK   Adding Dues Report
  *============================================================================*/
 
 $.urlParam = function(name){
@@ -367,7 +368,22 @@ $(document).ready(function(){
 	    
 	    event.stopPropagation();
 	});
-	
+
+	$(document).on("click",".reportRequest",function(){
+        waitCursor();
+    	var $this = $(this);
+    	var reportName = $this.attr('id');
+        $("#ReportHeader").html("2017 "+$this.attr('data-reportTitle'));
+        $("#ReportsInstructions").html("");
+		$("#ReportListDisplay tbody").html("");
+    	$.getJSON("getHoaReportData.php","reportName="+reportName,function(hoaRecList){
+    	    formatReportList(reportName,hoaRecList);
+    	    $('*').css('cursor', 'default');
+    	});
+        event.stopPropagation();
+    });
+
+
 	$(document).on("click","#ReportListDisplay tr td a",function(){
 	    waitCursor();
 	    var $this = $(this);
@@ -394,20 +410,6 @@ $(document).ready(function(){
 	});	// End of $(document).on("click","#ReportListDisplay tr td a",function(){
 
 
-	$(document).on("click","#DuesReport",function(){
-        waitCursor();
-	    $("#ReportHeader").html("Dues Report");
-	    $("#ReportsInstructions").html("");
-        
-    	// Get the list
-	    console.log("Dues report");
-	    $('*').css('cursor', 'default');
-	    //formatSalesReportList(false);
-        
-        event.stopPropagation();
-    });
-
-	
 	// Meeting minutes experiment
 	/*
 	$('#summernote').summernote();
@@ -1095,3 +1097,37 @@ function formatSalesReportList(notProcessedBoolean){
 	});
 } // function formatSalesReportList(notProcessedBoolean){
 
+function formatReportList(reportName,hoaRecList){
+
+		var reportListDisplay = $("#ReportListDisplay tbody");
+		reportListDisplay.empty();
+		
+		rowId = 0;
+		$.each(hoaRecList, function(index, hoaRec) {
+			rowId = index + 1;
+			
+			if (index == 0) {
+				$('<tr>')
+				.append($('<th>').html('Row'))
+				.append($('<th>').html('Parcel Id'))
+				.append($('<th>').html('Lot No'))
+				.append($('<th>').html('Location'))
+				.append($('<th>').html('Owner Name'))
+				.append($('<th>').html('Dues Amt'))
+				.appendTo(reportListDisplay);		
+			}
+
+			var tr = $('<tr>');
+			tr.append($('<td>').html(index+1))
+			.append($('<td>').html(hoaRec.Parcel_ID))
+			.append($('<td>').html(hoaRec.LotNo))
+			.append($('<td>').html(hoaRec.Parcel_Location))
+			.append($('<td>').html(hoaRec.ownersList[0].Owner_Name1+" "+hoaRec.ownersList[0].Owner_Name2))
+			.append($('<td>').html(hoaRec.assessmentsList[0].DuesAmt));
+		    
+		    tr.appendTo(reportListDisplay);
+		});
+
+		$("#ReportRecCnt").html("Number of records = "+rowId);
+
+} // function formatSalesReportList(notProcessedBoolean){
