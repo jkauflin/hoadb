@@ -13,9 +13,13 @@ img#header-image {
 	margin-right: 5px;
 }
 
-input.form-control {
+.form-control {
 	margin-top: 10px;
 	margin-right: 10px;
+}
+
+.downloadBtn {
+	margin-left: 6px;
 }
 
 /* Turn off the outline on clicks to brand anchors */

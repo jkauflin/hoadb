@@ -137,22 +137,47 @@
 				<div class="row">
 				    <div class="col-sm-2">
 				    	<h4>Reports</h4>
-	                  	<div id="ReportInput">
-	                  		<!-- 
-	                    	<input type="text" name="salesYesr"      id="salesYear"       placeholder="Sales Year" value="2015" data-mini="true" data-clear-btn="true">
-	                  		 -->
-	       					<a id="SalesReport" href="#" class="btn btn-primary" role="button">Show Sales</a>
-	       					<p>
-	       					<a id="SalesNewOwnerReport" href="#" class="btn btn-primary" role="button" style="margin-top:10px;">New Owners</a>
-	       					</p>
-	       					<h5 id="ReportsInstructions"></h5>
-	       					<a id="UnpaidDuesReport" data-reportTitle="Unpaid Dues Report" href="#" class="btn btn-primary reportRequest" role="button">Unpaid Dues Report</a>
-	                  	</div>
+	                  	
+		                <div class="form-group">
+							<label for="ReportYear">Report Year:</label>
+							<select class="form-control" id="ReportYear">
+								<option>2010</option>
+							    <option>2011</option>
+							    <option>2012</option>
+							    <option>2013</option>
+							   	<option>2014</option>
+							   	<option>2015</option>
+							   	<option selected>2016</option>
+							   	<option>2017</option>
+							   	<option>2018</option>
+							   	<option>2019</option>
+							   	<option>2020</option>
+							   	<option>2021</option>
+							  	<option>2022</option>
+							   	<option>2023</option>
+							   	<option>2024</option>
+							  	<option>2025</option>
+							</select>                    		
+							
+	                    	<button id="SalesReport" data-reportTitle="County Reported Sales of HOA properties" 
+	                    		type="button" class="btn btn-primary reportRequest form-control">Sales Report</button>
+	                    	<button id="SalesNewOwnerReport" data-reportTitle="County Reported Sales of HOA properties (for New Owner maintenance)" 
+	                    		type="button" class="btn btn-primary reportRequest form-control">New Owners</button>
+	                    	<button id="UnpaidDuesReport" data-reportTitle="Unpaid Dues Report" 
+	                    		type="button" class="btn btn-primary reportRequest form-control">Unpaid Dues</button>
+
+	       					<div class="checkbox">
+  								<label><input id="onscreenDisplay" type="checkbox" value="" checked>Onscreen display</label>
+  								<label><input id="csvDownload" type="checkbox" value="">CSV download</label>
+  								<label><input id="pdfDownload" type="checkbox" value="">PDF download</label>
+							</div>
+		                </div>
+	       					
 					</div>
 				    <div class="col-sm-10">
+	                	<div id="ReportDownloadLinks" class="pull-right"></div>
 	                	<h4 id="ReportHeader"></h4>
 	                	<div class="ajaxError"></div>
-	                	<div id="ReportDisplay"></div>
 	                	<h5 id="ReportRecCnt"></h5>
 			            <table id="ReportListDisplay" class="table table-striped table-condensed">
 			            	<tbody>
@@ -167,7 +192,7 @@
 				<div class="col-sm-5 col-md-4">
 				  	<h4>Admin</h4>
 
-	                <div class="form-group" style="margin-right:100px;">
+	                	<div class="form-group" style="margin-right:100px;">
                     		<input type="text" class="form-control resetval" name="DuesAmt"     	id="DuesAmt"		placeholder="Dues Amount">
 						      <label for="FiscalYear">Fiscal Year for which to add Assessments:</label>
 						      <select class="form-control" id="FiscalYear">
@@ -181,7 +206,7 @@
 						        <option>2024</option>
 						        <option>2025</option>
 						      </select>                    		
-	                </div>
+	                	</div>
 
 	            	<form class="form-inline" role="form">
 	                    <button id="AddAssessments" type="button" class="btn btn-primary AdminButton">Add Assessments</button>

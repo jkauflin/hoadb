@@ -15,6 +15,9 @@
  * 					interests for the total dues calculation
  *============================================================================*/
 
+//$currTimestampStr = date("Y-m-d H:i:s");
+//JJK test, date = 2015-04-22 19:45:09
+
 // common method to return admin level based on authenticated user name from the server
 function getAdminLevel() {
 	//$adminLevel = 0;

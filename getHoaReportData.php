@@ -15,14 +15,54 @@ include 'hoaDbCommon.php';
 $username = getUsername();
 
 $reportName = getParamVal("reportName");
-//$fiscalYear = getParamVal("FY");
+$reportYear = getParamVal("reportYear");
 
 $outputArray = array();
 $conn = getConn();
 
-if ($reportName == "AddAssessments") {
+if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 
-// End of if ($action == "AddAssessments") {
+	// Add Year to query???
+	
+	if ($reportName == "SalesNewOwnerReport") {
+		$stmt = $conn->prepare("SELECT * FROM hoa_sales WHERE ProcessedFlag != 'Y' ORDER BY CreateTimestamp DESC; ");
+	} else {
+		$stmt = $conn->prepare("SELECT * FROM hoa_sales ORDER BY CreateTimestamp DESC; ");
+	}
+	$stmt->execute();
+	$result = $stmt->get_result();
+	$stmt->close();
+	
+	if ($result->num_rows > 0) {
+		while($row = $result->fetch_assoc()) {
+			$hoaSalesRec = new HoaSalesRec();
+			$hoaSalesRec->PARID = $row["PARID"];
+			$hoaSalesRec->CONVNUM = $row["CONVNUM"];
+			$hoaSalesRec->SALEDT = $row["SALEDT"];
+			$hoaSalesRec->PRICE = $row["PRICE"];
+			$hoaSalesRec->OLDOWN = $row["OLDOWN"];
+			$hoaSalesRec->OWNERNAME1 = $row["OWNERNAME1"];
+			$hoaSalesRec->PARCELLOCATION = $row["PARCELLOCATION"];
+			$hoaSalesRec->MAILINGNAME1 = $row["MAILINGNAME1"];
+			$hoaSalesRec->MAILINGNAME2 = $row["MAILINGNAME2"];
+			$hoaSalesRec->PADDR1 = $row["PADDR1"];
+			$hoaSalesRec->PADDR2 = $row["PADDR2"];
+			$hoaSalesRec->PADDR3 = $row["PADDR3"];
+			$hoaSalesRec->CreateTimestamp = $row["CreateTimestamp"];
+			$hoaSalesRec->NotificationFlag = $row["NotificationFlag"];
+			$hoaSalesRec->ProcessedFlag = $row["ProcessedFlag"];
+			$hoaSalesRec->LastChangedBy = $row["LastChangedBy"];
+			$hoaSalesRec->LastChangedTs = $row["LastChangedTs"];
+	
+			$hoaSalesRec->adminLevel = getAdminLevel();
+
+			array_push($outputArray,$hoaSalesRec);
+		}
+		$result->close();
+	}
+	
+	
+	// End of if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 } else if ($reportName == "UnpaidDuesReport") {
 
 	$parcelId = "";
