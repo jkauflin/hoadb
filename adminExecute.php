@@ -7,6 +7,7 @@
  * Modification History
  * 2016-04-05 JJK 	Added Add AddAssessments
  * 2016-04-09 JJK	Added Dues Statements
+ * 2016-04-15 JJK   Dropped some unused Assessments fields
  *============================================================================*/
 
 include 'commonUtil.php';
@@ -63,31 +64,16 @@ if ($action == "AddAssessments") {
 			$AssessmentInterest = "";
 			$LienComment = "";
 				
-			$LotNo = 0;
-			$SubDivParcel = 0;
-			$Parcel_Location = "";
-			$Mailing_Name = "";
-			$Address_Line1 = "";
-			$Address_Line2 = "";
-			$Address_City = "";
-			$Address_State = "";
-			$Address_Zip = "";
-			$Property_Street_No = 0;
-			$Property_Street_Name = "";
-			$Property_City = "";
-			$Property_State = "";
-			$Property_Zip = "";
 			$Comments = "";
 		
 			$sqlStr = 'INSERT INTO hoa_assessments (OwnerID,Parcel_ID,FY,DuesAmt,DateDue,Paid,DatePaid,PaymentMethod,
-							Lien,LienRefNo,DateFiled,Disposition,FilingFee,ReleaseFee,DateReleased,LienDatePaid,AmountPaid,StopInterestCalc,FilingFeeInterest,AssessmentInterest,LienComment,
-							LotNo,SubDivParcel,Parcel_Location,Mailing_Name,Address_Line1,Address_Line2,Address_City,Address_State,Address_Zip,Property_Street_No,Property_Street_Name,
-							Property_City,Property_State,Property_Zip,Comments,LastChangedBy,LastChangedTs) ';
-			$sqlStr = $sqlStr . ' VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ';
+							Lien,LienRefNo,DateFiled,Disposition,FilingFee,ReleaseFee,DateReleased,LienDatePaid,AmountPaid,
+							StopInterestCalc,FilingFeeInterest,AssessmentInterest,LienComment,Comments,LastChangedBy,LastChangedTs) ';
+			$sqlStr = $sqlStr . ' VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ';
 			$stmt = $conn->prepare($sqlStr);
-			$stmt->bind_param("isissississssssssisssiisssssssissssss",$OwnerID,$Parcel_ID,$FY,$DuesAmt,$DateDue,$Paid,$DatePaid,$PaymentMethod,
-					$Lien,$LienRefNo,$DateFiled,$Disposition,$FilingFee,$ReleaseFee,$DateReleased,$LienDatePaid,$AmountPaid,$StopInterestCalc,$FilingFeeInterest,$AssessmentInterest,$LienComment,
-					$LotNo,$SubDivParcel,$Parcel_Location,$Mailing_Name,$Address_Line1,$Address_Line2,$Address_City,$Address_State,$Address_Zip,$Property_Street_No,$Property_Street_Name,$Property_City,$Property_State,$Property_Zip,$Comments,$username);
+			$stmt->bind_param("isissississssssssisssss",$OwnerID,$Parcel_ID,$FY,$DuesAmt,$DateDue,$Paid,$DatePaid,$PaymentMethod,
+					$Lien,$LienRefNo,$DateFiled,$Disposition,$FilingFee,$ReleaseFee,$DateReleased,$LienDatePaid,$AmountPaid,
+					$StopInterestCalc,$FilingFeeInterest,$AssessmentInterest,$LienComment,$Comments,$username);
 
 			// Loop through all member properties, set the statement with new values and execute to insert the Assessments record
 			while($row = $result->fetch_assoc()) {
