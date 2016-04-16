@@ -97,14 +97,15 @@ function setInputDate(idName,textVal,textSize){
 	//return '<input id="'+idName+'" type="text" class="Date form-control" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" placeholder="YYYY-MM-DD">';
 	return '<input id="'+idName+'" type="text" class="form-control input-sm Date" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" placeholder="YYYY-MM-DD">';
 }
-function setSelectOption(optVal,currVal,bg) {
-	var outOpt = '<option class="'+bg+'" value="'+optVal+'">'+optVal+'</option>';
-	if (optVal == currVal) {
-		outOpt = '<option class="'+bg+'" value="'+optVal+'" selected>'+optVal+'</option>';
+function setSelectOption(optVal,displayVal,selected,bg) {
+	var outOpt = '';
+	if (selected) {
+		outOpt = '<option class="'+bg+'" value="'+optVal+'" selected>'+displayVal+'</option>';
+	} else {
+		outOpt = '<option class="'+bg+'" value="'+optVal+'">'+displayVal+'</option>';
 	}
 	return outOpt;
 }
-
 
 $(document).ready(function(){
 	//$("#DisplayWidth").text("width = "+$(window).width());
@@ -202,9 +203,19 @@ $(document).ready(function(){
         waitCursor();
         var $this = $(this);
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
+        	//console.log("Format Dues Statement, parcel = "+$this.attr("data-ParcelId"));
             formatDuesStatementResults(hoaRec);
     	    $('*').css('cursor', 'default');
             $("#DuesStatementPage").modal();
+        });
+    });	
+    $(document).on("click","#DuesStatementPrintButton",function(){
+        waitCursor();
+        var $this = $(this);
+        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId"),function(hoaRec){
+            formatDuesStatementResultsPDF(hoaRec);
+    	    $('*').css('cursor', 'default');
+            $("#DuesStatementPage").modal('hide');
         });
     });	
     $(document).on("click","#NewOwnerButton",function(){
@@ -303,34 +314,34 @@ $(document).ready(function(){
         waitCursor();
         var $this = $(this);
         var $parcelId = $this.attr("data-parcelId");
-        var $ownerId = $this.attr("data-OwnerId");
+        //var $ownerId = $this.attr("data-OwnerId");
         var $fy = $this.attr("data-FY");
         var $paidBoolean = $("#PaidCheckbox").is(":checked");
         var $lienBoolean = $("#LienCheckbox").is(":checked");
         var $stopInterestCalcBoolean = $("#StopInterestCalcCheckbox").is(":checked");
 
         $.get("updHoaAssessment.php","parcelId="+$parcelId+
-				 					 "&ownerId="+$ownerId+
 				 					 "&fy="+$fy+
-        						 "&duesAmount="+cleanStr($("#DuesAmount").val())+
-        						 "&dateDue="+cleanStr($("#DateDue").val())+
-        						 "&paidBoolean="+$paidBoolean+
-        						 "&datePaid="+cleanStr($("#DatePaid").val())+
-        						 "&paymentMethod="+cleanStr($("#PaymentMethod").val())+
-        						 "&assessmentsComments="+cleanStr($("#AssessmentsComments").val())+
-        						 "&lienBoolean="+$lienBoolean+
-        						 "&lienRefNo="+cleanStr($("#LienRefNo").val())+
-        						 "&dateFiled="+cleanStr($("#DateFiled").val())+
-        						 "&disposition="+cleanStr($("#Disposition").val())+
-        						 "&filingFee="+cleanStr($("#FilingFee").val())+
-        						 "&releaseFee="+cleanStr($("#ReleaseFee").val())+
-        						 "&dateReleased="+cleanStr($("#DateReleased").val())+
-        						 "&lienDatePaid="+cleanStr($("#LienDatePaid").val())+
-        						 "&amountPaid="+cleanStr($("#AmountPaid").val())+
-        						 "&stopInterestCalcBoolean="+$stopInterestCalcBoolean+
-        						 "&filingFeeInterest="+cleanStr($("#FilingFeeInterest").val())+
-        						 "&assessmentInterest="+cleanStr($("#AssessmentInterest").val())+
-        						 "&lienComment="+cleanStr($("#LienComment").val()),function(results){
+				 					 "&ownerId="+cleanStr($("#OwnerID").val())+
+				 					 "&duesAmount="+cleanStr($("#DuesAmount").val())+
+				 					 "&dateDue="+cleanStr($("#DateDue").val())+
+				 					 "&paidBoolean="+$paidBoolean+
+				 					 "&datePaid="+cleanStr($("#DatePaid").val())+
+				 					 "&paymentMethod="+cleanStr($("#PaymentMethod").val())+
+				 					 "&assessmentsComments="+cleanStr($("#AssessmentsComments").val())+
+				 					 "&lienBoolean="+$lienBoolean+
+				 					 "&lienRefNo="+cleanStr($("#LienRefNo").val())+
+				 					 "&dateFiled="+cleanStr($("#DateFiled").val())+
+				 					 "&disposition="+cleanStr($("#Disposition").val())+
+				 					 "&filingFee="+cleanStr($("#FilingFee").val())+
+				 					 "&releaseFee="+cleanStr($("#ReleaseFee").val())+
+				 					 "&dateReleased="+cleanStr($("#DateReleased").val())+
+				 					 "&lienDatePaid="+cleanStr($("#LienDatePaid").val())+
+				 					 "&amountPaid="+cleanStr($("#AmountPaid").val())+
+				 					 "&stopInterestCalcBoolean="+$stopInterestCalcBoolean+
+				 					 "&filingFeeInterest="+cleanStr($("#FilingFeeInterest").val())+
+				 					 "&assessmentInterest="+cleanStr($("#AssessmentInterest").val())+
+				 					 "&lienComment="+cleanStr($("#LienComment").val()),function(results){
 
         	// Re-read the updated data for the Detail page display
             $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
@@ -895,20 +906,30 @@ function formatAssessmentDetailEdit(hoaRec){
     var tr = '';
     var checkedStr = '';
     var buttonStr = '';
-    var ownerId = '';
+    //var ownerId = '';
     var fy = '';
 
     // action or type of update
     $("#EditPageHeader").text("Edit Assessment");
 
+    //console.log("hoaRec.ownersList.length = "+hoaRec.ownersList.length);
+    
     rec = hoaRec.assessmentsList[0];
-	ownerId = rec.OwnerID;
+	//ownerId = rec.OwnerID;
+	
 	fy = rec.FY;
 	tr = '';
 	tr += '<div class="form-group">';
     tr += '<tr><th>Fiscal Year: </th><td>'+rec.FY+'</td></tr>';
-    tr += '<tr><th>Owner Id: </th><td>'+rec.OwnerID+'</td></tr>';
     tr += '<tr><th>Parcel Id: </th><td>'+rec.Parcel_ID+'</td></tr>';
+
+    var ownerSelect = '<select class="form-control" id="OwnerID">'
+	$.each(hoaRec.ownersList, function(index, rec) {
+    	ownerSelect += setSelectOption(rec.OwnerID,rec.OwnerID+" - "+rec.Owner_Name1+" "+rec.Owner_Name2,(index == 0),"");
+	});
+	ownerSelect += '</select>';                    		
+    tr += '<tr><th>Owner: </th><td>'+ownerSelect+'</td></tr>';
+    //tr += '<tr><th>Owner Id: </th><td>'+rec.OwnerID+'</td></tr>';
     
     tr += '<tr><th>Dues Amount: </th><td>'+setInputText("DuesAmount",rec.DuesAmt,"10")+'</td></tr>';
     tr += '<tr><th>Date Due: </th><td>'+setInputDate("DateDue",rec.DateDue,"10")+'</td></tr>';
@@ -927,12 +948,12 @@ function formatAssessmentDetailEdit(hoaRec){
     tr += '<tr><th>LienRefNo: </th><td>'+setInputText("LienRefNo",rec.LienRefNo,"10")+'</td></tr>';
     tr += '<tr><th>DateFiled: </th><td>'+setInputDate("DateFiled",rec.DateFiled,"10")+'</td></tr>';
 
-    var selectOption = '<select class="form-control" id="Disposition" style="margin-top:8px;">'
-        					+setSelectOption("",rec.Disposition,"")
-        					+setSelectOption("Open",rec.Disposition,"bg-danger")
-        					+setSelectOption("Paid",rec.Disposition,"bg-success")
-        					+setSelectOption("Released",rec.Disposition,"bg-info")
-        					+setSelectOption("Closed",rec.Disposition,"bg-warning")
+    var selectOption = '<select class="form-control" id="Disposition">'
+        					+setSelectOption("","",("" == rec.Disposition),"")
+        					+setSelectOption("Open","Open",("Open" == rec.Disposition),"bg-danger")
+        					+setSelectOption("Paid","Paid",("Paid" == rec.Disposition),"bg-success")
+        					+setSelectOption("Released","Released",("Released" == rec.Disposition),"bg-info")
+        					+setSelectOption("Closed","Closed",("Closed" == rec.Disposition),"bg-warning")
         					+'</select>';                    		
     tr += '<tr><th>Disposition: </th><td>'+selectOption+'</td></tr>';
     //tr += '<tr><th>Disposition: </th><td>'+setInputText("Disposition",rec.Disposition,"10")+'</td></tr>';
@@ -972,8 +993,9 @@ function formatAssessmentDetailEdit(hoaRec){
 	*/
 //	Lien,LienRefNo,DateFiled,Disposition,FilingFee,ReleaseFee,DateReleased,LienDatePaid,AmountPaid,StopInterestCalc,FilingFeeInterest,AssessmentInterest,LienComment,
 	
+//	  '<a id="SaveAssessmentEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+ownerId+'" data-FY="'+fy+'" href="#" class="btn btn-primary" role="button">Save</a>' +
 	tr = '<form class="form-inline" role="form">'+
-	  '<a id="SaveAssessmentEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+ownerId+'" data-FY="'+fy+'" href="#" class="btn btn-primary" role="button">Save</a>' +
+	  '<a id="SaveAssessmentEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-FY="'+fy+'" href="#" class="btn btn-primary" role="button">Save</a>' +
 	          		'<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>'+
 	          		'</form>';
 	$("#EditPageButton").html(tr);
@@ -989,18 +1011,19 @@ function formatDuesStatementResults(hoaRec) {
     var tr = '';
     var checkedStr = '';
 
+	ownerRec = hoaRec.ownersList[0];
+
     tr += '<tr><th>Parcel Id:</th><td>'+hoaRec.Parcel_ID+'</a></td></tr>';
     tr += '<tr><th>Lot No:</th><td>'+hoaRec.LotNo+'</td></tr>';
     //tr += '<tr><th>Sub Division: </th><td>'+hoaRec.SubDivParcel+'</td></tr>';
     tr += '<tr><th>Location: </th><td>'+hoaRec.Parcel_Location+'</td></tr>';
     tr += '<tr><th>City State Zip: </th><td>'+hoaRec.Property_City+', '+hoaRec.Property_State+' '+hoaRec.Property_Zip+'</td></tr>';
+    tr += '<tr><th>Owner Name:</th><td>'+ownerRec.Owner_Name1+' '+ownerRec.Owner_Name2+'</td></tr>';
     tr += '<tr><th>Total Due: </th><td>$'+hoaRec.TotalDue+'</td></tr>';
     $("#DuesStatementPropertyTable tbody").html(tr);
 
-    // if total > 0
-    // format how needed by payment gateway
-    tr = '<a id="DuesStatementPayButton" href="#" class="btn btn-success" role="button">Pay Total Due</a>';
-    $("#DuesStatementPay").html(tr);
+    tr = '<button id="DuesStatementPrintButton" type="button" class="btn btn-danger" data-ParcelId="'+hoaRec.Parcel_ID+'">Download PDF</button>';
+    $("#DuesStatementPrint").html(tr);
 
     tr = '';
 	$.each(hoaRec.totalDuesCalcList, function(index, rec) {
@@ -1038,10 +1061,61 @@ function formatDuesStatementResults(hoaRec) {
 
 } // End of function formatDuesStatementResults(hoaRec){
 
+function formatDuesStatementResultsPDF(hoaRec) {
+    var tr = '';
+    var checkedStr = '';
+
+	ownerRec = hoaRec.ownersList[0];
+
+    tr += '<tr><th>Parcel Id:</th><td>'+hoaRec.Parcel_ID+'</a></td></tr>';
+    tr += '<tr><th>Lot No:</th><td>'+hoaRec.LotNo+'</td></tr>';
+    //tr += '<tr><th>Sub Division: </th><td>'+hoaRec.SubDivParcel+'</td></tr>';
+    tr += '<tr><th>Location: </th><td>'+hoaRec.Parcel_Location+'</td></tr>';
+    tr += '<tr><th>City State Zip: </th><td>'+hoaRec.Property_City+', '+hoaRec.Property_State+' '+hoaRec.Property_Zip+'</td></tr>';
+    tr += '<tr><th>Owner Name:</th><td>'+ownerRec.Owner_Name1+' '+ownerRec.Owner_Name2+'</td></tr>';
+    tr += '<tr><th>Total Due: </th><td>$'+hoaRec.TotalDue+'</td></tr>';
+    //$("#DuesStatementPropertyTable tbody").html(tr);
+
+    tr = '<button id="DuesStatementPrintButton" type="button" class="btn btn-danger" data-ParcelId="'+hoaRec.Parcel_ID+'" data-dismiss="modal">Download PDF</button>';
+    //$("#DuesStatementPrint").html(tr);
+
+    tr = '';
+	$.each(hoaRec.totalDuesCalcList, function(index, rec) {
+	    tr = tr + '<tr>';
+    	tr = tr +   '<td>'+rec.calcDesc+'</a></td>';
+	    tr = tr +   '<td>$</td>';
+	    tr = tr +   '<td align="right">'+rec.calcValue+'</td>';
+	    tr = tr + '</tr>';
+	});
+	//$("#DuesStatementCalculationTable tbody").html(tr);
+    
+	var TaxYear = '';
+    tr = '';
+	$.each(hoaRec.assessmentsList, function(index, rec) {
+		if (index == 0) {
+    	    tr = tr +   '<tr>';
+    	    tr = tr +     '<th>Year</th>';
+    	    tr = tr +     '<th>Dues Amt</th>';
+    	    tr = tr +     '<th>Date Due</th>';
+    	    tr = tr +     '<th>Paid</th>';
+    	    tr = tr +     '<th>Date Paid</th>';
+    	    tr = tr +   '</tr>';
+    	    TaxYear = rec.DateDue.substring(0,4);
+		}
+	    tr = tr + '<tr>';
+    	tr = tr +   '<td>'+rec.FY+'</a></td>';
+	    tr = tr +   '<td>'+rec.DuesAmt+'</td>';
+	    tr = tr +   '<td>'+rec.DateDue.substring(0,10)+'</td>';
+	    tr = tr +   '<td>'+setCheckbox(rec.Paid)+'</td>';
+	    tr = tr +   '<td>'+rec.DatePaid.substring(0,10)+'</td>';
+	    tr = tr + '</tr>';
+	});
+
+	//$("#DuesStatementAssessmentsTable tbody").html(tr);
+
+} // End of function formatDuesStatementResultsPDF(hoaRec){
 
 function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfDownload){
-
-//	<div id="ReportDownloadLinks"></div>
 
 		var reportListDisplay = $("#ReportListDisplay tbody");
 		reportListDisplay.empty();
@@ -1148,13 +1222,20 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 					tr.appendTo(reportListDisplay);		
 				}
 
+				// Replace comma with null so you can use it as a CSV value
+				/*
+				function csvFilter($inVal) {
+					return preg_replace('/[\x2C]+/', '', String($inVal));
+				}
+			    */
+
 			    if (csvDownload) {
-					csvLine = '"' + String(index+1) + '"';
-					csvLine += ',"' + hoaRec.Parcel_ID + '"';
-					csvLine += ',"' + hoaRec.LotNo + '"';
-					csvLine += ',"' + hoaRec.Parcel_Location + '"';
-					csvLine += ',"' + hoaRec.ownersList[0].Owner_Name1+' '+hoaRec.ownersList[0].Owner_Name2 + '"';
-					csvLine += ',"' + hoaRec.assessmentsList[0].DuesAmt + '"';
+					csvLine = csvFilter(index+1);
+					csvLine += ',' + csvFilter(hoaRec.Parcel_ID);
+					csvLine += ',' + csvFilter(hoaRec.LotNo);
+					csvLine += ',' + csvFilter(hoaRec.Parcel_Location);
+					csvLine += ',' + csvFilter(hoaRec.ownersList[0].Owner_Name1+' '+hoaRec.ownersList[0].Owner_Name2);
+					csvLine += ',' + csvFilter(hoaRec.assessmentsList[0].DuesAmt);
 			    	csvContent += csvLine + '\n';
 			    }
 			    
@@ -1170,12 +1251,20 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 		
 	    if (csvDownload) {
 	    	var blob = new Blob([csvContent],{type: 'text/csv;charset=utf-8;'});
+	    	var pom = document.createElement('a');
+	    	var url = URL.createObjectURL(blob);
+	    	pom.href = url;
+	    	pom.setAttribute('download', reportName+".csv");
+	    	pom.click();
+	    	
+	    	/*
 			reportDownloadLinks.append(
 	    		$('<a>').attr('href',URL.createObjectURL(blob))
 		    			.attr('class',"btn btn-warning btn-xs downloadBtn")
 		    			.attr('download',reportName+".csv")
 		    			.html('Download CSV')
 			);
+			*/
 	    }
 
 	    if (pdfDownload) {
@@ -1187,72 +1276,4 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 	    }
 
 		
-} // function formatSalesReportList(notProcessedBoolean){
-
-
-/*
-working on a CSV export for report data
-
-function exportToCsv(filename, rows) {
-    var processRow = function (row) {
-        var finalVal = '';
-        for (var j = 0; j < row.length; j++) {
-            var innerValue = row[j] === null ? '' : row[j].toString();
-            if (row[j] instanceof Date) {
-                innerValue = row[j].toLocaleString();
-            };
-            var result = innerValue.replace(/"/g, '""');
-            if (result.search(/("|,|\n)/g) >= 0)
-                result = '"' + result + '"';
-            if (j > 0)
-                finalVal += ',';
-            finalVal += result;
-        }
-        return finalVal + '\n';
-    };
-
-    var csvFile = '';
-    for (var i = 0; i < rows.length; i++) {
-        csvFile += processRow(rows[i]);
-    }
-
-    var blob = new Blob([csvFile], { type: 'text/csv;charset=utf-8;' });
-    if (navigator.msSaveBlob) { // IE 10+
-        navigator.msSaveBlob(blob, filename);
-    } else {
-        var link = document.createElement("a");
-        if (link.download !== undefined) { // feature detection
-            // Browsers that support HTML5 download attribute
-            var url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", filename);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-    }
-}
-
-
-
-var pom = document.createElement('a');
-var csvContent=csv; //here we load our csv data 
-var blob = new Blob([csvContent],{type: 'text/csv;charset=utf-8;'});
-var url = URL.createObjectURL(blob);
-pom.href = url;
-pom.setAttribute('download', 'foo.csv');
-pom.click();
-
-
-if (!csv.match(/^data:text\/csv/i)) {
-    csv = 'data:text/csv;charset=utf-8,' + csv;
-}
-data = encodeURI(csv);
-
-link = document.createElement('a');
-link.setAttribute('href', data);
-link.setAttribute('download', filename);
-link.click();
-*/
-
+} // function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfDownload){

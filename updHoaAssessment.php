@@ -17,9 +17,9 @@ include 'hoaDbCommon.php';
 
 	// If they are set, get input parameters from the REQUEST
 	$parcelId = getParamVal("parcelId");
-	$ownerId = getParamVal("ownerId");
 	$fy = getParamVal("fy");
 	
+	$ownerId = getParamVal("ownerId");
 	$duesAmount = getParamVal("duesAmount");
 	$dateDue = getParamVal("dateDue");
 	$paidBoolean = paramBoolVal("paidBoolean");
@@ -50,17 +50,17 @@ include 'hoaDbCommon.php';
 	//--------------------------------------------------------------------------------------------------------
 	$conn = getConn();
 
-	if (!$stmt = $conn->prepare("UPDATE hoa_assessments SET DuesAmt=?,DateDue=?,Paid=?,DatePaid=?,PaymentMethod=?," .
+	if (!$stmt = $conn->prepare("UPDATE hoa_assessments SET OwnerID=?,DuesAmt=?,DateDue=?,Paid=?,DatePaid=?,PaymentMethod=?," .
 							"Lien=?,LienRefNo=?,DateFiled=?,Disposition=?,FilingFee=?,ReleaseFee=?,DateReleased=?,LienDatePaid=?,AmountPaid=?," .
 							"StopInterestCalc=?,FilingFeeInterest=?,AssessmentInterest=?,LienComment=?," .	
-							"Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND OwnerID = ? AND FY = ? ; ")) {
+							"Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND FY = ? ; ")) {
 		error_log("Prepare failed: " . $stmt->errno . ", Error = " . $stmt->error);
 		echo "Prepare failed: (" . $stmt->errno . ") " . $stmt->error;
 	}
-	if (!$stmt->bind_param("ssississssssssissssssss", $duesAmount,$dateDue,$paidBoolean,$datePaid,$paymentMethod,
+	if (!$stmt->bind_param("sssississssssssisssssss", $ownerId,$duesAmount,$dateDue,$paidBoolean,$datePaid,$paymentMethod,
 						$lienBoolean,$lienRefNo,$dateFiled,$disposition,$filingFee,$releaseFee,$dateReleased,$lienDatePaid,$amountPaid,
 						$stopInterestCalcBoolean,$filingFeeInterest,$assessmentInterest,$lienComment,
-						$assessmentsComments,$username,$parcelId,$ownerId,$fy)) {
+						$assessmentsComments,$username,$parcelId,$fy)) {
 		error_log("Bind failed: " . $stmt->errno . ", Error = " . $stmt->error);
 		echo "Bind failed: (" . $stmt->errno . ") " . $stmt->error;
 	}

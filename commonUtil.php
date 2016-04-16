@@ -53,6 +53,10 @@ function strToUSD($inStr) {
 	return round(floatval($numericStr),2);
 }
 
+// Replace comma with null so you can use it as a CSV value
+function csvFilter($inVal) {
+	return preg_replace('/[\x2C]+/', '', String($inVal));
+}
 
 
 // Set 0 or 1 according to the boolean value of a string
