@@ -213,10 +213,15 @@ $(document).ready(function(){
         waitCursor();
         var $this = $(this);
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId"),function(hoaRec){
-            formatDuesStatementResultsPDF(hoaRec);
+
+			var logoImgData = '';
+	    	$.get("getLogoImgData.php",function(logoImgData){
+	            formatDuesStatementResultsPDF(hoaRec,logoImgData);
+	    	});
+        	
     	    $('*').css('cursor', 'default');
             $("#DuesStatementPage").modal('hide');
-        });
+    	});
     });	
     $(document).on("click","#NewOwnerButton",function(){
         waitCursor();
@@ -548,9 +553,7 @@ $(document).ready(function(){
         			// Output as Data URI
         			doc.save('JJKTestDuesStatements.pdf');
     	    		
-    	    		
     	    	});
-
         		
     	    } // End of if ($action == 'DuesStatements') {
     	    
@@ -1061,23 +1064,49 @@ function formatDuesStatementResults(hoaRec) {
 
 } // End of function formatDuesStatementResults(hoaRec){
 
-function formatDuesStatementResultsPDF(hoaRec) {
-    var tr = '';
-    var checkedStr = '';
+function formatDuesStatementResultsPDF(hoaRec,logoImgData) {
+
+    // Portrait, millimeters, A4 format
+	//var doc = new jsPDF('p', 'mm', 'a4');
+	var doc = new jsPDF('p', 'in', 'letter');
+	doc.setProperties({
+	    title: 'Test JJK Doc',
+	    subject: 'This is the subject',
+	    author: 'John Kauflin',
+	    keywords: 'generated, javascript, web 2.0, ajax',
+	    creator: 'MEEE'
+	});
+	// X (horizontal), Y (vertical)
+	doc.setFontSize(20);
+	doc.text(1, 1, "GRHA individual dues statement");
+
+	
+	doc.addImage(logoImgData, 'JPEG', 0.5, 0.5, 1.3, 1.3);
+	
+	doc.setFontSize(11);
+	//doc.text(0.5, 10.8, "Parcel Id = "+hoaRec.Parcel_ID);
 
 	ownerRec = hoaRec.ownersList[0];
+	var tr = '';
+    var checkedStr = '';
+    var X = 0.5;
+    var Y = 3.0;
+    var lineIncrement = 0.3;
 
-    tr += '<tr><th>Parcel Id:</th><td>'+hoaRec.Parcel_ID+'</a></td></tr>';
-    tr += '<tr><th>Lot No:</th><td>'+hoaRec.LotNo+'</td></tr>';
-    //tr += '<tr><th>Sub Division: </th><td>'+hoaRec.SubDivParcel+'</td></tr>';
-    tr += '<tr><th>Location: </th><td>'+hoaRec.Parcel_Location+'</td></tr>';
-    tr += '<tr><th>City State Zip: </th><td>'+hoaRec.Property_City+', '+hoaRec.Property_State+' '+hoaRec.Property_Zip+'</td></tr>';
-    tr += '<tr><th>Owner Name:</th><td>'+ownerRec.Owner_Name1+' '+ownerRec.Owner_Name2+'</td></tr>';
-    tr += '<tr><th>Total Due: </th><td>$'+hoaRec.TotalDue+'</td></tr>';
+	doc.text(X,Y,"Parcel Id: "+hoaRec.Parcel_ID);
+	Y += lineIncrement;
+	doc.text(X,Y,"Lot No: "+hoaRec.LotNo);
+	Y += lineIncrement;
+	doc.text(X,Y,"Location: "+hoaRec.Parcel_Location);
+	Y += lineIncrement;
+	doc.text(X,Y,"City State Zip: "+hoaRec.Property_City+', '+hoaRec.Property_State+' '+hoaRec.Property_Zip);
+	Y += lineIncrement;
+	doc.text(X,Y,"Owner Name: "+ownerRec.Owner_Name1+' '+ownerRec.Owner_Name2);
+	Y += lineIncrement;
+	doc.text(X,Y,"Total Due: "+hoaRec.TotalDue);
+	Y += lineIncrement;
+
     //$("#DuesStatementPropertyTable tbody").html(tr);
-
-    tr = '<button id="DuesStatementPrintButton" type="button" class="btn btn-danger" data-ParcelId="'+hoaRec.Parcel_ID+'" data-dismiss="modal">Download PDF</button>';
-    //$("#DuesStatementPrint").html(tr);
 
     tr = '';
 	$.each(hoaRec.totalDuesCalcList, function(index, rec) {
@@ -1112,6 +1141,9 @@ function formatDuesStatementResultsPDF(hoaRec) {
 	});
 
 	//$("#DuesStatementAssessmentsTable tbody").html(tr);
+
+	// Output as Data URI
+	doc.save('GRHADuesStatement-'+hoaRec.LotNo+'.pdf');
 
 } // End of function formatDuesStatementResultsPDF(hoaRec){
 
