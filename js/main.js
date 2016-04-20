@@ -110,7 +110,6 @@ function setSelectOption(optVal,displayVal,selected,bg) {
 $(document).ready(function(){
 	//$("#DisplayWidth").text("width = "+$(window).width());
 
-	
 	// Auto-close the collapse menu after clicking a non-dropdown menu item (in the bootstrap nav header)
 	$(document).on('click','.navbar-collapse.in',function(e) {
 	    if( $(e.target).is('a') && $(e.target).attr('class') != 'dropdown-toggle' ) {
@@ -1061,15 +1060,16 @@ function formatDuesStatementResults(hoaRec) {
 	});
 
 	$("#DuesStatementAssessmentsTable tbody").html(tr);
-
+	
 } // End of function formatDuesStatementResults(hoaRec){
+
 
 function formatDuesStatementResultsPDF(hoaRec,logoImgData) {
 
     // Portrait, millimeters, A4 format
 	//var doc = new jsPDF('p', 'mm', 'a4');
-	var doc = new jsPDF('p', 'in', 'letter');
-	doc.setProperties({
+	var pdf = new jsPDF('p', 'in', 'letter');
+	pdf.setProperties({
 	    title: 'Test JJK Doc',
 	    subject: 'This is the subject',
 	    author: 'John Kauflin',
@@ -1077,75 +1077,88 @@ function formatDuesStatementResultsPDF(hoaRec,logoImgData) {
 	    creator: 'MEEE'
 	});
 	// X (horizontal), Y (vertical)
-	doc.setFontSize(20);
-	doc.text(1, 1, "GRHA individual dues statement");
+	pdf.setFontSize(22);
+	pdf.text(2, 0.9, "Gander Road Homeowners Association");
+	pdf.setFontSize(18);
+	pdf.text(3, 1.3, "Member Dues Statement");
 
+	pdf.addImage(logoImgData, 'JPEG', 0.5, 0.5, 1.1, 1.1);
 	
-	doc.addImage(logoImgData, 'JPEG', 0.5, 0.5, 1.3, 1.3);
+	/*
+	pdf.setLineWidth(0.02);
+	pdf.rect(1.5, 3, 6, 2); 
+	*/
 	
-	doc.setFontSize(11);
-	//doc.text(0.5, 10.8, "Parcel Id = "+hoaRec.Parcel_ID);
+	pdf.setFontSize(12);
 
 	ownerRec = hoaRec.ownersList[0];
 	var tr = '';
     var checkedStr = '';
-    var X = 0.5;
-    var Y = 3.0;
-    var lineIncrement = 0.3;
+    var X = 1;
+    var Y = 2.5;
+    var lineIncrement = 0.25;
+    var colIncrement = 1.5;
 
-	doc.text(X,Y,"Parcel Id: "+hoaRec.Parcel_ID);
+	pdf.text(X,Y,"Parcel Id: ");
+	pdf.text(X+colIncrement,Y,''+hoaRec.Parcel_ID);
 	Y += lineIncrement;
-	doc.text(X,Y,"Lot No: "+hoaRec.LotNo);
+	pdf.text(X,Y,"Lot No: ");
+	pdf.text(X+colIncrement,Y,''+hoaRec.LotNo);
 	Y += lineIncrement;
-	doc.text(X,Y,"Location: "+hoaRec.Parcel_Location);
+	pdf.text(X,Y,"Location: ");
+	pdf.text(X+colIncrement,Y,''+hoaRec.Parcel_Location);
 	Y += lineIncrement;
-	doc.text(X,Y,"City State Zip: "+hoaRec.Property_City+', '+hoaRec.Property_State+' '+hoaRec.Property_Zip);
+	pdf.text(X,Y,"City State Zip: ");
+	pdf.text(X+colIncrement,Y,''+hoaRec.Property_City+', '+hoaRec.Property_State+' '+hoaRec.Property_Zip);
 	Y += lineIncrement;
-	doc.text(X,Y,"Owner Name: "+ownerRec.Owner_Name1+' '+ownerRec.Owner_Name2);
+	pdf.text(X,Y,"Owner Name: ");
+	pdf.text(X+colIncrement,Y,''+ownerRec.Owner_Name1+' '+ownerRec.Owner_Name2);
 	Y += lineIncrement;
-	doc.text(X,Y,"Total Due: "+hoaRec.TotalDue);
+	pdf.text(X,Y,"Total Due: ");
+	pdf.text(X+colIncrement,Y,'$ '+hoaRec.TotalDue);
 	Y += lineIncrement;
-
+    
     //$("#DuesStatementPropertyTable tbody").html(tr);
 
-    tr = '';
+	Y += lineIncrement;
+	Y += lineIncrement;
 	$.each(hoaRec.totalDuesCalcList, function(index, rec) {
-	    tr = tr + '<tr>';
-    	tr = tr +   '<td>'+rec.calcDesc+'</a></td>';
-	    tr = tr +   '<td>$</td>';
-	    tr = tr +   '<td align="right">'+rec.calcValue+'</td>';
-	    tr = tr + '</tr>';
+		pdf.text(X,Y,rec.calcDesc);
+		pdf.text(X+4,Y,'$');
+		pdf.text(X+4.2,Y,''+rec.calcValue);
+		Y += lineIncrement;
 	});
-	//$("#DuesStatementCalculationTable tbody").html(tr);
     
+	Y += lineIncrement;
+	Y += lineIncrement;
 	var TaxYear = '';
     tr = '';
 	$.each(hoaRec.assessmentsList, function(index, rec) {
 		if (index == 0) {
-    	    tr = tr +   '<tr>';
-    	    tr = tr +     '<th>Year</th>';
-    	    tr = tr +     '<th>Dues Amt</th>';
-    	    tr = tr +     '<th>Date Due</th>';
-    	    tr = tr +     '<th>Paid</th>';
-    	    tr = tr +     '<th>Date Paid</th>';
-    	    tr = tr +   '</tr>';
+			pdf.text(X,Y,'Year');
+			pdf.text(X+1,Y,'Dues Amt');
+			pdf.text(X+2,Y,'Dues Due');
+			pdf.text(X+3.5,Y,'Paid');
+			pdf.text(X+4,Y,'Date Paid');
+			Y += lineIncrement;
     	    TaxYear = rec.DateDue.substring(0,4);
 		}
-	    tr = tr + '<tr>';
-    	tr = tr +   '<td>'+rec.FY+'</a></td>';
-	    tr = tr +   '<td>'+rec.DuesAmt+'</td>';
-	    tr = tr +   '<td>'+rec.DateDue.substring(0,10)+'</td>';
-	    tr = tr +   '<td>'+setCheckbox(rec.Paid)+'</td>';
-	    tr = tr +   '<td>'+rec.DatePaid.substring(0,10)+'</td>';
-	    tr = tr + '</tr>';
+		
+		pdf.text(X,Y,''+rec.FY);
+		pdf.text(X+1,Y,''+rec.DuesAmt);
+		pdf.text(X+2,Y,''+rec.DateDue.substring(0,10));
+		pdf.text(X+3.5,Y,''+rec.Paid);
+		pdf.text(X+4.5,Y,''+rec.DatePaid.substring(0,10));
+		Y += lineIncrement;
 	});
 
 	//$("#DuesStatementAssessmentsTable tbody").html(tr);
 
 	// Output as Data URI
-	doc.save('GRHADuesStatement-'+hoaRec.LotNo+'.pdf');
+	pdf.save('GRHADuesStatement-'+hoaRec.LotNo+'.pdf');
 
 } // End of function formatDuesStatementResultsPDF(hoaRec){
+
 
 function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfDownload){
 
