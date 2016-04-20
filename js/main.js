@@ -26,6 +26,7 @@
  * 					Adding Liens
  * 2016-04-09 JJK   Adding Dues Statement calculation display logic
  * 2016-04-14 JJK   Adding Dues Report (working on csv and pdf downloads)
+ * 2016-04-20 JJK   Completed test Dues Statement PDF
  *============================================================================*/
 
 $.urlParam = function(name){
@@ -75,6 +76,13 @@ $(document).ajaxError(function(e, xhr, settings, exception) {
     $(".ajaxError").html("An Error has occurred (see console log)");
 });
 
+function setBoolText(inBool) {
+	var outBoolStr = "NO";
+	if (inBool) {
+		outBoolStr = "YES";
+	}
+	return outBoolStr;
+}
 function setCheckbox(checkVal){
 	var checkedStr = '';
 	if (checkVal == 1) {
@@ -648,7 +656,7 @@ function formatPropertyDetailResults(hoaRec){
 	    tr += '<tr><th>Parcel Id:</th><td>'+hoaRec.Parcel_ID+'</a></td></tr>';
 	}
     tr += '<tr><th>Lot No:</th><td>'+hoaRec.LotNo+'</td></tr>';
-    tr += '<tr><th class="hidden-xs hidden-sm">Sub Division: </th><td class="hidden-xs hidden-sm">'+hoaRec.SubDivParcel+'</td></tr>';
+    //tr += '<tr><th class="hidden-xs hidden-sm">Sub Division: </th><td class="hidden-xs hidden-sm">'+hoaRec.SubDivParcel+'</td></tr>';
     tr += '<tr><th>Location: </th><td>'+hoaRec.Parcel_Location+'</td></tr>';
     tr += '<tr><th class="hidden-xs hidden-sm">Street No: </th><td class="hidden-xs hidden-sm">'+hoaRec.Property_Street_No+'</td></tr>';
     tr += '<tr><th class="hidden-xs hidden-sm">Street Name: </th><td class="hidden-xs hidden-sm">'+hoaRec.Property_Street_Name+'</td></tr>';
@@ -1084,10 +1092,8 @@ function formatDuesStatementResultsPDF(hoaRec,logoImgData) {
 
 	pdf.addImage(logoImgData, 'JPEG', 0.5, 0.5, 1.1, 1.1);
 	
-	/*
 	pdf.setLineWidth(0.02);
-	pdf.rect(1.5, 3, 6, 2); 
-	*/
+	//pdf.rect(1.5, 3, 6, 2); 
 	
 	pdf.setFontSize(12);
 
@@ -1139,15 +1145,19 @@ function formatDuesStatementResultsPDF(hoaRec,logoImgData) {
 			pdf.text(X+1,Y,'Dues Amt');
 			pdf.text(X+2,Y,'Dues Due');
 			pdf.text(X+3.5,Y,'Paid');
-			pdf.text(X+4,Y,'Date Paid');
-			Y += lineIncrement;
+			pdf.text(X+4.5,Y,'Date Paid');
+			Y += lineIncrement - 0.12;
     	    TaxYear = rec.DateDue.substring(0,4);
+    	    
+    	    pdf.line(X,Y,6.5,Y);
+    	    //pdf.line(20, 25, 60, 25);
+			Y += lineIncrement;
 		}
 		
 		pdf.text(X,Y,''+rec.FY);
 		pdf.text(X+1,Y,''+rec.DuesAmt);
 		pdf.text(X+2,Y,''+rec.DateDue.substring(0,10));
-		pdf.text(X+3.5,Y,''+rec.Paid);
+		pdf.text(X+3.5,Y,''+setBoolText(rec.Paid));
 		pdf.text(X+4.5,Y,''+rec.DatePaid.substring(0,10));
 		Y += lineIncrement;
 	});
