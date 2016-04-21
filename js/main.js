@@ -1189,7 +1189,7 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 		
 		var pdf;
 	    if (pdfDownload) {
-	    	var pdf = new jsPDF('l', 'in', 'letter');
+	    	pdf = new jsPDF('l', 'in', 'letter');
 	    	pdf.setProperties({
 	    	    title: 'Test JJK Doc',
 	    	    subject: 'This is the subject',
@@ -1197,9 +1197,9 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 	    	    keywords: 'generated, javascript, web 2.0, ajax',
 	    	    creator: 'MEEE'
 	    	});
+			pdf.setFontSize(10);
 	    }
 
-		pdf.setFontSize(10);
 
 	    var X = 1;
 	    var Y = 2.5;
@@ -1286,8 +1286,56 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 					.append($('<td>').html(hoaRec.Parcel_Location))
 					.append($('<td>').html(hoaRec.ownersList[0].Owner_Name1+" "+hoaRec.ownersList[0].Owner_Name2))
 					.append($('<td>').html(hoaRec.assessmentsList[0].DuesAmt));
-				    
 					tr.appendTo(reportListDisplay);		
+					
+					var tr2 = $('<tr>');
+					tr2.append($('<td>').html(''))
+					.append($('<td>').html(''))
+					.append($('<td>').html(''))
+					.append($('<td>').html(''))
+					.append($('<td>').html(hoaRec.ownersList[0].Mailing_Name))
+					.append($('<td>').html(''));
+					tr2.appendTo(reportListDisplay);		
+
+					if (hoaRec.ownersList[0].AlternateMailing) {
+						var tr3 = $('<tr>');
+						tr3.append($('<td>').html(''))
+						.append($('<td>').html(''))
+						.append($('<td>').html(''))
+						.append($('<td>').html(''))
+						.append($('<td>').html(hoaRec.ownersList[0].Alt_Address_Line1))
+						.append($('<td>').html(''));
+						tr3.appendTo(reportListDisplay);		
+
+						var tr4 = $('<tr>');
+						tr4.append($('<td>').html(''))
+						.append($('<td>').html(''))
+						.append($('<td>').html(''))
+						.append($('<td>').html(''))
+						.append($('<td>').html(hoaRec.ownersList[0].Alt_Address_Line2))
+						.append($('<td>').html(''));
+						tr4.appendTo(reportListDisplay);		
+						
+						var tr5 = $('<tr>');
+						tr5.append($('<td>').html(''))
+						.append($('<td>').html(''))
+						.append($('<td>').html(''))
+						.append($('<td>').html(''))
+						.append($('<td>').html(hoaRec.ownersList[0].Alt_City+', '+hoaRec.ownersList[0].State+' '+hoaRec.ownersList[0].Zip))
+						.append($('<td>').html(''));
+						tr5.appendTo(reportListDisplay);		
+					}
+
+					/*
+					$hoaOwnerRec->Mailing_Name = $row["Mailing_Name"];
+					$hoaOwnerRec->AlternateMailing = $row["AlternateMailing"];
+					$hoaOwnerRec->Alt_Address_Line1 = $row["Alt_Address_Line1"];
+					$hoaOwnerRec->Alt_Address_Line2 = $row["Alt_Address_Line2"];
+					$hoaOwnerRec->Alt_City = $row["Alt_City"];
+					$hoaOwnerRec->Alt_State = $row["Alt_State"];
+					$hoaOwnerRec->Alt_Zip = $row["Alt_Zip"];
+					$hoaOwnerRec->Owner_Phone = $row["Owner_Phone"];
+					*/
 				}
 
 			    if (csvDownload) {
