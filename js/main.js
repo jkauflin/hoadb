@@ -58,6 +58,12 @@ function cleanStr(inStr) {
 	return inStr.replace(regexNonPrintableChars,'');
 }
 
+var commaHexStr = "[\x2C]";
+var regexCommaHexStr = new RegExp(commaHexStr,"g");
+function csvFilter(inVal) {
+	return inVal.toString().replace(regexCommaHexStr,'');
+}
+
 function waitCursor() {
     $('*').css('cursor', 'progress');
     $(".ajaxError").html("");
@@ -1181,10 +1187,10 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 		var csvLine = "";
 		var csvContent = "";
 		
-		var doc;
+		var pdf;
 	    if (pdfDownload) {
-	    	var doc = new jsPDF('p', 'in', 'letter');
-	    	doc.setProperties({
+	    	var pdf = new jsPDF('l', 'in', 'letter');
+	    	pdf.setProperties({
 	    	    title: 'Test JJK Doc',
 	    	    subject: 'This is the subject',
 	    	    author: 'John Kauflin',
@@ -1192,7 +1198,14 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 	    	    creator: 'MEEE'
 	    	});
 	    }
-		
+
+		pdf.setFontSize(10);
+
+	    var X = 1;
+	    var Y = 2.5;
+	    var lineIncrement = 0.25;
+	    var colIncrement = 1.5;
+
 		rowId = 0;
 		if (reportName == "SalesReport" || reportName == "SalesNewOwnerReport") {
 
@@ -1249,7 +1262,7 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 
 			}); // $.each(reportList, function(index, hoaSalesRec) {
 
-			
+			// End of if (reportName == "SalesReport" || reportName == "SalesNewOwnerReport") {
 		} else {
 			$.each(reportList, function(index, hoaRec) {
 				rowId = index + 1;
@@ -1277,13 +1290,6 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 					tr.appendTo(reportListDisplay);		
 				}
 
-				// Replace comma with null so you can use it as a CSV value
-				/*
-				function csvFilter($inVal) {
-					return preg_replace('/[\x2C]+/', '', String($inVal));
-				}
-			    */
-
 			    if (csvDownload) {
 					csvLine = csvFilter(index+1);
 					csvLine += ',' + csvFilter(hoaRec.Parcel_ID);
@@ -1292,6 +1298,16 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 					csvLine += ',' + csvFilter(hoaRec.ownersList[0].Owner_Name1+' '+hoaRec.ownersList[0].Owner_Name2);
 					csvLine += ',' + csvFilter(hoaRec.assessmentsList[0].DuesAmt);
 			    	csvContent += csvLine + '\n';
+			    }
+
+			    if (pdfDownload) {
+					pdf.text(X,Y,''+hoaRec.Parcel_ID);
+					pdf.text(X+2,Y,''+hoaRec.LotNo);
+					pdf.text(X+3,Y,''+hoaRec.Parcel_Location);
+					pdf.text(X+5,Y,''+hoaRec.ownersList[0].Owner_Name1+' '+hoaRec.ownersList[0].Owner_Name2);
+					pdf.text(X+7,Y,''+hoaRec.assessmentsList[0].DuesAmt);
+					Y += lineIncrement;
+			    	
 			    }
 			    
 			}); // $.each(reportList, function(index, hoaRec) {
@@ -1323,11 +1339,8 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 	    }
 
 	    if (pdfDownload) {
-			doc.setFontSize(20);
-			doc.text(1, 1, "John K loves jsPDF");
-
 			// Output as Data URI
-			doc.save(reportName+".pdf");
+			pdf.save(reportName+".pdf");
 	    }
 
 		
