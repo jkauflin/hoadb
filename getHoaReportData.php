@@ -72,7 +72,8 @@ if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 	
 	
 	// try to get the parameters into the initial select query to limit the records it then tries to get from the getHoaRec
-	
+
+	// *** just use the highest FY - the first assessment record ***
 	
 		// Loop through all the member properties
 		//$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";		

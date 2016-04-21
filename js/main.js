@@ -58,6 +58,12 @@ function cleanStr(inStr) {
 	return inStr.replace(regexNonPrintableChars,'');
 }
 
+var commaHexStr = "[\x2C]";
+var regexCommaHexStr = new RegExp(commaHexStr,"g");
+function csvFilter(inVal) {
+	return inVal.toString().replace(regexCommaHexStr,'');
+}
+
 function waitCursor() {
     $('*').css('cursor', 'progress');
     $(".ajaxError").html("");
@@ -1181,18 +1187,25 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 		var csvLine = "";
 		var csvContent = "";
 		
-		var doc;
+		var pdf;
 	    if (pdfDownload) {
-	    	var doc = new jsPDF('p', 'in', 'letter');
-	    	doc.setProperties({
+	    	pdf = new jsPDF('l', 'in', 'letter');
+	    	pdf.setProperties({
 	    	    title: 'Test JJK Doc',
 	    	    subject: 'This is the subject',
 	    	    author: 'John Kauflin',
 	    	    keywords: 'generated, javascript, web 2.0, ajax',
 	    	    creator: 'MEEE'
 	    	});
+			pdf.setFontSize(10);
 	    }
-		
+
+
+	    var X = 1;
+	    var Y = 2.5;
+	    var lineIncrement = 0.25;
+	    var colIncrement = 1.5;
+
 		rowId = 0;
 		if (reportName == "SalesReport" || reportName == "SalesNewOwnerReport") {
 
@@ -1249,7 +1262,7 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 
 			}); // $.each(reportList, function(index, hoaSalesRec) {
 
-			
+			// End of if (reportName == "SalesReport" || reportName == "SalesNewOwnerReport") {
 		} else {
 			$.each(reportList, function(index, hoaRec) {
 				rowId = index + 1;
@@ -1273,16 +1286,57 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 					.append($('<td>').html(hoaRec.Parcel_Location))
 					.append($('<td>').html(hoaRec.ownersList[0].Owner_Name1+" "+hoaRec.ownersList[0].Owner_Name2))
 					.append($('<td>').html(hoaRec.assessmentsList[0].DuesAmt));
-				    
 					tr.appendTo(reportListDisplay);		
-				}
+					
+					var tr2 = $('<tr>');
+					tr2.append($('<td>').html(''))
+					.append($('<td>').html(''))
+					.append($('<td>').html(''))
+					.append($('<td>').html(''))
+					.append($('<td>').html(hoaRec.ownersList[0].Mailing_Name))
+					.append($('<td>').html(''));
+					tr2.appendTo(reportListDisplay);		
 
-				// Replace comma with null so you can use it as a CSV value
-				/*
-				function csvFilter($inVal) {
-					return preg_replace('/[\x2C]+/', '', String($inVal));
+					if (hoaRec.ownersList[0].AlternateMailing) {
+						var tr3 = $('<tr>');
+						tr3.append($('<td>').html(''))
+						.append($('<td>').html(''))
+						.append($('<td>').html(''))
+						.append($('<td>').html(''))
+						.append($('<td>').html(hoaRec.ownersList[0].Alt_Address_Line1))
+						.append($('<td>').html(''));
+						tr3.appendTo(reportListDisplay);		
+
+						var tr4 = $('<tr>');
+						tr4.append($('<td>').html(''))
+						.append($('<td>').html(''))
+						.append($('<td>').html(''))
+						.append($('<td>').html(''))
+						.append($('<td>').html(hoaRec.ownersList[0].Alt_Address_Line2))
+						.append($('<td>').html(''));
+						tr4.appendTo(reportListDisplay);		
+						
+						var tr5 = $('<tr>');
+						tr5.append($('<td>').html(''))
+						.append($('<td>').html(''))
+						.append($('<td>').html(''))
+						.append($('<td>').html(''))
+						.append($('<td>').html(hoaRec.ownersList[0].Alt_City+', '+hoaRec.ownersList[0].State+' '+hoaRec.ownersList[0].Zip))
+						.append($('<td>').html(''));
+						tr5.appendTo(reportListDisplay);		
+					}
+
+					/*
+					$hoaOwnerRec->Mailing_Name = $row["Mailing_Name"];
+					$hoaOwnerRec->AlternateMailing = $row["AlternateMailing"];
+					$hoaOwnerRec->Alt_Address_Line1 = $row["Alt_Address_Line1"];
+					$hoaOwnerRec->Alt_Address_Line2 = $row["Alt_Address_Line2"];
+					$hoaOwnerRec->Alt_City = $row["Alt_City"];
+					$hoaOwnerRec->Alt_State = $row["Alt_State"];
+					$hoaOwnerRec->Alt_Zip = $row["Alt_Zip"];
+					$hoaOwnerRec->Owner_Phone = $row["Owner_Phone"];
+					*/
 				}
-			    */
 
 			    if (csvDownload) {
 					csvLine = csvFilter(index+1);
@@ -1292,6 +1346,16 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 					csvLine += ',' + csvFilter(hoaRec.ownersList[0].Owner_Name1+' '+hoaRec.ownersList[0].Owner_Name2);
 					csvLine += ',' + csvFilter(hoaRec.assessmentsList[0].DuesAmt);
 			    	csvContent += csvLine + '\n';
+			    }
+
+			    if (pdfDownload) {
+					pdf.text(X,Y,''+hoaRec.Parcel_ID);
+					pdf.text(X+2,Y,''+hoaRec.LotNo);
+					pdf.text(X+3,Y,''+hoaRec.Parcel_Location);
+					pdf.text(X+5,Y,''+hoaRec.ownersList[0].Owner_Name1+' '+hoaRec.ownersList[0].Owner_Name2);
+					pdf.text(X+7,Y,''+hoaRec.assessmentsList[0].DuesAmt);
+					Y += lineIncrement;
+			    	
 			    }
 			    
 			}); // $.each(reportList, function(index, hoaRec) {
@@ -1323,11 +1387,8 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 	    }
 
 	    if (pdfDownload) {
-			doc.setFontSize(20);
-			doc.text(1, 1, "John K loves jsPDF");
-
 			// Output as Data URI
-			doc.save(reportName+".pdf");
+			pdf.save(reportName+".pdf");
 	    }
 
 		
