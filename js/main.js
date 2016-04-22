@@ -236,6 +236,9 @@ $(document).ready(function(){
             $("#DuesStatementPage").modal('hide');
     	});
     });	
+    
+    
+    
     $(document).on("click","#NewOwnerButton",function(){
         waitCursor();
         var $this = $(this);
@@ -378,10 +381,11 @@ $(document).ready(function(){
         waitCursor();
     	var $this = $(this);
     	var reportName = $this.attr('id');
-        var onscreenDisplay = $('#onscreenDisplay').is(':checked');
-        var csvDownload = $('#csvDownload').is(':checked');
-        var pdfDownload = $('#pdfDownload').is(':checked');
-        var reportYear = $('#ReportYear').val();
+        //var onscreenDisplay = $('#onscreenDisplay').is(':checked');
+        //var csvDownload = $('#csvDownload').is(':checked');
+        //var pdfDownload = $('#pdfDownload').is(':checked');
+        //var reportYear = $('#ReportYear').val();
+        var reportYear = '2017';
             
         $("#ReportHeader").html(reportYear+" "+$this.attr('data-reportTitle'));
 		$("#ReportListDisplay tbody").html("");
@@ -390,11 +394,26 @@ $(document).ready(function(){
 		
     	$.getJSON("getHoaReportData.php","reportName="+reportName+
     										"&reportYear="+reportYear,function(reportList){
-    	    formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfDownload);
+    	    formatReportList(reportName,reportList);
     	    $('*').css('cursor', 'default');
     	});
         event.stopPropagation();
     });
+
+	$(document).on("click","#DownloadReportCSV",function(){
+	    var $this = $(this);
+		var blob = new Blob([csvContent],{type: 'text/csv;charset=utf-8;'});
+		var pom = document.createElement('a');
+		var url = URL.createObjectURL(blob);
+		pom.href = url;
+		pom.setAttribute('download', $this.attr("data-reportName")+".csv");
+		pom.click();
+	});	
+
+	$(document).on("click","#DownloadReportPDF",function(){
+	    var $this = $(this);
+		reportPDF.save($this.attr("data-reportName")+".pdf");
+	});	
 
 	$(document).on("click",".SalesNewOwnerProcess",function(){
 	    waitCursor();
@@ -1175,8 +1194,11 @@ function formatDuesStatementResultsPDF(hoaRec,logoImgData) {
 
 } // End of function formatDuesStatementResultsPDF(hoaRec){
 
-
-function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfDownload){
+// Global variable to hold the PDF file created during report formatting (for downloading)
+var reportPDF;
+var csvContent;
+// Format reports
+function formatReportList(reportName,reportList){
 
 		var reportListDisplay = $("#ReportListDisplay tbody");
 		reportListDisplay.empty();
@@ -1185,20 +1207,17 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 		reportDownloadLinks.empty();
 		
 		var csvLine = "";
-		var csvContent = "";
+		csvContent = "";
 		
-		var pdf;
-	    if (pdfDownload) {
-	    	pdf = new jsPDF('l', 'in', 'letter');
-	    	pdf.setProperties({
+	    	reportPDF = new jsPDF('l', 'in', 'letter');
+	    	reportPDF.setProperties({
 	    	    title: 'Test JJK Doc',
 	    	    subject: 'This is the subject',
 	    	    author: 'John Kauflin',
 	    	    keywords: 'generated, javascript, web 2.0, ajax',
 	    	    creator: 'MEEE'
 	    	});
-			pdf.setFontSize(10);
-	    }
+	    	reportPDF.setFontSize(10);
 
 
 	    var X = 1;
@@ -1216,7 +1235,6 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 			$.each(reportList, function(index, hoaSalesRec) {
 				rowId = index + 1;
 			    
-				if (onscreenDisplay) {
 					if (index == 0) {
 						$('<tr>')
 						.append($('<th>').html('Row'))
@@ -1258,7 +1276,6 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 					.append($('<td>').html(hoaSalesRec.MAILINGNAME2));
 
 					tr.appendTo(reportListDisplay);		
-				}
 
 			}); // $.each(reportList, function(index, hoaSalesRec) {
 
@@ -1267,7 +1284,6 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 			$.each(reportList, function(index, hoaRec) {
 				rowId = index + 1;
 				
-				if (onscreenDisplay) {
 					if (index == 0) {
 						$('<tr>')
 						.append($('<th>').html('Row'))
@@ -1276,27 +1292,22 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 						.append($('<th>').html('Location'))
 						.append($('<th>').html('Owner Name'))
 						.append($('<th>').html('Dues Amt'))
+						.append($('<th>').html('Paid'))
 						.appendTo(reportListDisplay);		
 					}
+
+					//.append($('<td>').html(hoaRec.ownersList[0].Owner_Name1+" "+hoaRec.ownersList[0].Owner_Name2))
 
 					var tr = $('<tr>');
 					tr.append($('<td>').html(index+1))
 					.append($('<td>').html(hoaRec.Parcel_ID))
 					.append($('<td>').html(hoaRec.LotNo))
 					.append($('<td>').html(hoaRec.Parcel_Location))
-					.append($('<td>').html(hoaRec.ownersList[0].Owner_Name1+" "+hoaRec.ownersList[0].Owner_Name2))
-					.append($('<td>').html(hoaRec.assessmentsList[0].DuesAmt));
+					.append($('<td>').html(hoaRec.ownersList[0].Mailing_Name))
+					.append($('<td>').html(hoaRec.assessmentsList[0].DuesAmt))
+					.append($('<td>').html(setBoolText(hoaRec.assessmentsList[0].Paid)));
 					tr.appendTo(reportListDisplay);		
 					
-					var tr2 = $('<tr>');
-					tr2.append($('<td>').html(''))
-					.append($('<td>').html(''))
-					.append($('<td>').html(''))
-					.append($('<td>').html(''))
-					.append($('<td>').html(hoaRec.ownersList[0].Mailing_Name))
-					.append($('<td>').html(''));
-					tr2.appendTo(reportListDisplay);		
-
 					if (hoaRec.ownersList[0].AlternateMailing) {
 						var tr3 = $('<tr>');
 						tr3.append($('<td>').html(''))
@@ -1304,6 +1315,7 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 						.append($('<td>').html(''))
 						.append($('<td>').html(''))
 						.append($('<td>').html(hoaRec.ownersList[0].Alt_Address_Line1))
+						.append($('<td>').html(''))
 						.append($('<td>').html(''));
 						tr3.appendTo(reportListDisplay);		
 
@@ -1313,6 +1325,7 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 						.append($('<td>').html(''))
 						.append($('<td>').html(''))
 						.append($('<td>').html(hoaRec.ownersList[0].Alt_Address_Line2))
+						.append($('<td>').html(''))
 						.append($('<td>').html(''));
 						tr4.appendTo(reportListDisplay);		
 						
@@ -1321,7 +1334,8 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 						.append($('<td>').html(''))
 						.append($('<td>').html(''))
 						.append($('<td>').html(''))
-						.append($('<td>').html(hoaRec.ownersList[0].Alt_City+', '+hoaRec.ownersList[0].State+' '+hoaRec.ownersList[0].Zip))
+						.append($('<td>').html(hoaRec.ownersList[0].Alt_City+', '+hoaRec.ownersList[0].Alt_State+' '+hoaRec.ownersList[0].Alt_Zip))
+						.append($('<td>').html(''))
 						.append($('<td>').html(''));
 						tr5.appendTo(reportListDisplay);		
 					}
@@ -1336,9 +1350,7 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 					$hoaOwnerRec->Alt_Zip = $row["Alt_Zip"];
 					$hoaOwnerRec->Owner_Phone = $row["Owner_Phone"];
 					*/
-				}
 
-			    if (csvDownload) {
 					csvLine = csvFilter(index+1);
 					csvLine += ',' + csvFilter(hoaRec.Parcel_ID);
 					csvLine += ',' + csvFilter(hoaRec.LotNo);
@@ -1346,17 +1358,14 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 					csvLine += ',' + csvFilter(hoaRec.ownersList[0].Owner_Name1+' '+hoaRec.ownersList[0].Owner_Name2);
 					csvLine += ',' + csvFilter(hoaRec.assessmentsList[0].DuesAmt);
 			    	csvContent += csvLine + '\n';
-			    }
 
-			    if (pdfDownload) {
-					pdf.text(X,Y,''+hoaRec.Parcel_ID);
-					pdf.text(X+2,Y,''+hoaRec.LotNo);
-					pdf.text(X+3,Y,''+hoaRec.Parcel_Location);
-					pdf.text(X+5,Y,''+hoaRec.ownersList[0].Owner_Name1+' '+hoaRec.ownersList[0].Owner_Name2);
-					pdf.text(X+7,Y,''+hoaRec.assessmentsList[0].DuesAmt);
+			    	reportPDF.text(X,Y,''+hoaRec.Parcel_ID);
+			    	reportPDF.text(X+2,Y,''+hoaRec.LotNo);
+			    	reportPDF.text(X+3,Y,''+hoaRec.Parcel_Location);
+			    	reportPDF.text(X+5,Y,''+hoaRec.ownersList[0].Owner_Name1+' '+hoaRec.ownersList[0].Owner_Name2);
+			    	reportPDF.text(X+7,Y,''+hoaRec.assessmentsList[0].DuesAmt);
+
 					Y += lineIncrement;
-			    	
-			    }
 			    
 			}); // $.each(reportList, function(index, hoaRec) {
 
@@ -1368,28 +1377,20 @@ function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfD
 			$("#ReportRecCnt").append(", (Click on <b>Sale Date</b> to Create a New Owner, or <b>Ignore</b> to bypass)");
 		}
 		
-	    if (csvDownload) {
-	    	var blob = new Blob([csvContent],{type: 'text/csv;charset=utf-8;'});
-	    	var pom = document.createElement('a');
-	    	var url = URL.createObjectURL(blob);
-	    	pom.href = url;
-	    	pom.setAttribute('download', reportName+".csv");
-	    	pom.click();
-	    	
-	    	/*
-			reportDownloadLinks.append(
-	    		$('<a>').attr('href',URL.createObjectURL(blob))
-		    			.attr('class',"btn btn-warning btn-xs downloadBtn")
-		    			.attr('download',reportName+".csv")
-		    			.html('Download CSV')
-			);
-			*/
-	    }
-
-	    if (pdfDownload) {
-			// Output as Data URI
-			pdf.save(reportName+".pdf");
-	    }
+		reportDownloadLinks.append(
+				$('<a>').prop('id','DownloadReportCSV')
+		    			.attr('href','#')
+			    		.attr('class',"btn btn-warning")
+			    		.attr('data-reportName',reportName)
+			    		.html('CSV'));
+	    
+		// Include downloadBtn class to add space to left margin
+		reportDownloadLinks.append(
+				$('<a>').prop('id','DownloadReportPDF')
+		    			.attr('href','#')
+			    		.attr('class',"btn btn-danger downloadBtn")
+			    		.attr('data-reportName',reportName)
+			    		.html('PDF'));
 
 		
-} // function formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfDownload){
+} // function formatReportList(reportName,reportList){
