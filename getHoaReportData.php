@@ -15,15 +15,12 @@ include 'hoaDbCommon.php';
 $username = getUsername();
 
 $reportName = getParamVal("reportName");
-$reportYear = getParamVal("reportYear");
 
 $outputArray = array();
 $conn = getConn();
 
 if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 
-	// Add Year to query???
-	
 	if ($reportName == "SalesNewOwnerReport") {
 		$stmt = $conn->prepare("SELECT * FROM hoa_sales WHERE ProcessedFlag != 'Y' ORDER BY CreateTimestamp DESC; ");
 	} else {
@@ -60,48 +57,73 @@ if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 		}
 		$result->close();
 	}
-	
-	
 	// End of if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
-} else if ($reportName == "UnpaidDuesReport") {
+
+} else {
 
 	$parcelId = "";
 	$ownerId = "";
-	$fy = "2017";
+	$fy = 0;
 	$saleDate = "SKIP";
-	
 	
 	// try to get the parameters into the initial select query to limit the records it then tries to get from the getHoaRec
 
 	// *** just use the highest FY - the first assessment record ***
 	
-		// Loop through all the member properties
-		//$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";		
-		//$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a WHERE p.Parcel_ID = o.Parcel_ID AND p.Parcel_ID = a.Parcel_ID AND o.CurrentOwner = 1 AND UPPER(a.Comments) ";
-		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " . 
-				"WHERE p.Parcel_ID = o.Parcel_ID AND p.Parcel_ID = a.Parcel_ID AND o.CurrentOwner = 1 " .
-				"AND a.FY = 2017 AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
-		
-		$stmt = $conn->prepare($sql);
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$stmt->close();
-		
-		$cnt = 0;
-		if ($result->num_rows > 0) {
-			while($row = $result->fetch_assoc()) {
-				$cnt = $cnt + 1;
+	/*
+	<button id="UnpaidDuesReport" data-reportTitle="Unpaid Dues Report"
+			type="button" class="btn btn-primary reportRequest form-control">Unpaid Dues</button>
+			<button id="PaidDuesReport" data-reportTitle="Paid Dues Report"
+					type="button" class="btn btn-primary reportRequest form-control">Paid Dues</button>
+					<button id="PropertyOwnerReport" data-reportTitle="Property/Owner Report"
+							type="button" class="btn btn-primary reportRequest form-control">Property Owner</button>
+	*/
 
-				$parcelId = $row["Parcel_ID"];
-				$ownerId = $row["OwnerID"];
-				
-				$hoaRec = getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate);
-				
-				array_push($outputArray,$hoaRec);
-			}
-			
+	$result = $conn->query("SELECT MAX(FY) AS maxFY FROM hoa_assessments; ");
+	
+	if ($result->num_rows > 0) {
+		while($row = $result->fetch_assoc()) {
+			$fy = $row["maxFY"];
 		}
-
+		$result->close();
+	}
+	
+	//$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ORDER BY p.Parcel_ID; ";
+	if ($reportName == "UnpaidDuesReport") {
+		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+				"WHERE p.Parcel_ID = o.Parcel_ID AND p.Parcel_ID = a.Parcel_ID AND o.CurrentOwner = 1 " .
+				"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
+	} else if ($reportName == "PaidDuesReport") {
+		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+				"WHERE p.Parcel_ID = o.Parcel_ID AND p.Parcel_ID = a.Parcel_ID AND o.CurrentOwner = 1 " .
+				"AND a.FY = " . $fy . " AND a.Paid = 1 ORDER BY p.Parcel_ID; ";
+	} else {
+		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+			 	"WHERE p.Parcel_ID = o.Parcel_ID AND p.Parcel_ID = a.Parcel_ID AND o.CurrentOwner = 1 " .
+			 	"AND a.FY = " . $fy . " ORDER BY p.Parcel_ID; ";
+	}
+		
+	$stmt = $conn->prepare($sql);
+	$stmt->execute();
+	$result = $stmt->get_result();
+	$stmt->close();
+	
+	$cnt = 0;
+	if ($result->num_rows > 0) {
+		// Loop through all the member properties
+		while($row = $result->fetch_assoc()) {
+			$cnt = $cnt + 1;
+	
+			$parcelId = $row["Parcel_ID"];
+			$ownerId = $row["OwnerID"];
+	
+			$hoaRec = getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate);
+	
+			array_push($outputArray,$hoaRec);
+		}
+			
+	}
+	
 } // End of } else if ($reportName == "DuesReport") {
 	
 // Close db connection

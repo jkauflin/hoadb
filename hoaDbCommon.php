@@ -318,7 +318,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 		$result->close();
 		$stmt->close();
 	
-		if (empty($fy)) {
+		if (empty($fy) || $fy == "LATEST") {
 			$stmt = $conn->prepare("SELECT * FROM hoa_assessments WHERE Parcel_ID = ? ORDER BY FY DESC ; ");
 			$stmt->bind_param("s", $parcelId);
 		} else {
@@ -328,8 +328,13 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 		$stmt->execute();
 		$result = $stmt->get_result();
 	
+		$cnt = 0;
 		if ($result->num_rows > 0) {
 			while($row = $result->fetch_assoc()) {
+				$cnt = $cnt + 1;
+				if ($fy == "LATEST" && $cnt > 1) {
+					continue;
+				}
 				$hoaAssessmentRec = new HoaAssessmentRec();
 				$hoaAssessmentRec->OwnerID = $row["OwnerID"];
 				$hoaAssessmentRec->Parcel_ID = $row["Parcel_ID"];
@@ -457,9 +462,9 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 
 				} // if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open') {
 				
-			}
+			} // End of Assessments loop
 	
-		} // End of Assessments
+		} // End of if Assessments
 		
 		$result->close();
 		$stmt->close();
