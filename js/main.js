@@ -236,6 +236,7 @@ $(document).ready(function(){
             $("#EditPage").modal();
         });
     });	
+
     $(document).on("click","#DuesStatementButton",function(){
         waitCursor();
         var $this = $(this);
@@ -246,6 +247,12 @@ $(document).ready(function(){
             $("#DuesStatementPage").modal();
         });
     });	
+    
+	$(document).on("click","#DownloadDuesStatementPDF",function(){
+	    var $this = $(this);
+		pdf.save($this.attr("data-lotno")+"-DuesStatement.pdf");
+	});	
+	/*
     $(document).on("click","#DuesStatementPrintButton",function(){
         waitCursor();
         var $this = $(this);
@@ -260,7 +267,7 @@ $(document).ready(function(){
             $("#DuesStatementPage").modal('hide');
     	});
     });	
-    
+    */
     
     
     $(document).on("click","#NewOwnerButton",function(){
@@ -434,7 +441,7 @@ $(document).ready(function(){
 
 	$(document).on("click","#DownloadReportPDF",function(){
 	    var $this = $(this);
-		reportPDF.save($this.attr("data-reportName")+".pdf");
+		pdf.save($this.attr("data-reportName")+".pdf");
 	});	
 
 	$(document).on("click",".SalesNewOwnerProcess",function(){
@@ -1220,82 +1227,15 @@ function formatDuesStatementResultsPDF(hoaRec,logoImgData) {
 } // End of function formatDuesStatementResultsPDF(hoaRec){
 
 
-// Global variable to hold the PDF file created during report formatting (for downloading)
-var csvContent;
-var reportPDF;
-var pdfLogoImgData = '';
-var pdfTitle = "";
-var pdfTotals = "";
-var pdfLineHeaderArray = [];
-var pdfLineColIncrArray = [];
-var pdfLineCnt = 0;
-var pdfLineYStart = 1.4;
-var pdfLineY = pdfLineYStart;
-var pdfLineIncrement = 0.25;
-var pdfColIncrement = 1.5;
 
 
-function reportPDFaddLine(pdfLineArray) {
-	pdfLineCnt++;
-	var pdfHeader = false;
-	var X = 0.0;
-	
-	if (pdfLineCnt == 1) {
-    	reportPDF = new jsPDF('l', 'in', 'letter');
-    	reportPDF.setProperties({
-    	    title: 'Test JJK Doc',
-    	    subject: 'This is the subject',
-    	    author: 'John Kauflin',
-    	    keywords: 'generated, javascript, web 2.0, ajax',
-    	    creator: 'MEEE'
-    	});
-    	pdfHeader = true;
-		pdfLineY = pdfLineYStart;
-	}
-
-	if (pdfLineY > 7.8) {
-		reportPDF.addPage('letter','l');
-		pdfLineY = pdfLineYStart;
-    	pdfHeader = true;
-	}
-
-	if (pdfHeader) {
-		reportPDF.setFontSize(16);
-		reportPDF.text(3.6, 0.6, "Gander Road Homeowners Association");
-		reportPDF.setFontSize(14);
-		reportPDF.text(2.5, 0.9, pdfTitle);
-		//pdf.setFontSize(18);
-		//pdf.text(3, 1.3, "Member Dues Statement");
-
-		reportPDF.addImage(pdfLogoImgData, 'JPEG', 0.3, 0.3, 0.8, 0.8);
-    	reportPDF.setFontSize(10);
-
-		X = 0.0;
-		for (i = 0; i < pdfLineArray.length; i++) {
-			X += pdfLineColIncrArray[i];
-			reportPDF.text(X,pdfLineY,''+pdfLineHeaderArray[i]);
-		}
-		pdfLineY += pdfLineIncrement / 2.0;
-		
-		X = 0.65;
-		reportPDF.setLineWidth(0.02);
-		reportPDF.line(X,pdfLineY,10.5,pdfLineY);
-		pdfLineY += pdfLineIncrement;
-	}
-
-	X = 0.0;
-	for (i = 0; i < pdfLineArray.length; i++) {
-		X += pdfLineColIncrArray[i];
-		reportPDF.text(X,pdfLineY,''+pdfLineArray[i]);
-	}
-	pdfLineY += pdfLineIncrement;
-}
 
 //---------------------------------------------------------------------------------------------------------------
 // Format reports
 //---------------------------------------------------------------------------------------------------------------
 function formatReportList(reportName,reportTitle,reportList){
 
+	var currSysDate = new Date();
 	var reportTitleFull = '';
 	var reportYear = '';
 	var reportListDisplay = $("#ReportListDisplay tbody");
@@ -1303,7 +1243,8 @@ function formatReportList(reportName,reportTitle,reportList){
 	$("#ReportRecCnt").html("");
 	var reportDownloadLinks = $("#ReportDownloadLinks");
 	reportDownloadLinks.empty();
-	
+
+	pdfPageCnt = 0;
 	pdfLineCnt = 0;
 	var csvLine = "";
 	csvContent = "";
@@ -1390,6 +1331,7 @@ function formatReportList(reportName,reportTitle,reportList){
 					reportYear = hoaRec.assessmentsList[0].FY;
 					reportTitleFull = reportTitle+" for Fiscal Year "+reportYear+" (Oct. 1, "+(reportYear-1)+" to Sept. 30, "+reportYear+")";
 					pdfTitle = reportTitleFull;
+					pdfTimestamp = currSysDate.toString().substr(0,24)+", Number of records = "+reportList.length;
 					
 					pdfLineHeaderArray = [
 							'Row',
@@ -1400,9 +1342,7 @@ function formatReportList(reportName,reportTitle,reportList){
 							'Phone',
 							'Dues Amt',
 							'Paid'];
-
 					pdfLineColIncrArray = [0.75,0.5,1.3,0.8,2.3,2.3,1.3,0.8];
-
 					
 					csvLine = csvFilter(index+1);
 					csvLine += ',' + csvFilter("ParcelID");
@@ -1450,7 +1390,7 @@ function formatReportList(reportName,reportTitle,reportList){
 					.append($('<td>').html(''));
 					tr3.appendTo(reportListDisplay);		
 
-					reportPDFaddLine(['','','',hoaRec.Parcel_Location,hoaRec.ownersList[0].,'','','']);
+					reportPDFaddLine(['','','','',hoaRec.ownersList[0].Alt_Address_Line1,'','','']);
 					
 					if (hoaRec.ownersList[0].Alt_Address_Line2 != '') {
 						var tr4 = $('<tr>');
@@ -1462,6 +1402,8 @@ function formatReportList(reportName,reportTitle,reportList){
 						.append($('<td>').html(''))
 						.append($('<td>').html(''));
 						tr4.appendTo(reportListDisplay);		
+
+						reportPDFaddLine(['','','','',hoaRec.ownersList[0].Alt_Address_Line2,'','','']);
 					}
 					
 					var tr5 = $('<tr>');
@@ -1473,6 +1415,8 @@ function formatReportList(reportName,reportTitle,reportList){
 					.append($('<td>').html(''))
 					.append($('<td>').html(''));
 					tr5.appendTo(reportListDisplay);		
+					
+					reportPDFaddLine(['','','','',hoaRec.ownersList[0].Alt_City+', '+hoaRec.ownersList[0].Alt_State+' '+hoaRec.ownersList[0].Alt_Zip,'','','']);
 				}
 
 				
@@ -1514,7 +1458,6 @@ function formatReportList(reportName,reportTitle,reportList){
 	} // End of Properties / current owner reports
 
     $("#ReportHeader").html(reportTitleFull);
-	var currSysDate = new Date();
 	$("#ReportRecCnt").html(currSysDate.toString().substr(0,24)+", Number of records = "+rowId);
 
 	if (reportName == "PropertyOwnerReport") {
@@ -1526,3 +1469,145 @@ function formatReportList(reportName,reportTitle,reportList){
 	}
 		
 } // function formatReportList(reportName,reportList){
+
+// Global variable to hold CSV content for downloading
+var csvContent;
+
+//---------------------------------------------------------------------------------------------------------------------------
+//Global variable to hold the PDF file created during report formatting (for downloading)
+//---------------------------------------------------------------------------------------------------------------------------
+var pdf;
+var pdfLogoImgData = '';
+var pdfTitle = "";
+var pdfTimestamp = "";
+var pdfTotals = "";
+var pdfLineHeaderArray = [];
+var pdfLineColIncrArray = [];
+var pdfPageCnt = 0;
+var pdfLineCnt = 0;
+var pdfLineYStart = 1.4;
+var pdfLineY = pdfLineYStart;
+var pdfLineIncrement = 0.25;
+var pdfColIncrement = 1.5;
+
+// Function to add a line to the report PDF
+function reportPDFaddLine(pdfLineArray) {
+	pdfLineCnt++;
+	var pdfHeader = false;
+	var X = 0.0;
+	
+	if (pdfLineCnt == 1) {
+    	pdf = new jsPDF('l', 'in', 'letter');
+    	pdf.setProperties({
+    	    title: 'Test JJK Doc',
+    	    subject: 'This is the subject',
+    	    author: 'John Kauflin',
+    	    keywords: 'generated, javascript, web 2.0, ajax',
+    	    creator: 'MEEE'
+    	});
+    	pdfHeader = true;
+		pdfLineY = pdfLineYStart;
+	}
+
+	if (pdfLineY > 7.8) {
+		pdf.addPage('letter','l');
+		pdfLineY = pdfLineYStart;
+    	pdfHeader = true;
+	}
+
+	if (pdfHeader) {
+		pdfPageCnt++;
+		pdf.setFontSize(9);
+		pdf.text(10.2, 0.3, 'Page '+pdfPageCnt);
+		pdf.setFontSize(15);
+		pdf.text(3.6, 0.45, "Gander Road Homeowners Association");
+		pdf.setFontSize(13);
+		pdf.text(2.5, 0.75, pdfTitle);
+		pdf.setFontSize(10);
+		pdf.text(3.8, 1.1, pdfTimestamp);
+		
+		pdf.addImage(pdfLogoImgData, 'JPEG', 0.3, 0.3, 0.8, 0.8);
+    	pdf.setFontSize(10);
+
+		X = 0.0;
+		for (i = 0; i < pdfLineArray.length; i++) {
+			X += pdfLineColIncrArray[i];
+			pdf.text(X,pdfLineY,''+pdfLineHeaderArray[i]);
+		}
+		pdfLineY += pdfLineIncrement / 2.0;
+		
+		X = 0.65;
+		pdf.setLineWidth(0.02);
+		pdf.line(X,pdfLineY,10.5,pdfLineY);
+		pdfLineY += pdfLineIncrement;
+	}
+
+	X = 0.0;
+	for (i = 0; i < pdfLineArray.length; i++) {
+		X += pdfLineColIncrArray[i];
+		pdf.text(X,pdfLineY,''+pdfLineArray[i]);
+	}
+	pdfLineY += pdfLineIncrement;
+
+} // End of function reportPDFaddLine(pdfLineArray) {
+
+//Function to add a line to the report PDF
+function duesStatementPDFaddLine(pdfLineArray) {
+	pdfLineCnt++;
+	var pdfHeader = false;
+	var X = 0.0;
+	
+	if (pdfLineCnt == 1) {
+    	pdf = new jsPDF('l', 'in', 'letter');
+    	pdf.setProperties({
+    	    title: 'Test JJK Doc',
+    	    subject: 'This is the subject',
+    	    author: 'John Kauflin',
+    	    keywords: 'generated, javascript, web 2.0, ajax',
+    	    creator: 'MEEE'
+    	});
+    	pdfHeader = true;
+		pdfLineY = pdfLineYStart;
+	}
+
+	if (pdfLineY > 7.8) {
+		pdf.addPage('letter','l');
+		pdfLineY = pdfLineYStart;
+    	pdfHeader = true;
+	}
+
+	if (pdfHeader) {
+		pdfPageCnt++;
+		pdf.setFontSize(9);
+		pdf.text(10.2, 0.3, 'Page '+pdfPageCnt);
+		pdf.setFontSize(15);
+		pdf.text(3.6, 0.45, "Gander Road Homeowners Association");
+		pdf.setFontSize(13);
+		pdf.text(2.5, 0.75, pdfTitle);
+		pdf.setFontSize(10);
+		pdf.text(3.8, 1.1, pdfTimestamp);
+		
+		pdf.addImage(pdfLogoImgData, 'JPEG', 0.3, 0.3, 0.8, 0.8);
+    	pdf.setFontSize(10);
+
+		X = 0.0;
+		for (i = 0; i < pdfLineArray.length; i++) {
+			X += pdfLineColIncrArray[i];
+			pdf.text(X,pdfLineY,''+pdfLineHeaderArray[i]);
+		}
+		pdfLineY += pdfLineIncrement / 2.0;
+		
+		X = 0.65;
+		pdf.setLineWidth(0.02);
+		pdf.line(X,pdfLineY,10.5,pdfLineY);
+		pdfLineY += pdfLineIncrement;
+	}
+
+	X = 0.0;
+	for (i = 0; i < pdfLineArray.length; i++) {
+		X += pdfLineColIncrArray[i];
+		pdf.text(X,pdfLineY,''+pdfLineArray[i]);
+	}
+	pdfLineY += pdfLineIncrement;
+
+} // End of function reportPDFaddLine(pdfLineArray) {
