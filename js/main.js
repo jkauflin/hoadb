@@ -157,6 +157,12 @@ $(document).ready(function(){
         format:'Y-m-d'
     });
 
+    // When the javascript initializes do a one time get of the logo image data (for PDF writes)
+	$.get("getLogoImgData.php",function(logoImgDataResults){
+		pdfLogoImgData = logoImgDataResults;
+	});
+
+    
     // Respond to any change in values and call service
     $("#SearchInput").change(function() {
         waitCursor();
@@ -1217,12 +1223,13 @@ function formatDuesStatementResultsPDF(hoaRec,logoImgData) {
 // Global variable to hold the PDF file created during report formatting (for downloading)
 var csvContent;
 var reportPDF;
+var pdfLogoImgData = '';
 var pdfTitle = "";
 var pdfTotals = "";
 var pdfLineHeaderArray = [];
 var pdfLineColIncrArray = [];
 var pdfLineCnt = 0;
-var pdfLineYStart = 1;
+var pdfLineYStart = 1.4;
 var pdfLineY = pdfLineYStart;
 var pdfLineIncrement = 0.25;
 var pdfColIncrement = 1.5;
@@ -1242,8 +1249,8 @@ function reportPDFaddLine(pdfLineArray) {
     	    keywords: 'generated, javascript, web 2.0, ajax',
     	    creator: 'MEEE'
     	});
-    	reportPDF.setFontSize(10);
     	pdfHeader = true;
+		pdfLineY = pdfLineYStart;
 	}
 
 	if (pdfLineY > 7.8) {
@@ -1253,14 +1260,24 @@ function reportPDFaddLine(pdfLineArray) {
 	}
 
 	if (pdfHeader) {
+		reportPDF.setFontSize(16);
+		reportPDF.text(3.6, 0.6, "Gander Road Homeowners Association");
+		reportPDF.setFontSize(14);
+		reportPDF.text(2.5, 0.9, pdfTitle);
+		//pdf.setFontSize(18);
+		//pdf.text(3, 1.3, "Member Dues Statement");
+
+		reportPDF.addImage(pdfLogoImgData, 'JPEG', 0.3, 0.3, 0.8, 0.8);
+    	reportPDF.setFontSize(10);
+
 		X = 0.0;
 		for (i = 0; i < pdfLineArray.length; i++) {
 			X += pdfLineColIncrArray[i];
 			reportPDF.text(X,pdfLineY,''+pdfLineHeaderArray[i]);
 		}
-		pdfLineY += pdfLineIncrement;
+		pdfLineY += pdfLineIncrement / 2.0;
 		
-		X = 0.8;
+		X = 0.65;
 		reportPDF.setLineWidth(0.02);
 		reportPDF.line(X,pdfLineY,10.5,pdfLineY);
 		pdfLineY += pdfLineIncrement;
@@ -1347,6 +1364,7 @@ function formatReportList(reportName,reportTitle,reportList){
 
 	} else {
 		
+		var pdfLineArray = [];
     	// Loop through the list of properties / current owner
 		$.each(reportList, function(index, hoaRec) {
 			rowId = index + 1;
@@ -1371,6 +1389,7 @@ function formatReportList(reportName,reportTitle,reportList){
 					
 					reportYear = hoaRec.assessmentsList[0].FY;
 					reportTitleFull = reportTitle+" for Fiscal Year "+reportYear+" (Oct. 1, "+(reportYear-1)+" to Sept. 30, "+reportYear+")";
+					pdfTitle = reportTitleFull;
 					
 					pdfLineHeaderArray = [
 							'Row',
@@ -1382,7 +1401,7 @@ function formatReportList(reportName,reportTitle,reportList){
 							'Dues Amt',
 							'Paid'];
 
-					pdfLineColIncrArray = [0.8,0.5,1.3,0.8,2.3,2.3,1.3,0.8];
+					pdfLineColIncrArray = [0.75,0.5,1.3,0.8,2.3,2.3,1.3,0.8];
 
 					
 					csvLine = csvFilter(index+1);
@@ -1417,10 +1436,8 @@ function formatReportList(reportName,reportTitle,reportList){
 				.append($('<td>').html(setBoolText(hoaRec.assessmentsList[0].Paid)));
 				tr.appendTo(reportListDisplay);		
 
-				var pdfLineArray = [index+1,hoaRec.Parcel_ID,hoaRec.LotNo,hoaRec.Parcel_Location,hoaRec.ownersList[0].Mailing_Name,
-				                    hoaRec.ownersList[0].Owner_Phone,hoaRec.assessmentsList[0].DuesAmt,setBoolText(hoaRec.assessmentsList[0].Paid)]; 
-				reportPDFaddLine(pdfLineArray);
-
+				reportPDFaddLine([index+1,hoaRec.Parcel_ID,hoaRec.LotNo,hoaRec.Parcel_Location,hoaRec.ownersList[0].Mailing_Name,
+				                  hoaRec.ownersList[0].Owner_Phone,hoaRec.assessmentsList[0].DuesAmt,setBoolText(hoaRec.assessmentsList[0].Paid)]); 
 				
 				if (hoaRec.ownersList[0].AlternateMailing) {
 					var tr3 = $('<tr>');
@@ -1433,6 +1450,8 @@ function formatReportList(reportName,reportTitle,reportList){
 					.append($('<td>').html(''));
 					tr3.appendTo(reportListDisplay);		
 
+					reportPDFaddLine(['','','',hoaRec.Parcel_Location,hoaRec.ownersList[0].,'','','']);
+					
 					if (hoaRec.ownersList[0].Alt_Address_Line2 != '') {
 						var tr4 = $('<tr>');
 						tr4.append($('<td>').html(''))
