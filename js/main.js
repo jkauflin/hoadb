@@ -250,7 +250,7 @@ $(document).ready(function(){
     
 	$(document).on("click","#DownloadDuesStatementPDF",function(){
 	    var $this = $(this);
-		pdf.save($this.attr("data-lotno")+"-DuesStatement.pdf");
+		pdf.save(formatDate()+"-"+$this.attr("data-pdfName")+".pdf");
 	});	
 	/*
     $(document).on("click","#DuesStatementPrintButton",function(){
@@ -1078,8 +1078,40 @@ function formatDuesStatementResults(hoaRec) {
     var tr = '';
     var checkedStr = '';
 
+	var duesStatementDownloadLinks = $("#DuesStatementDownloadLinks");
+	duesStatementDownloadLinks.empty();
+
 	ownerRec = hoaRec.ownersList[0];
 
+
+	var currSysDate = new Date();
+	pdfTitle = "Member Dues Statement";
+	pdfTimestamp = currSysDate.toString().substr(0,24);
+	
+	pdfPageCnt = 0;
+	pdfLineCnt = 0;
+
+	pdfLineHeaderArray = [
+			'Parcel Id',
+			'Lot No',
+			'Location',
+			'Owner and Alt Address',
+			'Phone'];
+	pdfLineColIncrArray = [0.4,1.3,0.8,2.3,2.3];
+	
+	
+	duesStatementPDFaddLine([hoaRec.Parcel_ID,hoaRec.LotNo,hoaRec.Parcel_Location,hoaRec.ownersList[0].Mailing_Name,
+	                  hoaRec.ownersList[0].Owner_Phone],pdfLineHeaderArray); 
+
+	if (hoaRec.ownersList[0].AlternateMailing) {
+		duesStatementPDFaddLine(['','','',hoaRec.ownersList[0].Alt_Address_Line1,''],null); 
+		if (hoaRec.ownersList[0].Alt_Address_Line2 != '') {
+			duesStatementPDFaddLine(['','','',hoaRec.ownersList[0].Alt_Address_Line2,''],null); 
+		}
+		duesStatementPDFaddLine(['','','',hoaRec.ownersList[0].Alt_City+', '+hoaRec.ownersList[0].Alt_State+' '+hoaRec.ownersList[0].Alt_Zip,''],null); 
+	}
+
+	
     tr += '<tr><th>Parcel Id:</th><td>'+hoaRec.Parcel_ID+'</a></td></tr>';
     tr += '<tr><th>Lot No:</th><td>'+hoaRec.LotNo+'</td></tr>';
     //tr += '<tr><th>Sub Division: </th><td>'+hoaRec.SubDivParcel+'</td></tr>';
@@ -1089,22 +1121,45 @@ function formatDuesStatementResults(hoaRec) {
     tr += '<tr><th>Total Due: </th><td>$'+hoaRec.TotalDue+'</td></tr>';
     $("#DuesStatementPropertyTable tbody").html(tr);
 
+    /*
     tr = '<button id="DuesStatementPrintButton" type="button" class="btn btn-danger" data-ParcelId="'+hoaRec.Parcel_ID+'">Download PDF</button>';
     $("#DuesStatementPrint").html(tr);
+	*/
+    
+    duesStatementDownloadLinks.append(
+			$('<a>').prop('id','DownloadDuesStatementPDF')
+	    			.attr('href','#')
+		    		.attr('class',"btn btn-danger downloadBtn")
+		    		.attr('data-pdfName','DuesStatement')
+		    		.html('PDF'));
 
+	pdfLineColIncrArray = [0.4,4,0.5];
+
+	duesStatementPDFaddLine([''],null);
+	
     tr = '';
 	$.each(hoaRec.totalDuesCalcList, function(index, rec) {
 	    tr = tr + '<tr>';
-    	tr = tr +   '<td>'+rec.calcDesc+'</a></td>';
+    	tr = tr +   '<td>'+rec.calcDesc+'</td>';
 	    tr = tr +   '<td>$</td>';
 	    tr = tr +   '<td align="right">'+rec.calcValue+'</td>';
 	    tr = tr + '</tr>';
+	    duesStatementPDFaddLine([rec.calcDesc,'$',rec.calcValue],null);
 	});
+    tr = tr + '<tr>';
+	tr = tr +   '<td><b>Total Due:</b></td>';
+    tr = tr +   '<td><b>$</b></td>';
+    tr = tr +   '<td align="right"><b>'+hoaRec.TotalDue+'</b></td>';
+    tr = tr + '</tr>';
+    duesStatementPDFaddLine(['Total Due:','$',hoaRec.TotalDue],null);
 	$("#DuesStatementCalculationTable tbody").html(tr);
-    
+
+	duesStatementPDFaddLine([''],null);
+
 	var TaxYear = '';
     tr = '';
 	$.each(hoaRec.assessmentsList, function(index, rec) {
+		pdfLineHeaderArray = null;
 		if (index == 0) {
     	    tr = tr +   '<tr>';
     	    tr = tr +     '<th>Year</th>';
@@ -1114,6 +1169,15 @@ function formatDuesStatementResults(hoaRec) {
     	    tr = tr +     '<th>Date Paid</th>';
     	    tr = tr +   '</tr>';
     	    TaxYear = rec.DateDue.substring(0,4);
+    	    
+    		pdfLineHeaderArray = [
+    			          			'Year',
+    			          			'Dues Amt',
+    			          			'Date Due',
+    			          			'Paid',
+    			          			'Date Paid'];
+    			pdfLineColIncrArray = [0.4,1.3,0.8,2.3,2.3];
+
 		}
 	    tr = tr + '<tr>';
     	tr = tr +   '<td>'+rec.FY+'</a></td>';
@@ -1122,112 +1186,77 @@ function formatDuesStatementResults(hoaRec) {
 	    tr = tr +   '<td>'+setCheckbox(rec.Paid)+'</td>';
 	    tr = tr +   '<td>'+rec.DatePaid.substring(0,10)+'</td>';
 	    tr = tr + '</tr>';
+	    duesStatementPDFaddLine([rec.FY,rec.DuesAmt,rec.DateDue.substring(0,10),setBoolText(rec.Paid),rec.DatePaid.substring(0,10)],pdfLineHeaderArray);
 	});
 
 	$("#DuesStatementAssessmentsTable tbody").html(tr);
 	
 } // End of function formatDuesStatementResults(hoaRec){
 
-
-function formatDuesStatementResultsPDF(hoaRec,logoImgData) {
-
-    // Portrait, millimeters, A4 format
-	//var doc = new jsPDF('p', 'mm', 'a4');
-	var pdf = new jsPDF('p', 'in', 'letter');
-	pdf.setProperties({
-	    title: 'Test JJK Doc',
-	    subject: 'This is the subject',
-	    author: 'John Kauflin',
-	    keywords: 'generated, javascript, web 2.0, ajax',
-	    creator: 'MEEE'
-	});
-	// X (horizontal), Y (vertical)
-	pdf.setFontSize(22);
-	pdf.text(2, 0.9, "Gander Road Homeowners Association");
-	pdf.setFontSize(18);
-	pdf.text(3, 1.3, "Member Dues Statement");
-
-	pdf.addImage(logoImgData, 'JPEG', 0.5, 0.5, 1.1, 1.1);
+//Function to add a line to the report PDF
+function duesStatementPDFaddLine(pdfLineArray,pdfLineHeaderArray) {
+	pdfLineCnt++;
+	var pdfHeader = false;
+	var X = 0.0;
 	
-	pdf.setLineWidth(0.02);
-	//pdf.rect(1.5, 3, 6, 2); 
-	
-	pdf.setFontSize(12);
+	if (pdfLineCnt == 1) {
+    	pdf = new jsPDF('p', 'in', 'letter');
+    	pdf.setProperties({
+    	    title: 'Test JJK Doc',
+    	    subject: 'This is the subject',
+    	    author: 'John Kauflin',
+    	    keywords: 'generated, javascript, web 2.0, ajax',
+    	    creator: 'MEEE'
+    	});
+    	pdfHeader = true;
+		pdfLineY = pdfLineYStart;
+	}
 
-	ownerRec = hoaRec.ownersList[0];
-	var tr = '';
-    var checkedStr = '';
-    var X = 1;
-    var Y = 2.5;
-    var lineIncrement = 0.25;
-    var colIncrement = 1.5;
+	if (pdfLineY > 7.8) {
+		pdf.addPage('letter','p');
+		pdfLineY = pdfLineYStart;
+    	pdfHeader = true;
+	}
 
-	pdf.text(X,Y,"Parcel Id: ");
-	pdf.text(X+colIncrement,Y,''+hoaRec.Parcel_ID);
-	Y += lineIncrement;
-	pdf.text(X,Y,"Lot No: ");
-	pdf.text(X+colIncrement,Y,''+hoaRec.LotNo);
-	Y += lineIncrement;
-	pdf.text(X,Y,"Location: ");
-	pdf.text(X+colIncrement,Y,''+hoaRec.Parcel_Location);
-	Y += lineIncrement;
-	pdf.text(X,Y,"City State Zip: ");
-	pdf.text(X+colIncrement,Y,''+hoaRec.Property_City+', '+hoaRec.Property_State+' '+hoaRec.Property_Zip);
-	Y += lineIncrement;
-	pdf.text(X,Y,"Owner Name: ");
-	pdf.text(X+colIncrement,Y,''+ownerRec.Owner_Name1+' '+ownerRec.Owner_Name2);
-	Y += lineIncrement;
-	pdf.text(X,Y,"Total Due: ");
-	pdf.text(X+colIncrement,Y,'$ '+hoaRec.TotalDue);
-	Y += lineIncrement;
-    
-    //$("#DuesStatementPropertyTable tbody").html(tr);
+	if (pdfHeader) {
+		pdfPageCnt++;
 
-	Y += lineIncrement;
-	Y += lineIncrement;
-	$.each(hoaRec.totalDuesCalcList, function(index, rec) {
-		pdf.text(X,Y,rec.calcDesc);
-		pdf.text(X+4,Y,'$');
-		pdf.text(X+4.2,Y,''+rec.calcValue);
-		Y += lineIncrement;
-	});
-    
-	Y += lineIncrement;
-	Y += lineIncrement;
-	var TaxYear = '';
-    tr = '';
-	$.each(hoaRec.assessmentsList, function(index, rec) {
-		if (index == 0) {
-			pdf.text(X,Y,'Year');
-			pdf.text(X+1,Y,'Dues Amt');
-			pdf.text(X+2,Y,'Dues Due');
-			pdf.text(X+3.5,Y,'Paid');
-			pdf.text(X+4.5,Y,'Date Paid');
-			Y += lineIncrement - 0.12;
-    	    TaxYear = rec.DateDue.substring(0,4);
-    	    
-    	    pdf.line(X,Y,6.5,Y);
-    	    //pdf.line(20, 25, 60, 25);
-			Y += lineIncrement;
+		// X (horizontal), Y (vertical)
+		pdf.setFontSize(16);
+		pdf.text(2, 0.6, "Gander Road Homeowners Association");
+		pdf.setFontSize(14);
+		pdf.text(3, 0.9, pdfTitle);
+		pdf.setFontSize(10);
+		pdf.text(3.8, 1.1, pdfTimestamp);
+
+		pdf.addImage(pdfLogoImgData, 'JPEG', 0.3, 0.3, 0.8, 0.8);
+    	pdf.setFontSize(10);
+
+    	pdfLineYStart = 2;
+	}
+
+	if (pdfLineHeaderArray != null) {
+		X = 0.0;
+		for (i = 0; i < pdfLineArray.length; i++) {
+			X += pdfLineColIncrArray[i];
+			pdf.text(X,pdfLineY,''+pdfLineHeaderArray[i]);
 		}
+		pdfLineY += pdfLineIncrement / 2.0;
 		
-		pdf.text(X,Y,''+rec.FY);
-		pdf.text(X+1,Y,''+rec.DuesAmt);
-		pdf.text(X+2,Y,''+rec.DateDue.substring(0,10));
-		pdf.text(X+3.5,Y,''+setBoolText(rec.Paid));
-		pdf.text(X+4.5,Y,''+rec.DatePaid.substring(0,10));
-		Y += lineIncrement;
-	});
-
-	//$("#DuesStatementAssessmentsTable tbody").html(tr);
-
-	// Output as Data URI
-	pdf.save('GRHADuesStatement-'+hoaRec.LotNo+'.pdf');
-
-} // End of function formatDuesStatementResultsPDF(hoaRec){
-
-
-
+		X = pdfLineColIncrArray[0];
+		pdf.setLineWidth(0.02);
+		pdf.line(X,pdfLineY,8.1,pdfLineY);
+		pdfLineY += pdfLineIncrement;
+	}
+	
+	X = 0.0;
+	for (i = 0; i < pdfLineArray.length; i++) {
+		X += pdfLineColIncrArray[i];
+		pdf.text(X,pdfLineY,''+pdfLineArray[i]);
+	}
+	pdfLineY += pdfLineIncrement;
+	
+} // End of function reportPDFaddLine(pdfLineArray) {
 
 
 //---------------------------------------------------------------------------------------------------------------
@@ -1529,6 +1558,7 @@ function reportPDFaddLine(pdfLineArray) {
 		pdf.addImage(pdfLogoImgData, 'JPEG', 0.3, 0.3, 0.8, 0.8);
     	pdf.setFontSize(10);
 
+    	pdfLineYStart = 1.4;
 		X = 0.0;
 		for (i = 0; i < pdfLineArray.length; i++) {
 			X += pdfLineColIncrArray[i];
@@ -1551,63 +1581,3 @@ function reportPDFaddLine(pdfLineArray) {
 
 } // End of function reportPDFaddLine(pdfLineArray) {
 
-//Function to add a line to the report PDF
-function duesStatementPDFaddLine(pdfLineArray) {
-	pdfLineCnt++;
-	var pdfHeader = false;
-	var X = 0.0;
-	
-	if (pdfLineCnt == 1) {
-    	pdf = new jsPDF('l', 'in', 'letter');
-    	pdf.setProperties({
-    	    title: 'Test JJK Doc',
-    	    subject: 'This is the subject',
-    	    author: 'John Kauflin',
-    	    keywords: 'generated, javascript, web 2.0, ajax',
-    	    creator: 'MEEE'
-    	});
-    	pdfHeader = true;
-		pdfLineY = pdfLineYStart;
-	}
-
-	if (pdfLineY > 7.8) {
-		pdf.addPage('letter','l');
-		pdfLineY = pdfLineYStart;
-    	pdfHeader = true;
-	}
-
-	if (pdfHeader) {
-		pdfPageCnt++;
-		pdf.setFontSize(9);
-		pdf.text(10.2, 0.3, 'Page '+pdfPageCnt);
-		pdf.setFontSize(15);
-		pdf.text(3.6, 0.45, "Gander Road Homeowners Association");
-		pdf.setFontSize(13);
-		pdf.text(2.5, 0.75, pdfTitle);
-		pdf.setFontSize(10);
-		pdf.text(3.8, 1.1, pdfTimestamp);
-		
-		pdf.addImage(pdfLogoImgData, 'JPEG', 0.3, 0.3, 0.8, 0.8);
-    	pdf.setFontSize(10);
-
-		X = 0.0;
-		for (i = 0; i < pdfLineArray.length; i++) {
-			X += pdfLineColIncrArray[i];
-			pdf.text(X,pdfLineY,''+pdfLineHeaderArray[i]);
-		}
-		pdfLineY += pdfLineIncrement / 2.0;
-		
-		X = 0.65;
-		pdf.setLineWidth(0.02);
-		pdf.line(X,pdfLineY,10.5,pdfLineY);
-		pdfLineY += pdfLineIncrement;
-	}
-
-	X = 0.0;
-	for (i = 0; i < pdfLineArray.length; i++) {
-		X += pdfLineColIncrArray[i];
-		pdf.text(X,pdfLineY,''+pdfLineArray[i]);
-	}
-	pdfLineY += pdfLineIncrement;
-
-} // End of function reportPDFaddLine(pdfLineArray) {
