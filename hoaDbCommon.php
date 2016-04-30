@@ -18,6 +18,7 @@
  * 2016-04-05 JJK	Added Lien fields to the Assessments record
  * 2016-04-10 JJK	Working on Dues Total calculation (with Lien info)
  * 2016-04-13 JJK	Added sales download filename and email functions
+ * 2016-04-29 JJK	Added paypal button script config string
  *============================================================================*/
 
 function getConn() {
@@ -53,6 +54,14 @@ function getConfigVal($configName) {
 		$configVal = $salesReportEmailList;
 	} if ($configName == "adminEmailList") {
 		$configVal = $adminEmailList;
+	} if ($configName == "paypalFixedAmtButtonForm") {
+		$configVal = $paypalFixedAmtButtonForm;
+	} if ($configName == "paypalFixedAmtButtonInput") {
+		$configVal = $paypalFixedAmtButtonInput;
+	} if ($configName == "paypalVariableAmtButtonForm") {
+		$configVal = $paypalVariableAmtButtonForm;
+	} if ($configName == "paypalVariableAmtButtonInput") {
+		$configVal = $paypalVariableAmtButtonInput;
 	}
 	
 	return $configVal;
@@ -88,6 +97,8 @@ class HoaRec
 	
 	public $adminLevel;
 	public $TotalDue;
+	public $paymentButton;
+	public $paymentInstructions;
 }
 
 class HoaOwnerRec
@@ -193,6 +204,7 @@ class TotalDuesCalcRec
 
 
 function getHoaSalesRec($conn,$parcelId,$saleDate) {
+	
 	$hoaSalesRec = new HoaSalesRec();
 
 	$conn = getConn();
@@ -230,20 +242,29 @@ function getHoaSalesRec($conn,$parcelId,$saleDate) {
 	return $hoaSalesRec;
 } // End of function getHoaSalesRec($conn,$parcelId,$saleDate) {
 
-
+//--------------------------------------------------------------------------------------------------------------
+// Primary function to get all the data for a particular value
+//--------------------------------------------------------------------------------------------------------------
 function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
-
+	// Include to get paypal button scripts
+	include 'hoaDbCred.php';
+	
 	$hoaRec = new HoaRec();
 
-	// TBD - calculate
+	// Total Due is calculated below
 	$hoaRec->TotalDue = 0.00;
+	// Payment button will be set if online payment is enabled and allowed for this parcel
+	$hoaRec->paymentButton = '';
+	$hoaRec->paymentInstructions = '';
 	
+	// Check if a database connection was passed or if it needs to be started
 	$connPassed = true;
 	if ($conn == NULL) {
 		$connPassed = false;
 		$conn = getConn();
 	}
-	
+
+	// Get values from database and load into structure that will be returned as JSON
 	$stmt = $conn->prepare("SELECT * FROM hoa_properties WHERE Parcel_ID = ? ; ");
 	$stmt->bind_param("s", $parcelId);
 	$stmt->execute();
@@ -327,7 +348,8 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 		}
 		$stmt->execute();
 		$result = $stmt->get_result();
-	
+
+		$onlyCurrYearDue = false;
 		$cnt = 0;
 		if ($result->num_rows > 0) {
 			while($row = $result->fetch_assoc()) {
@@ -347,6 +369,12 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				
 				$hoaAssessmentRec->DuesDue = 0;
 				if (!$hoaAssessmentRec->Paid) {
+					if ($cnt == 1) {
+						$onlyCurrYearDue = true;
+					} else {
+						$onlyCurrYearDue = false;
+					}
+						
 					if ($dateDue=date_create($hoaAssessmentRec->DateDue)) {
 						// Current System datetime
 						$currSysDate=date_create();
@@ -411,6 +439,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 					array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 
 					if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open') {
+						$onlyCurrYearDue = false;
 						// If still calculating interest dynamically calculate the compound interest						
 						if (!$hoaAssessmentRec->StopInterestCalc) {
 							$hoaAssessmentRec->AssessmentInterest = calcCompoundInterest($duesAmt,$hoaAssessmentRec->DateDue);
@@ -468,6 +497,22 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 		
 		$result->close();
 		$stmt->close();
+
+		//---------------------------------------------------------------------------------------------------
+		// Construct the online payment button and instructions according to what is owed
+		//---------------------------------------------------------------------------------------------------
+		// Only display payment button if something is owed
+		// For now, only set payment button if just the current year dues are owed (no other years or open liens)
+		if ($hoaRec->TotalDue > 0 && $onlyCurrYearDue) {
+			// Get the payment button form from the hoaDbCred.php file (site specific)
+			$hoaRec->paymentButton = $paypalFixedAmtButtonForm;
+			$hoaRec->paymentButton .= $paypalFixedAmtButtonInput;
+			$customValues = $parcelId . ',' . $ownerId . ',' . $hoaRec->TotalDue;
+			$hoaRec->paymentButton .= '<input type="hidden" name="custom" value="' . $customValues . '">';
+			$hoaRec->paymentButton .= '</form>';
+			$hoaRec->paymentInstructions = '($4.00 processing fee will be added for online payment)';
+		} // End of if ($hoaRec->TotalDue > 0) {
+		
 		
 		// Get sales records for this parcel		
 		if (empty($saleDate)) {

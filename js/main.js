@@ -28,6 +28,8 @@
  * 2016-04-14 JJK   Adding Dues Report (working on csv and pdf downloads)
  * 2016-04-20 JJK   Completed test Dues Statement PDF
  * 2016-04-22 JJK	Finishing up reports (added formatDate and csvFilter)
+ * 2016-04-30 JJK   Implemented initial payment button functionality if
+ *  				only current year dues are owed
  *============================================================================*/
 
 $.urlParam = function(name){
@@ -64,6 +66,20 @@ var regexCommaHexStr = new RegExp(commaHexStr,"g");
 function csvFilter(inVal) {
 	return inVal.toString().replace(regexCommaHexStr,'');
 }
+
+//var.replace(/[^0-9]+\\.?[0-9]*/g, '');
+/*
+parseFloat()
+//Non-Printable characters - Hex 01 to 1F, and 7F
+var nonPrintableCharsStr = "[\x01-\x2D \x2F \x3A-\x7F]";
+//"g" global so it does more than 1 substitution
+var regexNonPrintableChars = new RegExp(nonPrintableCharsStr,"g");
+function cleanStr(inStr) {
+	return inStr.replace(regexNonPrintableChars,'');
+}
+*/
+
+
 
 function formatDate(inDate) {
 	var tempDate = inDate;
@@ -252,23 +268,6 @@ $(document).ready(function(){
 	    var $this = $(this);
 		pdf.save(formatDate()+"-"+$this.attr("data-pdfName")+".pdf");
 	});	
-	/*
-    $(document).on("click","#DuesStatementPrintButton",function(){
-        waitCursor();
-        var $this = $(this);
-        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId"),function(hoaRec){
-
-			var logoImgData = '';
-	    	$.get("getLogoImgData.php",function(logoImgData){
-	            formatDuesStatementResultsPDF(hoaRec,logoImgData);
-	    	});
-        	
-    	    $('*').css('cursor', 'default');
-            $("#DuesStatementPage").modal('hide');
-    	});
-    });	
-    */
-    
     
     $(document).on("click","#NewOwnerButton",function(){
         waitCursor();
@@ -1074,6 +1073,7 @@ function formatAssessmentDetailEdit(hoaRec){
 	
 } // End of function formatAssessmentDetailEdit(hoaRec){
 
+
 function formatDuesStatementResults(hoaRec) {
     var tr = '';
     var checkedStr = '';
@@ -1082,7 +1082,6 @@ function formatDuesStatementResults(hoaRec) {
 	duesStatementDownloadLinks.empty();
 
 	ownerRec = hoaRec.ownersList[0];
-
 
 	var currSysDate = new Date();
 	pdfTitle = "Member Dues Statement";
@@ -1099,16 +1098,15 @@ function formatDuesStatementResults(hoaRec) {
 			'Phone'];
 	pdfLineColIncrArray = [0.4,1.3,0.8,2.3,2.3];
 	
-	
-	duesStatementPDFaddLine([hoaRec.Parcel_ID,hoaRec.LotNo,hoaRec.Parcel_Location,hoaRec.ownersList[0].Mailing_Name,
-	                  hoaRec.ownersList[0].Owner_Phone],pdfLineHeaderArray); 
+	duesStatementPDFaddLine([hoaRec.Parcel_ID,hoaRec.LotNo,hoaRec.Parcel_Location,ownerRec.Mailing_Name,
+	                         ownerRec.Owner_Phone],pdfLineHeaderArray); 
 
 	if (hoaRec.ownersList[0].AlternateMailing) {
-		duesStatementPDFaddLine(['','','',hoaRec.ownersList[0].Alt_Address_Line1,''],null); 
-		if (hoaRec.ownersList[0].Alt_Address_Line2 != '') {
-			duesStatementPDFaddLine(['','','',hoaRec.ownersList[0].Alt_Address_Line2,''],null); 
+		duesStatementPDFaddLine(['','','',ownerRec.Alt_Address_Line1,''],null); 
+		if (ownerRec.Alt_Address_Line2 != '') {
+			duesStatementPDFaddLine(['','','',ownerRec.Alt_Address_Line2,''],null); 
 		}
-		duesStatementPDFaddLine(['','','',hoaRec.ownersList[0].Alt_City+', '+hoaRec.ownersList[0].Alt_State+' '+hoaRec.ownersList[0].Alt_Zip,''],null); 
+		duesStatementPDFaddLine(['','','',ownerRec.Alt_City+', '+ownerRec.Alt_State+' '+ownerRec.Alt_Zip,''],null); 
 	}
 
 	
@@ -1121,11 +1119,10 @@ function formatDuesStatementResults(hoaRec) {
     tr += '<tr><th>Total Due: </th><td>$'+hoaRec.TotalDue+'</td></tr>';
     $("#DuesStatementPropertyTable tbody").html(tr);
 
-    /*
-    tr = '<button id="DuesStatementPrintButton" type="button" class="btn btn-danger" data-ParcelId="'+hoaRec.Parcel_ID+'">Download PDF</button>';
-    $("#DuesStatementPrint").html(tr);
-	*/
-    
+    // If enabled, payment button and instructions will have values, else they will be blank if online payment is not allowed
+	$("#PayDues").html(hoaRec.paymentButton);
+	$("#PayDuesInstructions").html(hoaRec.paymentInstructions);
+
     duesStatementDownloadLinks.append(
 			$('<a>').prop('id','DownloadDuesStatementPDF')
 	    			.attr('href','#')
@@ -1176,9 +1173,9 @@ function formatDuesStatementResults(hoaRec) {
     			          			'Date Due',
     			          			'Paid',
     			          			'Date Paid'];
-    			pdfLineColIncrArray = [0.4,1.3,0.8,2.3,2.3];
-
+    		pdfLineColIncrArray = [0.4,1.3,0.8,2.3,2.3];
 		}
+		
 	    tr = tr + '<tr>';
     	tr = tr +   '<td>'+rec.FY+'</a></td>';
 	    tr = tr +   '<td>'+rec.DuesAmt+'</td>';
