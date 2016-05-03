@@ -19,6 +19,8 @@
  * 2016-04-10 JJK	Working on Dues Total calculation (with Lien info)
  * 2016-04-13 JJK	Added sales download filename and email functions
  * 2016-04-29 JJK	Added paypal button script config string
+ * 2016-05-02 JJK   Amy's 11th birthday.  Added updAssessmentPaid to update
+ *                  from the payment notification
  *============================================================================*/
 
 function getConn() {
@@ -349,6 +351,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 		$stmt->execute();
 		$result = $stmt->get_result();
 
+		$fyPayment = '';
 		$onlyCurrYearDue = false;
 		$cnt = 0;
 		if ($result->num_rows > 0) {
@@ -371,6 +374,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				if (!$hoaAssessmentRec->Paid) {
 					if ($cnt == 1) {
 						$onlyCurrYearDue = true;
+						$fyPayment = $hoaAssessmentRec->FY;
 					} else {
 						$onlyCurrYearDue = false;
 					}
@@ -507,7 +511,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 			// Get the payment button form from the hoaDbCred.php file (site specific)
 			$hoaRec->paymentButton = $paypalFixedAmtButtonForm;
 			$hoaRec->paymentButton .= $paypalFixedAmtButtonInput;
-			$customValues = $parcelId . ',' . $ownerId . ',' . $hoaRec->TotalDue;
+			$customValues = $parcelId . ',' . $ownerId . ',' . $fyPayment . ',' .$hoaRec->TotalDue;
 			$hoaRec->paymentButton .= '<input type="hidden" name="custom" value="' . $customValues . '">';
 			$hoaRec->paymentButton .= '</form>';
 			$hoaRec->paymentInstructions = '($4.00 processing fee will be added for online payment)';
@@ -564,6 +568,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 	
 	return $hoaRec;
 } // End of function getHoaRec($conn,$parcelId,$ownerId,$fy) {
+
 
 function getHoaRec2($conn,$parcelId) {
 
@@ -690,5 +695,44 @@ function getHoaRec2($conn,$parcelId) {
 
 	return $hoaRec;
 } // End of function getHoaRec2($conn,$parcelId) {
+
+
+function updAssessmentPaid($conn,$parcelId,$fy,$assessmentsComments,$username) {
+
+	$paidBoolean = 1;
+	$datePaid = date("Y-m-d");
+	$paymentMethod = 'PayPal';
+	
+	// Check if a database connection was passed or if it needs to be started
+	$connPassed = true;
+	if ($conn == NULL) {
+		$connPassed = false;
+		$conn = getConn();
+	}
+
+	if (!$stmt = $conn->prepare("UPDATE hoa_assessments SET Paid=?,DatePaid=?,PaymentMethod=?," .
+			"Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND FY = ? ; ")) {
+			error_log("Prepare failed: " . $stmt->errno . ", Error = " . $stmt->error);
+			echo "Prepare failed: (" . $stmt->errno . ") " . $stmt->error;
+	}
+	if (!$stmt->bind_param("isssss", $paidBoolean,$datePaid,$paymentMethod,$assessmentsComments,$username,$parcelId,$fy)) {
+				error_log("Bind failed: " . $stmt->errno . ", Error = " . $stmt->error);
+				echo "Bind failed: (" . $stmt->errno . ") " . $stmt->error;
+	}
+
+	if (!$stmt->execute()) {
+		error_log("Add Assessment Execute failed: " . $stmt->errno . ", Error = " . $stmt->error);
+		echo "Add Assessment Execute failed: (" . $stmt->errno . ") " . $stmt->error;
+	}
+	
+	$stmt->close();
+
+	if (!$connPassed) {
+		$conn->close();
+	}
+
+	return $hoaRec;
+} // End of
+
 
 ?>

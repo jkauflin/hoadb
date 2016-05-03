@@ -160,7 +160,8 @@ if (strcmp ($res, "VERIFIED") == 0) {
 	if ($payment_status == "Completed") {
 		$parcelId = $customFieldArray[0];
 		$ownerId = $customFieldArray[1];
-		$totalDue = $customFieldArray[2];
+		$fy = $customFieldArray[2];
+		$totalDue = $customFieldArray[3];
 		
 		// apply payment
 		
@@ -174,14 +175,10 @@ if (strcmp ($res, "VERIFIED") == 0) {
 		$conn = getConn();
 
 		$hoaRec = getHoaRec($conn,$parcelId,$ownerId,'','SKIP-SALES');
+		// double check total due ???
 		
-		
-		/*
-		$parcelId = getParamVal("parcelId");
-		$ownerId = getParamVal("ownerId");
-		$fy = getParamVal("fy");
-		*/
-		
+		$username = 'ipnHandler';
+		updAssessmentPaid($conn,$parcelId,$fy,$txn_id,$username);
 		
 		// Close db connection
 		$conn->close();
