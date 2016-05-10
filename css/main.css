@@ -13,9 +13,10 @@ img#header-image {
 	margin-right: 5px;
 }
 
+/* 	margin-top: 10px; */
 .form-control {
-	margin-top: 10px;
-	margin-right: 8px;
+	margin-top: 6px;
+	margin-right: 6px;
 }
 
 .downloadBtn {

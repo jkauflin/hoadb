@@ -1413,6 +1413,7 @@ function formatReportList(reportName,reportTitle,reportList){
 					.append($('<td>').html(''))
 					.append($('<td>').html(hoaRec.ownersList[0].Alt_Address_Line1))
 					.append($('<td>').html(''))
+					.append($('<td>').html(''))
 					.append($('<td>').html(''));
 					tr3.appendTo(reportListDisplay);		
 
@@ -1426,6 +1427,7 @@ function formatReportList(reportName,reportTitle,reportList){
 						.append($('<td>').html(''))
 						.append($('<td>').html(hoaRec.ownersList[0].Alt_Address_Line2))
 						.append($('<td>').html(''))
+						.append($('<td>').html(''))
 						.append($('<td>').html(''));
 						tr4.appendTo(reportListDisplay);		
 
@@ -1438,6 +1440,7 @@ function formatReportList(reportName,reportTitle,reportList){
 					.append($('<td>').html(''))
 					.append($('<td>').html(''))
 					.append($('<td>').html(hoaRec.ownersList[0].Alt_City+', '+hoaRec.ownersList[0].Alt_State+' '+hoaRec.ownersList[0].Alt_Zip))
+					.append($('<td>').html(''))
 					.append($('<td>').html(''))
 					.append($('<td>').html(''));
 					tr5.appendTo(reportListDisplay);		
