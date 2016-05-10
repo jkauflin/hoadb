@@ -41,6 +41,12 @@ $.urlParam = function(name){
        return results[1] || 0;
     }
 }
+/*
+example.com?param1=name&param2=&id=6
+		$.urlParam('param1'); // name
+		$.urlParam('id');        // 6
+		$.urlParam('param2');   // null
+*/
 
 //var validEmailAddrRegExStr = "^((\"([ !#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\]^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])*\"|([!#$%&'*+\\-/0-9=?A-Z^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])+)(\\.(\"([ !#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\]^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])*\"|([!#$%&'*+\\-/0-9=?A-Z^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])+))*)@([a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?)*\\.(?![0-9]*\\.?$)[a-zA-Z0-9]{2,}\\.?)$";
 //var regex = new RegExp(validEmailAddrRegExStr,"g"); 
@@ -158,6 +164,13 @@ function setSelectOption(optVal,displayVal,selected,bg) {
 $(document).ready(function(){
 	//$("#DisplayWidth").text("width = "+$(window).width());
 
+	/*
+	if ($.urlParam('dest') == 'admin') {
+    	$('#navbar a[href="#AdminPage"]').tab('show');
+	}
+	*/
+	
+	
 	// Auto-close the collapse menu after clicking a non-dropdown menu item (in the bootstrap nav header)
 	$(document).on('click','.navbar-collapse.in',function(e) {
 	    if( $(e.target).is('a') && $(e.target).attr('class') != 'dropdown-toggle' ) {
