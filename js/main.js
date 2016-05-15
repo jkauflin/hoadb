@@ -270,7 +270,14 @@ $(document).ready(function(){
         waitCursor();
         var $this = $(this);
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
-        	//console.log("Format Dues Statement, parcel = "+$this.attr("data-ParcelId"));
+        	//console.log("Format Dues Statement, parcel = "+$this.attr("data-ParcelId")+", OwnerId = "+hoaRec.ownersList[0].OwnerID);
+
+        	/*
+            $.get("handlePaymentNotificationTEST.php","parcelId="+hoaRec.Parcel_ID+"&ownerId="+hoaRec.ownersList[0].OwnerID,function(results){
+            	console.log("After handlePaymentNotificationTEST, results = "+results);
+            });
+            */
+
             formatDuesStatementResults(hoaRec);
     	    $('*').css('cursor', 'default');
             $("#DuesStatementPage").modal();

@@ -19,8 +19,8 @@
  * 2016-04-10 JJK	Working on Dues Total calculation (with Lien info)
  * 2016-04-13 JJK	Added sales download filename and email functions
  * 2016-04-29 JJK	Added paypal button script config string
- * 2016-05-02 JJK   Amy's 11th birthday.  Added updAssessmentPaid to update
- *                  from the payment notification
+ * 2016-05-02 JJK   Amy's 11th birthday.  
+ * 2016-05-14 JJK   Added get Payment function
  *============================================================================*/
 
 function getConn() {
@@ -189,6 +189,19 @@ class HoaSalesRec
 	public $adminLevel;
 }
 
+class HoaPaymentRec
+{
+	public $Parcel_ID;
+	public $OwnerID;
+	public $FY;
+	public $txn_id;
+	public $payment_date;
+	public $payer_email;
+	public $payment_amt;
+	public $payment_fee;
+	public $LastChangedTs;
+}
+
 
 class AdminRec
 {
@@ -243,6 +256,40 @@ function getHoaSalesRec($conn,$parcelId,$saleDate) {
 	
 	return $hoaSalesRec;
 } // End of function getHoaSalesRec($conn,$parcelId,$saleDate) {
+
+function getHoaPaymentRec($conn,$parcelId,$transId) {
+
+	$hoaPaymentRec = null;
+	
+	$stmt = $conn->prepare("SELECT * FROM hoa_payments WHERE Parcel_ID = ? AND txn_id = ?; ");
+	$stmt->bind_param("ss", $parcelId,$transId);
+	$stmt->execute();
+	$result = $stmt->get_result();
+
+	$cnt = 0;
+	if ($result->num_rows > 0) {
+		while($row = $result->fetch_assoc()) {
+			$cnt++;
+			if ($cnt == 1) {
+				$hoaPaymentRec = new HoaPaymentRec();
+			}
+			$hoaPaymentRec->Parcel_ID = $row["Parcel_ID"];
+			$hoaPaymentRec->OwnerID = $row["OwnerID"];
+			$hoaPaymentRec->FY = $row["FY"];
+			$hoaPaymentRec->txn_id = $row["txn_id"];
+			$hoaPaymentRec->payment_date = $row["payment_date"];
+			$hoaPaymentRec->payer_email = $row["payer_email"];
+			$hoaPaymentRec->payment_amt = $row["payment_amt"];
+			$hoaPaymentRec->payment_fee = $row["payment_fee"];
+			$hoaPaymentRec->LastChangedTs = $row["LastChangedTs"];
+		}
+		$result->close();
+	}
+	$stmt->close();
+
+	return $hoaPaymentRec;
+} // End of function getHoaPaymentRec($conn,$parcelId,$transId) {
+
 
 //--------------------------------------------------------------------------------------------------------------
 // Primary function to get all the data for a particular value
@@ -695,44 +742,5 @@ function getHoaRec2($conn,$parcelId) {
 
 	return $hoaRec;
 } // End of function getHoaRec2($conn,$parcelId) {
-
-
-function updAssessmentPaid($conn,$parcelId,$fy,$assessmentsComments,$username) {
-
-	$paidBoolean = 1;
-	$datePaid = date("Y-m-d");
-	$paymentMethod = 'PayPal';
-	
-	// Check if a database connection was passed or if it needs to be started
-	$connPassed = true;
-	if ($conn == NULL) {
-		$connPassed = false;
-		$conn = getConn();
-	}
-
-	if (!$stmt = $conn->prepare("UPDATE hoa_assessments SET Paid=?,DatePaid=?,PaymentMethod=?," .
-			"Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND FY = ? ; ")) {
-			error_log("Prepare failed: " . $stmt->errno . ", Error = " . $stmt->error);
-			echo "Prepare failed: (" . $stmt->errno . ") " . $stmt->error;
-	}
-	if (!$stmt->bind_param("isssss", $paidBoolean,$datePaid,$paymentMethod,$assessmentsComments,$username,$parcelId,$fy)) {
-				error_log("Bind failed: " . $stmt->errno . ", Error = " . $stmt->error);
-				echo "Bind failed: (" . $stmt->errno . ") " . $stmt->error;
-	}
-
-	if (!$stmt->execute()) {
-		error_log("Add Assessment Execute failed: " . $stmt->errno . ", Error = " . $stmt->error);
-		echo "Add Assessment Execute failed: (" . $stmt->errno . ") " . $stmt->error;
-	}
-	
-	$stmt->close();
-
-	if (!$connPassed) {
-		$conn->close();
-	}
-
-	return $hoaRec;
-} // End of
-
 
 ?>

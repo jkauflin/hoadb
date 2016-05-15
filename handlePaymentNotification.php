@@ -8,13 +8,13 @@
  *----------------------------------------------------------------------------
  * Modification History
  * 2016-04-26 JJK 	Initial version starting with paypal_ipn.php
- * 2016-04-30 JJK	Modified to insert payment transaction record
+ * 2016-05-02 JJK   Modified to update assessment to paid
+ * 2016-05-11 JJK	Modified to insert payment transaction record
+ * 2016-05-14 JJK   Moved updates to updHoaPayment
  *============================================================================*/
 
-include 'commonUtil.php';
-// Include table record classes and db connection parameters
-include 'hoaDbCommon.php';
-
+// Include functions to update payments and assessments tables
+include 'updHoaPayment.php';
 
 // CONFIG: Enable debug mode. This means we'll log requests into 'ipn.log' in the same directory.
 // Especially useful if you encounter network errors or other intermittent problems with IPN (validation).
@@ -24,7 +24,7 @@ define("DEBUG", 1);
 // Set to 0 once you're ready to go live
 define("USE_SANDBOX", 1);
 
-define("LOG_FILE", "./ipn.log");
+define("LOG_FILE", "./paypal-ipn.log");
 
 
 // Read POST data
@@ -131,8 +131,10 @@ if (strcmp ($res, "VERIFIED") == 0) {
 	$item_number = $_POST['item_number1'];
 	error_log(date('[Y-m-d H:i] '). '$item_number = ' . $item_number . PHP_EOL, 3, LOG_FILE);
 	//$payment_status = $_POST['payment_status'];
-	$payment_amount = $_POST['mc_gross'];
-	error_log(date('[Y-m-d H:i] '). '$payment_amount = ' . $payment_amount . PHP_EOL, 3, LOG_FILE);
+	$payment_amt = $_POST['mc_gross'];
+	error_log(date('[Y-m-d H:i] '). '$payment_amt = ' . $payment_amt . PHP_EOL, 3, LOG_FILE);
+	$payment_fee = $_POST['mc_fee'];
+	error_log(date('[Y-m-d H:i] '). '$payment_fee = ' . $payment_fee . PHP_EOL, 3, LOG_FILE);
 	$payment_currency = $_POST['mc_currency'];  // make sure it is USD?
 	$txn_id = $_POST['txn_id'];
 	$receiver_email = $_POST['receiver_email']; // double check to make sure this is GRHA email address
@@ -145,8 +147,8 @@ if (strcmp ($res, "VERIFIED") == 0) {
 	
 	error_log(date('[Y-m-d H:i] '). '$custom = ' . $custom . PHP_EOL, 3, LOG_FILE);
 	$customFieldArray = explode(',',$custom);
-	error_log(date('[Y-m-d H:i] '). '$custom 0 = ' . $customFieldArray[0] . PHP_EOL, 3, LOG_FILE);
-	error_log(date('[Y-m-d H:i] '). '$custom 1 = ' . $customFieldArray[1] . PHP_EOL, 3, LOG_FILE);
+	//error_log(date('[Y-m-d H:i] '). '$custom 0 = ' . $customFieldArray[0] . PHP_EOL, 3, LOG_FILE);
+	//error_log(date('[Y-m-d H:i] '). '$custom 1 = ' . $customFieldArray[1] . PHP_EOL, 3, LOG_FILE);
 
 	$test_ipn = $_POST['test_ipn'];
 	if (!USE_SANDBOX && $test_ipn) {
@@ -157,49 +159,24 @@ if (strcmp ($res, "VERIFIED") == 0) {
 	}
 	
 	$payment_status = $_POST['payment_status'];
+	
+	error_log(date('[Y-m-d H:i] ') . '$payment_status = ' . $payment_status . PHP_EOL, 3, LOG_FILE);
+	
 	if ($payment_status == "Completed") {
+		//			$customValues = $parcelId . ',' . $ownerId . ',' . $fyPayment . ',' .$hoaRec->TotalDue;
 		$parcelId = $customFieldArray[0];
 		$ownerId = $customFieldArray[1];
 		$fy = $customFieldArray[2];
 		$totalDue = $customFieldArray[3];
 		
-		// apply payment
-		
-		// get message field values
-		// see if you already have a completed payment for this transaction id (idempotent)
-		// insert transaction in trans table
 		// get Total Due
 		// compare payment to total due
 		// if paid off, update paid flags on assessment(s)
-		
-		$conn = getConn();
 
-		$hoaRec = getHoaRec($conn,$parcelId,$ownerId,'','SKIP-SALES');
-		// double check total due ???
-		
-		$username = 'ipnHandler';
-		updAssessmentPaid($conn,$parcelId,$fy,$txn_id,$username);
-		
-		// Close db connection
-		$conn->close();
-		
-		// send email to payee and treasurer
-			// thank you for your payment of X, you are all paid up, go here to print a dues statement
-			// thank you for your payment of X, you still owe Y, go here to check details and get a dues statement
-
-		$outputStr = $custom;
-		$subject = 'HOA Payment Notification ';
-		$messageStr = '<h2>HOA Payment Notification</h2>' . $outputStr;
-		//sendHtmlEMail(getConfigVal("salesReportEmailList"),$subject,$messageStr,getConfigVal("fromEmailAddress"));
-		//sendHtmlEMail("test email",$subject,$messageStr,getConfigVal("fromEmailAddress"));
-		
+		updAssessmentPaid($parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_email,$payment_amt,$payment_fee);
 		
 	} // End of if ($payment_status == "Completed") {
 
-	
-	// JJK - This is where to implement database update or other activities
-	// Update database	
-	
 	if(DEBUG == true) {
 		error_log(date('[Y-m-d H:i] '). "Verified IPN: $req ". PHP_EOL, 3, LOG_FILE);
 	}
