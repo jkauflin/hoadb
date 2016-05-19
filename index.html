@@ -46,6 +46,7 @@
 				<li><a href="#DetailPage" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> Detail</a></li>
 				<li><a href="#ReportsPage" data-toggle="tab"><span class="glyphicon glyphicon-signal"></span> Reports</a></li>
 				<li><a href="#AdminPage" data-toggle="tab"><span class="glyphicon glyphicon-user"></span> Admin</a></li>
+				<li><a href="#ConfigPage" data-toggle="tab"><span class="glyphicon glyphicon-pencil"></span> Config</a></li>
 	    	</ul>
         </div> <!-- navbar-collapse (controlled by the collapse toggle button) -->
 
@@ -233,6 +234,19 @@
 			</div><!-- row -->	                
 
 	     </div><!-- end of Admin -->
+
+	    <div class="tab-pane" id="ConfigPage">
+			<h4>Config</h4>
+            <div class="ajaxError"></div>
+
+			<a data-ConfigName="NEW" href="#" class="btn btn-primary NewConfig" role="button">New Config Value</a>
+
+		    <table id="ConfigListDisplay" class="table table-striped table-condensed" style="margin-top:10px;">
+		    	<tbody>
+		    	</tbody>
+		    </table>
+
+	 	</div><!-- end of Config -->
 	        
 	</div><!-- end of main tab content -->
 </div><!-- end of main container -->

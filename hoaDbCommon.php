@@ -50,20 +50,53 @@ function getConfigVal($configName) {
 	
 	if ($configName == "countySalesDataUrl") {
 		$configVal = $countySalesDataUrl;	
-	} if ($configName == "fromEmailAddress") {
+	} elseif ($configName == "fromEmailAddress") {
 		$configVal = $fromEmailAddress;
-	} if ($configName == "salesReportEmailList") {
+	} elseif ($configName == "salesReportEmailList") {
 		$configVal = $salesReportEmailList;
-	} if ($configName == "adminEmailList") {
+	} elseif ($configName == "adminEmailList") {
 		$configVal = $adminEmailList;
-	} if ($configName == "paypalFixedAmtButtonForm") {
+		
+	} elseif ($configName == "paypalFixedAmtButtonForm") {
 		$configVal = $paypalFixedAmtButtonForm;
-	} if ($configName == "paypalFixedAmtButtonInput") {
+	} elseif ($configName == "paypalFixedAmtButtonInput") {
 		$configVal = $paypalFixedAmtButtonInput;
-	} if ($configName == "paypalVariableAmtButtonForm") {
+	} elseif ($configName == "paypalVariableAmtButtonForm") {
 		$configVal = $paypalVariableAmtButtonForm;
-	} if ($configName == "paypalVariableAmtButtonInput") {
+	} elseif ($configName == "paypalVariableAmtButtonInput") {
 		$configVal = $paypalVariableAmtButtonInput;
+	}
+	
+	return $configVal;
+}
+
+// Lookup config values by name from the config database table
+function getConfigValDB($conn,$configName) {
+	$configVal = "";
+
+	// Check if a database connection was passed or if it needs to be started
+	$connPassed = true;
+	if ($conn == NULL) {
+		$connPassed = false;
+		$conn = getConn();
+	}
+	
+	$sql = "SELECT ConfigValue FROM hoa_config WHERE ConfigName = ? ";
+	$stmt = $conn->prepare($sql);
+	$stmt->bind_param("s", $configName);
+	$stmt->execute();
+	$result = $stmt->get_result();
+	
+	if ($result->num_rows > 0) {
+		while($row = $result->fetch_assoc()) {
+			$configVal = $row["ConfigValue"];
+		}
+		$result->close();
+		$stmt->close();
+	}
+
+	if (!$connPassed) {
+		$conn->close();
 	}
 	
 	return $configVal;
@@ -101,6 +134,8 @@ class HoaRec
 	public $TotalDue;
 	public $paymentButton;
 	public $paymentInstructions;
+	public $countyTreasurerUrl;
+	public $countyAuditorUrl;
 }
 
 class HoaOwnerRec
@@ -215,6 +250,12 @@ class TotalDuesCalcRec
 {
 	public $calcDesc;
 	public $calcValue;
+}
+
+class HoaConfigRec {
+	public $ConfigName;
+	public $ConfigDesc;
+	public $ConfigValue;
 }
 
 
@@ -609,6 +650,11 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 		$stmt->close();
 	} // End of Properties
 
+	// Get configuration values
+	$hoaRec->countyTreasurerUrl = getConfigValDB($conn,"countyTreasurerUrl");
+	$hoaRec->countyAuditorUrl = getConfigValDB($conn,"countyAuditorUrl");
+	
+	// Close the database connection if started in this function
 	if (!$connPassed) {
 		$conn->close();
 	}

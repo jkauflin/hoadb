@@ -30,6 +30,9 @@
  * 2016-04-22 JJK	Finishing up reports (added formatDate and csvFilter)
  * 2016-04-30 JJK   Implemented initial payment button functionality if
  *  				only current year dues are owed
+ * 2016-05-17 JJK   Implemented Config update page
+ * 2016-05-18 JJK   Added setTextArea
+ * 2016-05-19 JJK   Modified to get the country web site URL's from config
  *============================================================================*/
 
 $.urlParam = function(name){
@@ -144,11 +147,12 @@ function setCheckboxEdit(checkVal,idName){
 	return '<input id="'+idName+'" type="checkbox" '+checkedStr+'>';
 }
 function setInputText(idName,textVal,textSize){
-//	return '<div class="form-group"><input id="'+idName+'" type="text" class="form-control resetval" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'"></div>';
 	return '<input id="'+idName+'" type="text" class="form-control input-sm resetval" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'">';
 }
+function setTextArea(idName,textVal,rows){
+	return '<textarea id="'+idName+'" class="form-control input-sm" rows="'+rows+'">'+textVal+'</textarea>';
+}
 function setInputDate(idName,textVal,textSize){
-	//return '<input id="'+idName+'" type="text" class="Date form-control" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" placeholder="YYYY-MM-DD">';
 	return '<input id="'+idName+'" type="text" class="form-control input-sm Date" value="'+textVal+'" size="'+textSize+'" maxlength="'+textSize+'" placeholder="YYYY-MM-DD">';
 }
 function setSelectOption(optVal,displayVal,selected,bg) {
@@ -687,7 +691,105 @@ $(document).ready(function(){
 	});	
 
     
+    $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
+    	var activatedTab = e.target;
+		//console.log("tab = "+activatedTab);
+		//http://127.0.0.1:8080/hoadb/#ConfigPage
+       	var configPage = activatedTab.toString().indexOf("ConfigPage");
+       	if (configPage) {
+            waitCursor();
+        	// Get the list
+            $.getJSON("getHoaConfigList.php",function(hoaConfigRecList){
+        	    $('*').css('cursor', 'default');
+        		displayConfigList(hoaConfigRecList);
+        	});
+            event.stopPropagation();
+       	}
+    })
+
+    $(document).on("click",".NewConfig",function(){
+        waitCursor();
+        var $this = $(this);
+        $.getJSON("getHoaConfigList.php","ConfigName="+$this.attr("data-ConfigName"),function(hoaConfigRecList){
+            formatConfigEdit(hoaConfigRecList[0]);
+    	    $('*').css('cursor', 'default');
+            $("#EditPage").modal();
+        });
+    });	
+
+    $(document).on("click",".SaveConfigEdit",function(){
+        waitCursor();
+        var $this = $(this);
+        
+        $.get("updHoaConfig.php","ConfigName="+cleanStr($("#ConfigName").val())+
+        						 "&ConfigDesc="+cleanStr($("#ConfigDesc").val())+
+        						 "&ConfigValue="+cleanStr($("#ConfigValue").val())+
+			 					 "&ConfigAction="+$this.attr("data-ConfigAction"),function(results){
+
+            $.getJSON("getHoaConfigList.php",function(hoaConfigRecList){
+        	    $('*').css('cursor', 'default');
+        		displayConfigList(hoaConfigRecList);
+                $("#EditPage").modal("hide");
+   	         	$('#navbar a[href="#ConfigPage"]').tab('show');
+        	});
+
+        }); // End of 
+        event.stopPropagation();
+    });	// End of $(document).on("click","#SaveConfigEdit",function(){
+    
+    
 }); // $(document).ready(function(){
+
+
+function displayConfigList(hoaConfigRecList) {
+	//var tr = '<tr><td>No records found - try different search parameters</td></tr>';
+	var tr = '';
+	$.each(hoaConfigRecList, function(index, hoaConfigRec) {
+		if (index == 0) {
+    		tr = '';
+    	    tr +=    '<tr>';
+        	tr +=      '<th>Name</th>';
+        	tr +=      '<th>Description</th>';
+        	tr +=      '<th>Value</th>';
+    	    tr +=    '</tr>';
+		}
+	    tr +=  '<tr>';
+	    tr +=    '<td><a data-ConfigName="'+hoaConfigRec.ConfigName+'" class="NewConfig" href="#">'+hoaConfigRec.ConfigName+'</a></td>';
+	    tr +=    '<td>'+hoaConfigRec.ConfigDesc+'</td>';
+	    tr +=    '<td>'+hoaConfigRec.ConfigValue.substring(0,80)+'</td>';
+	    tr +=  '</tr>';
+	});
+
+    $("#ConfigListDisplay tbody").html(tr);
+}
+
+function formatConfigEdit(hoaConfigRec){
+    var tr = '';
+    var tr2 = '';
+    var checkedStr = '';
+    var buttonStr = '';
+
+    $("#EditPageHeader").text("Edit Configuration");
+
+    console.log("hoaConfigRec.ConfigName = "+hoaConfigRec.ConfigName);
+    
+	tr = '';
+	tr += '<div class="form-group">';
+    tr += '<tr><th>Name:</th><td>'+ setInputText("ConfigName",hoaConfigRec.ConfigName,"80")+'</td></tr>';
+    tr += '<tr><th>Description:</th><td>'+ setInputText("ConfigDesc",hoaConfigRec.ConfigDesc,"100")+'</td></tr>';
+    tr += '<tr><th>Value:</th><td>'+ setTextArea("ConfigValue",hoaConfigRec.ConfigValue,"15")+'</td></tr>';
+	tr += '</div>';
+	
+	$("#EditTable tbody").html(tr);
+	$("#EditTable2 tbody").html(tr2);
+
+	tr = '<form class="form-inline" role="form">';
+	tr += '<a data-ConfigAction="Edit" href="#" class="btn btn-primary SaveConfigEdit" role="button">Save</a>';
+	tr += '<a data-ConfigAction="Delete" href="#" class="btn btn-primary SaveConfigEdit" role="button">Delete</a>';
+	tr += '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button></form>';
+	$("#EditPageButton").html(tr);
+
+} // End of function formatConfigEdit(hoaConfigRec){
 
 
 
@@ -849,10 +951,11 @@ function formatPropertyDetailResults(hoaRec){
 	});
     $("#PropertyAssessments tbody").html(tr);
     
-    var mcTreasURI = 'http://mctreas.org/master.cfm?parid='+hoaRec.Parcel_ID+'&taxyr='+TaxYear+'&own1='+ownName1;
+    // Set the buttons from configuration values and current parcel id
+    var mcTreasURI = hoaRec.countyTreasurerUrl + '?parid='+hoaRec.Parcel_ID+'&taxyr='+TaxYear+'&own1='+ownName1;
     $("#MCTreasLink").html('<a href="'+encodeURI(mcTreasURI)+'" class="btn btn-primary" role="button" target="_blank">County<br>Treasurer</a>');    
 
-    var mcAuditorURI = 'http://www.mcrealestate.org/search/CommonSearch.aspx?mode=PARID';
+    var mcAuditorURI = hoaRec.countyAuditorUrl + '?mode=PARID';
     $("#MCAuditorLink").html('<a href="'+encodeURI(mcAuditorURI)+'" class="btn btn-primary" role="button" target="_blank">County<br>Property</a>');    
 
     $("#DuesStatement").html('<a id="DuesStatementButton" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+currOwnerID+'" href="#" class="btn btn-success" role="button">Dues Statement</a>');
