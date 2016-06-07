@@ -33,6 +33,7 @@
  * 2016-05-17 JJK   Implemented Config update page
  * 2016-05-18 JJK   Added setTextArea
  * 2016-05-19 JJK   Modified to get the country web site URL's from config
+ * 2016-06-05 JJK   Split Edit modal into 1 and 2Col versions
  *============================================================================*/
 
 $.urlParam = function(name){
@@ -87,7 +88,6 @@ function cleanStr(inStr) {
 	return inStr.replace(regexNonPrintableChars,'');
 }
 */
-
 
 
 function formatDate(inDate) {
@@ -166,15 +166,6 @@ function setSelectOption(optVal,displayVal,selected,bg) {
 }
 
 $(document).ready(function(){
-	//$("#DisplayWidth").text("width = "+$(window).width());
-
-	/*
-	if ($.urlParam('dest') == 'admin') {
-    	$('#navbar a[href="#AdminPage"]').tab('show');
-	}
-	*/
-	
-	
 	// Auto-close the collapse menu after clicking a non-dropdown menu item (in the bootstrap nav header)
 	$(document).on('click','.navbar-collapse.in',function(e) {
 	    if( $(e.target).is('a') && $(e.target).attr('class') != 'dropdown-toggle' ) {
@@ -266,7 +257,7 @@ $(document).ready(function(){
     		createNew = false;
             formatOwnerDetailEdit(hoaRec,createNew);
     	    $('*').css('cursor', 'default');
-            $("#EditPage").modal();
+            $("#EditPage2Col").modal();
         });
     });	
 
@@ -300,7 +291,7 @@ $(document).ready(function(){
     		createNew = true;
             formatOwnerDetailEdit(hoaRec,createNew);
     	    $('*').css('cursor', 'default');
-            $("#EditPage").modal();
+            $("#EditPage2Col").modal();
         });
     });	
 	
@@ -310,7 +301,7 @@ $(document).ready(function(){
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&fy="+$this.attr("data-FY"),function(hoaRec){
             formatAssessmentDetailEdit(hoaRec);
     	    $('*').css('cursor', 'default');
-            $("#EditPage").modal();
+            $("#EditPage2Col").modal();
         });
     });	
     
@@ -379,7 +370,7 @@ $(document).ready(function(){
             $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
                 formatPropertyDetailResults(hoaRec);
    	    	    $('*').css('cursor', 'default');
-                $("#EditPage").modal("hide");
+                $("#EditPage2Col").modal("hide");
    	         	$('#navbar a[href="#DetailPage"]').tab('show');
             });
         }); // End of $.get("updHoaDbData.php","parcelId="+$parcelId+
@@ -422,7 +413,7 @@ $(document).ready(function(){
             $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
                 formatPropertyDetailResults(hoaRec);
    	    	    $('*').css('cursor', 'default');
-                $("#EditPage").modal("hide");
+                $("#EditPage2Col").modal("hide");
    	         	$('#navbar a[href="#DetailPage"]').tab('show');
             });
         }); // End of $.get("updHoaDbData.php","parcelId="+$parcelId+
@@ -473,7 +464,7 @@ $(document).ready(function(){
 	    $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&saleDate="+$this.attr("data-SaleDate"),function(hoaRec){
 	    	formatOwnerDetailEdit(hoaRec,true);
 	    	$('*').css('cursor', 'default');
-	    	$("#EditPage").modal();
+	    	$("#EditPage2Col").modal();
 	    });
 	});
 
@@ -506,40 +497,7 @@ $(document).ready(function(){
 	});
 	
 
-	// Meeting minutes experiment
-	/*
-	$('#summernote').summernote();
-
-	$.get("getFile.php","",function(response){
-		$('#summernote').code(response);
-	});
-	*/
-	
-	//$('.summernote').summernote({
-	/*
-	$('#summernote').summernote({
-		  height: 300,                 // set editor height
-
-		  minHeight: null,             // set minimum height of editor
-		  maxHeight: null,             // set maximum height of editor
-
-		  focus: true,                 // set focus to editable area after initializing summernote
-	});
-	*/
-	
-	/*
-	Get the HTML contents of the first summernote in the set of matched elements.
-
-	var sHTML = $('.summernote').code();
-	Get the HTML content of the second summernote with jQuery eq.
-
-	var sHTML = $('.summernote').eq(1).code();
-	A string of HTML to set as the content of each matched element.
-
-	$('.summernote').code(sHTML);
-	*/
-
-    $(document).on("click",".AdminButton",function(){
+	$(document).on("click",".AdminButton",function(){
         waitCursor();
 	    var $this = $(this);
 
@@ -771,7 +729,7 @@ function formatConfigEdit(hoaConfigRec){
 
     $("#EditPageHeader").text("Edit Configuration");
 
-    console.log("hoaConfigRec.ConfigName = "+hoaConfigRec.ConfigName);
+    //console.log("hoaConfigRec.ConfigName = "+hoaConfigRec.ConfigName);
     
 	tr = '';
 	tr += '<div class="form-group">';
@@ -781,7 +739,7 @@ function formatConfigEdit(hoaConfigRec){
 	tr += '</div>';
 	
 	$("#EditTable tbody").html(tr);
-	$("#EditTable2 tbody").html(tr2);
+	//$("#EditTable2 tbody").html(tr2);
 
 	tr = '<form class="form-inline" role="form">';
 	tr += '<a data-ConfigAction="Edit" href="#" class="btn btn-primary SaveConfigEdit" role="button">Save</a>';
@@ -996,8 +954,7 @@ function formatPropertyDetailEdit(hoaRec){
     tr += '<tr><th>Comments: </th><td>'+setInputText("PropertyComments",hoaRec.Comments,"80")+'</td></tr>';
 	tr += '</div>'
 	$("#EditTable tbody").html(tr);
-
-	$("#EditTable2 tbody").html('');
+	//$("#EditTable2 tbody").html('');
 
 	tr = '<form class="form-inline" role="form">'+
 		 '<a id="SavePropertyEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" href="#" class="btn btn-primary" role="button">Save</a>'+
@@ -1016,9 +973,9 @@ function formatOwnerDetailEdit(hoaRec,createNew){
 
     // action or type of update
 	if (createNew) {
-	    $("#EditPageHeader").text("New Owner");
+	    $("#EditPage2ColHeader").text("New Owner");
 	} else {
-	    $("#EditPageHeader").text("Edit Owner");
+	    $("#EditPage2ColHeader").text("Edit Owner");
 	}
 
 	rec = hoaRec.ownersList[0];
@@ -1054,7 +1011,7 @@ function formatOwnerDetailEdit(hoaRec,createNew){
     tr += '<tr><th>Changed by:</th><td>'+rec.LastChangedBy+'</td></tr>';
 	tr += '</div>';
     
-	$("#EditTable tbody").html(tr);
+	$("#EditTable2Col tbody").html(tr);
 	
     if (salesRec != null) {
     	tr2 += '<div class="form-group">';
@@ -1069,7 +1026,7 @@ function formatOwnerDetailEdit(hoaRec,createNew){
     	tr2 += '</div>';
     }
 	
-	$("#EditTable2 tbody").html(tr2);
+	$("#EditTable2Col2 tbody").html(tr2);
 
 	tr = '<form class="form-inline" role="form">';
 	if (createNew) {
@@ -1082,7 +1039,7 @@ function formatOwnerDetailEdit(hoaRec,createNew){
 //	  	  '</td></tr>';
 	}
 	tr += '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button></form>';
-	$("#EditPageButton").html(tr);
+	$("#EditPage2ColButton").html(tr);
 
     $(".Date").datetimepicker({
         timepicker:false,
@@ -1099,7 +1056,7 @@ function formatAssessmentDetailEdit(hoaRec){
     var fy = '';
 
     // action or type of update
-    $("#EditPageHeader").text("Edit Assessment");
+    $("#EditPage2ColHeader").text("Edit Assessment");
 
     //console.log("hoaRec.ownersList.length = "+hoaRec.ownersList.length);
     
@@ -1129,7 +1086,7 @@ function formatAssessmentDetailEdit(hoaRec){
     tr += '<tr><th>Last Changed: </th><td>'+rec.LastChangedTs+'</td></tr>';
     tr += '<tr><th>Changed by: </th><td>'+rec.LastChangedBy+'</td></tr>';
 	tr += '</div>';
-	$("#EditTable tbody").html(tr);
+	$("#EditTable2Col tbody").html(tr);
 
 	tr = '';
 	tr += '<div class="form-group">';
@@ -1157,12 +1114,12 @@ function formatAssessmentDetailEdit(hoaRec){
     tr += '<tr><th>AssessmentInterest: </th><td>'+setInputText("AssessmentInterest",rec.AssessmentInterest,"10")+'</td></tr>';
     tr += '<tr><th>LienComment: </th><td>'+setInputText("LienComment",rec.LienComment,"10")+'</td></tr>';
 	tr += '</div>';
-	$("#EditTable2 tbody").html(tr);
+	$("#EditTable2Col2 tbody").html(tr);
 
 	/*
-	var editTable2 = $("#EditTable2 tbody");
-	editTable2.empty();
-	editTable2.append($('<div>').prop('class',"form-group")
+	var editTable2Col2 = $("#EditTable2 tbody");
+	editTable2Col2.empty();
+	editTable2Col2.append($('<div>').prop('class',"form-group")
 			.append($('<tr>')
 					.append($('<th>').html('Lien: ')).append($('<td>').html(setCheckboxEdit(rec.Lien,'Lien')))
 					.append($('<th>').html('Lien Ref No: ')).append($('<td>').html(setInputText("LienRefNo",rec.LienRefNo,"10")))
@@ -1187,7 +1144,7 @@ function formatAssessmentDetailEdit(hoaRec){
 	  '<a id="SaveAssessmentEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-FY="'+fy+'" href="#" class="btn btn-primary" role="button">Save</a>' +
 	          		'<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>'+
 	          		'</form>';
-	$("#EditPageButton").html(tr);
+	$("#EditPage2ColButton").html(tr);
 
     $(".Date").datetimepicker({
         timepicker:false,
@@ -1219,7 +1176,8 @@ function formatDuesStatementResults(hoaRec) {
 			'Location',
 			'Owner and Alt Address',
 			'Phone'];
-	pdfLineColIncrArray = [0.4,1.3,0.8,2.3,2.3];
+	//pdfLineColIncrArray = [0.4,1.3,0.8,2.3,2.3];
+	pdfLineColIncrArray = [0.6,1.4,0.8,2.2,1.9];
 	
 	duesStatementPDFaddLine([hoaRec.Parcel_ID,hoaRec.LotNo,hoaRec.Parcel_Location,ownerRec.Mailing_Name,
 	                         ownerRec.Owner_Phone],pdfLineHeaderArray); 
@@ -1253,7 +1211,7 @@ function formatDuesStatementResults(hoaRec) {
 		    		.attr('data-pdfName','DuesStatement')
 		    		.html('PDF'));
 
-	pdfLineColIncrArray = [0.4,4,0.5];
+	pdfLineColIncrArray = [0.6,4.2,0.5];
 
 	duesStatementPDFaddLine([''],null);
 	
@@ -1296,7 +1254,7 @@ function formatDuesStatementResults(hoaRec) {
     			          			'Date Due',
     			          			'Paid',
     			          			'Date Paid'];
-    		pdfLineColIncrArray = [0.4,1.3,0.8,2.3,2.3];
+    		pdfLineColIncrArray = [0.6,1.3,0.8,2.3,2.1];
 		}
 		
 	    tr = tr + '<tr>';
@@ -1342,17 +1300,18 @@ function duesStatementPDFaddLine(pdfLineArray,pdfLineHeaderArray) {
 		pdfPageCnt++;
 
 		// X (horizontal), Y (vertical)
-		pdf.setFontSize(16);
-		pdf.text(2, 0.6, "Gander Road Homeowners Association");
-		pdf.setFontSize(14);
-		pdf.text(3, 0.9, pdfTitle);
+		pdf.setFontSize(15);
+		pdf.text(2.5, 0.6, "Gander Road Homeowners Association");
+		pdf.setFontSize(13);
+		pdf.text(2.5, 0.9, pdfTitle+" - "+pdfTimestamp);
 		pdf.setFontSize(10);
-		pdf.text(3.8, 1.1, pdfTimestamp);
+		//pdf.text(3.7, 1.1, pdfTimestamp);
 
-		pdf.addImage(pdfLogoImgData, 'JPEG', 0.3, 0.3, 0.8, 0.8);
+		pdf//.addImage(pdfLogoImgData, 'JPEG', 0.3, 0.3, 0.8, 0.8);
+		pdf.addImage(pdfLogoImgData, 'JPEG', 0.4, 0.3, 0.9, 0.9);
     	pdf.setFontSize(10);
 
-    	pdfLineYStart = 2;
+    	pdfLineYStart = 5;
 	}
 
 	if (pdfLineHeaderArray != null) {
@@ -1364,8 +1323,8 @@ function duesStatementPDFaddLine(pdfLineArray,pdfLineHeaderArray) {
 		pdfLineY += pdfLineIncrement / 2.0;
 		
 		X = pdfLineColIncrArray[0];
-		pdf.setLineWidth(0.02);
-		pdf.line(X,pdfLineY,8.1,pdfLineY);
+		pdf.setLineWidth(0.015);
+		pdf.line(X,pdfLineY,8,pdfLineY);
 		pdfLineY += pdfLineIncrement;
 	}
 	
@@ -1637,7 +1596,8 @@ var pdfLineHeaderArray = [];
 var pdfLineColIncrArray = [];
 var pdfPageCnt = 0;
 var pdfLineCnt = 0;
-var pdfLineYStart = 1.4;
+//var pdfLineYStart = 1.4;
+var pdfLineYStart = 1.5;
 var pdfLineY = pdfLineYStart;
 var pdfLineIncrement = 0.25;
 var pdfColIncrement = 1.5;
