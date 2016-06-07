@@ -186,6 +186,9 @@ $(document).ready(function(){
 		pdfLogoImgData = logoImgDataResults;
 	});
 
+	
+	// get other one time config data (for headers, etc.)
+	
     
     // Respond to any change in values and call service
     $("#SearchInput").change(function() {

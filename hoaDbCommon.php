@@ -134,9 +134,19 @@ class HoaRec
 	public $TotalDue;
 	public $paymentButton;
 	public $paymentInstructions;
+	
+	//public $countyTreasurerUrl;
+	//public $countyAuditorUrl;
+}
+
+class HoaConfigRec
+{
 	public $countyTreasurerUrl;
 	public $countyAuditorUrl;
 }
+//$hoaRec->countyTreasurerUrl = getConfigValDB($conn,"countyTreasurerUrl");
+//$hoaRec->countyAuditorUrl = getConfigValDB($conn,"countyAuditorUrl");
+
 
 class HoaOwnerRec
 {
@@ -651,8 +661,8 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 	} // End of Properties
 
 	// Get configuration values
-	$hoaRec->countyTreasurerUrl = getConfigValDB($conn,"countyTreasurerUrl");
-	$hoaRec->countyAuditorUrl = getConfigValDB($conn,"countyAuditorUrl");
+	//$hoaRec->countyTreasurerUrl = getConfigValDB($conn,"countyTreasurerUrl");
+	//$hoaRec->countyAuditorUrl = getConfigValDB($conn,"countyAuditorUrl");
 	
 	// Close the database connection if started in this function
 	if (!$connPassed) {
