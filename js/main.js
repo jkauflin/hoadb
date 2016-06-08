@@ -36,6 +36,9 @@
  * 2016-06-05 JJK   Split Edit modal into 1 and 2Col versions
  *============================================================================*/
 
+var countyTreasurerUrl = '';
+var countyAuditorUrl = '';
+
 $.urlParam = function(name){
     var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
     if (results==null){
@@ -181,16 +184,25 @@ $(document).ready(function(){
         format:'Y-m-d'
     });
 
+//    ConfigName
+    
     // When the javascript initializes do a one time get of the logo image data (for PDF writes)
 	$.get("getLogoImgData.php",function(logoImgDataResults){
 		pdfLogoImgData = logoImgDataResults;
 	});
 
+	// Get the Config values
+	$.getJSON("getHoaConfigList.php","ConfigName=countyTreasurerUrl",function(hoaConfigRecList){
+		$.each(hoaConfigRecList, function(index, configRec) {
+			countyTreasurerUrl = configRec.ConfigValue; });
+	});
+	$.getJSON("getHoaConfigList.php","ConfigName=countyAuditorUrl",function(hoaConfigRecList){
+		$.each(hoaConfigRecList, function(index, configRec) {
+			countyAuditorUrl = configRec.ConfigValue; });
+	});
+
 	
-	// get other one time config data (for headers, etc.)
-	
-    
-    // Respond to any change in values and call service
+	// Respond to any change in values and call service
     $("#SearchInput").change(function() {
         waitCursor();
         $("#PropertyListDisplay tbody").html("");
@@ -270,15 +282,24 @@ $(document).ready(function(){
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
         	//console.log("Format Dues Statement, parcel = "+$this.attr("data-ParcelId")+", OwnerId = "+hoaRec.ownersList[0].OwnerID);
 
+        	var duesStatementNotes = '';
+        	$.getJSON("getHoaConfigList.php","ConfigName=duesStatementNotes",function(hoaConfigRecList){
+        		$.each(hoaConfigRecList, function(index, configRec) {
+        			duesStatementNotes = configRec.ConfigValue; 
+        		});
+        		
+                formatDuesStatementResults(hoaRec,duesStatementNotes);
+        	    $('*').css('cursor', 'default');
+                $("#DuesStatementPage").modal();
+
+        	});
+
         	/*
             $.get("handlePaymentNotificationTEST.php","parcelId="+hoaRec.Parcel_ID+"&ownerId="+hoaRec.ownersList[0].OwnerID,function(results){
             	console.log("After handlePaymentNotificationTEST, results = "+results);
             });
             */
 
-            formatDuesStatementResults(hoaRec);
-    	    $('*').css('cursor', 'default');
-            $("#DuesStatementPage").modal();
         });
     });	
     
@@ -913,10 +934,10 @@ function formatPropertyDetailResults(hoaRec){
     $("#PropertyAssessments tbody").html(tr);
     
     // Set the buttons from configuration values and current parcel id
-    var mcTreasURI = hoaRec.countyTreasurerUrl + '?parid='+hoaRec.Parcel_ID+'&taxyr='+TaxYear+'&own1='+ownName1;
+    var mcTreasURI = countyTreasurerUrl + '?parid='+hoaRec.Parcel_ID+'&taxyr='+TaxYear+'&own1='+ownName1;
     $("#MCTreasLink").html('<a href="'+encodeURI(mcTreasURI)+'" class="btn btn-primary" role="button" target="_blank">County<br>Treasurer</a>');    
 
-    var mcAuditorURI = hoaRec.countyAuditorUrl + '?mode=PARID';
+    var mcAuditorURI = countyAuditorUrl + '?mode=PARID';
     $("#MCAuditorLink").html('<a href="'+encodeURI(mcAuditorURI)+'" class="btn btn-primary" role="button" target="_blank">County<br>Property</a>');    
 
     $("#DuesStatement").html('<a id="DuesStatementButton" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+currOwnerID+'" href="#" class="btn btn-success" role="button">Dues Statement</a>');
@@ -1157,7 +1178,8 @@ function formatAssessmentDetailEdit(hoaRec){
 } // End of function formatAssessmentDetailEdit(hoaRec){
 
 
-function formatDuesStatementResults(hoaRec) {
+
+function formatDuesStatementResults(hoaRec,duesStatementNotes) {
     var tr = '';
     var checkedStr = '';
 
@@ -1173,6 +1195,9 @@ function formatDuesStatementResults(hoaRec) {
 	pdfPageCnt = 0;
 	pdfLineCnt = 0;
 
+	pdfLineColIncrArray = [0.6];
+	duesStatementPDFaddLine([duesStatementNotes],null);
+	
 	pdfLineHeaderArray = [
 			'Parcel Id',
 			'Lot No',
@@ -1215,7 +1240,6 @@ function formatDuesStatementResults(hoaRec) {
 		    		.html('PDF'));
 
 	pdfLineColIncrArray = [0.6,4.2,0.5];
-
 	duesStatementPDFaddLine([''],null);
 	
     tr = '';
@@ -1304,9 +1328,9 @@ function duesStatementPDFaddLine(pdfLineArray,pdfLineHeaderArray) {
 
 		// X (horizontal), Y (vertical)
 		pdf.setFontSize(15);
-		pdf.text(2.5, 0.6, "Gander Road Homeowners Association");
+		pdf.text(1.5, 0.6, "Gander Road Homeowners Association");
 		pdf.setFontSize(13);
-		pdf.text(2.5, 0.9, pdfTitle+" - "+pdfTimestamp);
+		pdf.text(1.5, 0.9, pdfTitle+" - "+pdfTimestamp);
 		pdf.setFontSize(10);
 		//pdf.text(3.7, 1.1, pdfTimestamp);
 
