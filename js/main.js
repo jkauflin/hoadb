@@ -34,6 +34,8 @@
  * 2016-05-18 JJK   Added setTextArea
  * 2016-05-19 JJK   Modified to get the country web site URL's from config
  * 2016-06-05 JJK   Split Edit modal into 1 and 2Col versions
+ * 2016-06-09 JJK	Added duesStatementNotes to the individual dues 
+ * 					statement and adjusted the format
  *============================================================================*/
 
 var countyTreasurerUrl = '';
@@ -1195,8 +1197,11 @@ function formatDuesStatementResults(hoaRec,duesStatementNotes) {
 	pdfPageCnt = 0;
 	pdfLineCnt = 0;
 
-	pdfLineColIncrArray = [0.6];
-	duesStatementPDFaddLine([duesStatementNotes],null);
+	if (duesStatementNotes.length > 0) {
+		pdfLineColIncrArray = [1.4];
+		duesStatementPDFaddLine([duesStatementNotes],null);
+		duesStatementPDFaddLine([''],null);
+	}
 	
 	pdfLineHeaderArray = [
 			'Parcel Id',
@@ -1204,7 +1209,6 @@ function formatDuesStatementResults(hoaRec,duesStatementNotes) {
 			'Location',
 			'Owner and Alt Address',
 			'Phone'];
-	//pdfLineColIncrArray = [0.4,1.3,0.8,2.3,2.3];
 	pdfLineColIncrArray = [0.6,1.4,0.8,2.2,1.9];
 	
 	duesStatementPDFaddLine([hoaRec.Parcel_ID,hoaRec.LotNo,hoaRec.Parcel_Location,ownerRec.Mailing_Name,
@@ -1303,6 +1307,7 @@ function duesStatementPDFaddLine(pdfLineArray,pdfLineHeaderArray) {
 	pdfLineCnt++;
 	var pdfHeader = false;
 	var X = 0.0;
+	// X (horizontal), Y (vertical)
 	
 	if (pdfLineCnt == 1) {
     	pdf = new jsPDF('p', 'in', 'letter');
@@ -1314,12 +1319,11 @@ function duesStatementPDFaddLine(pdfLineArray,pdfLineHeaderArray) {
     	    creator: 'MEEE'
     	});
     	pdfHeader = true;
-		pdfLineY = pdfLineYStart;
 	}
 
-	if (pdfLineY > 7.8) {
+	//if (pdfLineY > 7.8) {
+	if (pdfLineY > 10) {
 		pdf.addPage('letter','p');
-		pdfLineY = pdfLineYStart;
     	pdfHeader = true;
 	}
 
@@ -1332,17 +1336,18 @@ function duesStatementPDFaddLine(pdfLineArray,pdfLineHeaderArray) {
 		pdf.setFontSize(13);
 		pdf.text(1.5, 0.9, pdfTitle+" - "+pdfTimestamp);
 		pdf.setFontSize(10);
-		//pdf.text(3.7, 1.1, pdfTimestamp);
-
-		pdf//.addImage(pdfLogoImgData, 'JPEG', 0.3, 0.3, 0.8, 0.8);
+		pdf.text(6.5, 0.6, "P.O. Box 24763");
+		pdf.text(6.5, 0.8, "Dayton, OH 45424-4763");
+		
 		pdf.addImage(pdfLogoImgData, 'JPEG', 0.4, 0.3, 0.9, 0.9);
     	pdf.setFontSize(10);
 
-    	pdfLineYStart = 5;
+		pdfLineY = pdfLineYStart;
 	}
 
 	if (pdfLineHeaderArray != null) {
 		X = 0.0;
+		// Loop through all the column headers in the array
 		for (i = 0; i < pdfLineArray.length; i++) {
 			X += pdfLineColIncrArray[i];
 			pdf.text(X,pdfLineY,''+pdfLineHeaderArray[i]);
@@ -1355,11 +1360,37 @@ function duesStatementPDFaddLine(pdfLineArray,pdfLineHeaderArray) {
 		pdfLineY += pdfLineIncrement;
 	}
 	
+	var textLine = '';
+	var breakPos = 0;
+	var j = 0;
 	X = 0.0;
+	// Loop through all the columns in the array
 	for (i = 0; i < pdfLineArray.length; i++) {
 		X += pdfLineColIncrArray[i];
-		pdf.text(X,pdfLineY,''+pdfLineArray[i]);
-	}
+		textLine = ''+pdfLineArray[i];
+
+		while (textLine.length > 0) {
+			if (textLine.length > pdfMaxLineChars) {
+				breakPos = pdfMaxLineChars;
+				j = breakPos;
+				for (j; j > 0; j--) {
+					if (textLine[j] == ' ') {
+						breakPos = j;
+						break;
+					}
+				}
+
+				pdf.text(X,pdfLineY,textLine.substr(0,breakPos));
+				pdfLineY += pdfLineIncrement;
+				textLine = textLine.substr(breakPos,textLine.length-breakPos);
+				
+			} else {
+				pdf.text(X,pdfLineY,textLine);
+				textLine = '';
+			} 
+		} // while (textLine.length > 0) {
+		
+	} // for (i = 0; i < pdfLineArray.length; i++) {
 	pdfLineY += pdfLineIncrement;
 	
 } // End of function reportPDFaddLine(pdfLineArray) {
@@ -1623,11 +1654,11 @@ var pdfLineHeaderArray = [];
 var pdfLineColIncrArray = [];
 var pdfPageCnt = 0;
 var pdfLineCnt = 0;
-//var pdfLineYStart = 1.4;
-var pdfLineYStart = 1.5;
+var pdfLineYStart = 1.4;
 var pdfLineY = pdfLineYStart;
 var pdfLineIncrement = 0.25;
 var pdfColIncrement = 1.5;
+var pdfMaxLineChars = 95;
 
 // Function to add a line to the report PDF
 function reportPDFaddLine(pdfLineArray) {
@@ -1645,7 +1676,6 @@ function reportPDFaddLine(pdfLineArray) {
     	    creator: 'MEEE'
     	});
     	pdfHeader = true;
-		pdfLineY = pdfLineYStart;
 	}
 
 	if (pdfLineY > 7.8) {
@@ -1668,7 +1698,7 @@ function reportPDFaddLine(pdfLineArray) {
 		pdf.addImage(pdfLogoImgData, 'JPEG', 0.3, 0.3, 0.8, 0.8);
     	pdf.setFontSize(10);
 
-    	pdfLineYStart = 1.4;
+		pdfLineY = pdfLineYStart;
 		X = 0.0;
 		for (i = 0; i < pdfLineArray.length; i++) {
 			X += pdfLineColIncrArray[i];

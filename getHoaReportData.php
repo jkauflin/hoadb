@@ -99,10 +99,42 @@ if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 				"AND a.FY = " . $fy . " AND a.Paid = 1 ORDER BY p.Parcel_ID; ";
 	} else {
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-			 	"WHERE p.Parcel_ID = o.Parcel_ID AND p.Parcel_ID = a.Parcel_ID AND o.CurrentOwner = 1 " .
+				"WHERE p.Parcel_ID = o.Parcel_ID AND p.Parcel_ID = a.Parcel_ID AND o.CurrentOwner = 1 " .
+				"AND a.FY = " . $fy . " ORDER BY p.Parcel_ID; ";
+	}
+	
+	/*
+	 * 
+	if ($reportName == "UnpaidDuesReport") {
+		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+				"WHERE p.Parcel_ID = o.Parcel_ID AND p.Parcel_ID = a.Parcel_ID AND o.CurrentOwner = 1 AND a.OwnerID = o.OwnerID " .
+				"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
+	} else if ($reportName == "PaidDuesReport") {
+		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+				"WHERE p.Parcel_ID = o.Parcel_ID AND p.Parcel_ID = a.Parcel_ID AND o.CurrentOwner = 1 AND a.OwnerID = o.OwnerID " .
+				"AND a.FY = " . $fy . " AND a.Paid = 1 ORDER BY p.Parcel_ID; ";
+	} else {
+		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+			 	"WHERE p.Parcel_ID = o.Parcel_ID AND p.Parcel_ID = a.Parcel_ID AND o.CurrentOwner = 1 AND a.OwnerID = o.OwnerID " .
 			 	"AND a.FY = " . $fy . " ORDER BY p.Parcel_ID; ";
 	}
-		
+
+	if ($reportName == "UnpaidDuesReport") {
+		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+				"WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 AND a.OwnerID = o.OwnerID " .
+				"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
+	} else if ($reportName == "PaidDuesReport") {
+		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+				"WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 AND a.OwnerID = o.OwnerID " .
+				"AND a.FY = " . $fy . " AND a.Paid = 1 ORDER BY p.Parcel_ID; ";
+	} else {
+		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+				"WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 AND a.OwnerID = o.OwnerID " .
+				"AND a.FY = " . $fy . " ORDER BY p.Parcel_ID; ";
+	}
+	*/
+	
+	
 	$stmt = $conn->prepare($sql);
 	$stmt->execute();
 	$result = $stmt->get_result();
