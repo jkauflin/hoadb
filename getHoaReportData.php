@@ -65,20 +65,8 @@ if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 	$ownerId = "";
 	$fy = 0;
 	$saleDate = "SKIP";
-	
-	// try to get the parameters into the initial select query to limit the records it then tries to get from the getHoaRec
 
 	// *** just use the highest FY - the first assessment record ***
-	
-	/*
-	<button id="UnpaidDuesReport" data-reportTitle="Unpaid Dues Report"
-			type="button" class="btn btn-primary reportRequest form-control">Unpaid Dues</button>
-			<button id="PaidDuesReport" data-reportTitle="Paid Dues Report"
-					type="button" class="btn btn-primary reportRequest form-control">Paid Dues</button>
-					<button id="PropertyOwnerReport" data-reportTitle="Property/Owner Report"
-							type="button" class="btn btn-primary reportRequest form-control">Property Owner</button>
-	*/
-
 	$result = $conn->query("SELECT MAX(FY) AS maxFY FROM hoa_assessments; ");
 	
 	if ($result->num_rows > 0) {
@@ -88,53 +76,21 @@ if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 		$result->close();
 	}
 	
-	//$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ORDER BY p.Parcel_ID; ";
+	// try to get the parameters into the initial select query to limit the records it then tries to get from the getHoaRec
 	if ($reportName == "UnpaidDuesReport") {
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-				"WHERE p.Parcel_ID = o.Parcel_ID AND p.Parcel_ID = a.Parcel_ID AND o.CurrentOwner = 1 " .
+				"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
 				"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
 	} else if ($reportName == "PaidDuesReport") {
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-				"WHERE p.Parcel_ID = o.Parcel_ID AND p.Parcel_ID = a.Parcel_ID AND o.CurrentOwner = 1 " .
+				"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
 				"AND a.FY = " . $fy . " AND a.Paid = 1 ORDER BY p.Parcel_ID; ";
 	} else {
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-				"WHERE p.Parcel_ID = o.Parcel_ID AND p.Parcel_ID = a.Parcel_ID AND o.CurrentOwner = 1 " .
-				"AND a.FY = " . $fy . " ORDER BY p.Parcel_ID; ";
-	}
-	
-	/*
-	 * 
-	if ($reportName == "UnpaidDuesReport") {
-		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-				"WHERE p.Parcel_ID = o.Parcel_ID AND p.Parcel_ID = a.Parcel_ID AND o.CurrentOwner = 1 AND a.OwnerID = o.OwnerID " .
-				"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
-	} else if ($reportName == "PaidDuesReport") {
-		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-				"WHERE p.Parcel_ID = o.Parcel_ID AND p.Parcel_ID = a.Parcel_ID AND o.CurrentOwner = 1 AND a.OwnerID = o.OwnerID " .
-				"AND a.FY = " . $fy . " AND a.Paid = 1 ORDER BY p.Parcel_ID; ";
-	} else {
-		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-			 	"WHERE p.Parcel_ID = o.Parcel_ID AND p.Parcel_ID = a.Parcel_ID AND o.CurrentOwner = 1 AND a.OwnerID = o.OwnerID " .
+			 	"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
 			 	"AND a.FY = " . $fy . " ORDER BY p.Parcel_ID; ";
 	}
 
-	if ($reportName == "UnpaidDuesReport") {
-		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-				"WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 AND a.OwnerID = o.OwnerID " .
-				"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
-	} else if ($reportName == "PaidDuesReport") {
-		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-				"WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 AND a.OwnerID = o.OwnerID " .
-				"AND a.FY = " . $fy . " AND a.Paid = 1 ORDER BY p.Parcel_ID; ";
-	} else {
-		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-				"WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 AND a.OwnerID = o.OwnerID " .
-				"AND a.FY = " . $fy . " ORDER BY p.Parcel_ID; ";
-	}
-	*/
-	
-	
 	$stmt = $conn->prepare($sql);
 	$stmt->execute();
 	$result = $stmt->get_result();
@@ -153,7 +109,6 @@ if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 	
 			array_push($outputArray,$hoaRec);
 		}
-			
 	}
 	
 } // End of } else if ($reportName == "DuesReport") {

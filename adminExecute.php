@@ -99,8 +99,21 @@ if ($action == "AddAssessments") {
 
 	$outputArray = array();
 
+	$result = $conn->query("SELECT MAX(FY) AS maxFY FROM hoa_assessments; ");
+	if ($result->num_rows > 0) {
+		while($row = $result->fetch_assoc()) {
+			$fy = $row["maxFY"];
+		}
+		$result->close();
+	}
+	
 		// Loop through all the member properties
-		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";		
+		//$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";		
+		
+		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+				"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
+				"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
+		
 		$stmt = $conn->prepare($sql);
 		$stmt->execute();
 		$result = $stmt->get_result();

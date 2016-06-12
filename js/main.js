@@ -36,10 +36,22 @@
  * 2016-06-05 JJK   Split Edit modal into 1 and 2Col versions
  * 2016-06-09 JJK	Added duesStatementNotes to the individual dues 
  * 					statement and adjusted the format
+ * 2016-06-10 JJK   Corrected reports query to remove current owner condition
+ * 					Working on yearly dues statements
  *============================================================================*/
 
 var countyTreasurerUrl = '';
 var countyAuditorUrl = '';
+
+
+function sleep(milliseconds) {
+	  var start = new Date().getTime();
+	  for (var i = 0; i < 1e7; i++) {
+	    if ((new Date().getTime() - start) > milliseconds){
+	      break;
+	    }
+	  }
+}
 
 $.urlParam = function(name){
     var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
@@ -562,14 +574,66 @@ $(document).ready(function(){
         var action = $this.attr("data-action");
         // dues and add
 
+	    var percentDone = 0;
+
+	    percentDone = 10;
+	    $('.progress-bar').css('width', percentDone+'%').attr('aria-valuenow', percentDone).html(percentDone+"%");    
+        sleep(1000);
+	    percentDone = 20;
+	    $('.progress-bar').css('width', percentDone+'%').attr('aria-valuenow', percentDone).html(percentDone+"%");    
+        sleep(1000);
+	    percentDone = 30;
+	    $('.progress-bar').css('width', percentDone+'%').attr('aria-valuenow', percentDone).html(percentDone+"%");    
+        sleep(1000);
 
     	$.getJSON("adminExecute.php","action="+action+
     										"&FY="+$this.attr("data-FY")+
     										"&duesAmt="+$this.attr("data-duesAmt"),function(adminRec){
     	    $('*').css('cursor', 'default');
     	    $("#ResultMessage").html(adminRec.message);
+
     	    
     	    if (action == 'DuesStatements') {
+
+    	    	// call a function and pass adminRec.hoaPropertyRecList
+    	    	
+    	    	// no, somehow loop through this property record list and generate dues statements for each one
+    	    	// getJSON to get detail data on each one and call function to add dues statement to a PDF you have created
+
+    		    var recTotal = adminRec.hoaPropertyRecList.length;
+        	    console.log("adminRec.hoaPropertyRecList = "+recTotal);
+
+        	    //var adminProgress = $("#AdminProgress");
+        	    
+//		        <div id="AdminProgress" class="progress" style="margin-top:10px;">
+        	    /*
+        	    <div class="progress">
+        	    	<div class="progress-bar" style="width: 60%;">
+        	        	60%
+        	        </div>
+        	    </div>
+        	    */
+        	    
+        	    /*
+        	    var progressBar = $('<div>').prop('class',"progress-bar").attr('role',"progressbar").attr('aria-valuenow',percentDone).attr('aria-valuemin',"0").attr('aria-valuemax',recTotal)
+	    		.css('width',percentDone).html(percentDone+"%");
+        	    */
+
+        	    //$("#AdminProgress").html('<div class="progress"><div class="progress-bar" style="width: 0%;">0%</div></div>');
+        	    
+        		$.each(adminRec.hoaPropertyRecList, function(index, hoaPropertyRec) {
+
+        			sleep(5);
+        			
+            	    percentDone = Math.round(index/recTotal*100);
+            	    console.log(index+", percentDone = "+percentDone);
+
+            	    $('.progress-bar').css('width', percentDone+'%').attr('aria-valuenow', percentDone).html(percentDone+"%");    
+        		});
+
+        	    $('*').css('cursor', 'default');
+
+    	    	/*
     	        // Portrait, millimeters, A4 format
     	    	//var doc = new jsPDF('p', 'mm', 'a4');
     	    	var doc = new jsPDF('p', 'in', 'letter');
@@ -584,7 +648,6 @@ $(document).ready(function(){
     			doc.text(1, 1, "John K loves jsPDF");
 
     			var logoImgData = '';
-    	    	$.get("getLogoImgData.php",function(logoImgData){
         		    var progress = $('<div>').prop('class',"progress");
 
         		    var recTotal = adminRec.hoaPropertyRecList.length;
@@ -592,13 +655,6 @@ $(document).ready(function(){
             	    var percentDone = 0;
             	    
             		$.each(adminRec.hoaPropertyRecList, function(index, hoaPropertyRec) {
-            			/*
-            		    tr +=    '<td><a data-parcelId="'+hoaPropertyRec.parcelId+'" href="#">'+hoaPropertyRec.parcelId+'</a></td>';
-            		    tr +=    '<td class="hidden-xs hidden-sm">'+hoaPropertyRec.lotNo+'</td>';
-            		    tr +=    '<td>'+hoaPropertyRec.parcelLocation+'</td>';
-            			tr +=    '<td class="hidden-xs">'+hoaPropertyRec.ownerName+'</td>';
-            		    tr +=    '<td class="visible-lg">'+hoaPropertyRec.ownerPhone+'</td>';
-            		    */
             			
             			doc.addPage('letter','p');
             			doc.addImage(logoImgData, 'JPEG', 0.5, 0.5, 1.5, 1.5);
@@ -609,21 +665,22 @@ $(document).ready(function(){
             			doc.text(0.5, 10.8, "Parcel Id = "+hoaPropertyRec.parcelId);
             			
             			
-            			/*
-                	    percentDone = Math.round(index/recTotal);
-                	    var progressBar = $('<div>').prop('class',"progress-bar").attr('role',"progressbar").attr('aria-valuenow',percentDone).attr('aria-valuemin',"0").attr('aria-valuemax',recTotal)
-                	    		.css('width',percentDone).html(percentDone+"%");
-                	    progress.html(progressBar+" of "+recTotal);
-                	  	$("#AdminProgress").html(progress);
-                	  	*/
             		});
 
         			// Output as Data URI
         			doc.save('JJKTestDuesStatements.pdf');
-    	    		
-    	    	});
-        		
+					*/
+    	    	
+        			/*
+            	    percentDone = Math.round(index/recTotal);
+            	    var progressBar = $('<div>').prop('class',"progress-bar").attr('role',"progressbar").attr('aria-valuenow',percentDone).attr('aria-valuemin',"0").attr('aria-valuemax',recTotal)
+            	    		.css('width',percentDone).html(percentDone+"%");
+            	    progress.html(progressBar+" of "+recTotal);
+            	  	$("#AdminProgress").html(progress);
+            	  	*/
+
     	    } // End of if ($action == 'DuesStatements') {
+
     	    
     	});
         event.stopPropagation();
@@ -1180,6 +1237,8 @@ function formatAssessmentDetailEdit(hoaRec){
 } // End of function formatAssessmentDetailEdit(hoaRec){
 
 
+// 6/10/2016 jjk - need a function to format Yearly dues statements
+
 
 function formatDuesStatementResults(hoaRec,duesStatementNotes) {
     var tr = '';
@@ -1302,7 +1361,7 @@ function formatDuesStatementResults(hoaRec,duesStatementNotes) {
 	
 } // End of function formatDuesStatementResults(hoaRec){
 
-//Function to add a line to the report PDF
+//Function to add a line to the Dues Statement PDF
 function duesStatementPDFaddLine(pdfLineArray,pdfLineHeaderArray) {
 	pdfLineCnt++;
 	var pdfHeader = false;
@@ -1654,7 +1713,7 @@ var pdfLineHeaderArray = [];
 var pdfLineColIncrArray = [];
 var pdfPageCnt = 0;
 var pdfLineCnt = 0;
-var pdfLineYStart = 1.4;
+var pdfLineYStart = 1.5;
 var pdfLineY = pdfLineYStart;
 var pdfLineIncrement = 0.25;
 var pdfColIncrement = 1.5;
@@ -1680,14 +1739,13 @@ function reportPDFaddLine(pdfLineArray) {
 
 	if (pdfLineY > 7.8) {
 		pdf.addPage('letter','l');
-		pdfLineY = pdfLineYStart;
     	pdfHeader = true;
 	}
 
 	if (pdfHeader) {
 		pdfPageCnt++;
 		pdf.setFontSize(9);
-		pdf.text(10.2, 0.3, 'Page '+pdfPageCnt);
+		pdf.text(10.2, 0.4, 'Page '+pdfPageCnt);
 		pdf.setFontSize(15);
 		pdf.text(3.6, 0.45, "Gander Road Homeowners Association");
 		pdf.setFontSize(13);
@@ -1695,7 +1753,7 @@ function reportPDFaddLine(pdfLineArray) {
 		pdf.setFontSize(10);
 		pdf.text(3.8, 1.1, pdfTimestamp);
 		
-		pdf.addImage(pdfLogoImgData, 'JPEG', 0.3, 0.3, 0.8, 0.8);
+		pdf.addImage(pdfLogoImgData, 'JPEG', 0.4, 0.3, 0.9, 0.9);
     	pdf.setFontSize(10);
 
 		pdfLineY = pdfLineYStart;
