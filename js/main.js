@@ -635,15 +635,19 @@ var progressBar = $('<div>').prop('class',"progress-bar").attr('role',"progressb
 
 //$("#AdminProgress").html('<div class="progress"><div class="progress-bar" style="width: 0%;">0%</div></div>');
 
+
 $.each(adminRec.hoaPropertyRecList, function(index, hoaPropertyRec) {
 
 	width++;
 	console.log("width = "+width);
-  	elem.style.width = width + '%';
-  	document.getElementById("label").innerHTML = width * 1  + '%';
+  	//elem.style.width = width + '%';
+  	//document.getElementById("label").innerHTML = width * 1  + '%';
 
-  	sleep(2000);
+  	move(width);
+  	
+  	sleep(50);
 
+  	
 /*
 sleep(3000);
 percentDone = Math.round(index/recTotal*100);
@@ -832,7 +836,10 @@ event.stopPropagation();
     
 }); // $(document).ready(function(){
 
-function move() {
+function move(width) {
+	  	var elem = document.getElementById("myBar");
+  	elem.style.width = width + '%';
+  	document.getElementById("label").innerHTML = width * 1  + '%';
 	}
 
 function displayConfigList(hoaConfigRecList) {
