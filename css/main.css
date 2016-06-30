@@ -80,3 +80,14 @@ li {
   line-height: 30px;
   color: white;
 }
+
+#progressbar-outer {
+    height:2em;
+    border:5px solid #000;
+    width:15em;
+}
+#progressbar {
+    width:0%;
+    background-color:#F00;
+    height:100%;
+}

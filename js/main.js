@@ -568,8 +568,85 @@ $(document).ready(function(){
         event.stopPropagation();
     });
 
-    // Respond to the Continue click for an Admin Execute function 
+	
+	
+	var progressbar = {};
+	$(function () {
+	    progressbar = {
+	        /** initial progress */
+	        progress: 0,
+	        /** maximum width of progressbar */
+	        progress_max: 0,
+	        /** The inner element of the progressbar (filled box). */
+	        $progress_bar: $('#progressbar'),
+	        /** Method to set the progressbar.
+	         */
+	        set: function (num) {
+	            if (this.progress_max && num) {
+	                this.progress = num / this.progress_max * 100;
+	                console.log('percent: ' + this.progress + '% - ' + num + '/' + this.progress_max);
+	                this.$progress_bar.width(String(this.progress) + '%');
+	            }
+	        }
+	    };
+	});
+
     $(document).on("click","#AdminExecute",function(){
+	    var iterations = 100;
+	    progressbar.progress_max = iterations;
+	    var loop = function (value) {
+	        progressbar.set(value);
+	        if (value < iterations) setTimeout(function () {
+	            loop(value + 1)
+	        }, 100);
+	        else {
+	            $('#progressbar').css('background-color', '#0F0');
+	            $('#start_button').prop('disabled',false);
+	        }
+	    }
+	    
+	    $('#start_button').prop('disabled',true);
+	    $('#progressbar').css('background-color', '#F00');
+	    loop(1);
+	});	
+	/*
+ajax - get data into a global array
+start recursive loop which counts and accesses a global array element
+
+Write it as a recursive function to give it breaks to update the progress bar
+var i = 0;(function doSort() {
+    // update progress
+    // do stuff
+    i++;
+    if (i < rows) {
+        setTimeout(doSort, 0);
+    }})();
+
+http://stackoverflow.com/questions/30987218/update-progressbar-in-each-loop
+
+
+var i = 0;
+(function loop() {
+    i++;
+    if (iterations % i === 100) {
+        progressbar.set(i); //updates the progressbar, even in loop    
+    }   
+    if (i < iterations) {
+        setTimeout(loop, 0);
+    }
+})();
+
+setTimeout(function,milliseconds,param1,param2,...)
+
+function myStartFunction() {
+    myVar = setTimeout(alertFunc, 2000, "First param", "Second param");
+}
+
+	 * 
+	 */
+	
+    // Respond to the Continue click for an Admin Execute function 
+    $(document).on("click","#AdminExecuteBAD",function(){
         var $this = $(this);
         //waitCursor();
         
