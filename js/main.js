@@ -591,7 +591,7 @@ $(document).ready(function(){
 	    };
 	});
 
-    $(document).on("click","#AdminExecute",function(){
+    $(document).on("click","#AdminExecuteNO",function(){
 	    var iterations = 100;
 	    progressbar.progress_max = iterations;
 	    var loop = function (value) {
@@ -609,6 +609,8 @@ $(document).ready(function(){
 	    $('#progressbar').css('background-color', '#F00');
 	    loop(1);
 	});	
+    
+    
 	/*
 ajax - get data into a global array
 start recursive loop which counts and accesses a global array element
@@ -623,7 +625,6 @@ var i = 0;(function doSort() {
     }})();
 
 http://stackoverflow.com/questions/30987218/update-progressbar-in-each-loop
-
 
 var i = 0;
 (function loop() {
@@ -644,153 +645,220 @@ function myStartFunction() {
 
 	 * 
 	 */
+
+	  	/*
+	width++;
+	console.log("width = "+width);
+  	elem.style.width = width + '%';
+  	document.getElementById("label").innerHTML = width * 1  + '%';
+
+	  	var id = setInterval(frame, 10);
+	  	function frame() {
+	  		if (width >= 100) {
+	  			clearInterval(id);
+	  		} else {
+	  			width++;
+	  			elem.style.width = width + '%';
+	  			document.getElementById("label").innerHTML = width * 1  + '%';
+	  		}
+	  	}
+	  	*/
+
+
+function adminLoop(hoaPropertyRecList) {
+	/*
+	  	var elem = document.getElementById("myBar");
+  	elem.style.width = width + '%';
+  	document.getElementById("label").innerHTML = width * 1  + '%';
+  	*/
+	//console.log("adminRec = "+adminRec+", Parcel Id = "+hoaPropertyRecList[adminRec].parcelId);
+	// do stuff
+	recTotal = hoaPropertyRecList.length-1;
+	sleep(50);
+	percentDone = Math.round((adminRecCnt/recTotal)*100);
+	console.log(adminRecCnt+", percentDone = "+percentDone);
 	
+	// Create the progress bar the first time through
+	if (adminRecCnt == 0) {
+		// Add progress class
+		//$("#AdminProgress").addClass("progress");
+		var progressBar = $('<div>').prop('id',"AdminProgressBar").prop('class',"progress-bar").attr('role',"progressbar").attr('aria-valuenow',"0").attr('aria-valuemin',"0").attr('aria-valuemax',"100").css('width',"0%");
+		$("#AdminProgress").html(progressBar);
+	} else {
+	    // update the progress bar width
+	    $("#AdminProgressBar").width(percentDone+'%').attr('aria-valuenow', percentDone);
+	    
+	    // and display the numeric value
+	    $("#AdminProgressBar").html(percentDone+'%');
+		
+	}
+	
+	  	
+
+
+	/*
+	https://elfga.com/articles/bootstrap-progress-bar-update-jqueryajax/
+	
+	<div class="progress progress-striped active" id="progressouter">
+	   <div class="bar" id="progress"></div>
+	</div>
+	
+	$(document).ready(function(){
+		  var progresspump = setInterval(function(){
+		    // query the completion percentage from the server
+		    $.get("/app/update-progress", function(data){
+		      // update the progress bar width
+		      $("#progress").css('width',data+'%');
+		      // and display the numeric value
+		      $("#progress").html(data+6'%');
+
+		      // test to see if the job has completed
+		      if(data > 99.999) {
+		        clearInterval(progresspump);
+		        $("#progressouter").removeClass("active");
+		        $("#progress").html("Done");
+		      }
+		    })
+	}, 1000);});
+	*/
+	
+	//$('.progress-bar').css('width', percentDone+'%').attr('aria-valuenow', percentDone).html(percentDone+"%");    
+    
+    /*
+	var progressBar = $('<div>').prop('class',"progress-bar").attr('role',"progressbar").attr('aria-valuenow',percentDone).attr('aria-valuemin',"0").attr('aria-valuemax',recTotal)
+	.css('width',percentDone).html(percentDone+"%");
+	*/
+    
+	/*
+<div class="progress">
+  <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40"
+  aria-valuemin="0" aria-valuemax="100" style="width:40%">
+    40% Complete (success)
+  </div>
+</div>
+	 
+	 $('.progress-bar').css('width', valeur+'%').attr('aria-valuenow', valeur);    
+	 
+	progress.html(progressBar+" of "+recTotal);
+	$("#AdminProgress").html(progress);
+	*/
+	
+	if (adminRecCnt < hoaPropertyRecList.length-1) {
+		setTimeout(adminLoop, 0, hoaPropertyRecList);
+	} else {
+		//$("#AdminProgress").removeClass("progress");
+		$("#AdminProgress").empty();
+
+	}
+	adminRecCnt++;
+}
+
+
+	var adminRecCnt = 0;
+
     // Respond to the Continue click for an Admin Execute function 
-    $(document).on("click","#AdminExecuteBAD",function(){
+    $(document).on("click","#AdminExecute",function(){
         var $this = $(this);
         //waitCursor();
         
         console.log('on click adminExecute');
-        
-        //move();
-
-  	  	var elem = document.getElementById("myBar");
-  	  	var width = 0;
-
-  	  	/*
-		width++;
-		console.log("width = "+width);
-	  	elem.style.width = width + '%';
-	  	document.getElementById("label").innerHTML = width * 1  + '%';
-
-  	  	var id = setInterval(frame, 10);
-  	  	function frame() {
-  	  		if (width >= 100) {
-  	  			clearInterval(id);
-  	  		} else {
-  	  			width++;
-  	  			elem.style.width = width + '%';
-  	  			document.getElementById("label").innerHTML = width * 1  + '%';
-  	  		}
-  	  	}
-  	  	*/
 
   	  	var action = $this.attr("data-action");
+  	  	
+  	  	
   	  	
     	$.getJSON("adminExecute.php","action="+action+
 				"&FY="+$this.attr("data-FY")+
 				"&duesAmt="+$this.attr("data-duesAmt"),function(adminRec){
-$('*').css('cursor', 'default');
-$("#ResultMessage").html(adminRec.message);
+    		$('*').css('cursor', 'default');
+    		$("#ResultMessage").html(adminRec.message);
+		
+    		adminRecCnt = 0;
+    		
+    		if (action == 'DuesStatements') {
+		
+				// call a function and pass adminRec.hoaPropertyRecList
+			
+				// no, somehow loop through this property record list and generate dues statements for each one
+				// getJSON to get detail data on each one and call function to add dues statement to a PDF you have created
+			
+				var recTotal = adminRec.hoaPropertyRecList.length;
+				console.log("adminRec.hoaPropertyRecList = "+recTotal);
 
+				// Start asynchronous recursive loop to process the list
+				setTimeout(adminLoop, 0, adminRec.hoaPropertyRecList);
 
-if (action == 'DuesStatements') {
-
-// call a function and pass adminRec.hoaPropertyRecList
-
-// no, somehow loop through this property record list and generate dues statements for each one
-// getJSON to get detail data on each one and call function to add dues statement to a PDF you have created
-
-var recTotal = adminRec.hoaPropertyRecList.length;
-console.log("adminRec.hoaPropertyRecList = "+recTotal);
-
-//var adminProgress = $("#AdminProgress");
-
-//<div id="AdminProgress" class="progress" style="margin-top:10px;">
-/*
-<div class="progress">
-<div class="progress-bar" style="width: 60%;">
-60%
-</div>
-</div>
-*/
-
-/*
-var progressBar = $('<div>').prop('class',"progress-bar").attr('role',"progressbar").attr('aria-valuenow',percentDone).attr('aria-valuemin',"0").attr('aria-valuemax',recTotal)
-.css('width',percentDone).html(percentDone+"%");
-*/
-
-//$("#AdminProgress").html('<div class="progress"><div class="progress-bar" style="width: 0%;">0%</div></div>');
-
-
-$.each(adminRec.hoaPropertyRecList, function(index, hoaPropertyRec) {
-
-	width++;
-	console.log("width = "+width);
-  	//elem.style.width = width + '%';
-  	//document.getElementById("label").innerHTML = width * 1  + '%';
-
-  	move(width);
-  	
-  	sleep(50);
-
-  	
-/*
-sleep(3000);
-percentDone = Math.round(index/recTotal*100);
-console.log(index+", percentDone = "+percentDone);
-*/
-//$('.progress-bar').css('width', percentDone+'%').attr('aria-valuenow', percentDone).html(percentDone+"%");    
-});
-
-$('*').css('cursor', 'default');
-
-/*
-// Portrait, millimeters, A4 format
-//var doc = new jsPDF('p', 'mm', 'a4');
-var doc = new jsPDF('p', 'in', 'letter');
-doc.setProperties({
-title: 'Test JJK Doc',
-subject: 'This is the subject',
-author: 'John Kauflin',
-keywords: 'generated, javascript, web 2.0, ajax',
-creator: 'MEEE'
-});
-doc.setFontSize(20);
-doc.text(1, 1, "John K loves jsPDF");
-
-var logoImgData = '';
-var progress = $('<div>').prop('class',"progress");
-
-var recTotal = adminRec.hoaPropertyRecList.length;
-//console.log("adminRec.hoaPropertyRecList = "+adminRec.hoaPropertyRecList.length);
-var percentDone = 0;
-
-$.each(adminRec.hoaPropertyRecList, function(index, hoaPropertyRec) {
-
-doc.addPage('letter','p');
-doc.addImage(logoImgData, 'JPEG', 0.5, 0.5, 1.5, 1.5);
-
-doc.setFontSize(12);
-doc.text(0.5, 10.5, "Page = "+index);
-doc.setFontSize(16);
-doc.text(0.5, 10.8, "Parcel Id = "+hoaPropertyRec.parcelId);
-
-
-});
-
-// Output as Data URI
-doc.save('JJKTestDuesStatements.pdf');
-*/
-
-/*
-percentDone = Math.round(index/recTotal);
-var progressBar = $('<div>').prop('class',"progress-bar").attr('role',"progressbar").attr('aria-valuenow',percentDone).attr('aria-valuemin',"0").attr('aria-valuemax',recTotal)
-.css('width',percentDone).html(percentDone+"%");
-progress.html(progressBar+" of "+recTotal);
-$("#AdminProgress").html(progress);
-*/
-
-} // End of if ($action == 'DuesStatements') {
-
-
-}); // $.getJSON("adminExecute.php","action="+action+
-
-event.stopPropagation();
-	  	
-	  	
-	  	
-	  	
+		
+				/*
+				$.each(adminRec.hoaPropertyRecList, function(index, hoaPropertyRec) {
+					width++;
+					console.log("width = "+width);
+					//elem.style.width = width + '%';
+					//document.getElementById("label").innerHTML = width * 1  + '%';
+		
+					//move(width);
+					//sleep(50);
+		
+					
+					sleep(3000);
+					percentDone = Math.round(index/recTotal*100);
+					console.log(index+", percentDone = "+percentDone);
+					 
+					//$('.progress-bar').css('width', percentDone+'%').attr('aria-valuenow', percentDone).html(percentDone+"%");    
+				});
+				*/
+		
+		/*
+		// Portrait, millimeters, A4 format
+		//var doc = new jsPDF('p', 'mm', 'a4');
+		var doc = new jsPDF('p', 'in', 'letter');
+		doc.setProperties({
+		title: 'Test JJK Doc',
+		subject: 'This is the subject',
+		author: 'John Kauflin',
+		keywords: 'generated, javascript, web 2.0, ajax',
+		creator: 'MEEE'
+		});
+		doc.setFontSize(20);
+		doc.text(1, 1, "John K loves jsPDF");
+		
+		var logoImgData = '';
+		var progress = $('<div>').prop('class',"progress");
+		
+		var recTotal = adminRec.hoaPropertyRecList.length;
+		//console.log("adminRec.hoaPropertyRecList = "+adminRec.hoaPropertyRecList.length);
+		var percentDone = 0;
+		
+		$.each(adminRec.hoaPropertyRecList, function(index, hoaPropertyRec) {
+		
+		doc.addPage('letter','p');
+		doc.addImage(logoImgData, 'JPEG', 0.5, 0.5, 1.5, 1.5);
+		
+		doc.setFontSize(12);
+		doc.text(0.5, 10.5, "Page = "+index);
+		doc.setFontSize(16);
+		doc.text(0.5, 10.8, "Parcel Id = "+hoaPropertyRec.parcelId);
+		
+		
+		});
+		
+		// Output as Data URI
+		doc.save('JJKTestDuesStatements.pdf');
+		*/
+		
+		/*
+		percentDone = Math.round(index/recTotal);
+		var progressBar = $('<div>').prop('class',"progress-bar").attr('role',"progressbar").attr('aria-valuenow',percentDone).attr('aria-valuemin',"0").attr('aria-valuemax',recTotal)
+		.css('width',percentDone).html(percentDone+"%");
+		progress.html(progressBar+" of "+recTotal);
+		$("#AdminProgress").html(progress);
+		*/
+		
+    		} // End of if ($action == 'DuesStatements') {
+		
+		}); // $.getJSON("adminExecute.php","action="+action+
+		
+		event.stopPropagation();
         
         /*
         var action = $this.attr("data-action");
@@ -913,11 +981,6 @@ event.stopPropagation();
     
 }); // $(document).ready(function(){
 
-function move(width) {
-	  	var elem = document.getElementById("myBar");
-  	elem.style.width = width + '%';
-  	document.getElementById("label").innerHTML = width * 1  + '%';
-	}
 
 function displayConfigList(hoaConfigRecList) {
 	//var tr = '<tr><td>No records found - try different search parameters</td></tr>';
