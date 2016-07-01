@@ -21,6 +21,7 @@
  * 2016-04-29 JJK	Added paypal button script config string
  * 2016-05-02 JJK   Amy's 11th birthday.  
  * 2016-05-14 JJK   Added get Payment function
+ * 2016-07-01 JJK	Added MySQL backup function
  *============================================================================*/
 
 function getConn() {
@@ -40,6 +41,12 @@ function getConn() {
 		die("Connection failed: " . $conn->connect_error);
 	}
 	return $conn;
+}
+
+function mysqldumpHoaDb($backupfile) {
+	// Include db connection credentials
+	include 'hoaDbCred.php';
+	system("mysqldump -h $host -u $dbadmin -p$password $dbname > $backupfile");
 }
 
 function getConfigVal($configName) {
