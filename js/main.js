@@ -41,12 +41,16 @@
  * 2016-06-24 JJK	Working on adminExecute (for yearly dues statement)
  * 2016-07-01 JJK	Got progress bar for adminExecute working by moving loop
  * 					processing into an asynchronous recursive function.
+ * 
  * 					Working on creating the yearly dues statements 
  *============================================================================*/
 
 var countyTreasurerUrl = '';
 var countyAuditorUrl = '';
 var defaultDuesStatementNotes = '';
+// Global variable for loop counter
+var adminRecCnt = 0;
+
 
 function sleep(milliseconds) {
 	  var start = new Date().getTime();
@@ -576,85 +580,6 @@ $(document).ready(function(){
         event.stopPropagation();
     });
 
-	
-
-
-function adminLoop(hoaPropertyRecList) {
-	// no, somehow loop through this property record list and generate dues statements for each one
-	// getJSON to get detail data on each one and call function to add dues statement to a PDF you have created
-
-	//console.log("adminRec = "+adminRec+", Parcel Id = "+hoaPropertyRecList[adminRec].parcelId);
-	// do stuff
-	/*
-	$parcelId = getParamVal("parcelId");
-	$ownerId = getParamVal("ownerId");
-	$fy = getParamVal("fy");
-	$saleDate = getParamVal("saleDate");
-	*/
-    $.getJSON("getHoaDbData.php","parcelId="+hoaPropertyRecList[adminRecCnt].parcelId,function(hoaRec){
-    	var duesStatementNotes = defaultDuesStatementNotes;
-
-    	// Create the PDF yearly dues statement
-		if (adminRecCnt == 0) {
-	    	pdf = new jsPDF('p', 'in', 'letter');
-	    	pdf.setProperties({
-	    	    title: 'Test JJK Doc',
-	    	    subject: 'This is the subject',
-	    	    author: 'John Kauflin',
-	    	    keywords: 'generated, javascript, web 2.0, ajax',
-	    	    creator: 'MEEE'
-	    	});
-	    	pdfPageCnt = 0;
-			pdfLineCnt = 0;
-	    	//console.log("create pdf");
-		} else {
-			pdfLineCnt = 0;
-			pdf.addPage('letter','p');
-			//console.log("add page");
-		}
-
-    	// Call function to format the yearly dues statement for an individual property
-    	formatYearlyDuesStatement(hoaRec,duesStatementNotes);
-
-		recTotal = hoaPropertyRecList.length-1;
-		percentDone = Math.round((adminRecCnt/recTotal)*100);
-		//console.log(adminRecCnt+", percentDone = "+percentDone+", Parcel Id = "+hoaRec.Parcel_ID);
-		
-		// Create the progress bar the first time through
-		if (adminRecCnt == 0) {
-			// Add progress class
-			//$("#AdminProgress").addClass("progress");
-			var progressBar = $('<div>').prop('id',"AdminProgressBar").prop('class',"progress-bar").attr('role',"progressbar").attr('aria-valuenow',"0").attr('aria-valuemin',"0").attr('aria-valuemax',"100").css('width',"0%");
-			$("#AdminProgress").html(progressBar);
-		} else {
-		    // update the progress bar width
-		    $("#AdminProgressBar").width(percentDone+'%').attr('aria-valuenow', percentDone);
-		    // and display the numeric value
-		    $("#AdminProgressBar").html(percentDone+'%');
-		}
-		
-		adminRecCnt++;
-		if (adminRecCnt < hoaPropertyRecList.length) {
-		//if (adminRecCnt < 4) {
-			setTimeout(adminLoop, 0, hoaPropertyRecList);
-		} else {
-			//$("#AdminProgress").removeClass("progress");
-			$("#AdminProgress").empty();
-
-    		$("#ResultMessage").html("Yearly dues statements completed, total = "+adminRecCnt);
-
-			// Output as Data URI
-    		
-    		pdf.save(formatDate()+"-YearlyDuesStatements.pdf");
-
-		}
-    });
-	
-} // function adminLoop(hoaPropertyRecList) {
-
-
-	var adminRecCnt = 0;
-
     // Respond to the Continue click for an Admin Execute function 
     $(document).on("click","#AdminExecute",function(){
         waitCursor();
@@ -666,11 +591,12 @@ function adminLoop(hoaPropertyRecList) {
 				"&duesAmt="+$this.attr("data-duesAmt"),function(adminRec){
     		$('*').css('cursor', 'default');
 		
+    		// Reset the loop counter
     		adminRecCnt = 0;
-    		
+
     		if (action == 'DuesStatements') {
 				// Start asynchronous recursive loop to process the list
-				setTimeout(adminLoop, 0, adminRec.hoaPropertyRecList);
+				setTimeout(adminLoop, 5, adminRec.hoaPropertyRecList);
 
     		} // End of if ($action == 'DuesStatements') {
 		
@@ -792,7 +718,6 @@ function formatConfigEdit(hoaConfigRec){
 	$("#EditPageButton").html(tr);
 
 } // End of function formatConfigEdit(hoaConfigRec){
-
 
 
 function displayPropertyList(hoaPropertyRecList) {
@@ -1198,6 +1123,71 @@ function formatAssessmentDetailEdit(hoaRec){
 } // End of function formatAssessmentDetailEdit(hoaRec){
 
 
+//--------------------------------------------------------------------------------------------------------------------------------
+//Asynchronous recursive loop to process the list for the AdminExecute
+//--------------------------------------------------------------------------------------------------------------------------------
+function adminLoop(hoaPropertyRecList) {
+	// getJSON to get detail data on each one and call function to add dues statement to a PDF
+
+	//console.log("adminRec = "+adminRec+", Parcel Id = "+hoaPropertyRecList[adminRec].parcelId);
+  $.getJSON("getHoaDbData.php","parcelId="+hoaPropertyRecList[adminRecCnt].parcelId,function(hoaRec){
+  	var duesStatementNotes = defaultDuesStatementNotes;
+
+  	// Create the PDF yearly dues statement
+	if (adminRecCnt == 0) {
+		// Add a progress bar 
+  		$("#ResultMessage").html('<div id="AdminProgress" class="progress" ></div>');
+
+  		pdf = new jsPDF('p', 'in', 'letter');
+    	pdf.setProperties({
+    	    title: 'Test JJK Doc',
+    	    subject: 'This is the subject',
+    	    author: 'John Kauflin',
+    	    keywords: 'generated, javascript, web 2.0, ajax',
+    	    creator: 'MEEE'
+    	});
+    	pdfPageCnt = 0;
+		pdfLineCnt = 0;
+	} else {
+		// If not the first record, reset the page count and add a new page
+		pdfLineCnt = 0;
+		pdf.addPage('letter','p');
+	}
+
+  	// Call function to format the yearly dues statement for an individual property
+  	formatYearlyDuesStatement(hoaRec,duesStatementNotes);
+
+  	// Calculate the percent done for the progress bar
+	recTotal = hoaPropertyRecList.length-1;
+	percentDone = Math.round((adminRecCnt/recTotal)*100);
+	//console.log(adminRecCnt+", percentDone = "+percentDone+", Parcel Id = "+hoaRec.Parcel_ID);
+	
+	// Create the progress bar the first time through
+	if (adminRecCnt == 0) {
+		// Add progress bar class
+		var progressBar = $('<div>').prop('id',"AdminProgressBar").prop('class',"progress-bar").attr('role',"progressbar").attr('aria-valuenow',"0").attr('aria-valuemin',"0").attr('aria-valuemax',"100").css('width',"0%");
+		$("#AdminProgress").html(progressBar);
+	} else {
+	    // update the progress bar width
+	    $("#AdminProgressBar").width(percentDone+'%').attr('aria-valuenow', percentDone);
+	    // and display the numeric value
+	    $("#AdminProgressBar").html(percentDone+'%');
+	}
+	
+	adminRecCnt++;
+	if (adminRecCnt < hoaPropertyRecList.length) {
+	//if (adminRecCnt < 4) {
+		// If loop not complete, recursively call the loop function
+		setTimeout(adminLoop, 0, hoaPropertyRecList);
+	} else {
+		// If loop completed, display a completion message and download the PDF file
+		$("#ResultMessage").html("Yearly dues statements completed, total = "+adminRecCnt);
+		pdf.save(formatDate()+"-YearlyDuesStatements.pdf");
+	}
+  });
+	
+} // function adminLoop(hoaPropertyRecList) {
+
 // function to format a Yearly dues statement
 function formatYearlyDuesStatement(hoaRec,duesStatementNotes) {
 	ownerRec = hoaRec.ownersList[0];
@@ -1205,6 +1195,9 @@ function formatYearlyDuesStatement(hoaRec,duesStatementNotes) {
 	var currSysDate = new Date();
 	pdfTitle = "Member Dues Statement";
 	pdfTimestamp = currSysDate.toString().substr(0,24);
+	
+
+	
 	
 	if (duesStatementNotes.length > 0) {
 		pdfLineColIncrArray = [1.4];
@@ -1219,70 +1212,60 @@ function formatYearlyDuesStatement(hoaRec,duesStatementNotes) {
 			'Owner and Alt Address',
 			'Phone'];
 	pdfLineColIncrArray = [0.6,1.4,0.8,2.2,1.9];
+
+	var displayAddress1 = ownerRec.Mailing_Name;
+	var displayAddress2 = hoaRec.Parcel_Location;
+	var displayAddress3 = "Dayton, OH  45424";
+	var displayAddress4 = "";
 	
-	yearlyDuesStatementAddLine([hoaRec.Parcel_ID,hoaRec.LotNo,hoaRec.Parcel_Location,ownerRec.Mailing_Name,
-	                         ownerRec.Owner_Phone],pdfLineHeaderArray); 
+	//yearlyDuesStatementAddLine([hoaRec.Parcel_ID,hoaRec.LotNo,hoaRec.Parcel_Location,ownerRec.Mailing_Name,
+	//                         ownerRec.Owner_Phone],pdfLineHeaderArray); 
 
 	if (hoaRec.ownersList[0].AlternateMailing) {
+		if (ownerRec.Alt_Address_Line2 != '') {
+			displayAddress2 = ownerRec.Alt_Address_Line1;
+			displayAddress3 = ownerRec.Alt_Address_Line2
+			displayAddress4 = ownerRec.Alt_City+', '+ownerRec.Alt_State+' '+ownerRec.Alt_Zip;
+		} else {
+			displayAddress2 = ownerRec.Alt_Address_Line1;
+			displayAddress3 = ownerRec.Alt_City+', '+ownerRec.Alt_State+' '+ownerRec.Alt_Zip;
+		}
+
+		/*
 		yearlyDuesStatementAddLine(['','','',ownerRec.Alt_Address_Line1,''],null); 
 		if (ownerRec.Alt_Address_Line2 != '') {
 			yearlyDuesStatementAddLine(['','','',ownerRec.Alt_Address_Line2,''],null); 
 		}
 		yearlyDuesStatementAddLine(['','','',ownerRec.Alt_City+', '+ownerRec.Alt_State+' '+ownerRec.Alt_Zip,''],null); 
+		*/
 	}
 
-	pdfLineColIncrArray = [0.6,4.2,0.5];
-	yearlyDuesStatementAddLine([''],null);
+	// Display the mailing address
 	
+	pdfLineColIncrArray = [0.6,4.2,0.5];
+
+	// blank line
+	yearlyDuesStatementAddLine([''],null);
+
+	// Check for just current year dues - and prior years due !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	/*
 	$.each(hoaRec.totalDuesCalcList, function(index, rec) {
 		yearlyDuesStatementAddLine([rec.calcDesc,'$',rec.calcValue],null);
 	});
+	*/
 	yearlyDuesStatementAddLine(['Total Due:','$',hoaRec.TotalDue],null);
 
 	yearlyDuesStatementAddLine([''],null);
-
-	/*
-	var TaxYear = '';
-	$.each(hoaRec.assessmentsList, function(index, rec) {
-		pdfLineHeaderArray = null;
-		if (index == 0) {
-    	    TaxYear = rec.DateDue.substring(0,4);
-    	    
-    		pdfLineHeaderArray = [
-    			          			'Year',
-    			          			'Dues Amt',
-    			          			'Date Due',
-    			          			'Paid',
-    			          			'Date Paid'];
-    		pdfLineColIncrArray = [0.6,1.3,0.8,2.3,2.1];
-		}
-		
-		yearlyDuesStatementAddLine([rec.FY,rec.DuesAmt,rec.DateDue.substring(0,10),setBoolText(rec.Paid),rec.DatePaid.substring(0,10)],pdfLineHeaderArray);
-	});
-	*/
 
 } // End of function formatYearlyDuesStatement(hoaRec,duesStatementNotes) {
 
 //Function to add a line to the Yearly Dues Statement PDF
 function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray) {
 	pdfLineCnt++;
-	var pdfHeader = false;
 	var X = 0.0;
 	// X (horizontal), Y (vertical)
 	
 	if (pdfLineCnt == 1) {
-    	pdfHeader = true;
-	}
-
-	//if (pdfLineY > 7.8) {
-	/*
-	if (pdfLineY > 10) {
-		pdf.addPage('letter','p');
-    	pdfHeader = true;
-	}
-	*/
-
-	if (pdfHeader) {
 		pdfPageCnt++;
 
 		// X (horizontal), Y (vertical)
@@ -1297,6 +1280,12 @@ function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray) {
 		pdf.addImage(pdfLogoImgData, 'JPEG', 0.4, 0.3, 0.9, 0.9);
     	pdf.setFontSize(10);
 
+    	// Tri-fold lines
+		pdf.setLineWidth(0.02);
+		pdf.line(X,3.75,8.5,3.75);
+		pdf.line(X,7.5,8.5,7.5);
+
+    	
 		pdfLineY = pdfLineYStart;
 	}
 
