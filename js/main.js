@@ -594,8 +594,6 @@ function adminLoop(hoaPropertyRecList) {
     $.getJSON("getHoaDbData.php","parcelId="+hoaPropertyRecList[adminRecCnt].parcelId,function(hoaRec){
     	var duesStatementNotes = defaultDuesStatementNotes;
 
-		console.log("adminRecCnt = "+adminRecCnt);
-
     	// Create the PDF yearly dues statement
 		if (adminRecCnt == 0) {
 	    	pdf = new jsPDF('p', 'in', 'letter');
@@ -608,11 +606,11 @@ function adminLoop(hoaPropertyRecList) {
 	    	});
 	    	pdfPageCnt = 0;
 			pdfLineCnt = 0;
-	    	console.log("create pdf");
+	    	//console.log("create pdf");
 		} else {
 			pdfLineCnt = 0;
 			pdf.addPage('letter','p');
-			console.log("add page");
+			//console.log("add page");
 		}
 
     	// Call function to format the yearly dues statement for an individual property
@@ -636,8 +634,8 @@ function adminLoop(hoaPropertyRecList) {
 		}
 		
 		adminRecCnt++;
-		//if (adminRecCnt < hoaPropertyRecList.length) {
-		if (adminRecCnt < 4) {
+		if (adminRecCnt < hoaPropertyRecList.length) {
+		//if (adminRecCnt < 4) {
 			setTimeout(adminLoop, 0, hoaPropertyRecList);
 		} else {
 			//$("#AdminProgress").removeClass("progress");
@@ -646,7 +644,8 @@ function adminLoop(hoaPropertyRecList) {
     		$("#ResultMessage").html("Yearly dues statements completed, total = "+adminRecCnt);
 
 			// Output as Data URI
-			pdf.save('JJKTestDuesStatements.pdf');
+    		
+    		pdf.save(formatDate()+"-YearlyDuesStatements.pdf");
 
 		}
     });
@@ -1207,9 +1206,6 @@ function formatYearlyDuesStatement(hoaRec,duesStatementNotes) {
 	pdfTitle = "Member Dues Statement";
 	pdfTimestamp = currSysDate.toString().substr(0,24);
 	
-	//pdfPageCnt = 0;
-	//pdfLineCnt = 0;
-
 	if (duesStatementNotes.length > 0) {
 		pdfLineColIncrArray = [1.4];
 		yearlyDuesStatementAddLine([duesStatementNotes],null);
@@ -1245,6 +1241,7 @@ function formatYearlyDuesStatement(hoaRec,duesStatementNotes) {
 
 	yearlyDuesStatementAddLine([''],null);
 
+	/*
 	var TaxYear = '';
 	$.each(hoaRec.assessmentsList, function(index, rec) {
 		pdfLineHeaderArray = null;
@@ -1262,6 +1259,7 @@ function formatYearlyDuesStatement(hoaRec,duesStatementNotes) {
 		
 		yearlyDuesStatementAddLine([rec.FY,rec.DuesAmt,rec.DateDue.substring(0,10),setBoolText(rec.Paid),rec.DatePaid.substring(0,10)],pdfLineHeaderArray);
 	});
+	*/
 
 } // End of function formatYearlyDuesStatement(hoaRec,duesStatementNotes) {
 
