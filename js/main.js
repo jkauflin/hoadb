@@ -51,14 +51,13 @@ var defaultDuesStatementNotes = '';
 // Global variable for loop counter
 var adminRecCnt = 0;
 
-
 function sleep(milliseconds) {
-	  var start = new Date().getTime();
-	  for (var i = 0; i < 1e7; i++) {
+	var start = new Date().getTime();
+	for (var i = 0; i < 1e7; i++) {
 	    if ((new Date().getTime() - start) > milliseconds){
 	      break;
 	    }
-	  }
+	}
 }
 
 $.urlParam = function(name){
@@ -190,6 +189,9 @@ function setSelectOption(optVal,displayVal,selected,bg) {
 	return outOpt;
 }
 
+//==========================================================================================================================
+// Main document ready function
+//==========================================================================================================================
 $(document).ready(function(){
 	// Auto-close the collapse menu after clicking a non-dropdown menu item (in the bootstrap nav header)
 	$(document).on('click','.navbar-collapse.in',function(e) {
@@ -591,14 +593,17 @@ $(document).ready(function(){
 				"&duesAmt="+$this.attr("data-duesAmt"),function(adminRec){
     		$('*').css('cursor', 'default');
 		
-    		// Reset the loop counter
-    		adminRecCnt = 0;
-
     		if (action == 'DuesStatements') {
-				// Start asynchronous recursive loop to process the list
+        		// Reset the loop counter
+        		adminRecCnt = 0;
+				// Start asynchronous recursive loop to process the list and create Yearly Dues Statment PDF's
 				setTimeout(adminLoop, 5, adminRec.hoaPropertyRecList);
 
-    		} // End of if ($action == 'DuesStatements') {
+    		} // End of if ($action == 'DuesStatements')
+    		else {
+    			//  If not doing an asynchronous recursive loop, just use the message from the adminExecute
+        		$("#ResultMessage").html(adminRec.message);
+    		}
 		
 		}); // $.getJSON("adminExecute.php","action="+action+
 		
@@ -1196,31 +1201,27 @@ function formatYearlyDuesStatement(hoaRec,duesStatementNotes) {
 	pdfTitle = "Member Dues Statement";
 	pdfTimestamp = currSysDate.toString().substr(0,24);
 	
-
-	
-	
+	// If there are notes - print them
+	/*
 	if (duesStatementNotes.length > 0) {
 		pdfLineColIncrArray = [1.4];
 		yearlyDuesStatementAddLine([duesStatementNotes],null);
 		yearlyDuesStatementAddLine([''],null);
 	}
-	
+	*/
+
 	pdfLineHeaderArray = [
 			'Parcel Id',
-			'Lot No',
-			'Location',
-			'Owner and Alt Address',
-			'Phone'];
-	pdfLineColIncrArray = [0.6,1.4,0.8,2.2,1.9];
+			'Lot No'];
+	pdfLineColIncrArray = [0.6,1.4];
+	yearlyDuesStatementAddLine([hoaRec.Parcel_ID,hoaRec.LotNo],pdfLineHeaderArray);
 
+	
 	var displayAddress1 = ownerRec.Mailing_Name;
 	var displayAddress2 = hoaRec.Parcel_Location;
-	var displayAddress3 = "Dayton, OH  45424";
+	var displayAddress3 = hoaRec.Property_City+', '+hoaRec.Property_State+' '+hoaRec.Property_Zip;
 	var displayAddress4 = "";
 	
-	//yearlyDuesStatementAddLine([hoaRec.Parcel_ID,hoaRec.LotNo,hoaRec.Parcel_Location,ownerRec.Mailing_Name,
-	//                         ownerRec.Owner_Phone],pdfLineHeaderArray); 
-
 	if (hoaRec.ownersList[0].AlternateMailing) {
 		if (ownerRec.Alt_Address_Line2 != '') {
 			displayAddress2 = ownerRec.Alt_Address_Line1;
@@ -1230,23 +1231,20 @@ function formatYearlyDuesStatement(hoaRec,duesStatementNotes) {
 			displayAddress2 = ownerRec.Alt_Address_Line1;
 			displayAddress3 = ownerRec.Alt_City+', '+ownerRec.Alt_State+' '+ownerRec.Alt_Zip;
 		}
-
-		/*
-		yearlyDuesStatementAddLine(['','','',ownerRec.Alt_Address_Line1,''],null); 
-		if (ownerRec.Alt_Address_Line2 != '') {
-			yearlyDuesStatementAddLine(['','','',ownerRec.Alt_Address_Line2,''],null); 
-		}
-		yearlyDuesStatementAddLine(['','','',ownerRec.Alt_City+', '+ownerRec.Alt_State+' '+ownerRec.Alt_Zip,''],null); 
-		*/
 	}
 
 	// Display the mailing address
+	pdfLineColIncrArray = [1.5,3.5];
+	yearlyDuesStatementAddLine([displayAddress1,ownerRec.Owner_Name2+' '+ownerRec.Owner_Name1],null);
+	yearlyDuesStatementAddLine([displayAddress2,hoaRec.Parcel_Location],null); 
+	yearlyDuesStatementAddLine([displayAddress3,hoaRec.Property_City+', '+hoaRec.Property_State+' '+hoaRec.Property_Zip],null); 
+	yearlyDuesStatementAddLine([displayAddress4,ownerRec.Owner_Phone],null); 
 	
-	pdfLineColIncrArray = [0.6,4.2,0.5];
-
+	
 	// blank line
 	yearlyDuesStatementAddLine([''],null);
 
+	pdfLineColIncrArray = [0.6,4.2,0.5];
 	// Check for just current year dues - and prior years due !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	/*
 	$.each(hoaRec.totalDuesCalcList, function(index, rec) {
@@ -1257,6 +1255,10 @@ function formatYearlyDuesStatement(hoaRec,duesStatementNotes) {
 
 	yearlyDuesStatementAddLine([''],null);
 
+	
+	// Survey description, questions (1,2,3)
+
+	
 } // End of function formatYearlyDuesStatement(hoaRec,duesStatementNotes) {
 
 //Function to add a line to the Yearly Dues Statement PDF
@@ -1284,6 +1286,12 @@ function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray) {
 		pdf.setLineWidth(0.02);
 		pdf.line(X,3.75,8.5,3.75);
 		pdf.line(X,7.5,8.5,7.5);
+
+		// Checkboxes for survey questions
+		// empty square (X,Y, X length, Y length)
+		pdf.rect(0.5, 5.0, 0.2, 0.2); 
+		pdf.rect(0.5, 5.4, 0.2, 0.2); 
+		pdf.rect(0.5, 5.8, 0.2, 0.2); 
 
     	
 		pdfLineY = pdfLineYStart;
@@ -1337,7 +1345,7 @@ function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray) {
 	} // for (i = 0; i < pdfLineArray.length; i++) {
 	pdfLineY += pdfLineIncrement;
 	
-} // End of function reportPDFaddLine(pdfLineArray) {
+} // End of function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray) {
 
 
 function formatDuesStatementResults(hoaRec,duesStatementNotes) {
