@@ -60,3 +60,11 @@ li {
   transform: none; /*translate(0px, 0px);*/
 }
 
+/*
+td.fixedwrap
+{
+	word-wrap: break-word;
+	min-width: 150px;
+	max-width: 150px;
+}
+*/

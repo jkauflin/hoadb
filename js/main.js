@@ -41,6 +41,11 @@
  * 2016-06-24 JJK	Working on adminExecute (for yearly dues statement)
  * 2016-07-01 JJK	Got progress bar for adminExecute working by moving loop
  * 					processing into an asynchronous recursive function.
+ * 2016-07-07 JJK   Increased database field lengths for text fields and 
+ * 					updated UI. Checked comments word wrap.
+ * 					Corrected CSV output for reports to have one set of
+ * 					MailingAddress fields set from parcel location or
+ * 					Alt mailing address (if specified)
  * 
  * 					Working on creating the yearly dues statements 
  *============================================================================*/
@@ -771,7 +776,6 @@ function formatPropertyDetailResults(hoaRec){
     tr += '<tr><th class="hidden-xs">State: </th><td class="hidden-xs">'+hoaRec.Property_State+'</td></tr>';
     tr += '<tr><th class="hidden-xs">Zip Code: </th><td class="hidden-xs">'+hoaRec.Property_Zip+'</td></tr>';
     tr += '<tr><th>Total Due: </th><td>$'+hoaRec.TotalDue+'</td></tr>';
-    tr += '<tr><th>Comments: </th><td>'+hoaRec.Comments+'</td></tr>';
     
     tr += '<tr><th class="hidden-xs hidden-sm">Member: </th><td class="hidden-xs hidden-sm">'+setCheckbox(hoaRec.Member)+'</td></tr>';
     tr += '<tr><th>Vacant: </th><td>'+setCheckbox(hoaRec.Vacant)+'</td></tr>';
@@ -780,7 +784,8 @@ function formatPropertyDetailResults(hoaRec){
     tr += '<tr><th>Foreclosure: </th><td>'+setCheckbox(hoaRec.Foreclosure)+'</td></tr>';
     tr += '<tr><th>Bankruptcy: </th><td>'+setCheckbox(hoaRec.Bankruptcy)+'</td></tr>';
     tr += '<tr><th>ToBe Released: </th><td>'+setCheckbox(hoaRec.Liens_2B_Released)+'</td></tr>';
-
+    tr += '<tr><th>Comments: </th><td>'+hoaRec.Comments+'</td></tr>';
+    
     $("#PropertyDetail tbody").html(tr);
     
     var own1 = '';
@@ -925,7 +930,7 @@ function formatPropertyDetailEdit(hoaRec){
     tr += '<tr><th>Foreclosure: </th><td>'+setCheckboxEdit(hoaRec.Foreclosure,'ForeclosureCheckbox')+'</td></tr>';
     tr += '<tr><th>Bankruptcy: </th><td>'+setCheckboxEdit(hoaRec.Bankruptcy,'BankruptcyCheckbox')+'</td></tr>';
     tr += '<tr><th>ToBe Released: </th><td>'+setCheckboxEdit(hoaRec.Liens_2B_Released,'LiensCheckbox')+'</td></tr>';
-    tr += '<tr><th>Comments: </th><td>'+setInputText("PropertyComments",hoaRec.Comments,"80")+'</td></tr>';
+    tr += '<tr><th>Comments: </th><td >'+setInputText("PropertyComments",hoaRec.Comments,"90")+'</td></tr>';
 	tr += '</div>'
 	$("#EditTable tbody").html(tr);
 	//$("#EditTable2 tbody").html('');
@@ -980,7 +985,7 @@ function formatOwnerDetailEdit(hoaRec,createNew){
     tr += '<tr><th>State:</th><td>'+ setInputText("AltState",rec.Alt_State,"20")+'</td></tr>';
     tr += '<tr><th>Zip:</th><td>'+ setInputText("AltZip",rec.Alt_Zip,"20")+'</td></tr>';
     tr += '<tr><th>Owner Phone:</th><td>'+ setInputText("OwnerPhone",rec.Owner_Phone,"30")+'</td></tr>';
-    tr += '<tr><th>Comments: </th><td>'+setInputText("OwnerComments",rec.Comments,"12")+'</td></tr>';
+    tr += '<tr><th>Comments: </th><td>'+setInputText("OwnerComments",rec.Comments,"90")+'</td></tr>';
     tr += '<tr><th>Last Changed:</th><td>'+rec.LastChangedTs+'</td></tr>';
     tr += '<tr><th>Changed by:</th><td>'+rec.LastChangedBy+'</td></tr>';
 	tr += '</div>';
@@ -1055,8 +1060,8 @@ function formatAssessmentDetailEdit(hoaRec){
     tr += '<tr><th>Date Due: </th><td>'+setInputDate("DateDue",rec.DateDue,"10")+'</td></tr>';
     tr += '<tr><th>Paid: </th><td>'+setCheckboxEdit(rec.Paid,'PaidCheckbox')+'</td></tr>';
     tr += '<tr><th>Date Paid: </th><td>'+setInputDate("DatePaid",rec.DatePaid,"10")+'</td></tr>';
-    tr += '<tr><th>Payment Method: </th><td>'+setInputText("PaymentMethod",rec.PaymentMethod,"20")+'</td></tr>';
-    tr += '<tr><th>Comments: </th><td>'+setInputText("AssessmentsComments",rec.Comments,"10")+'</td></tr>';
+    tr += '<tr><th>Payment Method: </th><td>'+setInputText("PaymentMethod",rec.PaymentMethod,"50")+'</td></tr>';
+    tr += '<tr><th>Comments: </th><td>'+setInputText("AssessmentsComments",rec.Comments,"90")+'</td></tr>';
     tr += '<tr><th>Last Changed: </th><td>'+rec.LastChangedTs+'</td></tr>';
     tr += '<tr><th>Changed by: </th><td>'+rec.LastChangedBy+'</td></tr>';
 	tr += '</div>';
@@ -1086,7 +1091,7 @@ function formatAssessmentDetailEdit(hoaRec){
     tr += '<tr><th>StopInterestCalc: </th><td>'+setCheckboxEdit(rec.StopInterestCalc,'StopInterestCalcCheckbox')+'</td></tr>';
     tr += '<tr><th>FilingFeeInterest: </th><td>'+setInputText("FilingFeeInterest",rec.FilingFeeInterest,"10")+'</td></tr>';
     tr += '<tr><th>AssessmentInterest: </th><td>'+setInputText("AssessmentInterest",rec.AssessmentInterest,"10")+'</td></tr>';
-    tr += '<tr><th>LienComment: </th><td>'+setInputText("LienComment",rec.LienComment,"10")+'</td></tr>';
+    tr += '<tr><th>LienComment: </th><td>'+setInputText("LienComment",rec.LienComment,"90")+'</td></tr>';
 	tr += '</div>';
 	$("#EditTable2Col2 tbody").html(tr);
 
@@ -1129,67 +1134,65 @@ function formatAssessmentDetailEdit(hoaRec){
 
 
 //--------------------------------------------------------------------------------------------------------------------------------
-//Asynchronous recursive loop to process the list for the AdminExecute
+// Asynchronous recursive loop to process the list for the AdminExecute
 //--------------------------------------------------------------------------------------------------------------------------------
 function adminLoop(hoaPropertyRecList) {
 	// getJSON to get detail data on each one and call function to add dues statement to a PDF
-
-	//console.log("adminRec = "+adminRec+", Parcel Id = "+hoaPropertyRecList[adminRec].parcelId);
-  $.getJSON("getHoaDbData.php","parcelId="+hoaPropertyRecList[adminRecCnt].parcelId,function(hoaRec){
-  	var duesStatementNotes = defaultDuesStatementNotes;
-
-  	// Create the PDF yearly dues statement
-	if (adminRecCnt == 0) {
-		// Add a progress bar 
-  		$("#ResultMessage").html('<div id="AdminProgress" class="progress" ></div>');
-
-  		pdf = new jsPDF('p', 'in', 'letter');
-    	pdf.setProperties({
-    	    title: 'Test JJK Doc',
-    	    subject: 'This is the subject',
-    	    author: 'John Kauflin',
-    	    keywords: 'generated, javascript, web 2.0, ajax',
-    	    creator: 'MEEE'
-    	});
-    	pdfPageCnt = 0;
-		pdfLineCnt = 0;
-	} else {
-		// If not the first record, reset the page count and add a new page
-		pdfLineCnt = 0;
-		pdf.addPage('letter','p');
-	}
-
-  	// Call function to format the yearly dues statement for an individual property
-  	formatYearlyDuesStatement(hoaRec,duesStatementNotes);
-
-  	// Calculate the percent done for the progress bar
-	recTotal = hoaPropertyRecList.length-1;
-	percentDone = Math.round((adminRecCnt/recTotal)*100);
-	//console.log(adminRecCnt+", percentDone = "+percentDone+", Parcel Id = "+hoaRec.Parcel_ID);
+	$.getJSON("getHoaDbData.php","parcelId="+hoaPropertyRecList[adminRecCnt].parcelId,function(hoaRec){
+	  	var duesStatementNotes = defaultDuesStatementNotes;
 	
-	// Create the progress bar the first time through
-	if (adminRecCnt == 0) {
-		// Add progress bar class
-		var progressBar = $('<div>').prop('id',"AdminProgressBar").prop('class',"progress-bar").attr('role',"progressbar").attr('aria-valuenow',"0").attr('aria-valuemin',"0").attr('aria-valuemax',"100").css('width',"0%");
-		$("#AdminProgress").html(progressBar);
-	} else {
-	    // update the progress bar width
-	    $("#AdminProgressBar").width(percentDone+'%').attr('aria-valuenow', percentDone);
-	    // and display the numeric value
-	    $("#AdminProgressBar").html(percentDone+'%');
-	}
+	  	// Create the PDF yearly dues statement
+		if (adminRecCnt == 0) {
+			// Add a progress bar 
+	  		$("#ResultMessage").html('<div id="AdminProgress" class="progress" ></div>');
 	
-	adminRecCnt++;
-	if (adminRecCnt < hoaPropertyRecList.length) {
-	//if (adminRecCnt < 4) {
-		// If loop not complete, recursively call the loop function
-		setTimeout(adminLoop, 0, hoaPropertyRecList);
-	} else {
-		// If loop completed, display a completion message and download the PDF file
-		$("#ResultMessage").html("Yearly dues statements completed, total = "+adminRecCnt);
-		pdf.save(formatDate()+"-YearlyDuesStatements.pdf");
-	}
-  });
+	  		pdf = new jsPDF('p', 'in', 'letter');
+	    	pdf.setProperties({
+	    	    title: 'Test JJK Doc',
+	    	    subject: 'This is the subject',
+	    	    author: 'John Kauflin',
+	    	    keywords: 'generated, javascript, web 2.0, ajax',
+	    	    creator: 'MEEE'
+	    	});
+	    	pdfPageCnt = 0;
+			pdfLineCnt = 0;
+		} else {
+			// If not the first record, reset the page count and add a new page
+			pdfLineCnt = 0;
+			pdf.addPage('letter','p');
+		}
+	
+	  	// Call function to format the yearly dues statement for an individual property
+	  	formatYearlyDuesStatement(hoaRec,duesStatementNotes);
+	
+	  	// Calculate the percent done for the progress bar
+		recTotal = hoaPropertyRecList.length-1;
+		percentDone = Math.round((adminRecCnt/recTotal)*100);
+		//console.log(adminRecCnt+", percentDone = "+percentDone+", Parcel Id = "+hoaRec.Parcel_ID);
+		
+		// Create the progress bar the first time through
+		if (adminRecCnt == 0) {
+			// Add progress bar class
+			var progressBar = $('<div>').prop('id',"AdminProgressBar").prop('class',"progress-bar").attr('role',"progressbar").attr('aria-valuenow',"0").attr('aria-valuemin',"0").attr('aria-valuemax',"100").css('width',"0%");
+			$("#AdminProgress").html(progressBar);
+		} else {
+		    // update the progress bar width
+		    $("#AdminProgressBar").width(percentDone+'%').attr('aria-valuenow', percentDone);
+		    // and display the numeric value
+		    $("#AdminProgressBar").html(percentDone+'%');
+		}
+		
+		adminRecCnt++;
+		if (adminRecCnt < hoaPropertyRecList.length) {
+		//if (adminRecCnt < 4) {
+			// If loop not complete, recursively call the loop function
+			setTimeout(adminLoop, 0, hoaPropertyRecList);
+		} else {
+			// If loop completed, display a completion message and download the PDF file
+			$("#ResultMessage").html("Yearly dues statements completed, total = "+adminRecCnt);
+			pdf.save(formatDate()+"-YearlyDuesStatements.pdf");
+		}
+	}); // $.getJSON("getHoaDbData.php","parcelId="+hoaPropertyRecList[adminRecCnt].parcelId,function(hoaRec){
 	
 } // function adminLoop(hoaPropertyRecList) {
 
@@ -1677,6 +1680,8 @@ function formatReportList(reportName,reportTitle,reportList){
 							'Paid'];
 					pdfLineColIncrArray = [0.75,0.5,1.3,0.8,2.3,2.3,1.3,0.8];
 					
+					// maybe for CSV just 1 set of mailing address fields (with either parcel location or Alt. address)
+					
 					csvLine = csvFilter(index+1);
 					csvLine += ',' + csvFilter("ParcelID");
 					csvLine += ',' + csvFilter("LotNo");
@@ -1685,11 +1690,11 @@ function formatReportList(reportName,reportTitle,reportList){
 					csvLine += ',' + csvFilter("OwnerName2");
 					csvLine += ',' + csvFilter("OwnerPhone");
 					csvLine += ',' + csvFilter("MailingName");
-					csvLine += ',' + csvFilter("AltAddressLine1");
-					csvLine += ',' + csvFilter("AltAddressLine2");
-					csvLine += ',' + csvFilter("AltCity");
-					csvLine += ',' + csvFilter("AltState");
-					csvLine += ',' + csvFilter("AltZip");
+					csvLine += ',' + csvFilter("MailingAddressLine1");
+					csvLine += ',' + csvFilter("MailingAddressLine2");
+					csvLine += ',' + csvFilter("MailingCity");
+					csvLine += ',' + csvFilter("MailingState");
+					csvLine += ',' + csvFilter("MailingZip");
 					csvLine += ',' + csvFilter("FiscalYear");
 					csvLine += ',' + csvFilter("DuesAmt");
 					csvLine += ',' + csvFilter("Paid");
@@ -1755,7 +1760,6 @@ function formatReportList(reportName,reportTitle,reportList){
 					reportPDFaddLine(['','','','',hoaRec.ownersList[0].Alt_City+', '+hoaRec.ownersList[0].Alt_State+' '+hoaRec.ownersList[0].Alt_Zip,'','','']);
 				}
 
-				
 				csvLine = csvFilter(index+1);
 				csvLine += ',' + csvFilter(hoaRec.Parcel_ID);
 				csvLine += ',' + csvFilter(hoaRec.LotNo);
@@ -1764,11 +1768,22 @@ function formatReportList(reportName,reportTitle,reportList){
 				csvLine += ',' + csvFilter(hoaRec.ownersList[0].Owner_Name2);
 				csvLine += ',' + csvFilter(hoaRec.ownersList[0].Owner_Phone);
 				csvLine += ',' + csvFilter(hoaRec.ownersList[0].Mailing_Name);
-				csvLine += ',' + csvFilter(hoaRec.ownersList[0].Alt_Address_Line1);
-				csvLine += ',' + csvFilter(hoaRec.ownersList[0].Alt_Address_Line2);
-				csvLine += ',' + csvFilter(hoaRec.ownersList[0].Alt_City);
-				csvLine += ',' + csvFilter(hoaRec.ownersList[0].Alt_State);
-				csvLine += ',' + csvFilter(hoaRec.ownersList[0].Alt_Zip);
+
+				if (hoaRec.ownersList[0].AlternateMailing) {
+					csvLine += ',' + csvFilter(hoaRec.ownersList[0].Alt_Address_Line1);
+					csvLine += ',' + csvFilter(hoaRec.ownersList[0].Alt_Address_Line2);
+					csvLine += ',' + csvFilter(hoaRec.ownersList[0].Alt_City);
+					csvLine += ',' + csvFilter(hoaRec.ownersList[0].Alt_State);
+					csvLine += ',' + csvFilter(hoaRec.ownersList[0].Alt_Zip);
+					
+				} else {
+					csvLine += ',' + csvFilter(hoaRec.Parcel_Location);
+					csvLine += ',' + csvFilter("");
+					csvLine += ',' + csvFilter(hoaRec.Property_City);
+					csvLine += ',' + csvFilter(hoaRec.Property_State);
+					csvLine += ',' + csvFilter(hoaRec.Property_Zip);
+				}
+
 				csvLine += ',' + csvFilter(reportYear);
 				csvLine += ',' + csvFilter(hoaRec.assessmentsList[0].DuesAmt);
 				csvLine += ',' + csvFilter(setBoolText(hoaRec.assessmentsList[0].Paid));
