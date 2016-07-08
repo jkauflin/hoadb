@@ -520,7 +520,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				
 				// Only do the Total calc if FY is empty - need to check all years
 				//if (empty($fy)) {
-				
+
 				//-------------------------------------------------------------------------------------------------------------------------------
 				// Logic to calculate the Total Due from assessments and liens
 				//-------------------------------------------------------------------------------------------------------------------------------
@@ -549,6 +549,32 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 					}
 				}
+
+				/*
+				 Dues Total calculation logic
+				 If Assessment NOT Paid, Assessment amount is added
+				 Lien
+				 Open
+				 If Lien is Open (and Stop Interest Calc is NOT set), Assessment Interest (from Date Due) is added
+				 Paid
+				 Released
+				 	Release Fee - added if entered
+				 Closed
+				
+				 Stop Interest Calc
+				
+				 What if Assessment Paid, but Lien still Open???
+
+					$onlyCurrYearDue = false;  (logical for when to show Paypal button - if just simple current fee dues (no liens or previous)
+						*** if this is the case, give a message on the screen to contact Treasurer ***
+					
+					FilingFeeInterest - interest on the Filing Fee (when Lien Open and NOT stop calculating interest)
+						if (!$hoaAssessmentRec->StopInterestCalc) {
+							$hoaAssessmentRec->FilingFeeInterest = calcCompoundInterest($hoaAssessmentRec->FilingFee,$hoaAssessmentRec->DateFiled);
+						}
+						
+					
+				 */
 				
 				// If there is an Open Lien (not Paid, Released, or Closed)
 				if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open') {
@@ -556,6 +582,8 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 					// calc interest - start date   WHEN TO CALC INTEREST
 					// unpaid fee amount and interest since the Filing Date
 
+					// if there is a Filing Fee (on an Open Lien), then check to calc interest (or use stored value)
+					
 					if ($hoaAssessmentRec->FilingFee > 0) {
 						// shouldn't have to do this for the ones that are stored as Decimal right???  shouldn't have to parse, floatval, or round
 						//$numericStr = preg_replace('/[\x01-\x2D\x2F\x3A-\x7F]+/', '', $hoaAssessmentRec->DuesAmt);
@@ -600,16 +628,22 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 		//---------------------------------------------------------------------------------------------------
 		// Only display payment button if something is owed
 		// For now, only set payment button if just the current year dues are owed (no other years or open liens)
-		if ($hoaRec->TotalDue > 0 && $onlyCurrYearDue) {
-			// Get the payment button form from the hoaDbCred.php file (site specific)
-			$hoaRec->paymentButton = $paypalFixedAmtButtonForm;
-			$hoaRec->paymentButton .= $paypalFixedAmtButtonInput;
-			$customValues = $parcelId . ',' . $ownerId . ',' . $fyPayment . ',' .$hoaRec->TotalDue;
-			$hoaRec->paymentButton .= '<input type="hidden" name="custom" value="' . $customValues . '">';
-			$hoaRec->paymentButton .= '</form>';
-			$hoaRec->paymentInstructions = '($4.00 processing fee will be added for online payment)';
+		if ($hoaRec->TotalDue > 0) {
+			if ($onlyCurrYearDue) {
+				// Get the payment button form from the hoaDbCred.php file (site specific)
+				$hoaRec->paymentButton = $paypalFixedAmtButtonForm;
+				$hoaRec->paymentButton .= $paypalFixedAmtButtonInput;
+				$customValues = $parcelId . ',' . $ownerId . ',' . $fyPayment . ',' .$hoaRec->TotalDue;
+				$hoaRec->paymentButton .= '<input type="hidden" name="custom" value="' . $customValues . '">';
+				$hoaRec->paymentButton .= '</form>';
+				$hoaRec->paymentInstructions = '($4.00 processing fee will be added for online payment)';
+			} else {
+				// Non-online Paypal payment instructions
+				$hoaRec->paymentInstructions = '(general payment instructions - contact Treasurer)';
+				
+			}
 		} // End of if ($hoaRec->TotalDue > 0) {
-		
+
 		
 		// Get sales records for this parcel		
 		if (empty($saleDate)) {

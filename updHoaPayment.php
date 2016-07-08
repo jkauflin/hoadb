@@ -74,13 +74,32 @@ function updAssessmentPaid($parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_e
 			// thank you for your payment of X, you are all paid up, go here to print a dues statement
 			// thank you for your payment of X, you still owe Y, go here to check details and get a dues statement
 			// *** if something happened - send email to admin (and to payer?)
+
+			$outputStr .= '<br>$parcelId = ' . $parcelId;
+			$outputStr .= '<br>$ownerId = ' . $ownerId;
+			$outputStr .= '<br>$fy = ' . $fy;
+			$outputStr .= '<br>$txn_id = ' . $txn_id;
+			$outputStr .= '<br>$payment_date = ' . $payment_date;
+			$outputStr .= '<br>$payer_email = ' . $payer_email;
+			$outputStr .= '<br>$payment_amt = ' . $payment_amt;
+			$outputStr .= '<br>$payment_fee = ' . $payment_fee;
 			
-			$outputStr = $custom;
-			$subject = 'HOA Payment Notification ';
-			$messageStr = '<h2>HOA Payment Notification</h2>' . $outputStr;
-			//sendHtmlEMail(getConfigVal("salesReportEmailList"),$subject,$messageStr,getConfigVal("fromEmailAddress"));
-			//sendHtmlEMail("test email",$subject,$messageStr,getConfigVal("fromEmailAddress"));
-					
+			/*
+			$parcelId = R72617307 0001
+			$ownerId = 1
+			$fy = 2016
+			$txn_id = 9T2202200S217462T
+			$payment_date = 09:42:13 Jul 08, 2016 PDT
+			$payer_email = president-buyer@grha-dayton.org
+			$payment_amt = 119.00
+			$payment_fee = 3.75
+			*/
+			
+			$subject = 'GRHA Payment Notification';
+			$messageStr = '<h3>GRHA Payment Notification</h3>' . $outputStr;
+			sendHtmlEMail("johnkauflin@gmail.com",$subject,$messageStr,getConfigVal("fromEmailAddress"));
+			//sendHtmlEMail(getConfigValDB($conn,"paymentEmailList"),$subject,$messageStr,getConfigVal("fromEmailAddress"));
+			
 			
 		} // End of if Transaction not found
 		

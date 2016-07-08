@@ -7,12 +7,15 @@
  * Modification History
  * 2015-03-06 JJK 	Initial version to get data
  * 2016-04-10 JJK	Added new lien fields to the update 
+ * 2016-07-08 JJK   Added logic to set current date on paid and lien if not 
+ * 					specified
  *============================================================================*/
 
 include 'commonUtil.php';
 // Include table record classes and db connection parameters
 include 'hoaDbCommon.php';
 
+	$currDateStr = date("Y-m-d");
 	$username = getUsername();
 
 	// If they are set, get input parameters from the REQUEST
@@ -44,6 +47,17 @@ include 'hoaDbCommon.php';
 	if ($lienBoolean && $disposition == '') {
 		$disposition = 'Open';
 	}
+	
+	// if paid and Date Paid not set - set it to current date?
+	if ($paidBoolean && $datePaid == '') {
+		$datePaid = $currDateStr;
+	}
+	
+	// if lien and Date Filed not set - set to current date?
+	if ($lienBoolean && $dateFiled == '') {
+		$dateFiled = $currDateStr;
+	}
+
 	
 	//--------------------------------------------------------------------------------------------------------
 	// Create connection to the database

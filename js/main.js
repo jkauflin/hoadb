@@ -46,13 +46,16 @@
  * 					Corrected CSV output for reports to have one set of
  * 					MailingAddress fields set from parcel location or
  * 					Alt mailing address (if specified)
+ * 2016-07-08 JJK   Modified to get all config list values on page load
  * 
  * 					Working on creating the yearly dues statements 
  *============================================================================*/
 
 var countyTreasurerUrl = '';
 var countyAuditorUrl = '';
-var defaultDuesStatementNotes = '';
+var duesStatementNotes = '';
+var onlinePaymentInstructions = '';
+var offlinePaymentInstructions = '';
 // Global variable for loop counter
 var adminRecCnt = 0;
 
@@ -221,18 +224,19 @@ $(document).ready(function(){
 	});
 
 	// Get the Config values
-	$.getJSON("getHoaConfigList.php","ConfigName=countyTreasurerUrl",function(hoaConfigRecList){
+	$.getJSON("getHoaConfigList.php","",function(hoaConfigRecList){
 		$.each(hoaConfigRecList, function(index, configRec) {
-			countyTreasurerUrl = configRec.ConfigValue; });
-	});
-	$.getJSON("getHoaConfigList.php","ConfigName=countyAuditorUrl",function(hoaConfigRecList){
-		$.each(hoaConfigRecList, function(index, configRec) {
-			countyAuditorUrl = configRec.ConfigValue; });
-	});
-
-	$.getJSON("getHoaConfigList.php","ConfigName=duesStatementNotes",function(hoaConfigRecList){
-		$.each(hoaConfigRecList, function(index, configRec) {
-			defaultDuesStatementNotes = configRec.ConfigValue; 
+			if (configRec.ConfigName == "duesStatementNotes") {
+				duesStatementNotes = configRec.ConfigValue; 
+			} else if (configRec.ConfigName == "countyTreasurerUrl") {
+				countyTreasurerUrl = configRec.ConfigValue;
+			} else if (configRec.ConfigName == "countyAuditorUrl") {
+				countyAuditorUrl = configRec.ConfigValue;
+			} else if (configRec.ConfigName == "OnlinePaymentInstructions") {
+				onlinePaymentInstructions = configRec.ConfigValue;
+			} else if (configRec.ConfigName == "OfflinePaymentInstructions") {
+				offlinePaymentInstructions = configRec.ConfigValue;
+			}
 		});
 	});
 
@@ -317,17 +321,9 @@ $(document).ready(function(){
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
         	//console.log("Format Dues Statement, parcel = "+$this.attr("data-ParcelId")+", OwnerId = "+hoaRec.ownersList[0].OwnerID);
 
-        	var duesStatementNotes = defaultDuesStatementNotes;
-        	$.getJSON("getHoaConfigList.php","ConfigName=duesStatementNotes",function(hoaConfigRecList){
-        		$.each(hoaConfigRecList, function(index, configRec) {
-        			duesStatementNotes = configRec.ConfigValue; 
-        		});
-        		
-                formatDuesStatementResults(hoaRec,duesStatementNotes);
-        	    $('*').css('cursor', 'default');
-                $("#DuesStatementPage").modal();
-
-        	});
+            formatDuesStatementResults(hoaRec);
+    	    $('*').css('cursor', 'default');
+            $("#DuesStatementPage").modal();
 
         	/*
             $.get("handlePaymentNotificationTEST.php","parcelId="+hoaRec.Parcel_ID+"&ownerId="+hoaRec.ownersList[0].OwnerID,function(results){
@@ -883,7 +879,7 @@ function formatPropertyDetailResults(hoaRec){
 	    tr = tr +   '<td class="hidden-xs">'+rec.DatePaid.substring(0,10)+'</td>';
 		tr = tr +   '<td class="hidden-xs hidden-sm">'+rec.DateDue.substring(0,10)+'</td>';
 	    tr = tr +   '<td class="hidden-xs">'+rec.PaymentMethod+'</td>';
-	    tr = tr +   '<td class="hidden-xs">'+rec.Comments+'</td>';
+	    tr = tr +   '<td class="hidden-xs">'+rec.Comments+' '+rec.LienComment+'</td>';
 	    tr = tr + '</tr>';
 	});
     $("#PropertyAssessments tbody").html(tr);
@@ -1139,9 +1135,8 @@ function formatAssessmentDetailEdit(hoaRec){
 function adminLoop(hoaPropertyRecList) {
 	// getJSON to get detail data on each one and call function to add dues statement to a PDF
 	$.getJSON("getHoaDbData.php","parcelId="+hoaPropertyRecList[adminRecCnt].parcelId,function(hoaRec){
-	  	var duesStatementNotes = defaultDuesStatementNotes;
-	
-	  	// Create the PDF yearly dues statement
+
+		// Create the PDF yearly dues statement
 		if (adminRecCnt == 0) {
 			// Add a progress bar 
 	  		$("#ResultMessage").html('<div id="AdminProgress" class="progress" ></div>');
@@ -1163,7 +1158,7 @@ function adminLoop(hoaPropertyRecList) {
 		}
 	
 	  	// Call function to format the yearly dues statement for an individual property
-	  	formatYearlyDuesStatement(hoaRec,duesStatementNotes);
+	  	formatYearlyDuesStatement(hoaRec);
 	
 	  	// Calculate the percent done for the progress bar
 		recTotal = hoaPropertyRecList.length-1;
@@ -1197,7 +1192,7 @@ function adminLoop(hoaPropertyRecList) {
 } // function adminLoop(hoaPropertyRecList) {
 
 // function to format a Yearly dues statement
-function formatYearlyDuesStatement(hoaRec,duesStatementNotes) {
+function formatYearlyDuesStatement(hoaRec) {
 	ownerRec = hoaRec.ownersList[0];
 
 	var currSysDate = new Date();
@@ -1262,7 +1257,7 @@ function formatYearlyDuesStatement(hoaRec,duesStatementNotes) {
 	// Survey description, questions (1,2,3)
 
 	
-} // End of function formatYearlyDuesStatement(hoaRec,duesStatementNotes) {
+} // End of function formatYearlyDuesStatement(hoaRec) {
 
 //Function to add a line to the Yearly Dues Statement PDF
 function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray) {
@@ -1351,7 +1346,7 @@ function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray) {
 } // End of function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray) {
 
 
-function formatDuesStatementResults(hoaRec,duesStatementNotes) {
+function formatDuesStatementResults(hoaRec) {
     var tr = '';
     var checkedStr = '';
 
@@ -1403,8 +1398,20 @@ function formatDuesStatementResults(hoaRec,duesStatementNotes) {
     $("#DuesStatementPropertyTable tbody").html(tr);
 
     // If enabled, payment button and instructions will have values, else they will be blank if online payment is not allowed
-	$("#PayDues").html(hoaRec.paymentButton);
-	$("#PayDuesInstructions").html(hoaRec.paymentInstructions);
+    if (hoaRec.TotalDue > 0) {
+    	$("#PayDues").html(hoaRec.paymentButton);
+    	if (hoaRec.paymentButton != '') {
+        	$("#PayDuesInstructions").html(onlinePaymentInstructions);
+    	} else {
+        	$("#PayDuesInstructions").html(offlinePaymentInstructions);
+    	}
+    }
+
+    
+/*    
+clear null's in assessment records after initial import
+update hoa_assessments set `LienRefNo`='', `DateFiled`='', `FilingFee`='', `ReleaseFee`='', `DateReleased`='', `LienDatePaid`='', `AmountPaid`='', `FilingFeeInterest`='', `AssessmentInterest`='', `LienComment`=''
+*/    
 
     duesStatementDownloadLinks.append(
 			$('<a>').prop('id','DownloadDuesStatementPDF')
