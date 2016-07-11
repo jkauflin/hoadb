@@ -51,11 +51,20 @@
  * 					Working on creating the yearly dues statements 
  *============================================================================*/
 
+var hoaName = "Gander Road Homeowners Association";
+var hoaAddress1 = "P.O. Box 24763";
+var hoaAddress2 = "Dayton, OH 45424-4763";
+var fiscalYear = '';
+
 var countyTreasurerUrl = '';
 var countyAuditorUrl = '';
 var duesStatementNotes = '';
 var onlinePaymentInstructions = '';
 var offlinePaymentInstructions = '';
+var surveyInstructions = '';
+var surveyQuestion1 = '';
+var surveyQuestion2 = '';
+var surveyQuestion3 = '';
 // Global variable for loop counter
 var adminRecCnt = 0;
 
@@ -236,6 +245,14 @@ $(document).ready(function(){
 				onlinePaymentInstructions = configRec.ConfigValue;
 			} else if (configRec.ConfigName == "OfflinePaymentInstructions") {
 				offlinePaymentInstructions = configRec.ConfigValue;
+			} else if (configRec.ConfigName == "SurveyInstructions") {
+				surveyInstructions = configRec.ConfigValue;
+			} else if (configRec.ConfigName == "SurveyQuestion1") {
+				surveyQuestion1 = configRec.ConfigValue;
+			} else if (configRec.ConfigName == "SurveyQuestion2") {
+				surveyQuestion2 = configRec.ConfigValue;
+			} else if (configRec.ConfigName == "SurveyQuestion3") {
+				surveyQuestion3 = configRec.ConfigValue;
 			}
 		});
 	});
@@ -595,6 +612,10 @@ $(document).ready(function(){
     		$('*').css('cursor', 'default');
 		
     		if (action == 'DuesStatements') {
+    			var currSysDate = new Date();
+    			pdfTitle = "Member Dues Statement";
+    			pdfTimestamp = currSysDate.toString().substr(0,24);
+    			
         		// Reset the loop counter
         		adminRecCnt = 0;
 				// Start asynchronous recursive loop to process the list and create Yearly Dues Statment PDF's
@@ -1143,11 +1164,9 @@ function adminLoop(hoaPropertyRecList) {
 	
 	  		pdf = new jsPDF('p', 'in', 'letter');
 	    	pdf.setProperties({
-	    	    title: 'Test JJK Doc',
-	    	    subject: 'This is the subject',
-	    	    author: 'John Kauflin',
-	    	    keywords: 'generated, javascript, web 2.0, ajax',
-	    	    creator: 'MEEE'
+	    	    title: pdfTitle,
+	    	    subject: pdfTitle,
+	    	    author: hoaName
 	    	});
 	    	pdfPageCnt = 0;
 			pdfLineCnt = 0;
@@ -1194,11 +1213,8 @@ function adminLoop(hoaPropertyRecList) {
 // function to format a Yearly dues statement
 function formatYearlyDuesStatement(hoaRec) {
 	ownerRec = hoaRec.ownersList[0];
+	fiscalYear = hoaRec.assessmentsList[0].FY;
 
-	var currSysDate = new Date();
-	pdfTitle = "Member Dues Statement";
-	pdfTimestamp = currSysDate.toString().substr(0,24);
-	
 	// If there are notes - print them
 	/*
 	if (duesStatementNotes.length > 0) {
@@ -1208,12 +1224,11 @@ function formatYearlyDuesStatement(hoaRec) {
 	}
 	*/
 
-	pdfLineHeaderArray = [
-			'Parcel Id',
-			'Lot No'];
-	pdfLineColIncrArray = [0.6,1.4];
-	yearlyDuesStatementAddLine([hoaRec.Parcel_ID,hoaRec.LotNo],pdfLineHeaderArray);
-
+	// hoa name and address for return label
+	pdfLineColIncrArray = [1.0];
+	yearlyDuesStatementAddLine([hoaName],null); 
+	yearlyDuesStatementAddLine([hoaAddress1],null); 
+	yearlyDuesStatementAddLine([hoaAddress2],null); 
 	
 	var displayAddress1 = ownerRec.Mailing_Name;
 	var displayAddress2 = hoaRec.Parcel_Location;
@@ -1232,17 +1247,22 @@ function formatYearlyDuesStatement(hoaRec) {
 	}
 
 	// Display the mailing address
-	pdfLineColIncrArray = [1.5,3.5];
-	yearlyDuesStatementAddLine([displayAddress1,ownerRec.Owner_Name2+' '+ownerRec.Owner_Name1],null);
+	pdfLineColIncrArray = [1.0,4.0];
+	yearlyDuesStatementAddLine(["","Parcel Id: "+hoaRec.Parcel_ID],null); 
+	yearlyDuesStatementAddLine(["","Lot No: "+hoaRec.LotNo],null); 
+	yearlyDuesStatementAddLine([displayAddress1,ownerRec.Owner_Name1+' '+ownerRec.Owner_Name2],null);
 	yearlyDuesStatementAddLine([displayAddress2,hoaRec.Parcel_Location],null); 
 	yearlyDuesStatementAddLine([displayAddress3,hoaRec.Property_City+', '+hoaRec.Property_State+' '+hoaRec.Property_Zip],null); 
 	yearlyDuesStatementAddLine([displayAddress4,ownerRec.Owner_Phone],null); 
 	
 	
+	// explanation of what this is, and how to pay, how to contact us 
+	// address correction area
+	
 	// blank line
 	yearlyDuesStatementAddLine([''],null);
 
-	pdfLineColIncrArray = [0.6,4.2,0.5];
+	pdfLineColIncrArray = [3.5,1.0,0.5];
 	// Check for just current year dues - and prior years due !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	/*
 	$.each(hoaRec.totalDuesCalcList, function(index, rec) {
@@ -1251,11 +1271,24 @@ function formatYearlyDuesStatement(hoaRec) {
 	*/
 	yearlyDuesStatementAddLine(['Total Due:','$',hoaRec.TotalDue],null);
 
-	yearlyDuesStatementAddLine([''],null);
+	// Address corrections
+	pdfLineY = 4.3;
+	pdfLineColIncrArray = [0.6];
+	yearlyDuesStatementAddLine(["Enter any information that needs to be corrected:"],null);
+	yearlyDuesStatementAddLine([""],null);
+	yearlyDuesStatementAddLine(["Owner Name:"],null);
+	yearlyDuesStatementAddLine(["Address Line 1:"],null);
+	yearlyDuesStatementAddLine(["Address Line 2:"],null);
+	yearlyDuesStatementAddLine(["City State Zip:"],null);
+	yearlyDuesStatementAddLine(["Phone Number:"],null);
 
-	
 	// Survey description, questions (1,2,3)
-
+	pdfLineY = 6.3;
+	pdfLineColIncrArray = [1.0];
+	yearlyDuesStatementAddLine([surveyInstructions],null);
+	yearlyDuesStatementAddLine([surveyQuestion1],null);
+	yearlyDuesStatementAddLine([surveyQuestion2],null);
+	yearlyDuesStatementAddLine([surveyQuestion3],null);
 	
 } // End of function formatYearlyDuesStatement(hoaRec) {
 
@@ -1265,34 +1298,51 @@ function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray) {
 	var X = 0.0;
 	// X (horizontal), Y (vertical)
 	
+	// Print header and graphic sections
 	if (pdfLineCnt == 1) {
 		pdfPageCnt++;
 
 		// X (horizontal), Y (vertical)
-		pdf.setFontSize(15);
-		pdf.text(1.5, 0.6, "Gander Road Homeowners Association");
+		pdf.setFontSize(9);
+		pdf.text(8.05, 0.3, pdfPageCnt.toString());
 		pdf.setFontSize(13);
-		pdf.text(1.5, 0.9, pdfTitle+" - "+pdfTimestamp);
-		pdf.setFontSize(10);
-		pdf.text(6.5, 0.6, "P.O. Box 24763");
-		pdf.text(6.5, 0.8, "Dayton, OH 45424-4763");
+		pdf.text(4.5, 0.5, hoaName);
+		pdf.setFontSize(11);
+		//pdf.text(4.5, 0.8, pdfTitle+" - "+pdfTimestamp);
+		pdf.text(4.5, 0.8, pdfTitle+" for Fiscal Year "+fiscalYear);
 		
-		pdf.addImage(pdfLogoImgData, 'JPEG', 0.4, 0.3, 0.9, 0.9);
-    	pdf.setFontSize(10);
+		//pdf.addImage(pdfLogoImgData, 'JPEG', 0.4, 0.3, 0.9, 0.9);
+		pdf.addImage(pdfLogoImgData, 'JPEG', 0.4, 0.6, 0.5, 0.5);
 
     	// Tri-fold lines
+		pdf.setLineWidth(0.01);
+		pdf.line(X, 3.75, 8.5, 3.75);
 		pdf.setLineWidth(0.02);
-		pdf.line(X,3.75,8.5,3.75);
-		pdf.line(X,7.5,8.5,7.5);
+		var segmentLength = 0.2;
+		dottedLine(0, 7.5, 8.5, 7.5, segmentLength)
+		
+		pdf.setFontSize(9);
+		pdf.text(3.0, 7.45, "Detach and mail above portion with your payment");
+		pdf.text(3.45, 7.65, "Keep below portion for your records");
 
+
+		pdf.rect(0.4, 4.0, 4.4, 2.0); 
+		pdf.line(1.7, 4.65, 4.5, 4.65);
+		pdf.line(1.7, 4.95, 4.5, 4.95);
+		pdf.line(1.7, 5.25, 4.5, 5.25);
+		pdf.line(1.7, 5.55, 4.5, 5.55);
+		pdf.line(1.7, 5.85, 4.5, 5.85);
+
+		
 		// Checkboxes for survey questions
 		// empty square (X,Y, X length, Y length)
-		pdf.rect(0.5, 5.0, 0.2, 0.2); 
-		pdf.rect(0.5, 5.4, 0.2, 0.2); 
-		pdf.rect(0.5, 5.8, 0.2, 0.2); 
-
+		pdf.rect(0.5, 6.4, 0.2, 0.2); 
+		pdf.rect(0.5, 6.7, 0.2, 0.2); 
+		pdf.rect(0.5, 7.0, 0.2, 0.2); 
     	
-		pdfLineY = pdfLineYStart;
+		//pdfLineY = pdfLineYStart;
+		pdfLineY = 0.6;
+    	pdf.setFontSize(10);
 	}
 
 	if (pdfLineHeaderArray != null) {
@@ -1509,7 +1559,7 @@ function duesStatementPDFaddLine(pdfLineArray,pdfLineHeaderArray) {
 
 		// X (horizontal), Y (vertical)
 		pdf.setFontSize(15);
-		pdf.text(1.5, 0.6, "Gander Road Homeowners Association");
+		pdf.text(1.5, 0.6, hoaName);
 		pdf.setFontSize(13);
 		pdf.text(1.5, 0.9, pdfTitle+" - "+pdfTimestamp);
 		pdf.setFontSize(10);
@@ -1877,7 +1927,7 @@ function reportPDFaddLine(pdfLineArray) {
 		pdf.setFontSize(9);
 		pdf.text(10.2, 0.4, 'Page '+pdfPageCnt);
 		pdf.setFontSize(15);
-		pdf.text(3.6, 0.45, "Gander Road Homeowners Association");
+		pdf.text(3.6, 0.45, hoaName);
 		pdf.setFontSize(13);
 		pdf.text(2.5, 0.75, pdfTitle);
 		pdf.setFontSize(10);
@@ -1908,4 +1958,35 @@ function reportPDFaddLine(pdfLineArray) {
 	pdfLineY += pdfLineIncrement;
 
 } // End of function reportPDFaddLine(pdfLineArray) {
+
+/**
+ * Draws a dotted line on a jsPDF doc between two points.
+ * Note that the segment length is adjusted a little so
+ * that we end the line with a drawn segment and don't
+ * overflow.
+ */
+function dottedLine(xFrom, yFrom, xTo, yTo, segmentLength)
+{
+    // Calculate line length (c)
+    var a = Math.abs(xTo - xFrom);
+    var b = Math.abs(yTo - yFrom);
+    var c = Math.sqrt(Math.pow(a,2) + Math.pow(b,2));
+
+    // Make sure we have an odd number of line segments (drawn or blank)
+    // to fit it nicely
+    var fractions = c / segmentLength;
+    var adjustedSegmentLength = (Math.floor(fractions) % 2 === 0) ? (c / Math.ceil(fractions)) : (c / Math.floor(fractions));
+
+    // Calculate x, y deltas per segment
+    var deltaX = adjustedSegmentLength * (a / c);
+    var deltaY = adjustedSegmentLength * (b / c);
+
+    var curX = xFrom, curY = yFrom;
+    while (curX <= xTo && curY <= yTo)
+    {
+        pdf.line(curX, curY, curX + deltaX, curY + deltaY);
+        curX += 2*deltaX;
+        curY += 2*deltaY;
+    }
+}
 

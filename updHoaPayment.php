@@ -69,20 +69,20 @@ function updAssessmentPaid($parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_e
 		
 			$stmt->close();
 		
-			
-			// send email to payee and treasurer
-			// thank you for your payment of X, you are all paid up, go here to print a dues statement
-			// thank you for your payment of X, you still owe Y, go here to check details and get a dues statement
-			// *** if something happened - send email to admin (and to payer?)
 
-			$outputStr .= '<br>$parcelId = ' . $parcelId;
-			$outputStr .= '<br>$ownerId = ' . $ownerId;
-			$outputStr .= '<br>$fy = ' . $fy;
-			$outputStr .= '<br>$txn_id = ' . $txn_id;
-			$outputStr .= '<br>$payment_date = ' . $payment_date;
-			$outputStr .= '<br>$payer_email = ' . $payer_email;
-			$outputStr .= '<br>$payment_amt = ' . $payment_amt;
-			$outputStr .= '<br>$payment_fee = ' . $payment_fee;
+			$payerInfo = 'Thank you for your GRHA member dues payment.  Our records have been successfully updated to show that the assessment has been PAID.  ';
+			$payerInfo .= 'You can use the Dues Checker on our website (www.grha-dayton.org) to see an updated Dues Statement, ';
+			$payerInfo .= 'and download a record of the payment.  Your dues will be used to promote the recreation, health, safety, and welfare of the ';
+			$payerInfo .= 'residents in the Properties, and for the improvement and maintenance of the Common Areas. ';
+
+			$treasurerInfo = 'The following payment has been recorded and the assessment has been marked as PAID.';
+				
+			$paymentInfoStr = '<br><br>Parcel Id: ' . $parcelId;
+			$paymentInfoStr .= '<br>Fiscal Year: ' . $fy;
+			$paymentInfoStr .= '<br>Transaction Id: ' . $txn_id;
+			$paymentInfoStr .= '<br>Payment Date: ' . $payment_date;
+			$paymentInfoStr .= '<br>Payer Email: ' . $payer_email;
+			$paymentInfoStr .= '<br>Payment Amount: ' . $payment_amt . '<br>';
 			
 			/*
 			$parcelId = R72617307 0001
@@ -96,10 +96,15 @@ function updAssessmentPaid($parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_e
 			*/
 			
 			$subject = 'GRHA Payment Notification';
-			$messageStr = '<h3>GRHA Payment Notification</h3>' . $outputStr;
+			$messageStr = '<h3>GRHA Payment Notification</h3>' . $treasurerInfo . $paymentInfoStr;
 			sendHtmlEMail("johnkauflin@gmail.com",$subject,$messageStr,getConfigVal("fromEmailAddress"));
 			//sendHtmlEMail(getConfigValDB($conn,"paymentEmailList"),$subject,$messageStr,getConfigVal("fromEmailAddress"));
-			
+
+			$subject = 'GRHA Payment Confirmation';
+			$messageStr = '<h3>GRHA Payment Confirmation</h3>' . $payerInfo . $paymentInfoStr;
+			sendHtmlEMail("johnkauflin@gmail.com",$subject,$messageStr,getConfigVal("fromEmailAddress"));
+			//sendHtmlEMail($payer_email,$subject,$messageStr,getConfigVal("fromEmailAddress"));
+					
 			
 		} // End of if Transaction not found
 		
