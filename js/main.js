@@ -1197,8 +1197,8 @@ function adminLoop(hoaPropertyRecList) {
 		}
 		
 		adminRecCnt++;
-		if (adminRecCnt < hoaPropertyRecList.length) {
-		//if (adminRecCnt < 4) {
+		//if (adminRecCnt < hoaPropertyRecList.length) {
+		if (adminRecCnt < 2) {
 			// If loop not complete, recursively call the loop function
 			setTimeout(adminLoop, 0, hoaPropertyRecList);
 		} else {
@@ -1215,6 +1215,8 @@ function formatYearlyDuesStatement(hoaRec) {
 	ownerRec = hoaRec.ownersList[0];
 	fiscalYear = hoaRec.assessmentsList[0].FY;
 
+	pdfLineIncrement = 0.21;
+
 	// If there are notes - print them
 	/*
 	if (duesStatementNotes.length > 0) {
@@ -1225,7 +1227,7 @@ function formatYearlyDuesStatement(hoaRec) {
 	*/
 
 	// hoa name and address for return label
-	pdfLineColIncrArray = [1.0];
+	pdfLineColIncrArray = [1.05];
 	yearlyDuesStatementAddLine([hoaName],null); 
 	yearlyDuesStatementAddLine([hoaAddress1],null); 
 	yearlyDuesStatementAddLine([hoaAddress2],null); 
@@ -1246,10 +1248,13 @@ function formatYearlyDuesStatement(hoaRec) {
 		}
 	}
 
+
 	// Display the mailing address
-	pdfLineColIncrArray = [1.0,4.0];
+	pdfLineColIncrArray = [1.05,4.0];
+	yearlyDuesStatementAddLine(["",""],null); 
 	yearlyDuesStatementAddLine(["","Parcel Id: "+hoaRec.Parcel_ID],null); 
 	yearlyDuesStatementAddLine(["","Lot No: "+hoaRec.LotNo],null); 
+	yearlyDuesStatementAddLine(["",""],null); 
 	yearlyDuesStatementAddLine([displayAddress1,ownerRec.Owner_Name1+' '+ownerRec.Owner_Name2],null);
 	yearlyDuesStatementAddLine([displayAddress2,hoaRec.Parcel_Location],null); 
 	yearlyDuesStatementAddLine([displayAddress3,hoaRec.Property_City+', '+hoaRec.Property_State+' '+hoaRec.Property_Zip],null); 
@@ -1312,7 +1317,7 @@ function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray) {
 		pdf.text(4.5, 0.8, pdfTitle+" for Fiscal Year "+fiscalYear);
 		
 		//pdf.addImage(pdfLogoImgData, 'JPEG', 0.4, 0.3, 0.9, 0.9);
-		pdf.addImage(pdfLogoImgData, 'JPEG', 0.4, 0.6, 0.5, 0.5);
+		pdf.addImage(pdfLogoImgData, 'JPEG', 0.465, 0.98, 0.53, 0.53);
 
     	// Tri-fold lines
 		pdf.setLineWidth(0.01);
@@ -1341,8 +1346,8 @@ function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray) {
 		pdf.rect(0.5, 7.0, 0.2, 0.2); 
     	
 		//pdfLineY = pdfLineYStart;
-		pdfLineY = 0.6;
-    	pdf.setFontSize(10);
+		pdfLineY = 1.1;
+    	pdf.setFontSize(11);
 	}
 
 	if (pdfLineHeaderArray != null) {
