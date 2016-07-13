@@ -47,8 +47,7 @@
  * 					MailingAddress fields set from parcel location or
  * 					Alt mailing address (if specified)
  * 2016-07-08 JJK   Modified to get all config list values on page load
- * 
- * 					Working on creating the yearly dues statements 
+ * 2016-07-13 JJK   Finished intial version of yearly dues statements
  *============================================================================*/
 
 var hoaName = "Gander Road Homeowners Association";
@@ -1280,8 +1279,9 @@ function formatYearlyDuesStatement(hoaRec) {
 	
 	// Address corrections
 	pdfLineIncrement = 0.3;
-	pdfLineColIncrArray = [0.6];
+	pdfLineColIncrArray = [-0.6];
 	yearlyDuesStatementAddLine(["Enter any information that needs to be corrected:"],null,11,4.3);
+	pdfLineColIncrArray = [0.6];
 	yearlyDuesStatementAddLine(["Owner Name:"]);
 	yearlyDuesStatementAddLine(["Address Line 1:"]);
 	yearlyDuesStatementAddLine(["Address Line 2:"]);
@@ -1290,8 +1290,9 @@ function formatYearlyDuesStatement(hoaRec) {
 
 	// Survey description, questions (1,2,3)
 	pdfLineIncrement = 0.285;
-	pdfLineColIncrArray = [1.0];
+	pdfLineColIncrArray = [-1.0];
 	yearlyDuesStatementAddLine([surveyInstructions],null,11,6.28);
+	pdfLineColIncrArray = [1.0];
 	yearlyDuesStatementAddLine([surveyQuestion1]);
 	yearlyDuesStatementAddLine([surveyQuestion2]);
 	yearlyDuesStatementAddLine([surveyQuestion3]);
@@ -1307,6 +1308,56 @@ function formatYearlyDuesStatement(hoaRec) {
 		yearlyDuesStatementAddLine([yearlyDuesStatementNotes],null);
 	}
 
+
+	// Print information on the user records portion
+	pdfLineColIncrArray = [-0.5];
+	yearlyDuesStatementAddLine([hoaName],null,13,8.0); 
+	pdfLineColIncrArray = [0.5,-3.05];
+	yearlyDuesStatementAddLine([pdfTitle+" for Fiscal Year ",hoaRec.assessmentsList[0].FY],null,12,8.3); 
+	
+	pdfLineIncrement = 0.21;
+	var noticeYear = '' + parseInt(hoaRec.assessmentsList[0].FY) - 1;
+	pdfLineColIncrArray = [0.5,1.5];
+	yearlyDuesStatementAddLine(["For the Period: ",'Oct 1st, '+noticeYear+' thru Sept 30th, '+hoaRec.assessmentsList[0].FY],null,11,8.6); 
+	pdfLineColIncrArray = [-0.5,-1.5];
+	yearlyDuesStatementAddLine(["Notice Date: ",'September 1st, '+noticeYear]); 
+	yearlyDuesStatementAddLine(["Dues Amount: ",hoaRec.assessmentsList[0].DuesAmt]);
+	// if different than dues amount ???
+	yearlyDuesStatementAddLine(["Total Due: ",'$'+hoaRec.TotalDue]); 
+	yearlyDuesStatementAddLine(["Due Date: ",'October 1st, '+noticeYear]); 
+	pdfLineColIncrArray = [-0.5,1.5];
+	yearlyDuesStatementAddLine(['','']); 
+	yearlyDuesStatementAddLine(["Parcel Id: ",hoaRec.Parcel_ID]); 
+	yearlyDuesStatementAddLine(["Lot No: ",hoaRec.LotNo]); 
+	yearlyDuesStatementAddLine(["Property Location: ",hoaRec.Parcel_Location]); 
+	
+	// hoa name and address for payment
+	pdfLineIncrement = 0.21;
+	pdfLineColIncrArray = [5.2];
+	yearlyDuesStatementAddLine(["Make checks payable to:"],null,11,8.0); 
+	pdfLineColIncrArray = [-5.2];
+	yearlyDuesStatementAddLine([hoaName]); 
+	yearlyDuesStatementAddLine(['']); 
+	pdfLineColIncrArray = [-5.2,0.8];
+	yearlyDuesStatementAddLine(["Send to:","GRHA"]); 
+	yearlyDuesStatementAddLine(["",hoaAddress1]); 
+	yearlyDuesStatementAddLine(["",hoaAddress2]); 
+
+	pdfLineColIncrArray = [-5.2];
+	yearlyDuesStatementAddLine(['']); 
+	yearlyDuesStatementAddLine(["Date Paid:"],null,13); 
+	yearlyDuesStatementAddLine(["Check No:"]); 
+
+	// questions
+	
+} // End of function formatYearlyDuesStatement(hoaRec) {
+
+//Function to add a line to the Yearly Dues Statement PDF
+function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray,fontSize,lineYStart) {
+	pdfLineCnt++;
+	var X = 0.0;
+	// X (horizontal), Y (vertical)
+
 	/*
 	pdf.setTextColor(255,0,0);
 	pdf.text(20, 40, 'This is red.');
@@ -1317,15 +1368,7 @@ function formatYearlyDuesStatement(hoaRec) {
 	pdf.setTextColor(0,0,255);
 	pdf.text(20, 60, 'This is blue.');
 	*/
-	
-} // End of function formatYearlyDuesStatement(hoaRec) {
 
-//Function to add a line to the Yearly Dues Statement PDF
-function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray,fontSize,lineYStart) {
-	pdfLineCnt++;
-	var X = 0.0;
-	// X (horizontal), Y (vertical)
-	
 	// Print header and graphic sections
 	if (pdfLineCnt == 1) {
 		pdfPageCnt++;
