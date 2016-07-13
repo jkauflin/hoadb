@@ -54,11 +54,11 @@
 var hoaName = "Gander Road Homeowners Association";
 var hoaAddress1 = "P.O. Box 24763";
 var hoaAddress2 = "Dayton, OH 45424-4763";
-var fiscalYear = '';
 
 var countyTreasurerUrl = '';
 var countyAuditorUrl = '';
 var duesStatementNotes = '';
+var yearlyDuesStatementNotes = '';
 var onlinePaymentInstructions = '';
 var offlinePaymentInstructions = '';
 var surveyInstructions = '';
@@ -236,7 +236,9 @@ $(document).ready(function(){
 	$.getJSON("getHoaConfigList.php","",function(hoaConfigRecList){
 		$.each(hoaConfigRecList, function(index, configRec) {
 			if (configRec.ConfigName == "duesStatementNotes") {
-				duesStatementNotes = configRec.ConfigValue; 
+				duesStatementNotes = configRec.ConfigValue;
+			} else if (configRec.ConfigName == "yearlyDuesStatementNotes") {
+				yearlyDuesStatementNotes = configRec.ConfigValue;
 			} else if (configRec.ConfigName == "countyTreasurerUrl") {
 				countyTreasurerUrl = configRec.ConfigValue;
 			} else if (configRec.ConfigName == "countyAuditorUrl") {
@@ -1213,16 +1215,41 @@ function adminLoop(hoaPropertyRecList) {
 // function to format a Yearly dues statement
 function formatYearlyDuesStatement(hoaRec) {
 	ownerRec = hoaRec.ownersList[0];
-	fiscalYear = hoaRec.assessmentsList[0].FY;
+	pdfMaxLineChars = 95;
 
-	pdfLineIncrement = 0.21;
-
+	pdfLineColIncrArray = [-4.5];
+	yearlyDuesStatementAddLine([hoaName],null,13,0.5); 
+	pdfLineColIncrArray = [4.5,-3.05];
+	yearlyDuesStatementAddLine([pdfTitle+" for Fiscal Year ",hoaRec.assessmentsList[0].FY],null,12,0.8); 
+	
 	// hoa name and address for return label
-	pdfLineColIncrArray = [1.05];
-	yearlyDuesStatementAddLine([hoaName],null,11,1.1); 
+	pdfLineIncrement = 0.2;
+	pdfLineColIncrArray = [1.0];
+	yearlyDuesStatementAddLine([hoaName],null,10,1.0); 
 	yearlyDuesStatementAddLine([hoaAddress1]); 
 	yearlyDuesStatementAddLine([hoaAddress2]); 
-	
+
+	pdfLineIncrement = 0.21;
+	var noticeYear = '' + parseInt(hoaRec.assessmentsList[0].FY) - 1;
+	pdfLineColIncrArray = [4.5,1.3];
+	yearlyDuesStatementAddLine(["For the Period: ",'Oct 1st, '+noticeYear+' thru Sept 30th, '+hoaRec.assessmentsList[0].FY],null,11,1.1); 
+	pdfLineColIncrArray = [-4.5,-1.3];
+	yearlyDuesStatementAddLine(["Notice Date: ",'September 1st, '+noticeYear]); 
+	yearlyDuesStatementAddLine(["Dues Amount: ",hoaRec.assessmentsList[0].DuesAmt]);
+	// if different than dues amount ???
+	yearlyDuesStatementAddLine(["Total Due: ",'$'+hoaRec.TotalDue]); 
+	yearlyDuesStatementAddLine(["Due Date: ",'October 1st, '+noticeYear]); 
+	pdfLineColIncrArray = [-4.5,1.3];
+	yearlyDuesStatementAddLine(["Parcel Id: ",hoaRec.Parcel_ID]); 
+	yearlyDuesStatementAddLine(["Lot No: ",hoaRec.LotNo]); 
+
+	pdfLineColIncrArray = [4.5];
+	yearlyDuesStatementAddLine(['']);
+	yearlyDuesStatementAddLine([ownerRec.Owner_Name1+' '+ownerRec.Owner_Name2]);
+	yearlyDuesStatementAddLine([hoaRec.Parcel_Location]); 
+	yearlyDuesStatementAddLine([hoaRec.Property_City+', '+hoaRec.Property_State+' '+hoaRec.Property_Zip]); 
+	yearlyDuesStatementAddLine([ownerRec.Owner_Phone]); 
+
 	var displayAddress1 = ownerRec.Mailing_Name;
 	var displayAddress2 = hoaRec.Parcel_Location;
 	var displayAddress3 = hoaRec.Property_City+', '+hoaRec.Property_State+' '+hoaRec.Property_Zip;
@@ -1239,38 +1266,22 @@ function formatYearlyDuesStatement(hoaRec) {
 		}
 	}
 
-
 	// Display the mailing address
-	pdfLineColIncrArray = [1.05,4.0];
-	yearlyDuesStatementAddLine(["",""]); 
-	yearlyDuesStatementAddLine(["","Parcel Id: "+hoaRec.Parcel_ID]); 
-	yearlyDuesStatementAddLine(["","Lot No: "+hoaRec.LotNo]); 
-	yearlyDuesStatementAddLine(["",""]); 
-	yearlyDuesStatementAddLine([displayAddress1,ownerRec.Owner_Name1+' '+ownerRec.Owner_Name2]);
-	yearlyDuesStatementAddLine([displayAddress2,hoaRec.Parcel_Location]); 
-	yearlyDuesStatementAddLine([displayAddress3,hoaRec.Property_City+', '+hoaRec.Property_State+' '+hoaRec.Property_Zip]); 
-	yearlyDuesStatementAddLine([displayAddress4,ownerRec.Owner_Phone]); 
+	pdfLineIncrement = 0.21;
+	pdfLineColIncrArray = [1.0];
+	yearlyDuesStatementAddLine([displayAddress1],null,11,2.5);
+	yearlyDuesStatementAddLine([displayAddress2]); 
+	yearlyDuesStatementAddLine([displayAddress3]); 
+	yearlyDuesStatementAddLine([displayAddress4]); 
 	
 	
 	// explanation of what this is, and how to pay, how to contact us 
 	// address correction area
 	
-	// blank line
-	yearlyDuesStatementAddLine(['']);
-
-	pdfLineColIncrArray = [3.5,1.0,0.5];
-	// Check for just current year dues - and prior years due !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	/*
-	$.each(hoaRec.totalDuesCalcList, function(index, rec) {
-		yearlyDuesStatementAddLine([rec.calcDesc,'$',rec.calcValue],null);
-	});
-	*/
-	yearlyDuesStatementAddLine(['Total Due:','$',hoaRec.TotalDue]);
-
 	// Address corrections
+	pdfLineIncrement = 0.3;
 	pdfLineColIncrArray = [0.6];
 	yearlyDuesStatementAddLine(["Enter any information that needs to be corrected:"],null,11,4.3);
-	yearlyDuesStatementAddLine([""]);
 	yearlyDuesStatementAddLine(["Owner Name:"]);
 	yearlyDuesStatementAddLine(["Address Line 1:"]);
 	yearlyDuesStatementAddLine(["Address Line 2:"]);
@@ -1278,23 +1289,35 @@ function formatYearlyDuesStatement(hoaRec) {
 	yearlyDuesStatementAddLine(["Phone Number:"]);
 
 	// Survey description, questions (1,2,3)
+	pdfLineIncrement = 0.285;
 	pdfLineColIncrArray = [1.0];
-	yearlyDuesStatementAddLine([surveyInstructions],null,11,6.3);
+	yearlyDuesStatementAddLine([surveyInstructions],null,11,6.28);
 	yearlyDuesStatementAddLine([surveyQuestion1]);
 	yearlyDuesStatementAddLine([surveyQuestion2]);
 	yearlyDuesStatementAddLine([surveyQuestion3]);
 
+	pdfLineIncrement = 0.21;
 
-	yearlyDuesStatementAddLine([''],null,10,3.8);
+	yearlyDuesStatementAddLine([''],null,10,3.9);
 	pdfMaxLineChars = 45;
 	
 	// If there are notes - print them
-	if (duesStatementNotes.length > 0) {
+	if (yearlyDuesStatementNotes.length > 0) {
 		pdfLineColIncrArray = [5.2];
-		yearlyDuesStatementAddLine([duesStatementNotes],null);
+		yearlyDuesStatementAddLine([yearlyDuesStatementNotes],null);
 	}
 
+	/*
+	pdf.setTextColor(255,0,0);
+	pdf.text(20, 40, 'This is red.');
 
+	pdf.setTextColor(0,255,0);
+	pdf.text(20, 50, 'This is green.');
+
+	pdf.setTextColor(0,0,255);
+	pdf.text(20, 60, 'This is blue.');
+	*/
+	
 } // End of function formatYearlyDuesStatement(hoaRec) {
 
 //Function to add a line to the Yearly Dues Statement PDF
@@ -1310,14 +1333,8 @@ function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray,fontSize,lin
 		// X (horizontal), Y (vertical)
 		pdf.setFontSize(9);
 		pdf.text(8.05, 0.3, pdfPageCnt.toString());
-		pdf.setFontSize(13);
-		pdf.text(4.5, 0.5, hoaName);
-		pdf.setFontSize(11);
-		//pdf.text(4.5, 0.8, pdfTitle+" - "+pdfTimestamp);
-		pdf.text(4.5, 0.8, pdfTitle+" for Fiscal Year "+fiscalYear);
 		
-		//pdf.addImage(pdfLogoImgData, 'JPEG', 0.4, 0.3, 0.9, 0.9);
-		pdf.addImage(pdfLogoImgData, 'JPEG', 0.465, 0.98, 0.53, 0.53);
+		pdf.addImage(pdfLogoImgData, 'JPEG', 0.42, 0.9, 0.53, 0.53);
 
     	// Tri-fold lines
 		pdf.setLineWidth(0.01);
@@ -1325,22 +1342,24 @@ function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray,fontSize,lin
 		pdf.setLineWidth(0.02);
 		var segmentLength = 0.2;
 		dottedLine(0, 7.5, 8.5, 7.5, segmentLength)
-		
+	
+		// Text around bottom line
 		pdf.setFontSize(9);
 		pdf.text(3.0, 7.45, "Detach and mail above portion with your payment");
 		pdf.text(3.45, 7.65, "Keep below portion for your records");
 
-
+		// Lines for address corrections
+		pdf.setLineWidth(0.013);
 		pdf.rect(0.4, 4.0, 4.4, 2.0); 
 		pdf.line(1.7, 4.65, 4.5, 4.65);
 		pdf.line(1.7, 4.95, 4.5, 4.95);
 		pdf.line(1.7, 5.25, 4.5, 5.25);
 		pdf.line(1.7, 5.55, 4.5, 5.55);
 		pdf.line(1.7, 5.85, 4.5, 5.85);
-
 		
 		// Checkboxes for survey questions
 		// empty square (X,Y, X length, Y length)
+		pdf.setLineWidth(0.015);
 		pdf.rect(0.5, 6.4, 0.2, 0.2); 
 		pdf.rect(0.5, 6.7, 0.2, 0.2); 
 		pdf.rect(0.5, 7.0, 0.2, 0.2); 
@@ -1362,7 +1381,12 @@ function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray,fontSize,lin
 		X = 0.0;
 		// Loop through all the column headers in the array
 		for (i = 0; i < pdfLineArray.length; i++) {
-			X += pdfLineColIncrArray[i];
+			if (pdfLineColIncrArray[i] < 0) {
+				pdf.setFontType("bold");
+			} else {
+				pdf.setFontType("normal");
+			}
+			X += Math.abs(pdfLineColIncrArray[i]);
 			pdf.text(X,pdfLineY,''+pdfLineHeaderArray[i]);
 		}
 		pdfLineY += pdfLineIncrement / 2.0;
@@ -1379,7 +1403,13 @@ function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray,fontSize,lin
 	X = 0.0;
 	// Loop through all the columns in the array
 	for (i = 0; i < pdfLineArray.length; i++) {
-		X += pdfLineColIncrArray[i];
+		if (pdfLineColIncrArray[i] < 0) {
+			pdf.setFontType("bold");
+		} else {
+			pdf.setFontType("normal");
+		}
+
+		X += Math.abs(pdfLineColIncrArray[i]);
 		textLine = ''+pdfLineArray[i];
 
 		while (textLine.length > 0) {
@@ -1405,6 +1435,7 @@ function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray,fontSize,lin
 		
 	} // for (i = 0; i < pdfLineArray.length; i++) {
 	pdfLineY += pdfLineIncrement;
+	pdf.setFontType("normal");
 	
 } // End of function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray) {
 
