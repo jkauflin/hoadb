@@ -58,6 +58,7 @@ var countyTreasurerUrl = '';
 var countyAuditorUrl = '';
 var duesStatementNotes = '';
 var yearlyDuesStatementNotes = '';
+var yearlyDuesHelpNotes = '';
 var onlinePaymentInstructions = '';
 var offlinePaymentInstructions = '';
 var surveyInstructions = '';
@@ -238,6 +239,8 @@ $(document).ready(function(){
 				duesStatementNotes = configRec.ConfigValue;
 			} else if (configRec.ConfigName == "yearlyDuesStatementNotes") {
 				yearlyDuesStatementNotes = configRec.ConfigValue;
+			} else if (configRec.ConfigName == "yearlyDuesHelpNotes") {
+				yearlyDuesHelpNotes = configRec.ConfigValue;
 			} else if (configRec.ConfigName == "countyTreasurerUrl") {
 				countyTreasurerUrl = configRec.ConfigValue;
 			} else if (configRec.ConfigName == "countyAuditorUrl") {
@@ -1343,12 +1346,22 @@ function formatYearlyDuesStatement(hoaRec) {
 	yearlyDuesStatementAddLine(["",hoaAddress1]); 
 	yearlyDuesStatementAddLine(["",hoaAddress2]); 
 
+	pdfLineIncrement = 0.19;
 	pdfLineColIncrArray = [-5.2];
 	yearlyDuesStatementAddLine(['']); 
-	yearlyDuesStatementAddLine(["Date Paid:"],null,13); 
+	yearlyDuesStatementAddLine(["Date Paid:"],null,12); 
+	yearlyDuesStatementAddLine(['']); 
 	yearlyDuesStatementAddLine(["Check No:"]); 
 
 	// questions
+	
+	yearlyDuesStatementAddLine([''],null,10,10.05);
+	pdfMaxLineChars = 55;
+	// If there are notes - print them
+	if (yearlyDuesStatementNotes.length > 0) {
+		pdfLineColIncrArray = [4.7];
+		yearlyDuesStatementAddLine([yearlyDuesHelpNotes],null);
+	}
 	
 } // End of function formatYearlyDuesStatement(hoaRec) {
 
@@ -1406,7 +1419,12 @@ function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray,fontSize,lin
 		pdf.rect(0.5, 6.4, 0.2, 0.2); 
 		pdf.rect(0.5, 6.7, 0.2, 0.2); 
 		pdf.rect(0.5, 7.0, 0.2, 0.2); 
-    	
+
+		// Date and Check No lines
+		pdf.setLineWidth(0.013);
+		pdf.line(6.1, 9.5, 7.5, 9.5);
+		pdf.line(6.1, 9.9, 7.5, 9.9);
+		
 		pdfLineY = pdfLineYStart;
 		pdfFontSize = pdfFontSizeDefault;
 	}
