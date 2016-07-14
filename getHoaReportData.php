@@ -12,6 +12,14 @@ include 'commonUtil.php';
 // Include table record classes and db connection parameters
 include 'hoaDbCommon.php';
 
+class PaidDuesCountsRec
+{
+	public $fy;
+	public $paidCnt;
+	public $unpaidCnt;
+}
+
+
 $username = getUsername();
 
 $reportName = getParamVal("reportName");
@@ -59,6 +67,44 @@ if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 	}
 	// End of if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 
+} else if ($reportName == "PaidDuesCountsReport") {
+	
+	// get the data for the counts summary by FY
+	$parcelId = "";
+	$ownerId = "";
+	$fy = 0;
+	$saleDate = "SKIP";
+	
+	$sql = "SELECT * FROM hoa_assessments ORDER BY FY; ";
+
+//  a.FY	
+//	a.Paid
+	
+	$stmt = $conn->prepare($sql);
+	$stmt->execute();
+	$result = $stmt->get_result();
+	$stmt->close();
+	
+	$cnt = 0;
+	if ($result->num_rows > 0) {
+		// Loop through all the member properties
+		while($row = $result->fetch_assoc()) {
+			$cnt = $cnt + 1;
+	
+			$parcelId = $row["Parcel_ID"];
+			$ownerId = $row["OwnerID"];
+	
+			//$hoaRec = getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate);
+
+			$paidDuesCountsRec = new PaidDuesCountsRec();
+			$paidDuesCountsRec->fy = 0;
+			$paidDuesCountsRec->paidCnt = 0;
+			$paidDuesCountsRec->unpaidCnt = 0;
+				
+			array_push($outputArray,$paidDuesCountsRec);
+		}
+	}
+	
 } else {
 
 	$parcelId = "";

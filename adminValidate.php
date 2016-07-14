@@ -31,22 +31,23 @@ if ($action == "AddAssessments") {
 		$adminRec->message = "You do not have permissions to Add Assessments.";
 		$adminRec->result = "Not Valid";
 	} else {
-		$adminRec->message = "Are you sure you want to add assessment for Fiscal Year " . $FY . ' with Dues Amount of $' . $duesAmt;
+		$adminRec->message = "Are you sure you want to add assessment for Fiscal Year " . $FY . ' with Dues Amount of $' . $duesAmt .'?';
 		$adminRec->result = "Valid";
 	}
 } else if ($action == "DuesStatements") {
 	if ($adminLevel < 2) {
-		$adminRec->message = "You do not have permissions to Add Assessments.";
+		$adminRec->message = "You do not have permissions to generate Dues Statements.";
 		$adminRec->result = "Not Valid";
 	} else {
-		$adminRec->message = "Continue with Dues Statements test?";
+		$adminRec->message = "Continue with creation of Yearly Dues Statements?";
 		$adminRec->result = "Valid";
 	}
 }
 	/*
 	$conn = getConn();
 	$hoaSalesReportRec = getHoaSalesRecList($conn,$notProcessedBoolean);
-	
+
+	*** if you need data from the database to validation admin action
 	
 	// Close db connection
 	$conn->close();

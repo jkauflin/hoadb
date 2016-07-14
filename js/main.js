@@ -48,12 +48,17 @@
  * 					Alt mailing address (if specified)
  * 2016-07-08 JJK   Modified to get all config list values on page load
  * 2016-07-13 JJK   Finished intial version of yearly dues statements
+ * 2016-07-14 JJK   Added Paid Dues Counts report
+ * 
+clear null's in assessment records after initial import
+update hoa_assessments set `LienRefNo`='', `DateFiled`='', `FilingFee`='', `ReleaseFee`='', `DateReleased`='', `LienDatePaid`='', `AmountPaid`='', `FilingFeeInterest`='', `AssessmentInterest`='', `LienComment`=''
+
  *============================================================================*/
 
-var hoaName = "Gander Road Homeowners Association";
-var hoaAddress1 = "P.O. Box 24763";
-var hoaAddress2 = "Dayton, OH 45424-4763";
-
+var hoaName = '';
+var hoaNameShort = '';
+var hoaAddress1 = '';
+var hoaAddress2 = '';
 var countyTreasurerUrl = '';
 var countyAuditorUrl = '';
 var duesStatementNotes = '';
@@ -160,12 +165,14 @@ $(document).ajaxComplete(function(event, request, settings) {
 });
 */
 
+// General AJAX error handler to log the exception and set a message in DIV tags with a ajaxError class
 $(document).ajaxError(function(e, xhr, settings, exception) {
 	console.log("ajax exception = "+exception);
 	console.log("ajax exception xhr.responseText = "+xhr.responseText);
     $(".ajaxError").html("An Error has occurred (see console log)");
 });
 
+// Helper functions for setting UI components from data
 function setBoolText(inBool) {
 	var outBoolStr = "NO";
 	if (inBool) {
@@ -225,17 +232,23 @@ $(document).ready(function(){
         format:'Y-m-d'
     });
 
-//    ConfigName
-    
     // When the javascript initializes do a one time get of the logo image data (for PDF writes)
 	$.get("getLogoImgData.php",function(logoImgDataResults){
 		pdfLogoImgData = logoImgDataResults;
 	});
 
-	// Get the Config values
+	// When the page loads, get the Config values from the database table
 	$.getJSON("getHoaConfigList.php","",function(hoaConfigRecList){
 		$.each(hoaConfigRecList, function(index, configRec) {
-			if (configRec.ConfigName == "duesStatementNotes") {
+			if (configRec.ConfigName == "hoaName") {
+				hoaName = configRec.ConfigValue;
+			} else if (configRec.ConfigName == "hoaNameShort") {
+				hoaNameShort = configRec.ConfigValue;
+			} else if (configRec.ConfigName == "hoaAddress1") {
+				hoaAddress1 = configRec.ConfigValue;
+			} else if (configRec.ConfigName == "hoaAddress2") {
+				hoaAddress2 = configRec.ConfigValue;
+			} else if (configRec.ConfigName == "duesStatementNotes") {
 				duesStatementNotes = configRec.ConfigValue;
 			} else if (configRec.ConfigName == "yearlyDuesStatementNotes") {
 				yearlyDuesStatementNotes = configRec.ConfigValue;
@@ -341,17 +354,9 @@ $(document).ready(function(){
         var $this = $(this);
         $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
         	//console.log("Format Dues Statement, parcel = "+$this.attr("data-ParcelId")+", OwnerId = "+hoaRec.ownersList[0].OwnerID);
-
             formatDuesStatementResults(hoaRec);
     	    $('*').css('cursor', 'default');
             $("#DuesStatementPage").modal();
-
-        	/*
-            $.get("handlePaymentNotificationTEST.php","parcelId="+hoaRec.Parcel_ID+"&ownerId="+hoaRec.ownersList[0].OwnerID,function(results){
-            	console.log("After handlePaymentNotificationTEST, results = "+results);
-            });
-            */
-
         });
     });	
     
@@ -502,10 +507,6 @@ $(document).ready(function(){
         waitCursor();
     	var $this = $(this);
     	var reportName = $this.attr('id');
-        //var onscreenDisplay = $('#onscreenDisplay').is(':checked');
-        //var csvDownload = $('#csvDownload').is(':checked');
-        //var pdfDownload = $('#pdfDownload').is(':checked');
-        //var reportYear = $('#ReportYear').val();
             
         $("#ReportHeader").html("");
 		$("#ReportListDisplay tbody").html("");
@@ -632,11 +633,10 @@ $(document).ready(function(){
     		}
 		
 		}); // $.getJSON("adminExecute.php","action="+action+
-		
-		event.stopPropagation();
+
+    	event.stopPropagation();
         
     }); // $(document).on("click","#AdminExecute",function(){
-
 
     $(document).on("click",".docModal",function(){
     	var $this = $(this);
@@ -649,7 +649,6 @@ $(document).ready(function(){
     	$("#docModal").modal("show");    	
 	});	
 
-    
     $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
     	var activatedTab = e.target;
 		//console.log("tab = "+activatedTab);
@@ -750,7 +749,6 @@ function formatConfigEdit(hoaConfigRec){
 
 } // End of function formatConfigEdit(hoaConfigRec){
 
-
 function displayPropertyList(hoaPropertyRecList) {
 	var tr = '<tr><td>No records found - try different search parameters</td></tr>';
 	$.each(hoaPropertyRecList, function(index, hoaPropertyRec) {
@@ -776,7 +774,7 @@ function displayPropertyList(hoaPropertyRecList) {
 	});
 
     $("#PropertyListDisplay tbody").html(tr);
-}
+} // function displayPropertyList(hoaPropertyRecList) {
 
 function formatPropertyDetailResults(hoaRec){
     var tr = '';
@@ -925,7 +923,6 @@ function formatPropertyDetailResults(hoaRec){
 
 } // End of function formatDetailResults(hoaRec){
 
-
 function formatPropertyDetailEdit(hoaRec){
     var tr = '';
     var checkedStr = '';
@@ -1059,9 +1056,7 @@ function formatAssessmentDetailEdit(hoaRec){
     $("#EditPage2ColHeader").text("Edit Assessment");
 
     //console.log("hoaRec.ownersList.length = "+hoaRec.ownersList.length);
-    
     rec = hoaRec.assessmentsList[0];
-	//ownerId = rec.OwnerID;
 	
 	fy = rec.FY;
 	tr = '';
@@ -1137,9 +1132,7 @@ function formatAssessmentDetailEdit(hoaRec){
 			)
 	);
 	*/
-//	Lien,LienRefNo,DateFiled,Disposition,FilingFee,ReleaseFee,DateReleased,LienDatePaid,AmountPaid,StopInterestCalc,FilingFeeInterest,AssessmentInterest,LienComment,
-	
-//	  '<a id="SaveAssessmentEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+ownerId+'" data-FY="'+fy+'" href="#" class="btn btn-primary" role="button">Save</a>' +
+
 	tr = '<form class="form-inline" role="form">'+
 	  '<a id="SaveAssessmentEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-FY="'+fy+'" href="#" class="btn btn-primary" role="button">Save</a>' +
 	          		'<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>'+
@@ -1161,7 +1154,7 @@ function adminLoop(hoaPropertyRecList) {
 	// getJSON to get detail data on each one and call function to add dues statement to a PDF
 	$.getJSON("getHoaDbData.php","parcelId="+hoaPropertyRecList[adminRecCnt].parcelId,function(hoaRec){
 
-		// Create the PDF yearly dues statement
+		// Create the PDF for yearly dues statements
 		if (adminRecCnt == 0) {
 			// Add a progress bar 
 	  		$("#ResultMessage").html('<div id="AdminProgress" class="progress" ></div>');
@@ -1175,7 +1168,7 @@ function adminLoop(hoaPropertyRecList) {
 	    	pdfPageCnt = 0;
 			pdfLineCnt = 0;
 		} else {
-			// If not the first record, reset the page count and add a new page
+			// If not the first record, reset the line count and add a new page
 			pdfLineCnt = 0;
 			pdf.addPage('letter','p');
 		}
@@ -1199,11 +1192,12 @@ function adminLoop(hoaPropertyRecList) {
 		    // and display the numeric value
 		    $("#AdminProgressBar").html(percentDone+'%');
 		}
-		
+
+		// Increment the loop counter
 		adminRecCnt++;
-		//if (adminRecCnt < hoaPropertyRecList.length) {
-		if (adminRecCnt < 2) {
-			// If loop not complete, recursively call the loop function
+	    //if (adminRecCnt < 2) {
+		if (adminRecCnt < hoaPropertyRecList.length) {
+			// If loop not complete, recursively call the loop function (with a 0 delay so it starts immediately)
 			setTimeout(adminLoop, 0, hoaPropertyRecList);
 		} else {
 			// If loop completed, display a completion message and download the PDF file
@@ -1276,10 +1270,6 @@ function formatYearlyDuesStatement(hoaRec) {
 	yearlyDuesStatementAddLine([displayAddress3]); 
 	yearlyDuesStatementAddLine([displayAddress4]); 
 	
-	
-	// explanation of what this is, and how to pay, how to contact us 
-	// address correction area
-	
 	// Address corrections
 	pdfLineIncrement = 0.3;
 	pdfLineColIncrArray = [-0.6];
@@ -1311,7 +1301,6 @@ function formatYearlyDuesStatement(hoaRec) {
 		yearlyDuesStatementAddLine([yearlyDuesStatementNotes],null);
 	}
 
-
 	// Print information on the user records portion
 	pdfLineColIncrArray = [-0.5];
 	yearlyDuesStatementAddLine([hoaName],null,13,8.0); 
@@ -1342,7 +1331,7 @@ function formatYearlyDuesStatement(hoaRec) {
 	yearlyDuesStatementAddLine([hoaName]); 
 	yearlyDuesStatementAddLine(['']); 
 	pdfLineColIncrArray = [-5.2,0.8];
-	yearlyDuesStatementAddLine(["Send to:","GRHA"]); 
+	yearlyDuesStatementAddLine(["Send to:",hoaNameShort]); 
 	yearlyDuesStatementAddLine(["",hoaAddress1]); 
 	yearlyDuesStatementAddLine(["",hoaAddress2]); 
 
@@ -1353,8 +1342,7 @@ function formatYearlyDuesStatement(hoaRec) {
 	yearlyDuesStatementAddLine(['']); 
 	yearlyDuesStatementAddLine(["Check No:"]); 
 
-	// questions
-	
+	// Help notes
 	yearlyDuesStatementAddLine([''],null,10,10.05);
 	pdfMaxLineChars = 55;
 	// If there are notes - print them
@@ -1670,8 +1658,8 @@ function duesStatementPDFaddLine(pdfLineArray,pdfLineHeaderArray) {
 		pdf.setFontSize(13);
 		pdf.text(1.5, 0.9, pdfTitle+" - "+pdfTimestamp);
 		pdf.setFontSize(10);
-		pdf.text(6.5, 0.6, "P.O. Box 24763");
-		pdf.text(6.5, 0.8, "Dayton, OH 45424-4763");
+		pdf.text(6.5, 0.6, hoaAddress1);
+		pdf.text(6.5, 0.8, hoaAddress2);
 		
 		pdf.addImage(pdfLogoImgData, 'JPEG', 0.4, 0.3, 0.9, 0.9);
     	pdf.setFontSize(10);
@@ -1803,6 +1791,11 @@ function formatReportList(reportName,reportTitle,reportList){
 		}); // $.each(reportList, function(index, hoaSalesRec) {
 		// End of if (reportName == "SalesReport" || reportName == "SalesNewOwnerReport") {
 
+	} else if (reportName == "PaidDuesCountsReport") {
+		
+		// counts summary report
+		console.log(reportList);
+		
 	} else {
 		
 		var pdfLineArray = [];
@@ -1842,7 +1835,7 @@ function formatReportList(reportName,reportTitle,reportList){
 							'Phone',
 							'Dues Amt',
 							'Paid'];
-					pdfLineColIncrArray = [0.75,0.5,1.3,0.8,2.3,2.3,1.3,0.8];
+					pdfLineColIncrArray = [0.75,0.5,1.3,0.8,2.2,2.5,1.2,0.8];
 					
 					// maybe for CSV just 1 set of mailing address fields (with either parcel location or Alt. address)
 					
@@ -2016,11 +2009,8 @@ function reportPDFaddLine(pdfLineArray) {
 	if (pdfLineCnt == 1) {
     	pdf = new jsPDF('l', 'in', 'letter');
     	pdf.setProperties({
-    	    title: 'Test JJK Doc',
-    	    subject: 'This is the subject',
-    	    author: 'John Kauflin',
-    	    keywords: 'generated, javascript, web 2.0, ajax',
-    	    creator: 'MEEE'
+    	    title: pdfTitle,
+    	    author: hoaNameShort
     	});
     	pdfHeader = true;
 	}
