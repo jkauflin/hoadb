@@ -527,7 +527,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				$duesAmt = 0.0;
 				if (!$hoaAssessmentRec->Paid) {
 					// Replace every ascii character except decimal and digits with a null
-					$duesAmt = round(floatval( preg_replace('/[\x01-\x2D\x2F\x3A-\x7F]+/', '', $hoaAssessmentRec->DuesAmt) ),2);
+					$duesAmt = stringToMoney($hoaAssessmentRec->DuesAmt); 
 					$hoaRec->TotalDue += $duesAmt;
 					
 					$totalDuesCalcRec = new TotalDuesCalcRec();

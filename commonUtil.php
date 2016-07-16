@@ -137,6 +137,12 @@ function wildCardStrFromTokens($inStr) {
 	return $paramStr;
 }
 
+// Replace every ascii character except decimal and digits with a null, and round to 2 decimal places
+function stringToMoney($inAmountStr) {
+	return round(floatval( preg_replace('/[\x01-\x2D\x2F\x3A-\x7F]+/', '', $inAmountStr) ),2);
+}
+
+// Calculate compound interest from a principal and a start date
 function calcCompoundInterest($principal,$startDate) {
 				/*
 				 A = the future value of the investment/loan, including interest

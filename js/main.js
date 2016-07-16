@@ -135,6 +135,15 @@ function cleanStr(inStr) {
 }
 */
 
+//Replace every ascii character except decimal and digits with a null, and round to 2 decimal places
+var nonMoneyCharsStr = "[\x01-\x2D\x2F\x3A-\x7F]";
+//"g" global so it does more than 1 substitution
+var regexNonMoneyChars = new RegExp(nonMoneyCharsStr,"g");
+function stringToMoney(inAmount) {
+	var inAmountStr = ''+inAmount;
+	inAmountStr = inAmountStr.replace(regexNonMoneyChars,'');
+	return parseFloat(inAmountStr).toFixed(2);
+}
 
 function formatDate(inDate) {
 	var tempDate = inDate;
@@ -1195,8 +1204,8 @@ function adminLoop(hoaPropertyRecList) {
 
 		// Increment the loop counter
 		adminRecCnt++;
-	    //if (adminRecCnt < 2) {
-		if (adminRecCnt < hoaPropertyRecList.length) {
+	    if (adminRecCnt < 2) {
+		//if (adminRecCnt < hoaPropertyRecList.length) {
 			// If loop not complete, recursively call the loop function (with a 0 delay so it starts immediately)
 			setTimeout(adminLoop, 0, hoaPropertyRecList);
 		} else {
@@ -1231,13 +1240,21 @@ function formatYearlyDuesStatement(hoaRec) {
 	yearlyDuesStatementAddLine(["For the Period: ",'Oct 1st, '+noticeYear+' thru Sept 30th, '+hoaRec.assessmentsList[0].FY],null,11,1.1); 
 	pdfLineColIncrArray = [-4.5,-1.3];
 	yearlyDuesStatementAddLine(["Notice Date: ",'September 1st, '+noticeYear]); 
-	yearlyDuesStatementAddLine(["Dues Amount: ",hoaRec.assessmentsList[0].DuesAmt]);
-	// if different than dues amount ???
-	yearlyDuesStatementAddLine(["Total Due: ",'$'+hoaRec.TotalDue]); 
-	yearlyDuesStatementAddLine(["Due Date: ",'October 1st, '+noticeYear]); 
-	pdfLineColIncrArray = [-4.5,1.3];
-	yearlyDuesStatementAddLine(["Parcel Id: ",hoaRec.Parcel_ID]); 
-	yearlyDuesStatementAddLine(["Lot No: ",hoaRec.LotNo]); 
+	
+	$duesAmt = stringToMoney(hoaRec.assessmentsList[0].DuesAmt); 
+	yearlyDuesStatementAddLine(["Dues Amount: ",'$'+$duesAmt]);
+	if ($duesAmt == hoaRec.TotalDue) {
+		yearlyDuesStatementAddLine(["Due Date: ",'October 1st, '+noticeYear]); 
+		pdfLineColIncrArray = [-4.5,1.3];
+		yearlyDuesStatementAddLine(["Parcel Id: ",hoaRec.Parcel_ID]); 
+		yearlyDuesStatementAddLine(["Lot No: ",hoaRec.LotNo]); 
+	} else {
+		yearlyDuesStatementAddLine(["Prior Due: ",'$'+(hoaRec.TotalDue-$duesAmt)]); 
+		yearlyDuesStatementAddLine(["Total Due: ",'$'+hoaRec.TotalDue]); 
+		yearlyDuesStatementAddLine(["Due Date: ",'October 1st, '+noticeYear]); 
+		pdfLineColIncrArray = [-4.5,1.3];
+		yearlyDuesStatementAddLine(["Parcel Id: ",hoaRec.Parcel_ID+", Lot: "+hoaRec.LotNo]); 
+	}
 
 	pdfLineColIncrArray = [4.5];
 	yearlyDuesStatementAddLine(['']);
@@ -1313,10 +1330,14 @@ function formatYearlyDuesStatement(hoaRec) {
 	yearlyDuesStatementAddLine(["For the Period: ",'Oct 1st, '+noticeYear+' thru Sept 30th, '+hoaRec.assessmentsList[0].FY],null,11,8.6); 
 	pdfLineColIncrArray = [-0.5,-1.5];
 	yearlyDuesStatementAddLine(["Notice Date: ",'September 1st, '+noticeYear]); 
-	yearlyDuesStatementAddLine(["Dues Amount: ",hoaRec.assessmentsList[0].DuesAmt]);
-	// if different than dues amount ???
-	yearlyDuesStatementAddLine(["Total Due: ",'$'+hoaRec.TotalDue]); 
+
+	yearlyDuesStatementAddLine(["Dues Amount: ",'$'+$duesAmt]);
+	if ($duesAmt != hoaRec.TotalDue) {
+		yearlyDuesStatementAddLine(["Prior Due: ",'$'+(hoaRec.TotalDue-$duesAmt)]); 
+		yearlyDuesStatementAddLine(["Total Due: ",'$'+hoaRec.TotalDue]); 
+	}
 	yearlyDuesStatementAddLine(["Due Date: ",'October 1st, '+noticeYear]); 
+	
 	pdfLineColIncrArray = [-0.5,1.5];
 	yearlyDuesStatementAddLine(['','']); 
 	yearlyDuesStatementAddLine(["Parcel Id: ",hoaRec.Parcel_ID]); 
