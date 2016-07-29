@@ -53,6 +53,8 @@
 clear null's in assessment records after initial import
 update hoa_assessments set `LienRefNo`='', `DateFiled`='', `FilingFee`='', `ReleaseFee`='', `DateReleased`='', `LienDatePaid`='', `AmountPaid`='', `FilingFeeInterest`='', `AssessmentInterest`='', `LienComment`=''
 
+ * 2016-07-28 JJK	Corrected compound interest problem with a bad start date
+ * 					Added print of LienComment after Total Due on Dues Statement
  *============================================================================*/
 
 var hoaName = '';
@@ -1604,8 +1606,15 @@ update hoa_assessments set `LienRefNo`='', `DateFiled`='', `FilingFee`='', `Rele
     tr = tr +   '<td align="right"><b>'+hoaRec.TotalDue+'</b></td>';
     tr = tr + '</tr>';
     duesStatementPDFaddLine(['Total Due:','$',hoaRec.TotalDue],null);
-	$("#DuesStatementCalculationTable tbody").html(tr);
 
+    tr = tr + '<tr>';
+	tr = tr +   '<td>'+hoaRec.assessmentsList[0].LienComment+'</td>';
+    tr = tr +   '<td></td>';
+    tr = tr +   '<td align="right"></td>';
+    tr = tr + '</tr>';
+	$("#DuesStatementCalculationTable tbody").html(tr);
+    duesStatementPDFaddLine([hoaRec.assessmentsList[0].LienComment,'',''],null);
+	
 	duesStatementPDFaddLine([''],null);
 
 	var TaxYear = '';

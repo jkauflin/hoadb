@@ -159,19 +159,22 @@ function calcCompoundInterest($principal,$startDate) {
 	// Frequency of compounding (1 = yearly, 12 = monthly)
 	$annualFrequency = 12.0;
 
-	// Current System datetime
-	$currSysDate = date_create();
-
-	// Difference between passed date and current system date
-	$diff = date_diff(date_create($startDate),date_create(),true);
-	//error_log('date1=' . date_format($date1,"Y-m-d") . ', date2=' . date_format($date2,"Y-m-d") . ", diff days = " . $diff->days);
-
-	// Time in fractional years
-	$time = floatval($diff->days) / 365.0;
-
-	$A = floatval($principal) * pow((1+($rate/$annualFrequency)),($annualFrequency*$time));
-	// Subtract the original principal to get just the interest
-	$interestAmount = round(($A - $principal),2);
+	
+	if ($startDate != null && $startDate != '' && $startDate != '0000-00-00') {
+		// Current System datetime
+		$currSysDate = date_create();
+		
+		// Difference between passed date and current system date
+		$diff = date_diff(date_create($startDate),date_create(),true);
+		//error_log('date1=' . date_format($date1,"Y-m-d") . ', date2=' . date_format($date2,"Y-m-d") . ", diff days = " . $diff->days);
+		
+		// Time in fractional years
+		$time = floatval($diff->days) / 365.0;
+		
+		$A = floatval($principal) * pow((1+($rate/$annualFrequency)),($annualFrequency*$time));
+		// Subtract the original principal to get just the interest
+		$interestAmount = round(($A - $principal),2);
+	}
 
 	//error_log("diff days = " . $diff->days . ", time = " . $time . ", A = " . $A . ", interest = " . $interestAmount);
 
