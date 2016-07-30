@@ -6,6 +6,7 @@
  *----------------------------------------------------------------------------
  * Modification History
  * 2016-04-12 JJK 	Initial version
+ * 2016-07-30 JJK   Completed query for Paid Dues Count report
  *============================================================================*/
 
 include 'commonUtil.php';
@@ -17,6 +18,7 @@ class PaidDuesCountsRec
 	public $fy;
 	public $paidCnt;
 	public $unpaidCnt;
+	public $totalDue;
 }
 
 
@@ -73,9 +75,11 @@ if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 	$parcelId = "";
 	$ownerId = "";
 	$fy = 0;
+	$duesAmt = "";
+	$paid = FALSE;
 	$saleDate = "SKIP";
 	
-	$sql = "SELECT * FROM hoa_assessments ORDER BY FY; ";
+	$sql = "SELECT * FROM hoa_assessments WHERE FY > 2006 ORDER BY FY DESC; ";
 
 //  a.FY	
 //	a.Paid
@@ -85,24 +89,56 @@ if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 	$result = $stmt->get_result();
 	$stmt->close();
 	
+	$paidCnt = 0;
+	$unPaidCnt = 0;
+	$totalDue = 0.0;
 	$cnt = 0;
+	$prevFY = "";
 	if ($result->num_rows > 0) {
 		// Loop through all the member properties
 		while($row = $result->fetch_assoc()) {
 			$cnt = $cnt + 1;
 	
-			$parcelId = $row["Parcel_ID"];
-			$ownerId = $row["OwnerID"];
-	
-			//$hoaRec = getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate);
-
-			$paidDuesCountsRec = new PaidDuesCountsRec();
-			$paidDuesCountsRec->fy = 0;
-			$paidDuesCountsRec->paidCnt = 0;
-			$paidDuesCountsRec->unpaidCnt = 0;
+			$fy = $row["FY"];
+			$duesAmt = $row["DuesAmt"];
+			$paid = $row["Paid"];
+			
+			if ($cnt == 1) {
+				$prevFY = $fy;
+			}
+			
+			if ($fy != $prevFY) {
+				$paidDuesCountsRec = new PaidDuesCountsRec();
+				$paidDuesCountsRec->fy = $prevFY;
+				$paidDuesCountsRec->paidCnt = $paidCnt;
+				$paidDuesCountsRec->unpaidCnt = $unPaidCnt;
+				$paidDuesCountsRec->totalDue = $totalDue;
+				array_push($outputArray,$paidDuesCountsRec);
 				
-			array_push($outputArray,$paidDuesCountsRec);
+				// reset counts
+				$paidCnt = 0;
+				$unPaidCnt = 0;
+				$totalDue = 0.0;
+				$prevFY = $fy;
+			}
+
+			if ($paid) {
+				$paidCnt++;
+			} else {
+				$unPaidCnt++;
+				$totalDue += stringToMoney($duesAmt);
+			}
+
 		}
+		
+		// Get the last bucket
+		$paidDuesCountsRec = new PaidDuesCountsRec();
+		$paidDuesCountsRec->fy = $prevFY;
+		$paidDuesCountsRec->paidCnt = $paidCnt;
+		$paidDuesCountsRec->unpaidCnt = $unPaidCnt;
+		$paidDuesCountsRec->totalDue = $totalDue;
+		array_push($outputArray,$paidDuesCountsRec);
+		
 	}
 	
 } else {

@@ -55,6 +55,10 @@ update hoa_assessments set `LienRefNo`='', `DateFiled`='', `FilingFee`='', `Rele
 
  * 2016-07-28 JJK	Corrected compound interest problem with a bad start date
  * 					Added print of LienComment after Total Due on Dues Statement
+ * 2016-07-30 JJK   Changed the Yearly Dues Statues to just display prior 
+ * 					years due messages instead of amounts.
+ * 					Added yearlyDuesStatementNotice for 2nd notice message.
+ * 					Added DateDue to CSV for reports
  *============================================================================*/
 
 var hoaName = '';
@@ -65,6 +69,7 @@ var countyTreasurerUrl = '';
 var countyAuditorUrl = '';
 var duesStatementNotes = '';
 var yearlyDuesStatementNotes = '';
+var yearlyDuesStatementNotice = '';
 var yearlyDuesHelpNotes = '';
 var onlinePaymentInstructions = '';
 var offlinePaymentInstructions = '';
@@ -261,6 +266,8 @@ $(document).ready(function(){
 				hoaAddress2 = configRec.ConfigValue;
 			} else if (configRec.ConfigName == "duesStatementNotes") {
 				duesStatementNotes = configRec.ConfigValue;
+			} else if (configRec.ConfigName == "yearlyDuesStatementNotice") {
+				yearlyDuesStatementNotice = configRec.ConfigValue;
 			} else if (configRec.ConfigName == "yearlyDuesStatementNotes") {
 				yearlyDuesStatementNotes = configRec.ConfigValue;
 			} else if (configRec.ConfigName == "yearlyDuesHelpNotes") {
@@ -1251,8 +1258,10 @@ function formatYearlyDuesStatement(hoaRec) {
 		yearlyDuesStatementAddLine(["Parcel Id: ",hoaRec.Parcel_ID]); 
 		yearlyDuesStatementAddLine(["Lot No: ",hoaRec.LotNo]); 
 	} else {
-		yearlyDuesStatementAddLine(["Prior Due: ",'$'+(hoaRec.TotalDue-$duesAmt)]); 
-		yearlyDuesStatementAddLine(["Total Due: ",'$'+hoaRec.TotalDue]); 
+		//yearlyDuesStatementAddLine(["Prior Due: ",'$'+(hoaRec.TotalDue-$duesAmt)]); 
+		//yearlyDuesStatementAddLine(["Total Due: ",'$'+hoaRec.TotalDue]);
+		yearlyDuesStatementAddLine(["********************* ","There are prior year dues owed"]);
+		yearlyDuesStatementAddLine(["********************* ","Please contact the Treasurer"]);
 		yearlyDuesStatementAddLine(["Due Date: ",'October 1st, '+noticeYear]); 
 		pdfLineColIncrArray = [-4.5,1.3];
 		yearlyDuesStatementAddLine(["Parcel Id: ",hoaRec.Parcel_ID+", Lot: "+hoaRec.LotNo]); 
@@ -1312,12 +1321,20 @@ function formatYearlyDuesStatement(hoaRec) {
 	pdfLineIncrement = 0.21;
 
 	yearlyDuesStatementAddLine([''],null,10,3.9);
-	pdfMaxLineChars = 45;
+	
+	// Print the Notice statement if it exists (2nd notice, etc.)
+	if (yearlyDuesStatementNotice.length > 0) {
+		pdfMaxLineChars = 35;
+		pdfLineColIncrArray = [-5.2];
+		yearlyDuesStatementAddLine([yearlyDuesStatementNotice],null,12);
+		yearlyDuesStatementAddLine([''],null);
+	}
 	
 	// If there are notes - print them
+	pdfMaxLineChars = 45;
 	if (yearlyDuesStatementNotes.length > 0) {
 		pdfLineColIncrArray = [5.2];
-		yearlyDuesStatementAddLine([yearlyDuesStatementNotes],null);
+		yearlyDuesStatementAddLine([yearlyDuesStatementNotes],null,10);
 	}
 
 	// Print information on the user records portion
@@ -1335,8 +1352,10 @@ function formatYearlyDuesStatement(hoaRec) {
 
 	yearlyDuesStatementAddLine(["Dues Amount: ",'$'+$duesAmt]);
 	if ($duesAmt != hoaRec.TotalDue) {
-		yearlyDuesStatementAddLine(["Prior Due: ",'$'+(hoaRec.TotalDue-$duesAmt)]); 
-		yearlyDuesStatementAddLine(["Total Due: ",'$'+hoaRec.TotalDue]); 
+		//yearlyDuesStatementAddLine(["Prior Due: ",'$'+(hoaRec.TotalDue-$duesAmt)]); 
+		//yearlyDuesStatementAddLine(["Total Due: ",'$'+hoaRec.TotalDue]); 
+		yearlyDuesStatementAddLine(["************************ ","There are prior year dues owed"]);
+		yearlyDuesStatementAddLine(["************************ ","Please contact the Treasurer"]);
 	}
 	yearlyDuesStatementAddLine(["Due Date: ",'October 1st, '+noticeYear]); 
 	
@@ -1596,16 +1615,16 @@ update hoa_assessments set `LienRefNo`='', `DateFiled`='', `FilingFee`='', `Rele
 	    tr = tr + '<tr>';
     	tr = tr +   '<td>'+rec.calcDesc+'</td>';
 	    tr = tr +   '<td>$</td>';
-	    tr = tr +   '<td align="right">'+rec.calcValue+'</td>';
+	    tr = tr +   '<td align="right">'+parseFloat(''+rec.calcValue).toFixed(2)+'</td>';
 	    tr = tr + '</tr>';
-	    duesStatementPDFaddLine([rec.calcDesc,'$',rec.calcValue],null);
+	    duesStatementPDFaddLine([rec.calcDesc,'$',parseFloat(''+rec.calcValue).toFixed(2)],null);
 	});
     tr = tr + '<tr>';
 	tr = tr +   '<td><b>Total Due:</b></td>';
     tr = tr +   '<td><b>$</b></td>';
-    tr = tr +   '<td align="right"><b>'+hoaRec.TotalDue+'</b></td>';
+    tr = tr +   '<td align="right"><b>'+parseFloat(''+hoaRec.TotalDue).toFixed(2)+'</b></td>';
     tr = tr + '</tr>';
-    duesStatementPDFaddLine(['Total Due:','$',hoaRec.TotalDue],null);
+    duesStatementPDFaddLine(['Total Due:','$',parseFloat(''+hoaRec.TotalDue).toFixed(2)],null);
 
     tr = tr + '<tr>';
 	tr = tr +   '<td>'+hoaRec.assessmentsList[0].LienComment+'</td>';
@@ -1768,7 +1787,8 @@ function formatReportList(reportName,reportTitle,reportList){
 	csvContent = "";
 	paidCnt = 0;
 	unpaidCnt = 0;
-	
+
+	var tr;
 	rowId = 0;
 	if (reportName == "SalesReport" || reportName == "SalesNewOwnerReport") {
 		reportTitleFull = reportTitle;
@@ -1788,7 +1808,7 @@ function formatReportList(reportName,reportTitle,reportList){
 				.appendTo(reportListDisplay);		
 			}
 
-			var tr = $('<tr>');
+			tr = $('<tr>');
 			tr.append($('<td>').html(index+1))
 	    	if (hoaSalesRec.adminLevel > 1 && reportName == "SalesNewOwnerReport") {
     			tr.append($('<td>')
@@ -1822,10 +1842,52 @@ function formatReportList(reportName,reportTitle,reportList){
 		// End of if (reportName == "SalesReport" || reportName == "SalesNewOwnerReport") {
 
 	} else if (reportName == "PaidDuesCountsReport") {
-		
-		// counts summary report
-		console.log(reportList);
-		
+
+		var pdfLineArray = [];
+		$.each(reportList, function(index, cntsRec) {
+			rowId = index + 1;
+
+			if (index == 0) {
+				$('<tr>')
+				.append($('<th>').html('Fiscal Year'))
+				.append($('<th>').html('Paid Count'))
+				.append($('<th>').html('UnPaid Count'))
+				.append($('<th>').html('Total UnPaid Dues'))
+				.appendTo(reportListDisplay);		
+				
+				reportTitleFull = reportTitle;
+				pdfTitle = reportTitleFull;
+				pdfTimestamp = currSysDate.toString().substr(0,24);
+				
+				csvLine = csvFilter("FiscalYear");
+				csvLine += ',' + csvFilter("PaidCount");
+				csvLine += ',' + csvFilter("UnPaidCount");
+				csvLine += ',' + csvFilter("TotalUnPaidDues");
+		    	csvContent += csvLine + '\n';
+			}
+
+			tr = $('<tr>');
+			tr.append($('<td>').html(cntsRec.fy))
+			.append($('<td>').html(cntsRec.paidCnt))
+			.append($('<td>').html(cntsRec.unpaidCnt))
+			.append($('<td>').html(parseFloat(''+cntsRec.totalDue).toFixed(2)));
+			tr.appendTo(reportListDisplay);		
+
+			csvLine = csvFilter(cntsRec.fy);
+			csvLine += ',' + csvFilter(cntsRec.paidCnt);
+			csvLine += ',' + csvFilter(cntsRec.unpaidCnt);
+			csvLine += ',' + csvFilter(parseFloat(''+cntsRec.totalDue).toFixed(2));
+	    	csvContent += csvLine + '\n';
+
+		}); // $.each(reportList, function(index, cntsRec) {
+
+		reportDownloadLinks.append(
+				$('<a>').prop('id','DownloadReportCSV')
+		    			.attr('href','#')
+			    		.attr('class',"btn btn-warning")
+			    		.attr('data-reportName',formatDate()+'-'+reportName)
+			    		.html('CSV'));
+
 	} else {
 		
 		var pdfLineArray = [];
@@ -1869,7 +1931,7 @@ function formatReportList(reportName,reportTitle,reportList){
 					
 					// maybe for CSV just 1 set of mailing address fields (with either parcel location or Alt. address)
 					
-					csvLine = csvFilter(index+1);
+					csvLine = csvFilter("RecId");
 					csvLine += ',' + csvFilter("ParcelID");
 					csvLine += ',' + csvFilter("LotNo");
 					csvLine += ',' + csvFilter("ParcelLocation");
@@ -1885,12 +1947,13 @@ function formatReportList(reportName,reportTitle,reportList){
 					csvLine += ',' + csvFilter("FiscalYear");
 					csvLine += ',' + csvFilter("DuesAmt");
 					csvLine += ',' + csvFilter("Paid");
+					csvLine += ',' + csvFilter("DateDue");
 			    	csvContent += csvLine + '\n';
 				}
 
 				//.append($('<td>').html(hoaRec.ownersList[0].Owner_Name1+" "+hoaRec.ownersList[0].Owner_Name2))
 
-				var tr = $('<tr>');
+				tr = $('<tr>');
 				tr.append($('<td>').html(index+1))
 				.append($('<td>').html(hoaRec.Parcel_ID))
 				.append($('<td>').html(hoaRec.LotNo))
@@ -1974,6 +2037,7 @@ function formatReportList(reportName,reportTitle,reportList){
 				csvLine += ',' + csvFilter(reportYear);
 				csvLine += ',' + csvFilter(hoaRec.assessmentsList[0].DuesAmt);
 				csvLine += ',' + csvFilter(setBoolText(hoaRec.assessmentsList[0].Paid));
+				csvLine += ',' + csvFilter(hoaRec.assessmentsList[0].DateDue);
 		    	csvContent += csvLine + '\n';
 		    
 		}); // $.each(reportList, function(index, hoaRec) {

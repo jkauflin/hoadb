@@ -572,8 +572,6 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 						if (!$hoaAssessmentRec->StopInterestCalc) {
 							$hoaAssessmentRec->FilingFeeInterest = calcCompoundInterest($hoaAssessmentRec->FilingFee,$hoaAssessmentRec->DateFiled);
 						}
-						
-					
 				 */
 				
 				// If there is an Open Lien (not Paid, Released, or Closed)
