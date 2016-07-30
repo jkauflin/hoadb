@@ -1213,8 +1213,8 @@ function adminLoop(hoaPropertyRecList) {
 
 		// Increment the loop counter
 		adminRecCnt++;
-	    if (adminRecCnt < 2) {
-		//if (adminRecCnt < hoaPropertyRecList.length) {
+	    //if (adminRecCnt < 2) {
+		if (adminRecCnt < hoaPropertyRecList.length) {
 			// If loop not complete, recursively call the loop function (with a 0 delay so it starts immediately)
 			setTimeout(adminLoop, 0, hoaPropertyRecList);
 		} else {
