@@ -581,21 +581,29 @@ $(document).ready(function(){
 	    var $saleDate = $this.attr("data-SaleDate");
 
 	    $.get("updHoaSales.php","PARID="+$parcelId+"&SALEDT="+$saleDate,function(results){
-	    	// Re-read the update data and re-display sales list
+	    	// Re-read the update data and re-display sales new owner list
 	    	
-	    	var reportName = "SalesNewOwnerReport";
+	    	//var reportName = "SalesNewOwnerReport";
+	    	var reportName = $this.attr('id');
+	    	var reportTitle = $this.attr("data-reportTitle");
+	    	
+	    	/*
 	        var onscreenDisplay = $('#onscreenDisplay').is(':checked');
 	        var csvDownload = $('#csvDownload').is(':checked');
 	        var pdfDownload = $('#pdfDownload').is(':checked');
 	        var reportYear = $('#ReportYear').val();
-
+			*/
 			$("#ReportListDisplay tbody").html("");
 			$("#ReportRecCnt").html("");
 			$("#ReportDownloadLinks").html("");
 			
+			/*
 	    	$.getJSON("getHoaReportData.php","reportName="+reportName+
-	    										"&reportYear="+reportYear,function(reportList){
-	    	    formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfDownload);
+					"&reportYear="+reportYear,function(reportList){
+			*/
+	    	$.getJSON("getHoaReportData.php","reportName="+reportName,function(reportList){
+	    	    //formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfDownload);
+	    	    formatReportList(reportName,reportTitle,reportList);
 	    	    $('*').css('cursor', 'default');
 	    	});
 	    });
@@ -1837,7 +1845,9 @@ function formatReportList(reportName,reportTitle,reportList){
     									.attr('data-Action',"Process")
     									.prop('style','margin-right:7px;')
     									.html(hoaSalesRec.SALEDT))
-    					.append($('<a>').attr('data-ParcelId',hoaSalesRec.PARID)
+    					.append($('<a>').prop('id',reportName)
+    									.attr('data-reportTitle',"County Reported Sales of HOA properties (for New Owner maintenance)")
+    									.attr('data-ParcelId',hoaSalesRec.PARID)
     									.attr('data-SaleDate',hoaSalesRec.SALEDT)
     									.attr('data-Action',"Ignore")
     									.attr('href',"#")
