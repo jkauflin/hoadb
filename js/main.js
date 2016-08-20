@@ -57,6 +57,7 @@
  * 					Added DateDue to CSV for reports
  * 2016-08-14 JJK   Imported data from Access backup of 8/12/2016
  * 2016-08-19 JJK	Added UseMail to properties and EmailAddr to owners
+ * 2016-08-20 JJK	Implemented email validation check
  *============================================================================*/
 
 var hoaName = '';
@@ -103,10 +104,10 @@ example.com?param1=name&param2=&id=6
 		$.urlParam('param2');   // null
 */
 
-//var validEmailAddrRegExStr = "^((\"([ !#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\]^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])*\"|([!#$%&'*+\\-/0-9=?A-Z^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])+)(\\.(\"([ !#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\]^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])*\"|([!#$%&'*+\\-/0-9=?A-Z^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])+))*)@([a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?)*\\.(?![0-9]*\\.?$)[a-zA-Z0-9]{2,}\\.?)$";
-//var regex = new RegExp(validEmailAddrRegExStr,"g"); 
+var validEmailAddrRegExStr = "^((\"([ !#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\]^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])*\"|([!#$%&'*+\\-/0-9=?A-Z^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])+)(\\.(\"([ !#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\]^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])*\"|([!#$%&'*+\\-/0-9=?A-Z^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])+))*)@([a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?)*\\.(?![0-9]*\\.?$)[a-zA-Z0-9]{2,}\\.?)$";
+var validEmailAddr = new RegExp(validEmailAddrRegExStr,"g"); 
 /*
-if (regex.test(inStr)) {
+if (validEmailAddr.test(inStr)) {
 	resultStr = '<b style="color:green;">VALID</b>';
 } else {
 	resultStr = '<b style="color:red;">INVALID</b>';
@@ -449,31 +450,40 @@ $(document).ready(function(){
         //var $currentOwnerBoolean = $("#CurrentOwnerCheckbox").is(":checked");
         var $alternateMailingBoolean = $("#AlternateMailingCheckbox").is(":checked");
 
-        $.get("updHoaOwner.php","parcelId="+$parcelId+
-        						 "&ownerId="+$ownerId+
-        						 //"&currentOwnerBoolean="+$currentOwnerBoolean+
-        						 "&ownerName1="+cleanStr($("#OwnerName1").val())+
-        						 "&ownerName2="+cleanStr($("#OwnerName2").val())+
-        						 "&datePurchased="+cleanStr($("#DatePurchased").val())+
-        						 "&mailingName="+cleanStr($("#MailingName").val())+
-           						 "&alternateMailingBoolean="+$alternateMailingBoolean+
-           						 "&addrLine1="+cleanStr($("#AddrLine1").val())+
-        						 "&addrLine2="+cleanStr($("#AddrLine2").val())+
-        						 "&altCity="+cleanStr($("#AltCity").val())+
-        						 "&altState="+cleanStr($("#AltState").val())+
-        						 "&altZip="+cleanStr($("#AltZip").val())+
-        						 "&ownerPhone="+cleanStr($("#OwnerPhone").val())+
-        						 "&emailAddr="+cleanStr($("#EmailAddr").val())+
-        						 "&ownerComments="+cleanStr($("#OwnerComments").val()),function(results){
+        var tempEmailAddr = cleanStr($("#EmailAddr").val());
+        if (tempEmailAddr.length > 0 && !validEmailAddr.test(tempEmailAddr)) {
+            console.log('email address is NOT VALID');
+			$('*').css('cursor', 'default');
+            $(".editValidationError").text("Email Address is NOT VALID");
+        } else {
+        	//console.log('email address is empty or valid');
+            $.get("updHoaOwner.php","parcelId="+$parcelId+
+					 "&ownerId="+$ownerId+
+					 //"&currentOwnerBoolean="+$currentOwnerBoolean+
+					 "&ownerName1="+cleanStr($("#OwnerName1").val())+
+					 "&ownerName2="+cleanStr($("#OwnerName2").val())+
+					 "&datePurchased="+cleanStr($("#DatePurchased").val())+
+					 "&mailingName="+cleanStr($("#MailingName").val())+
+						 "&alternateMailingBoolean="+$alternateMailingBoolean+
+						 "&addrLine1="+cleanStr($("#AddrLine1").val())+
+					 "&addrLine2="+cleanStr($("#AddrLine2").val())+
+					 "&altCity="+cleanStr($("#AltCity").val())+
+					 "&altState="+cleanStr($("#AltState").val())+
+					 "&altZip="+cleanStr($("#AltZip").val())+
+					 "&ownerPhone="+cleanStr($("#OwnerPhone").val())+
+					 "&emailAddr="+cleanStr($("#EmailAddr").val())+
+					 "&ownerComments="+cleanStr($("#OwnerComments").val()),function(results){
 
-        	// Re-read the updated data for the Detail page display
-            $.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
-                formatPropertyDetailResults(hoaRec);
-   	    	    $('*').css('cursor', 'default');
-                $("#EditPage2Col").modal("hide");
-   	         	$('#navbar a[href="#DetailPage"]').tab('show');
-            });
-        }); // End of $.get("updHoaDbData.php","parcelId="+$parcelId+
+	            // Re-read the updated data for the Detail page display
+				$.getJSON("getHoaDbData.php","parcelId="+$parcelId,function(hoaRec){
+					formatPropertyDetailResults(hoaRec);
+					$('*').css('cursor', 'default');
+					$("#EditPage2Col").modal("hide");
+				   	$('#navbar a[href="#DetailPage"]').tab('show');
+				});
+            }); // End of $.get("updHoaDbData.php","parcelId="+$parcelId+
+        } // End of empty or valid email address
+
     });	// End of $(document).on("click","#SaveOwnerEdit",function(){
 
     $(document).on("click","#SaveAssessmentEdit",function(){
@@ -745,6 +755,7 @@ function formatConfigEdit(hoaConfigRec){
     var tr2 = '';
     var checkedStr = '';
     var buttonStr = '';
+    $(".editValidationError").empty();
 
     $("#EditPageHeader").text("Edit Configuration");
 
@@ -946,6 +957,7 @@ function formatPropertyDetailResults(hoaRec){
 function formatPropertyDetailEdit(hoaRec){
     var tr = '';
     var checkedStr = '';
+    $(".editValidationError").empty();
 
     // action or type of update
     $("#EditPageHeader").text("Edit Property");
@@ -988,6 +1000,7 @@ function formatOwnerDetailEdit(hoaRec,createNew){
     var checkedStr = '';
     var buttonStr = '';
     var ownerId = '';
+    $(".editValidationError").empty();
 
     // action or type of update
 	if (createNew) {
@@ -1073,6 +1086,7 @@ function formatAssessmentDetailEdit(hoaRec){
     var buttonStr = '';
     //var ownerId = '';
     var fy = '';
+    $(".editValidationError").empty();
 
     // action or type of update
     $("#EditPage2ColHeader").text("Edit Assessment");
