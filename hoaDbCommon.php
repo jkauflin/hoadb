@@ -22,6 +22,7 @@
  * 2016-05-02 JJK   Amy's 11th birthday.  
  * 2016-05-14 JJK   Added get Payment function
  * 2016-07-01 JJK	Added MySQL backup function
+ * 2016-08-19 JJK   Added UseEmail in Properties and EmailAddr in Owners
  *============================================================================*/
 
 function getConn() {
@@ -128,6 +129,7 @@ class HoaRec
   	public $Foreclosure;
   	public $Bankruptcy;
   	public $Liens_2B_Released;
+  	public $UseEmail;
   	public $Comments;
   	public $LastChangedBy;
   	public $LastChangedTs;
@@ -159,6 +161,7 @@ class HoaOwnerRec
   	public $Alt_State;
   	public $Alt_Zip;
   	public $Owner_Phone;
+  	public $EmailAddr;
   	public $Comments;
   	public $EntryTimestamp;
   	public $UpdateTimestamp;
@@ -383,6 +386,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 			$hoaRec->Foreclosure = $row["Foreclosure"];
 			$hoaRec->Bankruptcy = $row["Bankruptcy"];
 			$hoaRec->Liens_2B_Released = $row["Liens_2B_Released"];
+			$hoaRec->UseEmail = $row["UseEmail"];
 			$hoaRec->Comments = $row["Comments"];
 			$hoaRec->LastChangedBy = $row["LastChangedBy"];
 			$hoaRec->LastChangedTs = $row["LastChangedTs"];
@@ -422,6 +426,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				$hoaOwnerRec->Alt_State = $row["Alt_State"];
 				$hoaOwnerRec->Alt_Zip = $row["Alt_Zip"];
 				$hoaOwnerRec->Owner_Phone = $row["Owner_Phone"];
+				$hoaOwnerRec->EmailAddr = $row["EmailAddr"];
 				$hoaOwnerRec->Comments = $row["Comments"];
 				$hoaOwnerRec->EntryTimestamp = $row["EntryTimestamp"];
 				$hoaOwnerRec->UpdateTimestamp = $row["UpdateTimestamp"];

@@ -7,6 +7,7 @@
  * Modification History
  * 2015-03-06 JJK 	Initial version to get data 
  * 2015-12-21 JJK	Removed Member boolean from the update
+ * 2016-08-19 JJK   Added UserEmail
  *============================================================================*/
 
 include 'commonUtil.php';
@@ -25,6 +26,7 @@ include 'hoaDbCommon.php';
 	$foreclosureBoolean = paramBoolVal("foreclosureBoolean");
 	$bankruptcyBoolean = paramBoolVal("bankruptcyBoolean");
 	$liensBoolean = paramBoolVal("liensBoolean");
+	$useEmailBoolean = paramBoolVal("useEmailBoolean");
 	
 	$propertyComments = getParamVal("propertyComments");
 	
@@ -36,8 +38,8 @@ include 'hoaDbCommon.php';
     	$stmt = $conn->prepare("UPDATE hoa_properties SET Member=?,Vacant=?,Rental=?,Managed=?,Foreclosure=?,Bankruptcy=?,Liens_2B_Released=?,Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? ; ");
     	$stmt->bind_param("iiiiiiisss", $memberBoolean,$vacantBoolean,$rentalBoolean,$managedBoolean,$foreclosureBoolean,$bankruptcyBoolean,$liensBoolean,$propertyComments,$username,$parcelId);
     */ 
-	$stmt = $conn->prepare("UPDATE hoa_properties SET Vacant=?,Rental=?,Managed=?,Foreclosure=?,Bankruptcy=?,Liens_2B_Released=?,Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? ; ");
-	$stmt->bind_param("iiiiiisss", $vacantBoolean,$rentalBoolean,$managedBoolean,$foreclosureBoolean,$bankruptcyBoolean,$liensBoolean,$propertyComments,$username,$parcelId);	
+	$stmt = $conn->prepare("UPDATE hoa_properties SET Vacant=?,Rental=?,Managed=?,Foreclosure=?,Bankruptcy=?,Liens_2B_Released=?,UseEmail=?,Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? ; ");
+	$stmt->bind_param("iiiiiiisss", $vacantBoolean,$rentalBoolean,$managedBoolean,$foreclosureBoolean,$bankruptcyBoolean,$liensBoolean,$useEmailBoolean,$propertyComments,$username,$parcelId);	
 	$stmt->execute();
 	$stmt->close();
 	$conn->close();

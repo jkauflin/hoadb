@@ -49,16 +49,14 @@
  * 2016-07-08 JJK   Modified to get all config list values on page load
  * 2016-07-13 JJK   Finished intial version of yearly dues statements
  * 2016-07-14 JJK   Added Paid Dues Counts report
- * 
-clear null's in assessment records after initial import
-update hoa_assessments set `LienRefNo`='', `DateFiled`='', `FilingFee`='', `ReleaseFee`='', `DateReleased`='', `LienDatePaid`='', `AmountPaid`='', `FilingFeeInterest`='', `AssessmentInterest`='', `LienComment`=''
-
  * 2016-07-28 JJK	Corrected compound interest problem with a bad start date
  * 					Added print of LienComment after Total Due on Dues Statement
  * 2016-07-30 JJK   Changed the Yearly Dues Statues to just display prior 
  * 					years due messages instead of amounts.
  * 					Added yearlyDuesStatementNotice for 2nd notice message.
  * 					Added DateDue to CSV for reports
+ * 2016-08-14 JJK   Imported data from Access backup of 8/12/2016
+ * 2016-08-19 JJK	Added UseMail to properties and EmailAddr to owners
  *============================================================================*/
 
 var hoaName = '';
@@ -418,6 +416,7 @@ $(document).ready(function(){
         var $foreclosureBoolean = $("#ForeclosureCheckbox").is(":checked");
         var $bankruptcyBoolean = $("#BankruptcyCheckbox").is(":checked");
         var $liensBoolean = $("#LiensCheckbox").is(":checked");
+        var $useEmailBoolean = $("#UseEmailCheckbox").is(":checked");
 
         //$.getJSON("updHoaDbData.php","parcelId="+$this.attr("data-parcelId"),function(hoaRec){
         $.get("updHoaProperty.php","parcelId="+$parcelId+
@@ -428,6 +427,7 @@ $(document).ready(function(){
         						 "&foreclosureBoolean="+$foreclosureBoolean+
         						 "&bankruptcyBoolean="+$bankruptcyBoolean+
         						 "&liensBoolean="+$liensBoolean+
+        						 "&useEmailBoolean="+$useEmailBoolean+
         						 "&propertyComments="+cleanStr($("#PropertyComments").val()),function(results){
         	
         	// Re-read the updated data for the Detail page display
@@ -463,6 +463,7 @@ $(document).ready(function(){
         						 "&altState="+cleanStr($("#AltState").val())+
         						 "&altZip="+cleanStr($("#AltZip").val())+
         						 "&ownerPhone="+cleanStr($("#OwnerPhone").val())+
+        						 "&emailAddr="+cleanStr($("#EmailAddr").val())+
         						 "&ownerComments="+cleanStr($("#OwnerComments").val()),function(results){
 
         	// Re-read the updated data for the Detail page display
@@ -821,6 +822,7 @@ function formatPropertyDetailResults(hoaRec){
     tr += '<tr><th>Foreclosure: </th><td>'+setCheckbox(hoaRec.Foreclosure)+'</td></tr>';
     tr += '<tr><th>Bankruptcy: </th><td>'+setCheckbox(hoaRec.Bankruptcy)+'</td></tr>';
     tr += '<tr><th>ToBe Released: </th><td>'+setCheckbox(hoaRec.Liens_2B_Released)+'</td></tr>';
+    tr += '<tr><th>Use Email: </th><td>'+setCheckbox(hoaRec.UseEmail)+'</td></tr>';
     tr += '<tr><th>Comments: </th><td>'+hoaRec.Comments+'</td></tr>';
     
     $("#PropertyDetail tbody").html(tr);
@@ -966,6 +968,7 @@ function formatPropertyDetailEdit(hoaRec){
     tr += '<tr><th>Foreclosure: </th><td>'+setCheckboxEdit(hoaRec.Foreclosure,'ForeclosureCheckbox')+'</td></tr>';
     tr += '<tr><th>Bankruptcy: </th><td>'+setCheckboxEdit(hoaRec.Bankruptcy,'BankruptcyCheckbox')+'</td></tr>';
     tr += '<tr><th>ToBe Released: </th><td>'+setCheckboxEdit(hoaRec.Liens_2B_Released,'LiensCheckbox')+'</td></tr>';
+    tr += '<tr><th>Use Email: </th><td>'+setCheckboxEdit(hoaRec.UseEmail,'UseEmailCheckbox')+'</td></tr>';
     tr += '<tr><th>Comments: </th><td >'+setInputText("PropertyComments",hoaRec.Comments,"90")+'</td></tr>';
 	tr += '</div>'
 	$("#EditTable tbody").html(tr);
@@ -1021,6 +1024,7 @@ function formatOwnerDetailEdit(hoaRec,createNew){
     tr += '<tr><th>State:</th><td>'+ setInputText("AltState",rec.Alt_State,"20")+'</td></tr>';
     tr += '<tr><th>Zip:</th><td>'+ setInputText("AltZip",rec.Alt_Zip,"20")+'</td></tr>';
     tr += '<tr><th>Owner Phone:</th><td>'+ setInputText("OwnerPhone",rec.Owner_Phone,"30")+'</td></tr>';
+    tr += '<tr><th>Email Addr: </th><td>'+setInputText("EmailAddr",rec.EmailAddr,"90")+'</td></tr>';
     tr += '<tr><th>Comments: </th><td>'+setInputText("OwnerComments",rec.Comments,"90")+'</td></tr>';
     tr += '<tr><th>Last Changed:</th><td>'+rec.LastChangedTs+'</td></tr>';
     tr += '<tr><th>Changed by:</th><td>'+rec.LastChangedBy+'</td></tr>';

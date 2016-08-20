@@ -79,8 +79,9 @@ if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 	$paid = FALSE;
 	$saleDate = "SKIP";
 	
-	$sql = "SELECT * FROM hoa_assessments WHERE FY > 2006 ORDER BY FY DESC; ";
-
+	//$sql = "SELECT * FROM hoa_assessments WHERE FY > 2006 ORDER BY FY DESC; ";
+	$sql = "SELECT * FROM hoa_assessments WHERE FY > 2006 ORDER BY FY,Parcel_ID,OwnerID DESC; ";
+	
 //  a.FY	
 //	a.Paid
 	
@@ -94,11 +95,16 @@ if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 	$totalDue = 0.0;
 	$cnt = 0;
 	$prevFY = "";
+	$prevParcelId = "";
+	$prevOwnerId = "";
 	if ($result->num_rows > 0) {
 		// Loop through all the member properties
 		while($row = $result->fetch_assoc()) {
 			$cnt = $cnt + 1;
-	
+
+			//$parcelId = $row["Parcel_ID"];
+			//$ownerId = $row["OwnerID"];
+				
 			$fy = $row["FY"];
 			$duesAmt = $row["DuesAmt"];
 			$paid = $row["Paid"];
@@ -106,7 +112,8 @@ if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 			if ($cnt == 1) {
 				$prevFY = $fy;
 			}
-			
+
+				
 			if ($fy != $prevFY) {
 				$paidDuesCountsRec = new PaidDuesCountsRec();
 				$paidDuesCountsRec->fy = $prevFY;
@@ -120,8 +127,19 @@ if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 				$unPaidCnt = 0;
 				$totalDue = 0.0;
 				$prevFY = $fy;
+				$prevParcelId = $parcelId;
+				$prevOwnerId = $ownerId;
 			}
 
+			// Find duplicate assessments for the same parcel
+			/*
+			if ($fy == $prevFY && $parcelId == $prevParcelId) {
+				error_log($fy . ", Parcel = " . $parcelId . ", prevOwner = " . $prevOwnerId . ", currOwner = " . $ownerId . PHP_EOL, 3, 'DuplicateAssessments.log');
+			}
+			$prevParcelId = $parcelId;
+			$prevOwnerId = $ownerId;
+			*/
+			
 			if ($paid) {
 				$paidCnt++;
 			} else {
