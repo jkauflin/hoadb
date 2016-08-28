@@ -97,13 +97,13 @@ function updAssessmentPaid($parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_e
 			
 			$subject = 'GRHA Payment Notification';
 			$messageStr = '<h3>GRHA Payment Notification</h3>' . $treasurerInfo . $paymentInfoStr;
-			sendHtmlEMail("johnkauflin@gmail.com",$subject,$messageStr,getConfigVal("fromEmailAddress"));
-			//sendHtmlEMail(getConfigValDB($conn,"paymentEmailList"),$subject,$messageStr,getConfigVal("fromEmailAddress"));
+			//sendHtmlEMail("johnkauflin@gmail.com",$subject,$messageStr,getConfigVal("fromEmailAddress"));
+			sendHtmlEMail(getConfigValDB($conn,"paymentEmailList"),$subject,$messageStr,getConfigVal("fromEmailAddress"));
 
 			$subject = 'GRHA Payment Confirmation';
 			$messageStr = '<h3>GRHA Payment Confirmation</h3>' . $payerInfo . $paymentInfoStr;
-			sendHtmlEMail("johnkauflin@gmail.com",$subject,$messageStr,getConfigVal("fromEmailAddress"));
-			//sendHtmlEMail($payer_email,$subject,$messageStr,getConfigVal("fromEmailAddress"));
+			//sendHtmlEMail("johnkauflin@gmail.com",$subject,$messageStr,getConfigVal("fromEmailAddress"));
+			sendHtmlEMail($payer_email,$subject,$messageStr,getConfigVal("fromEmailAddress"));
 					
 			
 		} // End of if Transaction not found

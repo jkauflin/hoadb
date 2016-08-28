@@ -832,7 +832,9 @@ function formatPropertyDetailResults(hoaRec){
     tr += '<tr><th class="hidden-xs">City: </th><td class="hidden-xs">'+hoaRec.Property_City+'</td></tr>';
     tr += '<tr><th class="hidden-xs">State: </th><td class="hidden-xs">'+hoaRec.Property_State+'</td></tr>';
     tr += '<tr><th class="hidden-xs">Zip Code: </th><td class="hidden-xs">'+hoaRec.Property_Zip+'</td></tr>';
-    tr += '<tr><th>Total Due: </th><td>$'+hoaRec.TotalDue+'</td></tr>';
+    //tr += '<tr><th>Total Due: </th><td>$'+hoaRec.TotalDue+'</td></tr>';
+    var tempTotalDue = '' + hoaRec.TotalDue;
+    tr += '<tr><th>Total Due: </th><td>$'+stringToMoney(tempTotalDue)+'</td></tr>';
     
     tr += '<tr><th class="hidden-xs hidden-sm">Member: </th><td class="hidden-xs hidden-sm">'+setCheckbox(hoaRec.Member)+'</td></tr>';
     tr += '<tr><th>Vacant: </th><td>'+setCheckbox(hoaRec.Vacant)+'</td></tr>';
@@ -934,7 +936,9 @@ function formatPropertyDetailResults(hoaRec){
         	}
     	}
 		//tr = tr +   '<td>'+rec.DuesAmt+' '+LienButton+'</td>';
-		tr = tr +   '<td>'+rec.DuesAmt+'</td>';
+    	
+        var tempDuesAmt = '' + rec.DuesAmt;
+		tr = tr +   '<td>'+stringToMoney(tempDuesAmt)+'</td>';
 		tr = tr +   '<td>'+LienButton+'</td>';
 
 	    tr = tr +   '<td>'+setCheckbox(rec.Paid)+'</td>';
@@ -1116,7 +1120,9 @@ function formatAssessmentDetailEdit(hoaRec){
     tr += '<tr><th>Owner: </th><td>'+ownerSelect+'</td></tr>';
     //tr += '<tr><th>Owner Id: </th><td>'+rec.OwnerID+'</td></tr>';
     
-    tr += '<tr><th>Dues Amount: </th><td>'+setInputText("DuesAmount",rec.DuesAmt,"10")+'</td></tr>';
+    var tempDuesAmt = '' + rec.DuesAmt;
+    tr += '<tr><th>Dues Amount: </th><td>'+setInputText("DuesAmount",stringToMoney(tempDuesAmt),"10")+'</td></tr>';
+    
     tr += '<tr><th>Date Due: </th><td>'+setInputDate("DateDue",rec.DateDue,"10")+'</td></tr>';
     tr += '<tr><th>Paid: </th><td>'+setCheckboxEdit(rec.Paid,'PaidCheckbox')+'</td></tr>';
     tr += '<tr><th>Date Paid: </th><td>'+setInputDate("DatePaid",rec.DatePaid,"10")+'</td></tr>';
@@ -1607,7 +1613,9 @@ function formatDuesStatementResults(hoaRec) {
     tr += '<tr><th>Location: </th><td>'+hoaRec.Parcel_Location+'</td></tr>';
     tr += '<tr><th>City State Zip: </th><td>'+hoaRec.Property_City+', '+hoaRec.Property_State+' '+hoaRec.Property_Zip+'</td></tr>';
     tr += '<tr><th>Owner Name:</th><td>'+ownerRec.Owner_Name1+' '+ownerRec.Owner_Name2+'</td></tr>';
-    tr += '<tr><th>Total Due: </th><td>$'+hoaRec.TotalDue+'</td></tr>';
+    
+    var tempTotalDue = '' + hoaRec.TotalDue;
+    tr += '<tr><th>Total Due: </th><td>$'+stringToMoney(tempTotalDue)+'</td></tr>';
     $("#DuesStatementPropertyTable tbody").html(tr);
 
     // If enabled, payment button and instructions will have values, else they will be blank if online payment is not allowed
@@ -1664,6 +1672,7 @@ update hoa_assessments set `LienRefNo`='', `DateFiled`='', `FilingFee`='', `Rele
 
 	var TaxYear = '';
     tr = '';
+    var tempDuesAmt = '';
 	$.each(hoaRec.assessmentsList, function(index, rec) {
 		pdfLineHeaderArray = null;
 		if (index == 0) {
@@ -1684,10 +1693,11 @@ update hoa_assessments set `LienRefNo`='', `DateFiled`='', `FilingFee`='', `Rele
     			          			'Date Paid'];
     		pdfLineColIncrArray = [0.6,1.3,0.8,2.3,2.1];
 		}
-		
+
+	    tempDuesAmt = '' + rec.DuesAmt;
 	    tr = tr + '<tr>';
     	tr = tr +   '<td>'+rec.FY+'</a></td>';
-	    tr = tr +   '<td>'+rec.DuesAmt+'</td>';
+	    tr = tr +   '<td>'+stringToMoney(tempDuesAmt)+'</td>';
 	    tr = tr +   '<td>'+rec.DateDue.substring(0,10)+'</td>';
 	    tr = tr +   '<td>'+setCheckbox(rec.Paid)+'</td>';
 	    tr = tr +   '<td>'+rec.DatePaid.substring(0,10)+'</td>';

@@ -11,6 +11,7 @@
  * 2016-05-02 JJK   Modified to update assessment to paid
  * 2016-05-11 JJK	Modified to insert payment transaction record
  * 2016-05-14 JJK   Moved updates to updHoaPayment
+ * 2016-08-26 JJK   Changed from sandbox to live production
  *============================================================================*/
 
 // Include functions to update payments and assessments tables
@@ -22,7 +23,8 @@ include 'updHoaPayment.php';
 define("DEBUG", 1);
 
 // Set to 0 once you're ready to go live
-define("USE_SANDBOX", 1);
+//define("USE_SANDBOX", 1);
+define("USE_SANDBOX", 0);
 
 define("LOG_FILE", "./paypal-ipn.log");
 
