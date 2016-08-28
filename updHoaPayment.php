@@ -71,8 +71,8 @@ function updAssessmentPaid($parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_e
 		
 
 			$payerInfo = 'Thank you for your GRHA member dues payment.  Our records have been successfully updated to show that the assessment has been PAID.  ';
-			$payerInfo .= 'You can use the Dues Checker on our website (www.grha-dayton.org) to see an updated Dues Statement, ';
-			$payerInfo .= 'and download a record of the payment.  Your dues will be used to promote the recreation, health, safety, and welfare of the ';
+			$payerInfo .= 'You can use the Dues Checker on our website (www.grha-dayton.org) to see the updated record. ';
+			$payerInfo .= 'Your dues will be used to promote the recreation, health, safety, and welfare of the ';
 			$payerInfo .= 'residents in the Properties, and for the improvement and maintenance of the Common Areas. ';
 
 			$treasurerInfo = 'The following payment has been recorded and the assessment has been marked as PAID.';
@@ -82,18 +82,7 @@ function updAssessmentPaid($parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_e
 			$paymentInfoStr .= '<br>Transaction Id: ' . $txn_id;
 			$paymentInfoStr .= '<br>Payment Date: ' . $payment_date;
 			$paymentInfoStr .= '<br>Payer Email: ' . $payer_email;
-			$paymentInfoStr .= '<br>Payment Amount: ' . $payment_amt . '<br>';
-			
-			/*
-			$parcelId = R72617307 0001
-			$ownerId = 1
-			$fy = 2016
-			$txn_id = 9T2202200S217462T
-			$payment_date = 09:42:13 Jul 08, 2016 PDT
-			$payer_email = president-buyer@grha-dayton.org
-			$payment_amt = 119.00
-			$payment_fee = 3.75
-			*/
+			$paymentInfoStr .= '<br>Payment Amount: ' . $payment_amt . ' (this includes the $4.00 processing fee) <br>';
 			
 			$subject = 'GRHA Payment Notification';
 			$messageStr = '<h3>GRHA Payment Notification</h3>' . $treasurerInfo . $paymentInfoStr;
