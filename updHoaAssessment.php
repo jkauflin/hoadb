@@ -73,7 +73,7 @@ include 'hoaDbCommon.php';
 		error_log("Prepare failed: " . $stmt->errno . ", Error = " . $stmt->error);
 		echo "Prepare failed: (" . $stmt->errno . ") " . $stmt->error;
 	}
-	if (!$stmt->bind_param("sssissiissssssssisssssss", $ownerId,$duesAmount,$dateDue,$paidBoolean,$nonCollectibleBoolean,$datePaid,$paymentMethod,
+	if (!$stmt->bind_param("issiississssssssisssssss", $ownerId,$duesAmount,$dateDue,$paidBoolean,$nonCollectibleBoolean,$datePaid,$paymentMethod,
 						$lienBoolean,$lienRefNo,$dateFiled,$disposition,$filingFee,$releaseFee,$dateReleased,$lienDatePaid,$amountPaid,
 						$stopInterestCalcBoolean,$filingFeeInterest,$assessmentInterest,$lienComment,
 						$assessmentsComments,$username,$parcelId,$fy)) {

@@ -503,7 +503,7 @@ $(document).ready(function(){
         var $nonCollectibleBoolean = $("#NonCollectibleCheckbox").is(":checked");
         var $lienBoolean = $("#LienCheckbox").is(":checked");
         var $stopInterestCalcBoolean = $("#StopInterestCalcCheckbox").is(":checked");
-
+        
         $.get("updHoaAssessment.php","parcelId="+$parcelId+
 				 					 "&fy="+$fy+
 				 					 "&ownerId="+cleanStr($("#OwnerID").val())+
