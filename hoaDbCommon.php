@@ -23,6 +23,8 @@
  * 2016-05-14 JJK   Added get Payment function
  * 2016-07-01 JJK	Added MySQL backup function
  * 2016-08-19 JJK   Added UseEmail in Properties and EmailAddr in Owners
+ * 2016-09-02 JJK   Added NonCollectible field, and logic to use to 
+ * 					exclude assessments from total due calculations
  *============================================================================*/
 
 function getConn() {
@@ -178,6 +180,7 @@ class HoaAssessmentRec
   	public $DateDue;
   	public $DuesDue;
   	public $Paid;
+  	public $NonCollectible;
   	public $DatePaid;
   	public $PaymentMethod;
   	
@@ -401,9 +404,11 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 	
 		if (empty($ownerId)) {
 			$stmt = $conn->prepare("SELECT * FROM hoa_owners WHERE Parcel_ID = ? ORDER BY OwnerID DESC ; ");
+			//$stmt = $conn->prepare("SELECT * FROM hoa_owners WHERE Parcel_ID = ? ORDER BY DATE(DatePurchased) DESC ; ");
 			$stmt->bind_param("s", $parcelId);
 		} else {
 			$stmt = $conn->prepare("SELECT * FROM hoa_owners WHERE Parcel_ID = ? AND OwnerID = ? ORDER BY OwnerID DESC ; ");
+			//$stmt = $conn->prepare("SELECT * FROM hoa_owners WHERE Parcel_ID = ? AND OwnerID = ? ORDER BY DATE(DatePurchased) DESC ; ");
 			$stmt->bind_param("ss", $parcelId,$ownerId);
 		}
 		$stmt->execute();
@@ -465,11 +470,12 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				$hoaAssessmentRec->DuesAmt = $row["DuesAmt"];
 				$hoaAssessmentRec->DateDue = truncDate($row["DateDue"]);
 				$hoaAssessmentRec->Paid = $row["Paid"];
+				$hoaAssessmentRec->NonCollectible = $row["NonCollectible"];
 				$hoaAssessmentRec->DatePaid = truncDate($row["DatePaid"]);
 				$hoaAssessmentRec->PaymentMethod = $row["PaymentMethod"];
 				
 				$hoaAssessmentRec->DuesDue = 0;
-				if (!$hoaAssessmentRec->Paid) {
+				if (!$hoaAssessmentRec->Paid && !$hoaAssessmentRec->NonCollectible) {
 					if ($cnt == 1) {
 						$onlyCurrYearDue = true;
 						$fyPayment = $hoaAssessmentRec->FY;
@@ -530,7 +536,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				// Logic to calculate the Total Due from assessments and liens
 				//-------------------------------------------------------------------------------------------------------------------------------
 				$duesAmt = 0.0;
-				if (!$hoaAssessmentRec->Paid) {
+				if (!$hoaAssessmentRec->Paid && !$hoaAssessmentRec->NonCollectible) {
 					// Replace every ascii character except decimal and digits with a null
 					$duesAmt = stringToMoney($hoaAssessmentRec->DuesAmt); 
 					$hoaRec->TotalDue += $duesAmt;
@@ -580,7 +586,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				 */
 				
 				// If there is an Open Lien (not Paid, Released, or Closed)
-				if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open') {
+				if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open' && !$hoaAssessmentRec->NonCollectible) {
 				
 					// calc interest - start date   WHEN TO CALC INTEREST
 					// unpaid fee amount and interest since the Filing Date
@@ -787,11 +793,12 @@ function getHoaRec2($conn,$parcelId) {
 				$hoaAssessmentRec->DuesAmt = $row["DuesAmt"];
 				$hoaAssessmentRec->DateDue = truncDate($row["DateDue"]);
 				$hoaAssessmentRec->Paid = $row["Paid"];
+				$hoaAssessmentRec->NonCollectible = $row["NonCollectible"];
 				$hoaAssessmentRec->DatePaid = truncDate($row["DatePaid"]);
 				$hoaAssessmentRec->PaymentMethod = $row["PaymentMethod"];
 	
 				$hoaAssessmentRec->DuesDue = 0;
-				if (!$hoaAssessmentRec->Paid) {
+				if (!$hoaAssessmentRec->Paid && !$hoaAssessmentRec->NonCollectible) {
 					if ($cnt == 1) {
 						$onlyCurrYearDue = true;
 						$fyPayment = $hoaAssessmentRec->FY;
@@ -852,7 +859,7 @@ function getHoaRec2($conn,$parcelId) {
 				// Logic to calculate the Total Due from assessments and liens
 				//-------------------------------------------------------------------------------------------------------------------------------
 				$duesAmt = 0.0;
-				if (!$hoaAssessmentRec->Paid) {
+				if (!$hoaAssessmentRec->Paid && !$hoaAssessmentRec->NonCollectible) {
 					// Replace every ascii character except decimal and digits with a null
 					$duesAmt = stringToMoney($hoaAssessmentRec->DuesAmt);
 					$hoaRec->TotalDue += $duesAmt;
@@ -902,7 +909,7 @@ function getHoaRec2($conn,$parcelId) {
 				 */
 	
 				// If there is an Open Lien (not Paid, Released, or Closed)
-				if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open') {
+				if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open' && !$hoaAssessmentRec->NonCollectible) {
 	
 					// calc interest - start date   WHEN TO CALC INTEREST
 					// unpaid fee amount and interest since the Filing Date

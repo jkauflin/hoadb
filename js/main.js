@@ -58,6 +58,9 @@
  * 2016-08-14 JJK   Imported data from Access backup of 8/12/2016
  * 2016-08-19 JJK	Added UseMail to properties and EmailAddr to owners
  * 2016-08-20 JJK	Implemented email validation check
+ * 2016-08-26 JJK   Went live, and Paypal payments working in Prod!!!
+ * 2016-09-01 JJK   Corrected Owner order by year not id
+ * 2016-09-02 JJK   Added NonCollectible field 
  *============================================================================*/
 
 var hoaName = '';
@@ -450,12 +453,16 @@ $(document).ready(function(){
         //var $currentOwnerBoolean = $("#CurrentOwnerCheckbox").is(":checked");
         var $alternateMailingBoolean = $("#AlternateMailingCheckbox").is(":checked");
 
+        /*
         var tempEmailAddr = cleanStr($("#EmailAddr").val());
         if (tempEmailAddr.length > 0 && !validEmailAddr.test(tempEmailAddr)) {
             console.log('email address is NOT VALID');
 			$('*').css('cursor', 'default');
             $(".editValidationError").text("Email Address is NOT VALID");
         } else {
+        } // End of empty or valid email address
+        */
+        
         	//console.log('email address is empty or valid');
             $.get("updHoaOwner.php","parcelId="+$parcelId+
 					 "&ownerId="+$ownerId+
@@ -464,8 +471,8 @@ $(document).ready(function(){
 					 "&ownerName2="+cleanStr($("#OwnerName2").val())+
 					 "&datePurchased="+cleanStr($("#DatePurchased").val())+
 					 "&mailingName="+cleanStr($("#MailingName").val())+
-						 "&alternateMailingBoolean="+$alternateMailingBoolean+
-						 "&addrLine1="+cleanStr($("#AddrLine1").val())+
+					 "&alternateMailingBoolean="+$alternateMailingBoolean+
+					 "&addrLine1="+cleanStr($("#AddrLine1").val())+
 					 "&addrLine2="+cleanStr($("#AddrLine2").val())+
 					 "&altCity="+cleanStr($("#AltCity").val())+
 					 "&altState="+cleanStr($("#AltState").val())+
@@ -482,7 +489,7 @@ $(document).ready(function(){
 				   	$('#navbar a[href="#DetailPage"]').tab('show');
 				});
             }); // End of $.get("updHoaDbData.php","parcelId="+$parcelId+
-        } // End of empty or valid email address
+            
 
     });	// End of $(document).on("click","#SaveOwnerEdit",function(){
 
@@ -493,6 +500,7 @@ $(document).ready(function(){
         //var $ownerId = $this.attr("data-OwnerId");
         var $fy = $this.attr("data-FY");
         var $paidBoolean = $("#PaidCheckbox").is(":checked");
+        var $nonCollectibleBoolean = $("#NonCollectibleCheckbox").is(":checked");
         var $lienBoolean = $("#LienCheckbox").is(":checked");
         var $stopInterestCalcBoolean = $("#StopInterestCalcCheckbox").is(":checked");
 
@@ -502,6 +510,7 @@ $(document).ready(function(){
 				 					 "&duesAmount="+cleanStr($("#DuesAmount").val())+
 				 					 "&dateDue="+cleanStr($("#DateDue").val())+
 				 					 "&paidBoolean="+$paidBoolean+
+				 					 "&nonCollectibleBoolean="+$nonCollectibleBoolean+
 				 					 "&datePaid="+cleanStr($("#DatePaid").val())+
 				 					 "&paymentMethod="+cleanStr($("#PaymentMethod").val())+
 				 					 "&assessmentsComments="+cleanStr($("#AssessmentsComments").val())+
@@ -861,20 +870,18 @@ function formatPropertyDetailResults(hoaRec){
         	tr = tr +     '<th class="hidden-xs">Alt Address</th>';
         	tr = tr +     '<th class="hidden-xs">Comments</th>';
     	    tr = tr +   '</tr>';
-    	    ownName1 = rec.Owner_Name1;
-    	    currOwnerID = rec.OwnerID;
+    	    //ownName1 = rec.Owner_Name1;
+    	    //currOwnerID = rec.OwnerID;
 		}
 	    tr = tr + '<tr>';
 	    //tr = tr +   '<td data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+rec.OwnerID+'"><a href="#EditPage">'+rec.OwnerID+'</a></td>';
 	    tr = tr +   '<td>'+rec.OwnerID+'</td>';
-	    /*
+
 	    if (rec.CurrentOwner) {
-	    	own1 = rec.Owner_Name1;
-		    tr = tr +   '<td data-OwnerId="'+rec.OwnerID+'"><a href="#EditPage">'+rec.OwnerID+'</a></td>';
-	    } else {
-		    tr = tr +   '<td>'+rec.OwnerID+'</td>';
+    	    ownName1 = rec.Owner_Name1;
+    	    currOwnerID = rec.OwnerID;
 	    }
-	    */
+	    
     	if (hoaRec.adminLevel > 1) {
     	    tr = tr +   '<td><a data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+rec.OwnerID+'" href="#">'+rec.Owner_Name1+' '+rec.Owner_Name2+'</a></td>';
     	} else {
@@ -903,6 +910,7 @@ function formatPropertyDetailResults(hoaRec){
         	tr = tr +     '<th>Dues Amt</th>';
         	tr = tr +     '<th>Lien</th>';
         	tr = tr +     '<th>Paid</th>';
+        	tr = tr +     '<th>Non-Collectible</th>';
         	tr = tr +     '<th class="hidden-xs">Date Paid</th>';
         	tr = tr +     '<th class="hidden-xs hidden-sm">Date Due</th>';
         	tr = tr +     '<th class="hidden-xs">Payment</th>';
@@ -931,7 +939,7 @@ function formatPropertyDetailResults(hoaRec){
     	    LienButton = '<a data-ParcelId="'+hoaRec.Parcel_ID+'" data-FY="'+rec.FY+'" href="#" class="btn '+ButtonType+' btn-xs" role="button">Lien</a>';
     	} else {
     		// If NOT PAID and past the due date, add a Create Lien button to go to edit
-        	if (!rec.Paid && rec.DuesDue) {
+        	if (!rec.Paid && rec.DuesDue && !rec.NonCollectible) {
         	    LienButton = '<a data-ParcelId="'+hoaRec.Parcel_ID+'" data-FY="'+rec.FY+'" href="#" class="btn btn-warning btn-xs" role="button">Create Lien</a>';
         	}
     	}
@@ -942,6 +950,7 @@ function formatPropertyDetailResults(hoaRec){
 		tr = tr +   '<td>'+LienButton+'</td>';
 
 	    tr = tr +   '<td>'+setCheckbox(rec.Paid)+'</td>';
+	    tr = tr +   '<td>'+setCheckbox(rec.NonCollectible)+'</td>';
 	    tr = tr +   '<td class="hidden-xs">'+rec.DatePaid.substring(0,10)+'</td>';
 		tr = tr +   '<td class="hidden-xs hidden-sm">'+rec.DateDue.substring(0,10)+'</td>';
 	    tr = tr +   '<td class="hidden-xs">'+rec.PaymentMethod+'</td>';
@@ -1125,6 +1134,7 @@ function formatAssessmentDetailEdit(hoaRec){
     
     tr += '<tr><th>Date Due: </th><td>'+setInputDate("DateDue",rec.DateDue,"10")+'</td></tr>';
     tr += '<tr><th>Paid: </th><td>'+setCheckboxEdit(rec.Paid,'PaidCheckbox')+'</td></tr>';
+    tr += '<tr><th>Non-Collectible: </th><td>'+setCheckboxEdit(rec.NonCollectible,'NonCollectibleCheckbox')+'</td></tr>';
     tr += '<tr><th>Date Paid: </th><td>'+setInputDate("DatePaid",rec.DatePaid,"10")+'</td></tr>';
     tr += '<tr><th>Payment Method: </th><td>'+setInputText("PaymentMethod",rec.PaymentMethod,"50")+'</td></tr>';
     tr += '<tr><th>Comments: </th><td>'+setInputText("AssessmentsComments",rec.Comments,"90")+'</td></tr>';
@@ -1136,7 +1146,7 @@ function formatAssessmentDetailEdit(hoaRec){
 	tr = '';
 	tr += '<div class="form-group">';
     tr += '<tr><th>Lien: </th><td>'+setCheckboxEdit(rec.Lien,'LienCheckbox')+'</td></tr>';
-    tr += '<tr><th>LienRefNo: </th><td>'+setInputText("LienRefNo",rec.LienRefNo,"10")+'</td></tr>';
+    tr += '<tr><th>LienRefNo: </th><td>'+setInputText("LienRefNo",rec.LienRefNo,"15")+'</td></tr>';
     tr += '<tr><th>DateFiled: </th><td>'+setInputDate("DateFiled",rec.DateFiled,"10")+'</td></tr>';
 
     var selectOption = '<select class="form-control" id="Disposition">'
@@ -1167,7 +1177,7 @@ function formatAssessmentDetailEdit(hoaRec){
 	editTable2Col2.append($('<div>').prop('class',"form-group")
 			.append($('<tr>')
 					.append($('<th>').html('Lien: ')).append($('<td>').html(setCheckboxEdit(rec.Lien,'Lien')))
-					.append($('<th>').html('Lien Ref No: ')).append($('<td>').html(setInputText("LienRefNo",rec.LienRefNo,"10")))
+					.append($('<th>').html('Lien Ref No: ')).append($('<td>').html(setInputText("LienRefNo",rec.LienRefNo,"15")))
 					.append($('<th>').html('Date Filed: ')).append($('<td>').html(setInputDate("DateFiled",rec.DateFiled,"10")))
 					.append($('<th>').html('Disposition: ')).append($('<td>').html(setInputText("Disposition",rec.Disposition,"10")))
 					.append($('<th>').html('Filing Fee: ')).append($('<td>').html(setInputText("FilingFee",rec.FilingFee,"10")))
@@ -1628,12 +1638,6 @@ function formatDuesStatementResults(hoaRec) {
     	}
     }
 
-    
-/*    
-clear null's in assessment records after initial import
-update hoa_assessments set `LienRefNo`='', `DateFiled`='', `FilingFee`='', `ReleaseFee`='', `DateReleased`='', `LienDatePaid`='', `AmountPaid`='', `FilingFeeInterest`='', `AssessmentInterest`='', `LienComment`=''
-*/    
-
     duesStatementDownloadLinks.append(
 			$('<a>').prop('id','DownloadDuesStatementPDF')
 	    			.attr('href','#')
@@ -1985,6 +1989,7 @@ function formatReportList(reportName,reportTitle,reportList){
 					csvLine += ',' + csvFilter("FiscalYear");
 					csvLine += ',' + csvFilter("DuesAmt");
 					csvLine += ',' + csvFilter("Paid");
+					csvLine += ',' + csvFilter("NonCollectible");
 					csvLine += ',' + csvFilter("DateDue");
 			    	csvContent += csvLine + '\n';
 				}
@@ -2075,6 +2080,7 @@ function formatReportList(reportName,reportTitle,reportList){
 				csvLine += ',' + csvFilter(reportYear);
 				csvLine += ',' + csvFilter(hoaRec.assessmentsList[0].DuesAmt);
 				csvLine += ',' + csvFilter(setBoolText(hoaRec.assessmentsList[0].Paid));
+				csvLine += ',' + csvFilter(setBoolText(hoaRec.assessmentsList[0].NonCollectible));
 				csvLine += ',' + csvFilter(hoaRec.assessmentsList[0].DateDue);
 		    	csvContent += csvLine + '\n';
 		    

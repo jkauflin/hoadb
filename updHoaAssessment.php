@@ -9,6 +9,7 @@
  * 2016-04-10 JJK	Added new lien fields to the update 
  * 2016-07-08 JJK   Added logic to set current date on paid and lien if not 
  * 					specified
+ * 2016-09-02 JJK   Added NonCollectible field 
  *============================================================================*/
 
 include 'commonUtil.php';
@@ -26,6 +27,7 @@ include 'hoaDbCommon.php';
 	$duesAmount = getParamVal("duesAmount");
 	$dateDue = getParamVal("dateDue");
 	$paidBoolean = paramBoolVal("paidBoolean");
+	$nonCollectibleBoolean = paramBoolVal("nonCollectibleBoolean");
 	$datePaid = getParamVal("datePaid");
 	$paymentMethod = getParamVal("paymentMethod");
 	$assessmentsComments = getParamVal("assessmentsComments");
@@ -64,14 +66,14 @@ include 'hoaDbCommon.php';
 	//--------------------------------------------------------------------------------------------------------
 	$conn = getConn();
 
-	if (!$stmt = $conn->prepare("UPDATE hoa_assessments SET OwnerID=?,DuesAmt=?,DateDue=?,Paid=?,DatePaid=?,PaymentMethod=?," .
+	if (!$stmt = $conn->prepare("UPDATE hoa_assessments SET OwnerID=?,DuesAmt=?,DateDue=?,Paid=?,NonCollectible=?,DatePaid=?,PaymentMethod=?," .
 							"Lien=?,LienRefNo=?,DateFiled=?,Disposition=?,FilingFee=?,ReleaseFee=?,DateReleased=?,LienDatePaid=?,AmountPaid=?," .
 							"StopInterestCalc=?,FilingFeeInterest=?,AssessmentInterest=?,LienComment=?," .	
 							"Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND FY = ? ; ")) {
 		error_log("Prepare failed: " . $stmt->errno . ", Error = " . $stmt->error);
 		echo "Prepare failed: (" . $stmt->errno . ") " . $stmt->error;
 	}
-	if (!$stmt->bind_param("sssississssssssisssssss", $ownerId,$duesAmount,$dateDue,$paidBoolean,$datePaid,$paymentMethod,
+	if (!$stmt->bind_param("sssissiissssssssisssssss", $ownerId,$duesAmount,$dateDue,$paidBoolean,$nonCollectibleBoolean,$datePaid,$paymentMethod,
 						$lienBoolean,$lienRefNo,$dateFiled,$disposition,$filingFee,$releaseFee,$dateReleased,$lienDatePaid,$amountPaid,
 						$stopInterestCalcBoolean,$filingFeeInterest,$assessmentInterest,$lienComment,
 						$assessmentsComments,$username,$parcelId,$fy)) {

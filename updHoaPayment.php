@@ -82,7 +82,7 @@ function updAssessmentPaid($parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_e
 			$paymentInfoStr .= '<br>Transaction Id: ' . $txn_id;
 			$paymentInfoStr .= '<br>Payment Date: ' . $payment_date;
 			$paymentInfoStr .= '<br>Payer Email: ' . $payer_email;
-			$paymentInfoStr .= '<br>Payment Amount: ' . $payment_amt . ' (this includes the $4.00 processing fee) <br>';
+			$paymentInfoStr .= '<br>Payment Amount: ' . $payment_amt . ' (this includes the $4.00 PayPal processing fee) <br>';
 			
 			$subject = 'GRHA Payment Notification';
 			$messageStr = '<h3>GRHA Payment Notification</h3>' . $treasurerInfo . $paymentInfoStr;

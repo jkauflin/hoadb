@@ -8,6 +8,7 @@
  * 2016-04-05 JJK 	Added Add AddAssessments
  * 2016-04-09 JJK	Added Dues Statements
  * 2016-04-15 JJK   Dropped some unused Assessments fields
+ * 2016-09-02 JJK   Added NonCollectible field 
  *============================================================================*/
 
 include 'commonUtil.php';
@@ -47,6 +48,7 @@ if ($action == "AddAssessments") {
 			$DuesAmt = '$' . strval($duesAmt);
 			$DateDue = strval($fiscalYear-1) . "-10-01";
 			$Paid = 0;
+			$NonCollectible = 0;
 			$DatePaid = "";
 			$PaymentMethod = "";
 			
@@ -66,12 +68,12 @@ if ($action == "AddAssessments") {
 				
 			$Comments = "";
 		
-			$sqlStr = 'INSERT INTO hoa_assessments (OwnerID,Parcel_ID,FY,DuesAmt,DateDue,Paid,DatePaid,PaymentMethod,
+			$sqlStr = 'INSERT INTO hoa_assessments (OwnerID,Parcel_ID,FY,DuesAmt,DateDue,Paid,NonCollectible,DatePaid,PaymentMethod,
 							Lien,LienRefNo,DateFiled,Disposition,FilingFee,ReleaseFee,DateReleased,LienDatePaid,AmountPaid,
 							StopInterestCalc,FilingFeeInterest,AssessmentInterest,LienComment,Comments,LastChangedBy,LastChangedTs) ';
-			$sqlStr = $sqlStr . ' VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ';
+			$sqlStr = $sqlStr . ' VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ';
 			$stmt = $conn->prepare($sqlStr);
-			$stmt->bind_param("isissississssssssisssss",$OwnerID,$Parcel_ID,$FY,$DuesAmt,$DateDue,$Paid,$DatePaid,$PaymentMethod,
+			$stmt->bind_param("isissiississssssssisssss",$OwnerID,$Parcel_ID,$FY,$DuesAmt,$DateDue,$Paid,$NonCollectible,$DatePaid,$PaymentMethod,
 					$Lien,$LienRefNo,$DateFiled,$Disposition,$FilingFee,$ReleaseFee,$DateReleased,$LienDatePaid,$AmountPaid,
 					$StopInterestCalc,$FilingFeeInterest,$AssessmentInterest,$LienComment,$Comments,$username);
 
