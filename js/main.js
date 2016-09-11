@@ -888,7 +888,7 @@ function formatPropertyDetailResults(hoaRec){
     	    tr = tr +   '<td>'+rec.Owner_Name1+' '+rec.Owner_Name2+'</a></td>';
     	}
 	    tr = tr +   '<td>'+rec.Owner_Phone+'</td>';
-		tr = tr +   '<td class="hidden-xs">'+rec.DatePurchased.substring(0,10)+'</td>';
+		tr = tr +   '<td class="hidden-xs">'+rec.DatePurchased+'</td>';
 		tr = tr +   '<td class="hidden-xs">'+rec.Alt_Address_Line1+'</td>';
 		tr = tr +   '<td class="hidden-xs">'+rec.Comments+'</td>';
 	    tr = tr + '</tr>';
@@ -951,8 +951,8 @@ function formatPropertyDetailResults(hoaRec){
 
 	    tr = tr +   '<td>'+setCheckbox(rec.Paid)+'</td>';
 	    tr = tr +   '<td>'+setCheckbox(rec.NonCollectible)+'</td>';
-	    tr = tr +   '<td class="hidden-xs">'+rec.DatePaid.substring(0,10)+'</td>';
-		tr = tr +   '<td class="hidden-xs hidden-sm">'+rec.DateDue.substring(0,10)+'</td>';
+	    tr = tr +   '<td class="hidden-xs">'+rec.DatePaid+'</td>';
+		tr = tr +   '<td class="hidden-xs hidden-sm">'+rec.DateDue+'</td>';
 	    tr = tr +   '<td class="hidden-xs">'+rec.PaymentMethod+'</td>';
 	    tr = tr +   '<td class="hidden-xs">'+rec.Comments+' '+rec.LienComment+'</td>';
 	    tr = tr + '</tr>';
@@ -1702,11 +1702,11 @@ function formatDuesStatementResults(hoaRec) {
 	    tr = tr + '<tr>';
     	tr = tr +   '<td>'+rec.FY+'</a></td>';
 	    tr = tr +   '<td>'+stringToMoney(tempDuesAmt)+'</td>';
-	    tr = tr +   '<td>'+rec.DateDue.substring(0,10)+'</td>';
+	    tr = tr +   '<td>'+rec.DateDue+'</td>';
 	    tr = tr +   '<td>'+setCheckbox(rec.Paid)+'</td>';
-	    tr = tr +   '<td>'+rec.DatePaid.substring(0,10)+'</td>';
+	    tr = tr +   '<td>'+rec.DatePaid+'</td>';
 	    tr = tr + '</tr>';
-	    duesStatementPDFaddLine([rec.FY,rec.DuesAmt,rec.DateDue.substring(0,10),setBoolText(rec.Paid),rec.DatePaid.substring(0,10)],pdfLineHeaderArray);
+	    duesStatementPDFaddLine([rec.FY,rec.DuesAmt,rec.DateDue,setBoolText(rec.Paid),rec.DatePaid],pdfLineHeaderArray);
 	});
 
 	$("#DuesStatementAssessmentsTable tbody").html(tr);

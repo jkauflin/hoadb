@@ -25,6 +25,8 @@
  * 2016-08-19 JJK   Added UseEmail in Properties and EmailAddr in Owners
  * 2016-09-02 JJK   Added NonCollectible field, and logic to use to 
  * 					exclude assessments from total due calculations
+ * 2016-09-11 JJK   Modified to use truncDate when getting dates from
+ * 					the assessment record (and added 1st token check)
  *============================================================================*/
 
 function getConn() {
@@ -482,7 +484,9 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 					} else {
 						$onlyCurrYearDue = false;
 					}
-						
+
+					// check dates???
+					
 					if ($dateDue=date_create($hoaAssessmentRec->DateDue)) {
 						// Current System datetime
 						$currSysDate=date_create();
@@ -510,12 +514,12 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				
 				$hoaAssessmentRec->Lien = $row["Lien"];
 				$hoaAssessmentRec->LienRefNo = $row["LienRefNo"];
-				$hoaAssessmentRec->DateFiled = $row["DateFiled"];
+				$hoaAssessmentRec->DateFiled = truncDate($row["DateFiled"]);
 				$hoaAssessmentRec->Disposition = $row["Disposition"];
 				$hoaAssessmentRec->FilingFee = $row["FilingFee"];
 				$hoaAssessmentRec->ReleaseFee = $row["ReleaseFee"];
 				$hoaAssessmentRec->DateReleased = $row["DateReleased"];
-				$hoaAssessmentRec->LienDatePaid = $row["LienDatePaid"];
+				$hoaAssessmentRec->LienDatePaid = truncDate($row["LienDatePaid"]);
 				$hoaAssessmentRec->AmountPaid = $row["AmountPaid"];
 				$hoaAssessmentRec->StopInterestCalc = $row["StopInterestCalc"];
 				$hoaAssessmentRec->FilingFeeInterest = $row["FilingFeeInterest"];
@@ -546,10 +550,14 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 					$totalDuesCalcRec->calcValue = $duesAmt;
 					array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 
+					//error_log(date('[Y-m-d H:i] '). "DateDue = " . $hoaAssessmentRec->DateDue . PHP_EOL, 3, "jjk-hoaDbCommon.log");
+						
+					// Calculate interest on the assessment (if a Lien has been created and is Open)
 					if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open') {
 						$onlyCurrYearDue = false;
 						// If still calculating interest dynamically calculate the compound interest						
 						if (!$hoaAssessmentRec->StopInterestCalc) {
+								
 							$hoaAssessmentRec->AssessmentInterest = calcCompoundInterest($duesAmt,$hoaAssessmentRec->DateDue);
 						}
 						
