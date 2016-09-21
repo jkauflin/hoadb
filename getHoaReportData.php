@@ -7,6 +7,7 @@
  * Modification History
  * 2016-04-12 JJK 	Initial version
  * 2016-07-30 JJK   Completed query for Paid Dues Count report
+ * 2016-09-20 JJK	Added non-collectibel fields for counts
  *============================================================================*/
 
 include 'commonUtil.php';
@@ -18,7 +19,9 @@ class PaidDuesCountsRec
 	public $fy;
 	public $paidCnt;
 	public $unpaidCnt;
+	public $nonCollCnt;
 	public $totalDue;
+	public $nonCollDue;
 }
 
 
@@ -77,6 +80,7 @@ if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 	$fy = 0;
 	$duesAmt = "";
 	$paid = FALSE;
+	$nonCollectible = FALSE;
 	$saleDate = "SKIP";
 	
 	//$sql = "SELECT * FROM hoa_assessments WHERE FY > 2006 ORDER BY FY DESC; ";
@@ -92,7 +96,9 @@ if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 	
 	$paidCnt = 0;
 	$unPaidCnt = 0;
+	$nonCollCnt = 0;
 	$totalDue = 0.0;
+	$nonCollDue = 0.0;
 	$cnt = 0;
 	$prevFY = "";
 	$prevParcelId = "";
@@ -108,6 +114,7 @@ if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 			$fy = $row["FY"];
 			$duesAmt = $row["DuesAmt"];
 			$paid = $row["Paid"];
+			$nonCollectible = $row["NonCollectible"];
 			
 			if ($cnt == 1) {
 				$prevFY = $fy;
@@ -119,13 +126,17 @@ if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 				$paidDuesCountsRec->fy = $prevFY;
 				$paidDuesCountsRec->paidCnt = $paidCnt;
 				$paidDuesCountsRec->unpaidCnt = $unPaidCnt;
+				$paidDuesCountsRec->nonCollCnt = $nonCollCnt;
 				$paidDuesCountsRec->totalDue = $totalDue;
+				$paidDuesCountsRec->nonCollDue = $nonCollDue; 
 				array_push($outputArray,$paidDuesCountsRec);
 				
 				// reset counts
 				$paidCnt = 0;
 				$unPaidCnt = 0;
+				$nonCollCnt = 0;
 				$totalDue = 0.0;
+				$nonCollDue = 0.0;
 				$prevFY = $fy;
 				$prevParcelId = $parcelId;
 				$prevOwnerId = $ownerId;
@@ -143,8 +154,13 @@ if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 			if ($paid) {
 				$paidCnt++;
 			} else {
-				$unPaidCnt++;
-				$totalDue += stringToMoney($duesAmt);
+				if ($nonCollectible) {
+					$nonCollCnt++;
+					$nonCollDue += stringToMoney($duesAmt);
+				} else {
+					$unPaidCnt++;
+					$totalDue += stringToMoney($duesAmt);
+				}
 			}
 
 		}
@@ -154,7 +170,9 @@ if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 		$paidDuesCountsRec->fy = $prevFY;
 		$paidDuesCountsRec->paidCnt = $paidCnt;
 		$paidDuesCountsRec->unpaidCnt = $unPaidCnt;
+		$paidDuesCountsRec->nonCollCnt = $nonCollCnt;
 		$paidDuesCountsRec->totalDue = $totalDue;
+		$paidDuesCountsRec->nonCollDue = $nonCollDue;
 		array_push($outputArray,$paidDuesCountsRec);
 		
 	}

@@ -61,6 +61,7 @@
  * 2016-08-26 JJK   Went live, and Paypal payments working in Prod!!!
  * 2016-09-01 JJK   Corrected Owner order by year not id
  * 2016-09-02 JJK   Added NonCollectible field 
+ * 2016-09-20 JJK   Added NonCollectible fields to counts report 
  *============================================================================*/
 
 var hoaName = '';
@@ -1894,7 +1895,9 @@ function formatReportList(reportName,reportTitle,reportList){
 				.append($('<th>').html('Fiscal Year'))
 				.append($('<th>').html('Paid Count'))
 				.append($('<th>').html('UnPaid Count'))
+				.append($('<th>').html('Non-collectible Count'))
 				.append($('<th>').html('Total UnPaid Dues'))
+				.append($('<th>').html('Total Non-collectible Dues'))
 				.appendTo(reportListDisplay);		
 				
 				reportTitleFull = reportTitle;
@@ -1904,7 +1907,9 @@ function formatReportList(reportName,reportTitle,reportList){
 				csvLine = csvFilter("FiscalYear");
 				csvLine += ',' + csvFilter("PaidCount");
 				csvLine += ',' + csvFilter("UnPaidCount");
+				csvLine += ',' + csvFilter("NonCollCount");
 				csvLine += ',' + csvFilter("TotalUnPaidDues");
+				csvLine += ',' + csvFilter("TotalNonCollDues");
 		    	csvContent += csvLine + '\n';
 			}
 
@@ -1912,13 +1917,17 @@ function formatReportList(reportName,reportTitle,reportList){
 			tr.append($('<td>').html(cntsRec.fy))
 			.append($('<td>').html(cntsRec.paidCnt))
 			.append($('<td>').html(cntsRec.unpaidCnt))
-			.append($('<td>').html(parseFloat(''+cntsRec.totalDue).toFixed(2)));
+			.append($('<td>').html(cntsRec.nonCollCnt))
+			.append($('<td>').html(parseFloat(''+cntsRec.totalDue).toFixed(2)))
+			.append($('<td>').html(parseFloat(''+cntsRec.nonCollDue).toFixed(2)));
 			tr.appendTo(reportListDisplay);		
 
 			csvLine = csvFilter(cntsRec.fy);
 			csvLine += ',' + csvFilter(cntsRec.paidCnt);
 			csvLine += ',' + csvFilter(cntsRec.unpaidCnt);
-			csvLine += ',' + csvFilter(parseFloat(''+cntsRec.totalDue).toFixed(2));
+			csvLine += ',' + csvFilter(cntsRec.nonCollCnt);
+			csvLine += ',' + csvFilter(parseFloat(''+cntsRec.totalDue).toFixed(2))
+			csvLine += ',' + csvFilter(parseFloat(''+cntsRec.nonCollDue).toFixed(2));
 	    	csvContent += csvLine + '\n';
 
 		}); // $.each(reportList, function(index, cntsRec) {
