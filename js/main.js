@@ -62,6 +62,7 @@
  * 2016-09-01 JJK   Corrected Owner order by year not id
  * 2016-09-02 JJK   Added NonCollectible field 
  * 2016-09-20 JJK   Added NonCollectible fields to counts report 
+ * 2016-10-25 JJK   Adding Communications table
  *============================================================================*/
 
 var hoaName = '';
@@ -396,7 +397,20 @@ $(document).ready(function(){
             $("#EditPage2Col").modal();
         });
     });	
-	
+
+    $(document).on("click","#CommunicationsButton",function(){
+        waitCursor();
+        var $this = $(this);
+        var parcelId = $this.attr("data-ParcelId");
+        var ownerId = $this.attr("data-OwnerId");
+
+        $.getJSON("getHoaCommList.php","parcelId="+$this.attr("data-ParcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaCommRecList){
+        	displayCommList(hoaCommRecList,parcelId,ownerId);
+    	    $('*').css('cursor', 'default');
+	        $('#navbar a[href="#CommPage"]').tab('show');
+        });
+    });	
+
     $(document).on("click","#PropertyAssessments tr td a",function(){
         waitCursor();
         var $this = $(this);
@@ -712,6 +726,19 @@ $(document).ready(function(){
        	}
     })
 
+    $(document).on("click",".NewComm",function(){
+        waitCursor();
+        var $this = $(this);
+        var parcelId = $this.attr("data-ParcelId");
+        var ownerId = $this.attr("data-OwnerId");
+        var commId = $this.attr("data-CommId");
+        $.getJSON("getHoaCommList.php","parcelId="+parcelId+"&ownerId="+ownerId+"&commId="+commId,function(hoaCommRecList){
+            formatCommEdit(hoaCommRecList[0],parcelId,ownerId,commId);
+    	    $('*').css('cursor', 'default');
+            $("#EditPage").modal();
+        });
+    });	
+
     $(document).on("click",".NewConfig",function(){
         waitCursor();
         var $this = $(this);
@@ -741,7 +768,32 @@ $(document).ready(function(){
         }); // End of 
         event.stopPropagation();
     });	// End of $(document).on("click","#SaveConfigEdit",function(){
+
     
+    $(document).on("click",".SaveCommEdit",function(){
+        waitCursor();
+        var $this = $(this);
+        var parcelId = $this.attr("data-ParcelId");
+        var ownerId = $this.attr("data-OwnerId");
+        var commId = $this.attr("data-CommId");
+        
+        $.get("updHoaComm.php","parcelId="+parcelId+
+ 								"&ownerId="+ownerId+
+ 								"&commId="+commId+
+ 								"&commType="+cleanStr($("#CommType").val())+
+        						"&commDesc="+cleanStr($("#CommDesc").val())+
+			 					"&CommAction="+$this.attr("data-CommAction"),function(results){
+
+            $.getJSON("getHoaCommList.php","parcelId="+parcelId+"&ownerId="+ownerId,function(hoaCommRecList){
+        	    $('*').css('cursor', 'default');
+            	displayCommList(hoaCommRecList,parcelId,ownerId);
+                $("#EditPage").modal("hide");
+   	         	$('#navbar a[href="#CommPage"]').tab('show');
+        	});
+
+        }); // End of 
+        event.stopPropagation();
+    });	// End of $(document).on("click",".SaveCommEdit",function(){
     
 }); // $(document).ready(function(){
 
@@ -796,6 +848,71 @@ function formatConfigEdit(hoaConfigRec){
 	$("#EditPageButton").html(tr);
 
 } // End of function formatConfigEdit(hoaConfigRec){
+
+function displayCommList(hoaCommRecList,parcelId,ownerId) {
+	//var tr = '<tr><td>No records found - try different search parameters</td></tr>';
+	var tr = '';
+
+    $("#CommunicationsNew").html('<a id="CommunicationsNewButton" data-ParcelId="'+parcelId+'" data-OwnerId="'+ownerId+'" data-CommId="NEW" href="#" class="btn btn-primary NewComm" role="button">New Communication</a>');
+	$("#CommunicationsParcel").html("<b>Parcel Id:</b> "+parcelId+" <b>Owner Id:</b> "+ownerId);
+
+	$.each(hoaCommRecList, function(index, hoaCommRec) {
+		if (index == 0) {
+    		tr = '';
+    	    tr +=    '<tr>';
+        	tr +=      '<th>CommID</th>';
+        	tr +=      '<th>Datetime</th>';
+        	tr +=      '<th>Type</th>';
+        	tr +=      '<th>Description</th>';
+    	    tr +=    '</tr>';
+		}
+	    tr +=  '<tr>';
+	    tr +=    '<td><a data-ParcelId="'+parcelId+'" data-OwnerId="'+ownerId+'" data-CommID="'+hoaCommRec.CommId+'" class="NewComm" href="#">'+hoaCommRec.CommID+'</a></td>';
+	    tr +=    '<td>'+hoaCommRec.CommID+'</td>';
+	    tr +=    '<td>'+hoaCommRec.CreateTs+'</td>';
+	    tr +=    '<td>'+hoaCommRec.CommType+'</td>';
+	    tr +=    '<td>'+hoaCommRec.CommDesc+'</td>';
+	    tr +=  '</tr>';
+	});
+
+    $("#CommListDisplay tbody").html(tr);
+}
+
+function formatCommEdit(hoaCommRec,parcelId,ownerId,commId){
+    var tr = '';
+    var tr2 = '';
+    var checkedStr = '';
+    var buttonStr = '';
+    $(".editValidationError").empty();
+
+    $("#EditPageHeader").text("Create Communication");
+
+	tr = '';
+	tr += '<div class="form-group">';
+    tr += '<tr><th>Parcel:</th><td>'+ parcelId +'</td></tr>';
+    tr += '<tr><th>OwnerID:</th><td>'+ ownerId +'</td></tr>';
+    //tr += '<tr><th>CommID:</th><td>'+ commId +'</td></tr>';
+    tr += '<tr><th>Datetime:</th><td>'+ hoaCommRec.CreateTs +'</td></tr>';
+    var selectOption = '<select class="form-control" id="CommType">'
+		+setSelectOption("Dues Question","Dues Question",("Dues Question" == hoaCommRec.CommType),"bg-danger")
+		+setSelectOption("Dues Statement","Dues Statement",("Dues Statement" == hoaCommRec.CommType),"bg-info")
+		+setSelectOption("Issue","Issue",("Issue" == hoaCommRec.CommType),"bg-success")
+		+'</select>';                    		
+    tr += '<tr><th>Type: </th><td>'+selectOption+'</td></tr>';
+    
+    tr += '<tr><th>Description:</th><td>'+ setInputText("CommDesc",hoaCommRec.CommDesc,"80")+'</td></tr>';
+	tr += '</div>';
+	
+	$("#EditTable tbody").html(tr);
+	//$("#EditTable2 tbody").html(tr2);
+
+	tr = '<form class="form-inline" role="form">';
+	tr += '<a data-CommAction="Edit" data-ParcelId="'+parcelId+'" data-OwnerId="'+ownerId+'" data-CommId="'+commId+'" href="#" class="btn btn-primary SaveCommEdit" role="button">Save</a>';
+	//tr += '<a data-CommAction="Delete" data-ParcelId="'+parcelId+'" data-OwnerId="'+ownerId+'" data-CommId="'+commId+'" href="#" class="btn btn-primary SaveCommEdit" role="button">Delete</a>';
+	tr += '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button></form>';
+	$("#EditPageButton").html(tr);
+
+} // End of function formatCommEdit(hoaCommRec){
 
 function displayPropertyList(hoaPropertyRecList) {
 	var tr = '<tr><td>No records found - try different search parameters</td></tr>';
@@ -968,6 +1085,8 @@ function formatPropertyDetailResults(hoaRec){
     $("#MCAuditorLink").html('<a href="'+encodeURI(mcAuditorURI)+'" class="btn btn-primary" role="button" target="_blank">County<br>Property</a>');    
 
     $("#DuesStatement").html('<a id="DuesStatementButton" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+currOwnerID+'" href="#" class="btn btn-success" role="button">Dues Statement</a>');
+
+    $("#Communications").html('<a id="CommunicationsButton" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+currOwnerID+'" href="#" class="btn btn-info" role="button">Communications</a>');
 
     if (hoaRec.adminLevel > 1) {
 	    $("#NewOwner").html('<a id="NewOwnerButton" data-ParcelId="'+hoaRec.Parcel_ID+'" data-OwnerId="'+currOwnerID+'" href="#" class="btn btn-warning" role="button">New Owner</a>');

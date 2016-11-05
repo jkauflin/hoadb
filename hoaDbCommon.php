@@ -27,6 +27,7 @@
  * 					exclude assessments from total due calculations
  * 2016-09-11 JJK   Modified to use truncDate when getting dates from
  * 					the assessment record (and added 1st token check)
+ * 2016-10-25 JJK	Added HoaCommRec for the Communications records
  *============================================================================*/
 
 function getConn() {
@@ -271,6 +272,14 @@ class HoaConfigRec {
 	public $ConfigValue;
 }
 
+class HoaCommRec {
+	public $Parcel_ID;
+	public $CommID;
+	public $CreateTs;
+	public $OwnerID;
+	public $CommType;
+	public $CommDesc;
+}
 
 function getHoaSalesRec($conn,$parcelId,$saleDate) {
 	
