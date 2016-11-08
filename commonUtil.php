@@ -118,6 +118,7 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
 	mail($toStr,$subject,$message,$headers);
 }
 
+
 function truncDate($inStr) {
 	$outStr = "";
 	if ($inStr != null) {

@@ -20,28 +20,11 @@ include 'hoaDbCommon.php';
 	$commDesc = getParamVal("commDesc");
 	$CommAction = getParamVal("CommAction");
 	
-	
-	/*
-	error_log(date('[Y-m-d H:i] '). "updHoaConfig, ConfigName = " . $configName . PHP_EOL, 3, "hoadb.log");
-	error_log(date('[Y-m-d H:i] '). "updHoaConfig, ConfigDesc = " . $configDesc . PHP_EOL, 3, "hoadb.log");
-	error_log(date('[Y-m-d H:i] '). "updHoaConfig, ConfigValue = " . $configValue . PHP_EOL, 3, "hoadb.log");
-
-	Hoa_communications
-
-Parcel_ID
-CommID
-CreateTs
-OwnerID
-CommType
-CommDesc
-	*/
-	
 	//--------------------------------------------------------------------------------------------------------
 	// Create connection to the database
 	//--------------------------------------------------------------------------------------------------------
 	$conn = getConn();
 
-	//$sqlStr = 'INSERT INTO hoa_communications (Parcel_ID,CommID,CreateTs,OwnerID,CommType,CommDesc) VALUES(?,AUTO_INCREMENT,CURRENT_TIMESTAMP,?,?,?); ';
 	$sqlStr = 'INSERT INTO hoa_communications (Parcel_ID,CommID,CreateTs,OwnerID,CommType,CommDesc) VALUES(?,null,CURRENT_TIMESTAMP,?,?,?); ';
 	$stmt = $conn->prepare($sqlStr);
 	$stmt->bind_param("siss",$parcelId,$ownerId,$commType,$commDesc);

@@ -101,6 +101,7 @@ if ($action == "AddAssessments") {
 
 	$outputArray = array();
 
+	// Get the current Fiscal Year value
 	$result = $conn->query("SELECT MAX(FY) AS maxFY FROM hoa_assessments; ");
 	if ($result->num_rows > 0) {
 		while($row = $result->fetch_assoc()) {
@@ -112,9 +113,15 @@ if ($action == "AddAssessments") {
 		// Loop through all the member properties
 		//$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";		
 		
+	//"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
+	// testing dues statements
+	
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-				"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
-				"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
+				"WHERE p.Parcel_ID = 'R72617322 0017' AND p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
+				"AND a.FY = " . $fy . " ORDER BY p.Parcel_ID; ";
+				//"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
+		
+		
 		
 		$stmt = $conn->prepare($sql);
 		$stmt->execute();

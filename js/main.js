@@ -62,7 +62,9 @@
  * 2016-09-01 JJK   Corrected Owner order by year not id
  * 2016-09-02 JJK   Added NonCollectible field 
  * 2016-09-20 JJK   Added NonCollectible fields to counts report 
- * 2016-10-25 JJK   Adding Communications table
+ * 2016-10-25 JJK   Added Communications table
+ * 2016-11-04 JJK   (Jackson's 14th birthday)
+ * 2016-11-05 JJK   Added Admin option to send dues emails
  *============================================================================*/
 
 var hoaName = '';
@@ -83,6 +85,8 @@ var surveyQuestion2 = '';
 var surveyQuestion3 = '';
 // Global variable for loop counter
 var adminRecCnt = 0;
+// Global variable for total number of parcels in the HOA
+var hoaPropertyListMAX = 542;
 
 function sleep(milliseconds) {
 	var start = new Date().getTime();
@@ -867,7 +871,7 @@ function displayCommList(hoaCommRecList,parcelId,ownerId) {
     	    tr +=    '</tr>';
 		}
 	    tr +=  '<tr>';
-	    tr +=    '<td><a data-ParcelId="'+parcelId+'" data-OwnerId="'+ownerId+'" data-CommID="'+hoaCommRec.CommId+'" class="NewComm" href="#">'+hoaCommRec.CommID+'</a></td>';
+	    //tr +=    '<td><a data-ParcelId="'+parcelId+'" data-OwnerId="'+ownerId+'" data-CommID="'+hoaCommRec.CommId+'" class="NewComm" href="#">'+hoaCommRec.CommID+'</a></td>';
 	    tr +=    '<td>'+hoaCommRec.CommID+'</td>';
 	    tr +=    '<td>'+hoaCommRec.CreateTs+'</td>';
 	    tr +=    '<td>'+hoaCommRec.CommType+'</td>';
@@ -894,9 +898,9 @@ function formatCommEdit(hoaCommRec,parcelId,ownerId,commId){
     //tr += '<tr><th>CommID:</th><td>'+ commId +'</td></tr>';
     tr += '<tr><th>Datetime:</th><td>'+ hoaCommRec.CreateTs +'</td></tr>';
     var selectOption = '<select class="form-control" id="CommType">'
+		+setSelectOption("Issue","Issue",("Issue" == hoaCommRec.CommType),"bg-success")
 		+setSelectOption("Dues Question","Dues Question",("Dues Question" == hoaCommRec.CommType),"bg-danger")
 		+setSelectOption("Dues Statement","Dues Statement",("Dues Statement" == hoaCommRec.CommType),"bg-info")
-		+setSelectOption("Issue","Issue",("Issue" == hoaCommRec.CommType),"bg-success")
 		+'</select>';                    		
     tr += '<tr><th>Type: </th><td>'+selectOption+'</td></tr>';
     
@@ -1331,8 +1335,21 @@ function formatAssessmentDetailEdit(hoaRec){
 // Asynchronous recursive loop to process the list for the AdminExecute
 //--------------------------------------------------------------------------------------------------------------------------------
 function adminLoop(hoaPropertyRecList) {
+	
+	var firstNotice = false;
+	// If list of unpaid properties is the total number of properties, assume it is the 1st Dues Notice
+	if (hoaPropertyRecList.length == hoaPropertyListMAX) {
+		firstNotice = true;
+	}
+	
 	// getJSON to get detail data on each one and call function to add dues statement to a PDF
 	$.getJSON("getHoaDbData.php","parcelId="+hoaPropertyRecList[adminRecCnt].parcelId,function(hoaRec){
+
+		/*
+		if (hoaRec.UseEmail) {
+			console.log("Use email address: "+hoaRec.ownersList[0].EmailAddr);
+		} 
+		*/
 
 		// Create the PDF for yearly dues statements
 		if (adminRecCnt == 0) {
@@ -1356,6 +1373,32 @@ function adminLoop(hoaPropertyRecList) {
 	  	// Call function to format the yearly dues statement for an individual property
 	  	formatYearlyDuesStatement(hoaRec);
 	
+	  	// need logic to check if sending email version (if UseEmail)
+	  	// get a separate PDF created
+	  	// use https://github.com/PHPMailer/PHPMailer to send email with an attachment
+	  	// *** and logic to say if 1st notice, don't include in generate PDF list
+
+	  	/*
+        But I needed to modify my function a bit : 
+        	var doc = new jsPDF('p','mm'); 
+        	doc.addImage(imgData, 'JPEG', 15, 40, 180, 160); 
+        	var pdf = btoa(doc.output()); 
+        	$.post("sendmail.php", { data: pdf }, function (response,status) { console.log(response); });
+		*/
+        //$(selector).post(URL,data,function(data,status,xhr),dataType)
+
+		//sendHtmlEMail2($toStr,$subject,$messageStr,$fromName,$fromEmailAddress,$filename,$filedata);
+
+    	var pdfData = btoa(pdf.output()); 
+        $.post("sendMail.php",{ toEmail: hoaRec.ownersList[0].EmailAddr,
+        						subject: 'Dues Notice', 
+        						messageStr: 'This is the dues notice',
+        						filename: 'DuesNotice.pdf',
+        						filedata: pdfData },function(response,status){
+        	console.log("response from sendMail = "+response);
+        });
+
+	  	
 	  	// Calculate the percent done for the progress bar
 		recTotal = hoaPropertyRecList.length-1;
 		percentDone = Math.round((adminRecCnt/recTotal)*100);
@@ -1381,8 +1424,11 @@ function adminLoop(hoaPropertyRecList) {
 			setTimeout(adminLoop, 0, hoaPropertyRecList);
 		} else {
 			// If loop completed, display a completion message and download the PDF file
+			
+			//firstNotice = true;
+
 			$("#ResultMessage").html("Yearly dues statements completed, total = "+adminRecCnt);
-			pdf.save(formatDate()+"-YearlyDuesStatements.pdf");
+			//pdf.save(formatDate()+"-YearlyDuesStatements.pdf");
 		}
 	}); // $.getJSON("getHoaDbData.php","parcelId="+hoaPropertyRecList[adminRecCnt].parcelId,function(hoaRec){
 	
@@ -1843,9 +1889,9 @@ function duesStatementPDFaddLine(pdfLineArray,pdfLineHeaderArray) {
 	if (pdfLineCnt == 1) {
     	pdf = new jsPDF('p', 'in', 'letter');
     	pdf.setProperties({
-    	    title: 'Test JJK Doc',
-    	    subject: 'This is the subject',
-    	    author: 'John Kauflin',
+    	    title: 'GRHA Dues Statements',
+    	    subject: 'GRHA Dues Statements',
+    	    author: 'Treasurer',
     	    keywords: 'generated, javascript, web 2.0, ajax',
     	    creator: 'MEEE'
     	});
