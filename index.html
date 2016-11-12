@@ -159,28 +159,6 @@
 				    	<h4>Reports</h4>
 	                  	
 		                <div class="form-group">
-		                	<!-- 
-							<label for="ReportYear">Report Year:</label>
-							<select class="form-control" id="ReportYear">
-								<option>2010</option>
-							    <option>2011</option>
-							    <option>2012</option>
-							    <option>2013</option>
-							   	<option>2014</option>
-							   	<option>2015</option>
-							   	<option selected>2016</option>
-							   	<option>2017</option>
-							   	<option>2018</option>
-							   	<option>2019</option>
-							   	<option>2020</option>
-							   	<option>2021</option>
-							  	<option>2022</option>
-							   	<option>2023</option>
-							   	<option>2024</option>
-							  	<option>2025</option>
-							</select>                    		
-		                	 -->
-							
 	                    	<button id="SalesReport" data-reportTitle="County Reported Sales of HOA properties" 
 	                    		type="button" class="btn btn-primary reportRequest form-control">Sales Report</button>
 	                    	<button id="SalesNewOwnerReport" data-reportTitle="County Reported Sales of HOA properties (for New Owner maintenance)" 
@@ -193,7 +171,6 @@
 	                    		type="button" class="btn btn-primary reportRequest form-control">Paid Dues Counts</button>
 	                    	<button id="PropertyOwnerReport" data-reportTitle="Property/Owner Report" 
 	                    		type="button" class="btn btn-primary reportRequest form-control">Property Owner</button>
-
 		                </div>
 	       					
 					</div>
@@ -212,13 +189,13 @@
 	        
 	    <div class="tab-pane" id="AdminPage">
 			<div class="row">
-				<div class="col-sm-5 col-md-4">
+				<div class="col-sm-4 col-md-3">
 				  	<h4>Admin</h4>
 
-	                	<div class="form-group" style="margin-right:100px;">
-                    		<input type="text" class="form-control resetval" name="DuesAmt"     	id="DuesAmt"		placeholder="Dues Amount">
-						      <label for="FiscalYear">Fiscal Year for which to add Assessments:</label>
-						      <select class="form-control" id="FiscalYear">
+	                <div class="form-group" style="margin-right:100px;">
+                    	<input type="text" class="form-control resetval" name="DuesAmt"     	id="DuesAmt"		placeholder="Dues Amount">
+						<label for="FiscalYear">Fiscal Year for which to add Assessments:</label>
+						<select class="form-control" id="FiscalYear">
 						        <option>2018</option>
 						        <option>2019</option>
 						        <option>2020</option>
@@ -232,19 +209,24 @@
 						        <option>2028</option>
 						        <option>2029</option>
 						        <option>2030</option>
-						      </select>                    		
-	                	</div>
+						</select>                    		
 
+	                    <button id="AddAssessments" type="button" class="btn btn-primary form-control AdminButton">Add Assessments</button>
+	                    <button id="DuesNotices" type="button" class="btn btn-primary form-control AdminButton">Create Dues Notices</button>
+	                    <button id="DuesEmails" type="button" class="btn btn-primary form-control AdminButton">Send Dues Notice emails</button>
+
+	                </div>
+
+					<!-- 
 	            	<form class="form-inline" role="form">
 	                    <button id="AddAssessments" type="button" class="btn btn-primary AdminButton">Add Assessments</button>
-	                    <button id="DuesStatements" type="button" class="btn btn-primary AdminButton">Generate Dues Statements</button>
-	                    <!-- 
-	                    <label class="checkbox-inline"><input type="checkbox" value="">Send Emails</label>
-	                     -->
+	                    <button id="DuesNotices" type="button" class="btn btn-primary AdminButton">Generate Dues Notices</button>
+	                    <button id="DuesEmails" type="button" class="btn btn-primary AdminButton">Send Dues Notice emails</button>
 		         	</form>
+					 -->
 		         	
 				  </div>
-				  <div class="col-sm-7 col-md-8">
+				  <div class="col-sm-8 col-md-9">
                 		<h4>Results</h4>
                 		<div class="ajaxError"></div>
                 		<div id="ResultMessage" style="margin-top:10px;"></div>

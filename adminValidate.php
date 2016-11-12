@@ -34,16 +34,24 @@ if ($action == "AddAssessments") {
 		$adminRec->message = "Are you sure you want to add assessment for Fiscal Year " . $FY . ' with Dues Amount of $' . $duesAmt .'?';
 		$adminRec->result = "Valid";
 	}
-} else if ($action == "DuesStatements") {
+} else if ($action == "DuesNotices") {
 	if ($adminLevel < 2) {
-		$adminRec->message = "You do not have permissions to generate Dues Statements.";
+		$adminRec->message = "You do not have permissions to generate Dues Notices.";
 		$adminRec->result = "Not Valid";
 	} else {
-		$adminRec->message = "Continue with creation of Yearly Dues Statements?";
+		$adminRec->message = "Continue with creation of Yearly Dues Notices?";
+		$adminRec->result = "Valid";
+	}
+} else if ($action == "DuesEmails") {
+	if ($adminLevel < 2) {
+		$adminRec->message = "You do not have permissions to email Dues Notices.";
+		$adminRec->result = "Not Valid";
+	} else {
+		$adminRec->message = "Continue with email of Yearly Dues Notices?";
 		$adminRec->result = "Valid";
 	}
 }
-	/*
+/*
 	$conn = getConn();
 	$hoaSalesReportRec = getHoaSalesRecList($conn,$notProcessedBoolean);
 

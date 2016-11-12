@@ -22,24 +22,14 @@ include 'hoaDbCommon.php';
 	// Decode the PDF data stream from character back to binary
 	$filedata = base64_decode($_POST['filedata']);
 	
-	/*
-	$subject = 'HOA Residential Sales in ' . $salesYear;
-	$messageStr = '<h2>HOA Residential Sales in ' . $salesYear . '</h2>' . $outputStr;
-	
-	*/
-	
-	$fromName = "GRHA Treasurer";
-	
-	//->setTo(array($toEmail, 'other@domain.org' => 'A name'))
-	
 	// Create the message
 	$message = Swift_Message::newInstance()
 	->setSubject($subject)
-	->setFrom(array(getConfigVal("fromEmailAddress") => $fromName))
+	->setFrom(getConfigVal("fromTreasurerEmailAddress"))
 	->setTo($toEmail)
-	->setBody($messageStr)
+	->setBody($messageStr);
 	// And optionally an alternative body
-	->addPart('<q>Here is the message itself</q>', 'text/html');
+	//	->addPart($messageStr, 'text/plain');
 	
 	// Create the attachment with your data
 	$attachment = Swift_Attachment::newInstance($filedata, $filename, 'application/pdf');
@@ -53,9 +43,9 @@ include 'hoaDbCommon.php';
 
 	// Send the message and check for success
 	if ($mailer->send($message)) {
-		echo "sendMail SUCCESS \n";
+		echo "SUCCESS";
 	} else {
-		echo "sendMail ERROR \n";
+		echo "ERROR";
 	}
 
 ?>

@@ -97,7 +97,7 @@ if ($action == "AddAssessments") {
 		$adminRec->result = "Valid";
 	}
 // End of if ($action == "AddAssessments") {
-} else if ($action == "DuesStatements") {
+} else if ($action == "DuesNotices" || $action == "DuesEmails") {
 
 	$outputArray = array();
 
@@ -110,18 +110,25 @@ if ($action == "AddAssessments") {
 		$result->close();
 	}
 	
-		// Loop through all the member properties
+	// Loop through all the member properties
 		//$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";		
 		
 	//"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
 	// testing dues statements
-	
+
+	$sql = '';
+	if ($action == "DuesEmails") {
+		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+				"WHERE p.Parcel_ID = 'R72617322 0017' AND p.UseEmail AND p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
+				"AND a.FY = " . $fy . " ORDER BY p.Parcel_ID; ";
+				//"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
+		
+	} else {
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
 				"WHERE p.Parcel_ID = 'R72617322 0017' AND p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
 				"AND a.FY = " . $fy . " ORDER BY p.Parcel_ID; ";
 				//"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
-		
-		
+		}
 		
 		$stmt = $conn->prepare($sql);
 		$stmt->execute();
@@ -176,7 +183,7 @@ if ($action == "AddAssessments") {
 			$adminRec->hoaPropertyRecList = $outputArray;
 		}
 
-		$adminRec->message = "Completed data lookup Dues Statements";
+		$adminRec->message = "Completed data lookup for Dues Notices";
 		$adminRec->result = "Valid";
 }
 	

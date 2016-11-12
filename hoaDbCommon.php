@@ -65,6 +65,8 @@ function getConfigVal($configName) {
 		$configVal = $countySalesDataUrl;	
 	} elseif ($configName == "fromEmailAddress") {
 		$configVal = $fromEmailAddress;
+	} elseif ($configName == "fromTreasurerEmailAddress") {
+		$configVal = $fromTreasurerEmailAddress;
 	} elseif ($configName == "salesReportEmailList") {
 		$configVal = $salesReportEmailList;
 	} elseif ($configName == "adminEmailList") {
