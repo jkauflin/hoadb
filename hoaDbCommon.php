@@ -28,6 +28,8 @@
  * 2016-09-11 JJK   Modified to use truncDate when getting dates from
  * 					the assessment record (and added 1st token check)
  * 2016-10-25 JJK	Added HoaCommRec for the Communications records
+ * 2016-11-28 JJK   Added $InterestNotPaid and $BankFee to HoaAssessmentRec
+ * 					and to the dues calculations in both functions
  *============================================================================*/
 
 function getConn() {
@@ -201,6 +203,8 @@ class HoaAssessmentRec
   	public $StopInterestCalc;
   	public $FilingFeeInterest;
   	public $AssessmentInterest;
+  	public $InterestNotPaid;
+  	public $BankFee;
   	public $LienComment;
   	
   	public $Comments;
@@ -535,6 +539,8 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				$hoaAssessmentRec->StopInterestCalc = $row["StopInterestCalc"];
 				$hoaAssessmentRec->FilingFeeInterest = $row["FilingFeeInterest"];
 				$hoaAssessmentRec->AssessmentInterest = $row["AssessmentInterest"];
+				$hoaAssessmentRec->InterestNotPaid = $row["InterestNotPaid"];
+				$hoaAssessmentRec->BankFee = $row["BankFee"];
 				$hoaAssessmentRec->LienComment = $row["LienComment"];
 				
 				$hoaAssessmentRec->Comments = $row["Comments"];
@@ -568,7 +574,6 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 						$onlyCurrYearDue = false;
 						// If still calculating interest dynamically calculate the compound interest						
 						if (!$hoaAssessmentRec->StopInterestCalc) {
-								
 							$hoaAssessmentRec->AssessmentInterest = calcCompoundInterest($duesAmt,$hoaAssessmentRec->DateDue);
 						}
 						
@@ -579,7 +584,22 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 					}
 				}
-
+				
+				// If the Assessment was Paid but the interest was not, then add the interest to the total
+				if ($hoaAssessmentRec->Paid && $hoaAssessmentRec->InterestNotPaid) {
+					$onlyCurrYearDue = false;
+					// If still calculating interest dynamically calculate the compound interest
+					if (!$hoaAssessmentRec->StopInterestCalc) {
+						$hoaAssessmentRec->AssessmentInterest = calcCompoundInterest($duesAmt,$hoaAssessmentRec->DateDue);
+					}
+					
+					$hoaRec->TotalDue = $hoaRec->TotalDue + $hoaAssessmentRec->AssessmentInterest;
+					$totalDuesCalcRec = new TotalDuesCalcRec();
+					$totalDuesCalcRec->calcDesc = '%6 Interest on FY ' . $hoaAssessmentRec->FY . ' Assessment (since ' . $hoaAssessmentRec->DateDue . ')';
+					$totalDuesCalcRec->calcValue = $hoaAssessmentRec->AssessmentInterest;
+					array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
+				}
+				
 				/*
 				 Dues Total calculation logic
 				 If Assessment NOT Paid, Assessment amount is added
@@ -639,6 +659,14 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 						$totalDuesCalcRec = new TotalDuesCalcRec();
 						$totalDuesCalcRec->calcDesc = 'FY ' . $hoaAssessmentRec->FY . ' Assessment Lien Release Fee';
 						$totalDuesCalcRec->calcValue = $hoaAssessmentRec->ReleaseFee;
+						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
+					}
+					
+					if ($hoaAssessmentRec->BankFee > 0) {
+						$hoaRec->TotalDue += $hoaAssessmentRec->BankFee;
+						$totalDuesCalcRec = new TotalDuesCalcRec();
+						$totalDuesCalcRec->calcDesc = 'FY ' . $hoaAssessmentRec->FY . ' Assessment Bank Fee';
+						$totalDuesCalcRec->calcValue = $hoaAssessmentRec->BankFee;
 						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 					}
 
@@ -862,6 +890,8 @@ function getHoaRec2($conn,$parcelId) {
 				$hoaAssessmentRec->StopInterestCalc = $row["StopInterestCalc"];
 				$hoaAssessmentRec->FilingFeeInterest = $row["FilingFeeInterest"];
 				$hoaAssessmentRec->AssessmentInterest = $row["AssessmentInterest"];
+				$hoaAssessmentRec->InterestNotPaid = $row["InterestNotPaid"];
+				$hoaAssessmentRec->BankFee = $row["BankFee"];
 				$hoaAssessmentRec->LienComment = $row["LienComment"];
 	
 				$hoaAssessmentRec->Comments = $row["Comments"];
@@ -902,7 +932,22 @@ function getHoaRec2($conn,$parcelId) {
 						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 					}
 				}
-	
+
+				// If the Assessment was Paid but the interest was not, then add the interest to the total
+				if ($hoaAssessmentRec->Paid && $hoaAssessmentRec->InterestNotPaid) {
+					$onlyCurrYearDue = false;
+					// If still calculating interest dynamically calculate the compound interest
+					if (!$hoaAssessmentRec->StopInterestCalc) {
+						$hoaAssessmentRec->AssessmentInterest = calcCompoundInterest($duesAmt,$hoaAssessmentRec->DateDue);
+					}
+						
+					$hoaRec->TotalDue = $hoaRec->TotalDue + $hoaAssessmentRec->AssessmentInterest;
+					$totalDuesCalcRec = new TotalDuesCalcRec();
+					$totalDuesCalcRec->calcDesc = '%6 Interest on FY ' . $hoaAssessmentRec->FY . ' Assessment (since ' . $hoaAssessmentRec->DateDue . ')';
+					$totalDuesCalcRec->calcValue = $hoaAssessmentRec->AssessmentInterest;
+					array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
+				}
+				
 				/*
 				 Dues Total calculation logic
 				 If Assessment NOT Paid, Assessment amount is added
@@ -964,7 +1009,15 @@ function getHoaRec2($conn,$parcelId) {
 						$totalDuesCalcRec->calcValue = $hoaAssessmentRec->ReleaseFee;
 						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 					}
-	
+
+					if ($hoaAssessmentRec->BankFee > 0) {
+						$hoaRec->TotalDue += $hoaAssessmentRec->BankFee;
+						$totalDuesCalcRec = new TotalDuesCalcRec();
+						$totalDuesCalcRec->calcDesc = 'FY ' . $hoaAssessmentRec->FY . ' Assessment Bank Fee';
+						$totalDuesCalcRec->calcValue = $hoaAssessmentRec->BankFee;
+						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
+					}
+						
 				} // if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open') {
 	
 			} // End of Assessments loop

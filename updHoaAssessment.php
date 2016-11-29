@@ -44,6 +44,10 @@ include 'hoaDbCommon.php';
 	$stopInterestCalcBoolean = paramBoolVal("stopInterestCalcBoolean");
 	$filingFeeInterest = getParamVal("filingFeeInterest");
 	$assessmentInterest = getParamVal("assessmentInterest");
+	
+	$interestNotPaid = paramBoolVal("interestNotPaidBoolean");
+	$bankFee = getParamVal("bankFee");;
+	
 	$lienComment = getParamVal("lienComment");
 	
 	if ($lienBoolean && $disposition == '') {
@@ -68,14 +72,14 @@ include 'hoaDbCommon.php';
 
 	if (!$stmt = $conn->prepare("UPDATE hoa_assessments SET OwnerID=?,DuesAmt=?,DateDue=?,Paid=?,NonCollectible=?,DatePaid=?,PaymentMethod=?," .
 							"Lien=?,LienRefNo=?,DateFiled=?,Disposition=?,FilingFee=?,ReleaseFee=?,DateReleased=?,LienDatePaid=?,AmountPaid=?," .
-							"StopInterestCalc=?,FilingFeeInterest=?,AssessmentInterest=?,LienComment=?," .	
+							"StopInterestCalc=?,FilingFeeInterest=?,AssessmentInterest=?,InterestNotPaid=?,BankFee=?,LienComment=?," .	
 							"Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND FY = ? ; ")) {
 		error_log("Prepare failed: " . $stmt->errno . ", Error = " . $stmt->error);
 		echo "Prepare failed: (" . $stmt->errno . ") " . $stmt->error;
 	}
-	if (!$stmt->bind_param("issiississssssssisssssss", $ownerId,$duesAmount,$dateDue,$paidBoolean,$nonCollectibleBoolean,$datePaid,$paymentMethod,
+	if (!$stmt->bind_param("issiississssssssississssss", $ownerId,$duesAmount,$dateDue,$paidBoolean,$nonCollectibleBoolean,$datePaid,$paymentMethod,
 						$lienBoolean,$lienRefNo,$dateFiled,$disposition,$filingFee,$releaseFee,$dateReleased,$lienDatePaid,$amountPaid,
-						$stopInterestCalcBoolean,$filingFeeInterest,$assessmentInterest,$lienComment,
+						$stopInterestCalcBoolean,$filingFeeInterest,$assessmentInterest,$interestNotPaid,$bankFee,$lienComment,
 						$assessmentsComments,$username,$parcelId,$fy)) {
 		error_log("Bind failed: " . $stmt->errno . ", Error = " . $stmt->error);
 		echo "Bind failed: (" . $stmt->errno . ") " . $stmt->error;

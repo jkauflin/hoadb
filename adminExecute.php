@@ -9,6 +9,7 @@
  * 2016-04-09 JJK	Added Dues Statements
  * 2016-04-15 JJK   Dropped some unused Assessments fields
  * 2016-09-02 JJK   Added NonCollectible field 
+ * 2016-11-28 JJK   Added InterestNotPaid and BankFee fields
  *============================================================================*/
 
 include 'commonUtil.php';
@@ -64,18 +65,20 @@ if ($action == "AddAssessments") {
 			$StopInterestCalc = 0;
 			$FilingFeeInterest = "";
 			$AssessmentInterest = "";
+			$InterestNotPaid = 0;
+			$BankFee = "";
 			$LienComment = "";
 				
 			$Comments = "";
 		
 			$sqlStr = 'INSERT INTO hoa_assessments (OwnerID,Parcel_ID,FY,DuesAmt,DateDue,Paid,NonCollectible,DatePaid,PaymentMethod,
 							Lien,LienRefNo,DateFiled,Disposition,FilingFee,ReleaseFee,DateReleased,LienDatePaid,AmountPaid,
-							StopInterestCalc,FilingFeeInterest,AssessmentInterest,LienComment,Comments,LastChangedBy,LastChangedTs) ';
-			$sqlStr = $sqlStr . ' VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ';
+							StopInterestCalc,FilingFeeInterest,AssessmentInterest,InterestNotPaid,BankFee,LienComment,Comments,LastChangedBy,LastChangedTs) ';
+			$sqlStr = $sqlStr . ' VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ';
 			$stmt = $conn->prepare($sqlStr);
-			$stmt->bind_param("isissiississssssssisssss",$OwnerID,$Parcel_ID,$FY,$DuesAmt,$DateDue,$Paid,$NonCollectible,$DatePaid,$PaymentMethod,
+			$stmt->bind_param("isissiississssssssississss",$OwnerID,$Parcel_ID,$FY,$DuesAmt,$DateDue,$Paid,$NonCollectible,$DatePaid,$PaymentMethod,
 					$Lien,$LienRefNo,$DateFiled,$Disposition,$FilingFee,$ReleaseFee,$DateReleased,$LienDatePaid,$AmountPaid,
-					$StopInterestCalc,$FilingFeeInterest,$AssessmentInterest,$LienComment,$Comments,$username);
+					$StopInterestCalc,$FilingFeeInterest,$AssessmentInterest,$InterestNotPaid,$BankFee,$LienComment,$Comments,$username);
 
 			// Loop through all member properties, set the statement with new values and execute to insert the Assessments record
 			while($row = $result->fetch_assoc()) {
@@ -119,15 +122,13 @@ if ($action == "AddAssessments") {
 	$sql = '';
 	if ($action == "DuesEmails") {
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-				"WHERE p.Parcel_ID = 'R72617322 0017' AND p.UseEmail AND p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
-				"AND a.FY = " . $fy . " ORDER BY p.Parcel_ID; ";
-				//"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
+				"WHERE p.UseEmail AND p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
+				"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
 		
 	} else {
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-				"WHERE p.Parcel_ID = 'R72617322 0017' AND p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
-				"AND a.FY = " . $fy . " ORDER BY p.Parcel_ID; ";
-				//"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
+				"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
+				"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
 		}
 		
 		$stmt = $conn->prepare($sql);

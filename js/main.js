@@ -65,6 +65,11 @@
  * 2016-10-25 JJK   Added Communications table
  * 2016-11-04 JJK   (Jackson's 14th birthday)
  * 2016-11-05 JJK   Added Admin option to send dues emails
+ * 2016-11-12 JJK	Added Dues Notice email function and inserts of
+ * 					Dues Notice functions into Communications table
+ * 2016-11-13 JJK	Added NonCollectible field to Dues Statement
+ * 2016-11-25 JJK	Added InterestNotPaid and BankFee fields to Assessment
+ * 					table, inserts, and updates	
  *============================================================================*/
 
 var hoaName = '';
@@ -523,6 +528,7 @@ $(document).ready(function(){
         var $nonCollectibleBoolean = $("#NonCollectibleCheckbox").is(":checked");
         var $lienBoolean = $("#LienCheckbox").is(":checked");
         var $stopInterestCalcBoolean = $("#StopInterestCalcCheckbox").is(":checked");
+        var $interestNotPaidBoolean = $("#InterestNotPaidCheckbox").is(":checked");
         
         $.get("updHoaAssessment.php","parcelId="+$parcelId+
 				 					 "&fy="+$fy+
@@ -546,6 +552,8 @@ $(document).ready(function(){
 				 					 "&stopInterestCalcBoolean="+$stopInterestCalcBoolean+
 				 					 "&filingFeeInterest="+cleanStr($("#FilingFeeInterest").val())+
 				 					 "&assessmentInterest="+cleanStr($("#AssessmentInterest").val())+
+				 					 "&interestNotPaidBoolean="+$interestNotPaidBoolean+
+				 					 "&bankFee="+cleanStr($("#BankFee").val())+
 				 					 "&lienComment="+cleanStr($("#LienComment").val()),function(results){
 
         	// Re-read the updated data for the Detail page display
@@ -616,20 +624,10 @@ $(document).ready(function(){
 	    	var reportName = $this.attr('id');
 	    	var reportTitle = $this.attr("data-reportTitle");
 	    	
-	    	/*
-	        var onscreenDisplay = $('#onscreenDisplay').is(':checked');
-	        var csvDownload = $('#csvDownload').is(':checked');
-	        var pdfDownload = $('#pdfDownload').is(':checked');
-	        var reportYear = $('#ReportYear').val();
-			*/
 			$("#ReportListDisplay tbody").html("");
 			$("#ReportRecCnt").html("");
 			$("#ReportDownloadLinks").html("");
 			
-			/*
-	    	$.getJSON("getHoaReportData.php","reportName="+reportName+
-					"&reportYear="+reportYear,function(reportList){
-			*/
 	    	$.getJSON("getHoaReportData.php","reportName="+reportName,function(reportList){
 	    	    //formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfDownload);
 	    	    formatReportList(reportName,reportTitle,reportList);
@@ -1294,31 +1292,13 @@ function formatAssessmentDetailEdit(hoaRec){
     tr += '<tr><th>StopInterestCalc: </th><td>'+setCheckboxEdit(rec.StopInterestCalc,'StopInterestCalcCheckbox')+'</td></tr>';
     tr += '<tr><th>FilingFeeInterest: </th><td>'+setInputText("FilingFeeInterest",rec.FilingFeeInterest,"10")+'</td></tr>';
     tr += '<tr><th>AssessmentInterest: </th><td>'+setInputText("AssessmentInterest",rec.AssessmentInterest,"10")+'</td></tr>';
+
+    tr += '<tr><th>InterestNotPaid: </th><td>'+setCheckboxEdit(rec.InterestNotPaid,'InterestNotPaidCheckbox')+'</td></tr>';
+    tr += '<tr><th>BankFee: </th><td>'+setInputText("BankFee",rec.BankFee,"10")+'</td></tr>';
+    
     tr += '<tr><th>LienComment: </th><td>'+setInputText("LienComment",rec.LienComment,"90")+'</td></tr>';
 	tr += '</div>';
 	$("#EditTable2Col2 tbody").html(tr);
-
-	/*
-	var editTable2Col2 = $("#EditTable2 tbody");
-	editTable2Col2.empty();
-	editTable2Col2.append($('<div>').prop('class',"form-group")
-			.append($('<tr>')
-					.append($('<th>').html('Lien: ')).append($('<td>').html(setCheckboxEdit(rec.Lien,'Lien')))
-					.append($('<th>').html('Lien Ref No: ')).append($('<td>').html(setInputText("LienRefNo",rec.LienRefNo,"15")))
-					.append($('<th>').html('Date Filed: ')).append($('<td>').html(setInputDate("DateFiled",rec.DateFiled,"10")))
-					.append($('<th>').html('Disposition: ')).append($('<td>').html(setInputText("Disposition",rec.Disposition,"10")))
-					.append($('<th>').html('Filing Fee: ')).append($('<td>').html(setInputText("FilingFee",rec.FilingFee,"10")))
-					.append($('<th>').html('Release Fee: ')).append($('<td>').html(setInputText("ReleaseFee",rec.ReleaseFee,"10")))
-					.append($('<th>').html('Date Released: ')).append($('<td>').html(setInputDate("DateReleased",rec.DateReleased,"10")))
-					.append($('<th>').html('Lien Date Paid: ')).append($('<td>').html(setInputDate("LienDatePaid",rec.LienDatePaid,"10")))
-					.append($('<th>').html('Amount Paid: ')).append($('<td>').html(setInputText("AmountPaid",rec.AmountPaid,"10")))
-					.append($('<th>').html('Stop Interest Calc: ')).append($('<td>').html(setCheckboxEdit(rec.StopInterestCalc,'StopInterestCalc')))
-					.append($('<th>').html('Filing Fee Interest: ')).append($('<td>').html(setInputText("FilingFeeInterest",rec.FilingFeeInterest,"10")))
-					.append($('<th>').html('Assessment Interest: ')).append($('<td>').html(setInputText("AssessmentInterest",rec.AssessmentInterest,"10")))
-					.append($('<th>').html('Lien Comment: ')).append($('<td>').html(setInputText("LienComment",rec.LienComment,"10")))
-			)
-	);
-	*/
 
 	tr = '<form class="form-inline" role="form">'+
 	  '<a id="SaveAssessmentEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" data-FY="'+fy+'" href="#" class="btn btn-primary" role="button">Save</a>' +
@@ -1885,6 +1865,7 @@ function formatDuesStatementResults(hoaRec) {
     	    tr = tr +     '<th>Dues Amt</th>';
     	    tr = tr +     '<th>Date Due</th>';
     	    tr = tr +     '<th>Paid</th>';
+    	    tr = tr +     '<th>Non-Collectible</th>';
     	    tr = tr +     '<th>Date Paid</th>';
     	    tr = tr +   '</tr>';
     	    TaxYear = rec.DateDue.substring(0,4);
@@ -1894,8 +1875,9 @@ function formatDuesStatementResults(hoaRec) {
     			          			'Dues Amt',
     			          			'Date Due',
     			          			'Paid',
+    			          			'Non-Collectible',
     			          			'Date Paid'];
-    		pdfLineColIncrArray = [0.6,1.3,0.8,2.3,2.1];
+    		pdfLineColIncrArray = [0.6,0.8,1.0,1.7,0.8,1.5];
 		}
 
 	    tempDuesAmt = '' + rec.DuesAmt;
@@ -1904,9 +1886,10 @@ function formatDuesStatementResults(hoaRec) {
 	    tr = tr +   '<td>'+stringToMoney(tempDuesAmt)+'</td>';
 	    tr = tr +   '<td>'+rec.DateDue+'</td>';
 	    tr = tr +   '<td>'+setCheckbox(rec.Paid)+'</td>';
+	    tr = tr +   '<td>'+setCheckbox(rec.NonCollectible)+'</td>';
 	    tr = tr +   '<td>'+rec.DatePaid+'</td>';
 	    tr = tr + '</tr>';
-	    duesStatementPDFaddLine([rec.FY,rec.DuesAmt,rec.DateDue,setBoolText(rec.Paid),rec.DatePaid],pdfLineHeaderArray);
+	    duesStatementPDFaddLine([rec.FY,rec.DuesAmt,rec.DateDue,setBoolText(rec.Paid),setBoolText(rec.NonCollectible),rec.DatePaid],pdfLineHeaderArray);
 	});
 
 	$("#DuesStatementAssessmentsTable tbody").html(tr);
@@ -1920,11 +1903,14 @@ function duesStatementPDFaddLine(pdfLineArray,pdfLineHeaderArray) {
 	var X = 0.0;
 	// X (horizontal), Y (vertical)
 	
+	var hoaName = '';
+	var hoaNameShort = '';
+
 	if (pdfLineCnt == 1) {
     	pdf = new jsPDF('p', 'in', 'letter');
     	pdf.setProperties({
-    	    title: 'GRHA Dues Statements',
-    	    subject: 'GRHA Dues Statements',
+    	    title: hoaNameShort+' Dues Statements',
+    	    subject: hoaNameShort+' Dues Statements',
     	    author: 'Treasurer',
     	    keywords: 'generated, javascript, web 2.0, ajax',
     	    creator: 'MEEE'
@@ -2199,6 +2185,7 @@ function formatReportList(reportName,reportTitle,reportList){
 					csvLine += ',' + csvFilter("Paid");
 					csvLine += ',' + csvFilter("NonCollectible");
 					csvLine += ',' + csvFilter("DateDue");
+					csvLine += ',' + csvFilter("UseEmail");
 			    	csvContent += csvLine + '\n';
 				}
 
@@ -2290,6 +2277,7 @@ function formatReportList(reportName,reportTitle,reportList){
 				csvLine += ',' + csvFilter(setBoolText(hoaRec.assessmentsList[0].Paid));
 				csvLine += ',' + csvFilter(setBoolText(hoaRec.assessmentsList[0].NonCollectible));
 				csvLine += ',' + csvFilter(hoaRec.assessmentsList[0].DateDue);
+				csvLine += ',' + csvFilter(hoaRec.UseEmail);
 		    	csvContent += csvLine + '\n';
 		    
 		}); // $.each(reportList, function(index, hoaRec) {
