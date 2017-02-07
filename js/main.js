@@ -70,6 +70,8 @@
  * 2016-11-13 JJK	Added NonCollectible field to Dues Statement
  * 2016-11-25 JJK	Added InterestNotPaid and BankFee fields to Assessment
  * 					table, inserts, and updates	
+ * 2016-12-06 JJK   Added version parameter in the links to solve cache
+ * 					re-load problem (?ver=1.0)
  *============================================================================*/
 
 var hoaName = '';
