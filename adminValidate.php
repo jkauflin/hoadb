@@ -41,7 +41,10 @@ if ($action == "AddAssessments") {
 	} else {
 		$adminRec->message = "Continue with creation of Yearly Dues Notices?";
 		$adminRec->result = "Valid";
-	}
+	}	
+} else if ($action == "DuesRank") {
+		$adminRec->message = "Continue with Unpaid Dues Ranking?";
+		$adminRec->result = "Valid";
 } else if ($action == "DuesEmails") {
 	if ($adminLevel < 2) {
 		$adminRec->message = "You do not have permissions to email Dues Notices.";

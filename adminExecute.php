@@ -10,6 +10,7 @@
  * 2016-04-15 JJK   Dropped some unused Assessments fields
  * 2016-09-02 JJK   Added NonCollectible field 
  * 2016-11-28 JJK   Added InterestNotPaid and BankFee fields
+ * 2017-06-10 JJK	Added unpaid dues ranking
  *============================================================================*/
 
 include 'commonUtil.php';
@@ -100,7 +101,7 @@ if ($action == "AddAssessments") {
 		$adminRec->result = "Valid";
 	}
 // End of if ($action == "AddAssessments") {
-} else if ($action == "DuesNotices" || $action == "DuesEmails") {
+} else if ($action == "DuesNotices" || $action == "DuesEmails" || $action == "DuesRank") {
 
 	$outputArray = array();
 
@@ -124,12 +125,16 @@ if ($action == "AddAssessments") {
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
 				"WHERE p.UseEmail AND p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
 				"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
-		
+		$adminRec->message = "Completed data lookup for Dues Emails";
+	} else if ($action == "DuesRank") {
+		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";
+		$adminRec->message = "Completed data lookup for Unpaid Dues Ranking";
 	} else {
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
 				"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
 				"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
-		}
+		$adminRec->message = "Completed data lookup for Dues Notices";
+	}
 		
 		$stmt = $conn->prepare($sql);
 		$stmt->execute();
@@ -184,10 +189,9 @@ if ($action == "AddAssessments") {
 			$adminRec->hoaPropertyRecList = $outputArray;
 		}
 
-		$adminRec->message = "Completed data lookup for Dues Notices";
 		$adminRec->result = "Valid";
 }
-	
+
 	// Close db connection
 	$conn->close();
 

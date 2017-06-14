@@ -1,5 +1,5 @@
 /*==============================================================================
- * (C) Copyright 2015,2016 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2016,2017 John J Kauflin, All rights reserved. 
  *----------------------------------------------------------------------------
  * DESCRIPTION: 
  *----------------------------------------------------------------------------
@@ -72,6 +72,7 @@
  * 					table, inserts, and updates	
  * 2016-12-06 JJK   Added version parameter in the links to solve cache
  * 					re-load problem (?ver=1.0)
+ * 2017-06-10 JJK   Added unpaid dues ranking
  *============================================================================*/
 
 var hoaName = '';
@@ -95,6 +96,7 @@ var adminRecCnt = 0;
 var adminEmailSkipCnt = 0;
 // Global variable for total number of parcels in the HOA
 var hoaPropertyListMAX = 542;
+var hoaRecList = [];
 
 function sleep(milliseconds) {
 	var start = new Date().getTime();
@@ -310,11 +312,13 @@ $(document).ready(function(){
 
 	
 	// Respond to any change in values and call service
+	// Turn this off because it causes a problem in mobile not turning off text input
     $("#SearchInput").change(function() {
         waitCursor();
         $("#PropertyListDisplay tbody").html("");
     	// Get the list
-    	$.getJSON("getHoaPropertiesList.php","parcelId="+cleanStr($("#parcelId").val())+
+    	$.getJSON("getHoaPropertiesList.php","searchStr="+cleanStr($("#searchStr").val())+
+    										"&parcelId="+cleanStr($("#parcelId").val())+
 											"&lotNo="+cleanStr($("#lotNo").val())+
 											//"&checkNo="+cleanStr($("#checkNo").val())+
     										"&address="+cleanStr($("#address").val())+
@@ -332,7 +336,8 @@ $(document).ready(function(){
         waitCursor();
         $("#PropertyListDisplay tbody").html("");
     	// Get the list
-    	$.getJSON("getHoaPropertiesList.php","parcelId="+cleanStr($("#parcelId").val())+
+    	$.getJSON("getHoaPropertiesList.php","searchStr="+cleanStr($("#searchStr").val())+
+    										"&parcelId="+cleanStr($("#parcelId").val())+
     										"&lotNo="+cleanStr($("#lotNo").val())+
     										//"&checkNo="+cleanStr($("#checkNo").val())+
     										"&address="+cleanStr($("#address").val())+
@@ -676,13 +681,15 @@ $(document).ready(function(){
         waitCursor();
         var $this = $(this);
   	  	var action = $this.attr("data-action");
-  	  	
+
+		//console.log("action = "+action);
+
     	$.getJSON("adminExecute.php","action="+action+
 				"&FY="+$this.attr("data-FY")+
 				"&duesAmt="+$this.attr("data-duesAmt"),function(adminRec){
     		$('*').css('cursor', 'default');
     		
-    		if (action == 'DuesNotices' || action == 'DuesEmails') {
+    		if (action == 'DuesNotices' || action == 'DuesEmails' || action == 'DuesRank') {
     			var currSysDate = new Date();
     			pdfTitle = "Member Dues Notice";
     			pdfTimestamp = currSysDate.toString().substr(0,24);
@@ -690,7 +697,9 @@ $(document).ready(function(){
         		// Reset the loop counter
         		adminRecCnt = 0;
         		adminEmailSkipCnt = 0;
-
+        		
+        		hoaRecList = [];
+        		
 				// Start asynchronous recursive loop to process the list and create Yearly Dues Statment PDF's
 				setTimeout(adminLoop, 5, adminRec.hoaPropertyRecList, action);
 
@@ -1375,6 +1384,10 @@ function adminLoop(hoaPropertyRecList,action) {
 		        }); // End of $.post("sendMail.php"
 		        
 			}
+		} else if (action == 'DuesRank') {
+			if (hoaRec.TotalDue > 0) {
+        		hoaRecList.push(hoaRec);
+			}
 		} else {
 			// When generating DuesNotices for the 1st notice, skip the ones with Property UseEmail set
 			if (firstNotice && hoaRec.UseEmail) {
@@ -1438,7 +1451,11 @@ function adminLoop(hoaPropertyRecList,action) {
 
 			if (action == 'DuesEmails') {
 				$("#ResultMessage").html("Yearly dues notices emailed, total = "+adminRecCnt);
-				
+
+			} else if (action == 'DuesRank') {
+				formatDuesRankList(hoaRecList);
+				$("#ResultMessage").html("Unpaid Dues Ranking, total = "+hoaRecList.length);
+
 			} else {
 				$("#ResultMessage").html("Yearly dues notices created, total = "+adminRecCnt+", (Total skipped for UseEmail = "+adminEmailSkipCnt+")");
 				// Download the PDF file
@@ -1449,6 +1466,7 @@ function adminLoop(hoaPropertyRecList,action) {
 	}); // $.getJSON("getHoaDbData.php","parcelId="+hoaPropertyRecList[adminRecCnt].parcelId,function(hoaRec){
 	
 } // function adminLoop(hoaPropertyRecList,action) {
+
 
 // function to format a Yearly dues statement
 function formatYearlyDuesStatement(hoaRec) {
@@ -2313,6 +2331,49 @@ function formatReportList(reportName,reportTitle,reportList){
 	}
 		
 } // function formatReportList(reportName,reportList){
+
+// Create the CSV file for download from the dues rank array
+function formatDuesRankList(hoaRecList){
+
+	var currSysDate = new Date();
+	var reportTitleFull = '';
+	var reportDownloadLinks = $("#AdminDownloadLinks");
+	reportDownloadLinks.empty();
+
+	var csvLine = "";
+	csvContent = "";
+	paidCnt = 0;
+	unpaidCnt = 0;
+
+    var length = hoaRecList.length;
+    // Sort the array by the TotalDue for the property
+    hoaRecList.sort(function (a, b) {
+    		return a.TotalDue - b.TotalDue;
+    	});
+
+	csvLine = csvFilter("ParcelLocation");
+	csvLine += ',' + csvFilter("TotalDue");
+	csvContent += csvLine + '\n';
+    var hoaRec;
+    for (var i = (length - 1); i >= 0; i--) {
+    	//console.log("Cnt = "+i+", Address = "+hoaRecList[i].Parcel_Location+", Total Due = "+hoaRecList[i].TotalDue);
+    	hoaRec = hoaRecList[i];
+    	
+		csvLine = csvFilter(hoaRec.Parcel_Location);
+		csvLine += ',' + csvFilter(hoaRec.TotalDue);
+    	csvContent += csvLine + '\n';
+    	
+    } // End of For loop through the array
+		
+	reportDownloadLinks.append(
+			$('<a>').prop('id','DownloadReportCSV')
+	    			.attr('href','#')
+		    		.attr('class',"btn btn-warning")
+		    		.attr('data-reportName',formatDate()+'-UnpaidDuesRanking')
+		    		.html('CSV'));
+		
+} // function formatDuesRankList(
+
 
 // Global variable to hold CSV content for downloading
 var csvContent;
