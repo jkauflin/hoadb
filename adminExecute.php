@@ -11,6 +11,8 @@
  * 2016-09-02 JJK   Added NonCollectible field 
  * 2016-11-28 JJK   Added InterestNotPaid and BankFee fields
  * 2017-06-10 JJK	Added unpaid dues ranking
+ * 2017-08-13 JJK   Added Dues email TEST, and addition of Paypal emails
+ *                  to the member list of who to send emails to
  *============================================================================*/
 
 include 'commonUtil.php';
@@ -101,7 +103,7 @@ if ($action == "AddAssessments") {
 		$adminRec->result = "Valid";
 	}
 // End of if ($action == "AddAssessments") {
-} else if ($action == "DuesNotices" || $action == "DuesEmails" || $action == "DuesRank") {
+} else if ($action == "DuesNotices" || $action == "DuesEmails" || $action == "DuesEmailsTest" || $action == "DuesRank") {
 
 	$outputArray = array();
 
@@ -121,10 +123,15 @@ if ($action == "AddAssessments") {
 	// testing dues statements
 
 	$sql = '';
-	if ($action == "DuesEmails") {
+	if ($action == "DuesEmails" || $action == "DuesEmailsTest") {
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+				"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
+				"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
+/*
+				$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
 				"WHERE p.UseEmail AND p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
 				"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
+*/
 		$adminRec->message = "Completed data lookup for Dues Emails";
 	} else if ($action == "DuesRank") {
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";

@@ -30,6 +30,7 @@
  * 2016-10-25 JJK	Added HoaCommRec for the Communications records
  * 2016-11-28 JJK   Added $InterestNotPaid and $BankFee to HoaAssessmentRec
  * 					and to the dues calculations in both functions
+ * 2017-08-16 JJK   Added $DuesEmailAddr for payment email address
  *============================================================================*/
 
 function getConn() {
@@ -138,7 +139,8 @@ class HoaRec
   	public $Foreclosure;
   	public $Bankruptcy;
   	public $Liens_2B_Released;
-  	public $UseEmail;
+	public $UseEmail;
+	public $DuesEmailAddr;
   	public $Comments;
   	public $LastChangedBy;
   	public $LastChangedTs;
@@ -374,6 +376,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 	// Payment button will be set if online payment is enabled and allowed for this parcel
 	$hoaRec->paymentButton = '';
 	$hoaRec->paymentInstructions = '';
+	$hoaRec->DuesEmailAddr = '';
 	
 	// Check if a database connection was passed or if it needs to be started
 	$connPassed = true;
@@ -455,12 +458,33 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				$hoaOwnerRec->LastChangedBy = $row["LastChangedBy"];
 				$hoaOwnerRec->LastChangedTs = $row["LastChangedTs"];
 				
+				if ($hoaOwnerRec->CurrentOwner) {
+					// Get the email address for the current owner
+					$hoaRec->DuesEmailAddr = $hoaOwnerRec->EmailAddr;
+				}
+
 				array_push($hoaRec->ownersList,$hoaOwnerRec);
 			}
 		} // End of Owners
 		$result->close();
 		$stmt->close();
-	
+
+		//--------------------------------------------------------------------------------------------------------------------------
+		// Override email address to use if we get the last email used to make an electronic payment
+		//--------------------------------------------------------------------------------------------------------------------------
+		$stmt = $conn->prepare("SELECT payer_email FROM hoa_payments WHERE Parcel_ID = ? ORDER BY FY DESC ; ");
+		$stmt->bind_param("s", $parcelId);
+		$stmt->execute();
+		$result = $stmt->get_result();
+		if ($result->num_rows > 0) {
+			if ($row = $result->fetch_assoc()) {
+				$hoaRec->DuesEmailAddr = $row["payer_email"];
+			}
+		} // End of Owners
+		$result->close();
+		$stmt->close();
+
+
 		if (empty($fy) || $fy == "LATEST") {
 			$stmt = $conn->prepare("SELECT * FROM hoa_assessments WHERE Parcel_ID = ? ORDER BY FY DESC ; ");
 			$stmt->bind_param("s", $parcelId);

@@ -53,6 +53,17 @@ if ($action == "AddAssessments") {
 		$adminRec->message = "Continue with email of Yearly Dues Notices?";
 		$adminRec->result = "Valid";
 	}
+} else if ($action == "DuesEmailsTest") {
+		$adminRec->message = "Continue with TEST email of Yearly Dues Notices?";
+		$adminRec->result = "Valid";
+} else if ($action == "DuesEmails") {
+	if ($adminLevel < 2) {
+		$adminRec->message = "You do not have permissions to email Dues Notices.";
+		$adminRec->result = "Not Valid";
+	} else {
+		$adminRec->message = "Continue with email of Yearly Dues Notices?";
+		$adminRec->result = "Valid";
+	}
 }
 /*
 	$conn = getConn();

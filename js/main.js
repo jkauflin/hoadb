@@ -73,6 +73,8 @@
  * 2016-12-06 JJK   Added version parameter in the links to solve cache
  * 					re-load problem (?ver=1.0)
  * 2017-06-10 JJK   Added unpaid dues ranking
+ * 2017-08-13 JJK	Added a dues email test function, and use of payment
+ * 					email for dues statements
  *============================================================================*/
 
 var hoaName = '';
@@ -271,11 +273,16 @@ $(document).ready(function(){
 		pdfLogoImgData = logoImgDataResults;
 	});
 
+	//adminEmailList
 	// When the page loads, get the Config values from the database table
 	$.getJSON("getHoaConfigList.php","",function(hoaConfigRecList){
 		$.each(hoaConfigRecList, function(index, configRec) {
 			if (configRec.ConfigName == "hoaName") {
 				hoaName = configRec.ConfigValue;
+			} else if (configRec.ConfigName == "adminEmailList") {
+				adminEmailList = configRec.ConfigValue;
+			} else if (configRec.ConfigName == "paymentEmailList") {
+				paymentEmailList = configRec.ConfigValue;
 			} else if (configRec.ConfigName == "hoaNameShort") {
 				hoaNameShort = configRec.ConfigValue;
 			} else if (configRec.ConfigName == "hoaAddress1") {
@@ -689,7 +696,7 @@ $(document).ready(function(){
 				"&duesAmt="+$this.attr("data-duesAmt"),function(adminRec){
     		$('*').css('cursor', 'default');
     		
-    		if (action == 'DuesNotices' || action == 'DuesEmails' || action == 'DuesRank') {
+    		if (action == 'DuesNotices' || action == 'DuesEmails' || action == 'DuesEmailsTest' || action == 'DuesRank') {
     			var currSysDate = new Date();
     			pdfTitle = "Member Dues Notice";
     			pdfTimestamp = currSysDate.toString().substr(0,24);
@@ -699,7 +706,9 @@ $(document).ready(function(){
         		adminEmailSkipCnt = 0;
         		
         		hoaRecList = [];
-        		
+				
+				//console.log("Before adminLoop, hoaPropertyRecList.length = "+adminRec.hoaPropertyRecList.length);
+
 				// Start asynchronous recursive loop to process the list and create Yearly Dues Statment PDF's
 				setTimeout(adminLoop, 5, adminRec.hoaPropertyRecList, action);
 
@@ -1335,6 +1344,14 @@ function adminLoop(hoaPropertyRecList,action) {
 	if (hoaPropertyRecList.length == hoaPropertyListMAX) {
 		firstNotice = true;
 	}
+
+	var adminRecCntMAX = hoaPropertyRecList.length;
+	// If doing an email TEST, assume 1st notice
+	if (action == 'DuesEmailsTest') {
+		firstNotice = true;
+		//adminRecCntMAX = 1;
+	}
+	var sendEmail = true;
 	
 	// getJSON to get detail data on each one and call function to add dues statement to a PDF
 	$.getJSON("getHoaDbData.php","parcelId="+hoaPropertyRecList[adminRecCnt].parcelId,function(hoaRec){
@@ -1344,10 +1361,10 @@ function adminLoop(hoaPropertyRecList,action) {
 	  		$("#ResultMessage").html('<div id="AdminProgress" class="progress" ></div>');
 		}
 		
-		// If first record for DuesNotices or all DuesEmails with UseEmail set, create a new PDF document
-		if (action == 'DuesEmails') {
-			// If property flag is set, create the PDF and send the email
-			if (hoaRec.UseEmail) {
+		if (action == 'DuesEmails' || action == 'DuesEmailsTest') {
+			// just check for a valid email address (NOT UseEmail - just use that to skip in the else)
+			// if (hoaRec.UseEmail || action == 'DuesEmailsTest') {
+			if (hoaRec.DuesEmailAddr != '' || action == 'DuesEmailsTest') {
 		  		pdf = new jsPDF('p', 'in', 'letter');
 		    	pdf.setProperties({
 		    	    title: pdfTitle,
@@ -1360,37 +1377,55 @@ function adminLoop(hoaPropertyRecList,action) {
 			  	// Call function to format the yearly dues statement for an individual property
 			  	formatYearlyDuesStatement(hoaRec);
 
-			  	var tempCommDesc = "";
-		        $.post("sendMail.php",{ toEmail: hoaRec.ownersList[0].EmailAddr,
-		        						subject: hoaNameShort+' Dues Notice', 
-		        						messageStr: 'Attached is the '+hoaName+' Dues Notice',
-		        						filename: hoaNameShort+'DuesNotice.pdf',
-		        						filedata: btoa(pdf.output()) },function(response,status){
-		        	//console.log("response from sendMail = "+response);
-		        	if (response == 'ERROR') {
-			        	tempCommDesc = "ERROR emailing Dues Notice to "+hoaRec.ownersList[0].EmailAddr;
-		        	} else {
-			        	tempCommDesc = "Dues Notice successfully emailed to "+hoaRec.ownersList[0].EmailAddr;
-		        	}
-		        	
-		        	// if successful email, log communication
-			        $.get("updHoaComm.php","parcelId="+hoaRec.Parcel_ID+
-								"&ownerId="+hoaRec.ownersList[0].OwnerID+
-								"&commId=NEW"+
-								"&commType=Dues Notice email"+
-								"&commDesc="+tempCommDesc+
-								"&CommAction=Edit",function(results){
-			        }); // End of $.get("updHoaComm.php"
-		        }); // End of $.post("sendMail.php"
-		        
+				var tempCommDesc = "";
+				// maybe use this one if the UseEmail is set ???????????????????????????   but make sure it is valid
+				//var sendEmailAddr = hoaRec.ownersList[0].EmailAddr;
+
+				var sendEmailAddr = hoaRec.DuesEmailAddr;
+				console.log("sendEmailAddr = "+sendEmailAddr);
+				
+				if (action == 'DuesEmailsTest') {
+					sendEmailAddr = adminEmailList;
+					//sendEmailAddr = paymentEmailList;
+				}
+
+				// Only send email on the 1st one
+				if (action == 'DuesEmailsTest' && adminRecCnt > 0) {
+					sendEmail = false;
+				}
+				if (sendEmail) {
+					$.post("sendMail.php",{ toEmail: sendEmailAddr,
+						subject: hoaNameShort+' Dues Notice', 
+						messageStr: 'Attached is the '+hoaName+' Dues Notice',
+						filename: hoaNameShort+'DuesNotice.pdf',
+						filedata: btoa(pdf.output()) },function(response,status){
+						//console.log("response from sendMail = "+response);
+						if (response == 'ERROR') {
+							tempCommDesc = "ERROR emailing Dues Notice to "+hoaRec.ownersList[0].EmailAddr;
+						} else {
+							tempCommDesc = "Dues Notice successfully emailed to "+hoaRec.ownersList[0].EmailAddr;
+						}
+						
+						// if successful email, log communication
+						if (action != 'DuesEmailsTest') {
+							$.get("updHoaComm.php","parcelId="+hoaRec.Parcel_ID+
+							"&ownerId="+hoaRec.ownersList[0].OwnerID+
+							"&commId=NEW"+
+							"&commType=Dues Notice email"+
+							"&commDesc="+tempCommDesc+
+							"&CommAction=Edit",function(results){
+							}); // End of $.get("updHoaComm.php"
+						}
+					}); // End of $.post("sendMail.php"
+				} // End of sendEmail
 			}
 		} else if (action == 'DuesRank') {
 			if (hoaRec.TotalDue > 0) {
         		hoaRecList.push(hoaRec);
 			}
 		} else {
-			// When generating DuesNotices for the 1st notice, skip the ones with Property UseEmail set
-			if (firstNotice && hoaRec.UseEmail) {
+			// When generating DuesNotices for the 1st notice, skip the ones with Property UseEmail set (if there is a valid email)
+			if (firstNotice && hoaRec.UseEmail && hoaRec.DuesEmailAddr != '') {
 				adminEmailSkipCnt++;
 			} else {
 				// Create the PDF for yearly dues statements
@@ -1442,9 +1477,8 @@ function adminLoop(hoaPropertyRecList,action) {
 
 		// Increment the loop counter
 		adminRecCnt++;
-	    //if (adminRecCnt < 2) {
-		if (adminRecCnt < hoaPropertyRecList.length) {
-			// If loop not complete, recursively call the loop function (with a 0 delay so it starts immediately)
+	    if (adminRecCnt < adminRecCntMAX) {
+			// If loop not complete, recursively call the loop function again (with a 0 delay so it starts immediately)
 			setTimeout(adminLoop, 0, hoaPropertyRecList, action);
 		} else {
 			// If loop completed, display a completion message
