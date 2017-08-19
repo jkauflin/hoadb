@@ -75,9 +75,14 @@
  * 2017-06-10 JJK   Added unpaid dues ranking
  * 2017-08-13 JJK	Added a dues email test function, and use of payment
  * 					email for dues statements
+ * 2017-08-18 JJK   Added an unsubscribe message to the dues email
+ * 2017-08-19 JJK   Added yearly dues statement notice and notes different
+ * 					for 1st and Additional notices
  *============================================================================*/
 
 var hoaName = '';
+var adminEmailList = '';
+var paymentEmailList = '';
 var hoaNameShort = '';
 var hoaAddress1 = '';
 var hoaAddress2 = '';
@@ -86,6 +91,10 @@ var countyAuditorUrl = '';
 var duesStatementNotes = '';
 var yearlyDuesStatementNotes = '';
 var yearlyDuesStatementNotice = '';
+var yearlyDuesStatementNotice1st = '';
+var yearlyDuesStatementNoticeAdditional = '';
+var yearlyDuesStatementNotes1st = '';
+var yearlyDuesStatementNotesAdditional = '';
 var yearlyDuesHelpNotes = '';
 var onlinePaymentInstructions = '';
 var offlinePaymentInstructions = '';
@@ -291,10 +300,14 @@ $(document).ready(function(){
 				hoaAddress2 = configRec.ConfigValue;
 			} else if (configRec.ConfigName == "duesStatementNotes") {
 				duesStatementNotes = configRec.ConfigValue;
-			} else if (configRec.ConfigName == "yearlyDuesStatementNotice") {
-				yearlyDuesStatementNotice = configRec.ConfigValue;
-			} else if (configRec.ConfigName == "yearlyDuesStatementNotes") {
-				yearlyDuesStatementNotes = configRec.ConfigValue;
+			} else if (configRec.ConfigName == "yearlyDuesStatementNotice1st") {
+				yearlyDuesStatementNotice1st = configRec.ConfigValue;
+			} else if (configRec.ConfigName == "yearlyDuesStatementNotes1st") {
+				yearlyDuesStatementNotes1st = configRec.ConfigValue;
+			} else if (configRec.ConfigName == "yearlyDuesStatementNoticeAdditional") {
+				yearlyDuesStatementNoticeAdditional = configRec.ConfigValue;
+			} else if (configRec.ConfigName == "yearlyDuesStatementNotesAdditional") {
+				yearlyDuesStatementNotesAdditional = configRec.ConfigValue;
 			} else if (configRec.ConfigName == "yearlyDuesHelpNotes") {
 				yearlyDuesHelpNotes = configRec.ConfigValue;
 			} else if (configRec.ConfigName == "countyTreasurerUrl") {
@@ -707,7 +720,7 @@ $(document).ready(function(){
         		
         		hoaRecList = [];
 				
-				//console.log("Before adminLoop, hoaPropertyRecList.length = "+adminRec.hoaPropertyRecList.length);
+				console.log("Before adminLoop, hoaPropertyRecList.length = "+adminRec.hoaPropertyRecList.length);
 
 				// Start asynchronous recursive loop to process the list and create Yearly Dues Statment PDF's
 				setTimeout(adminLoop, 5, adminRec.hoaPropertyRecList, action);
@@ -1349,9 +1362,18 @@ function adminLoop(hoaPropertyRecList,action) {
 	// If doing an email TEST, assume 1st notice
 	if (action == 'DuesEmailsTest') {
 		firstNotice = true;
-		//adminRecCntMAX = 1;
+		adminRecCntMAX = 1;
 	}
 	var sendEmail = true;
+
+
+	// Set the Notice and Notes field according to 1st or Additional notices
+	yearlyDuesStatementNotice = yearlyDuesStatementNoticeAdditional;
+	yearlyDuesStatementNotes = yearlyDuesStatementNotesAdditional;
+	if (firstNotice) {
+		yearlyDuesStatementNotice = yearlyDuesStatementNotice1st;
+		yearlyDuesStatementNotes = yearlyDuesStatementNotes1st;
+	}
 	
 	// getJSON to get detail data on each one and call function to add dues statement to a PDF
 	$.getJSON("getHoaDbData.php","parcelId="+hoaPropertyRecList[adminRecCnt].parcelId,function(hoaRec){
@@ -1382,12 +1404,13 @@ function adminLoop(hoaPropertyRecList,action) {
 				//var sendEmailAddr = hoaRec.ownersList[0].EmailAddr;
 
 				var sendEmailAddr = hoaRec.DuesEmailAddr;
-				console.log("sendEmailAddr = "+sendEmailAddr);
+				//console.log("sendEmailAddr = "+sendEmailAddr);
 				
 				if (action == 'DuesEmailsTest') {
 					sendEmailAddr = adminEmailList;
 					//sendEmailAddr = paymentEmailList;
-				}
+					console.log("ParcelId = "+hoaPropertyRecList[adminRecCnt].parcelId+", sendEmailAddr = "+sendEmailAddr);
+			}
 
 				// Only send email on the 1st one
 				if (action == 'DuesEmailsTest' && adminRecCnt > 0) {
@@ -1396,14 +1419,16 @@ function adminLoop(hoaPropertyRecList,action) {
 				if (sendEmail) {
 					$.post("sendMail.php",{ toEmail: sendEmailAddr,
 						subject: hoaNameShort+' Dues Notice', 
-						messageStr: 'Attached is the '+hoaName+' Dues Notice',
+						messageStr: 'Attached is the '+hoaName+' Dues Notice.  *** Reply to this email to request unsubscribe ***',
 						filename: hoaNameShort+'DuesNotice.pdf',
 						filedata: btoa(pdf.output()) },function(response,status){
-						//console.log("response from sendMail = "+response);
+						console.log("response from sendMail = "+response);
+
 						if (response == 'ERROR') {
-							tempCommDesc = "ERROR emailing Dues Notice to "+hoaRec.ownersList[0].EmailAddr;
+							tempCommDesc = "ERROR emailing Dues Notice to "+sendEmailAddr;
+							// turn off Use email flag on Property???
 						} else {
-							tempCommDesc = "Dues Notice successfully emailed to "+hoaRec.ownersList[0].EmailAddr;
+							tempCommDesc = "Dues Notice successfully emailed to "+sendEmailAddr;
 						}
 						
 						// if successful email, log communication
@@ -1483,7 +1508,7 @@ function adminLoop(hoaPropertyRecList,action) {
 		} else {
 			// If loop completed, display a completion message
 
-			if (action == 'DuesEmails') {
+			if (action == 'DuesEmails' || action == 'DuesEmailsTest') {
 				$("#ResultMessage").html("Yearly dues notices emailed, total = "+adminRecCnt);
 
 			} else if (action == 'DuesRank') {
@@ -1543,13 +1568,16 @@ function formatYearlyDuesStatement(hoaRec) {
 		yearlyDuesStatementAddLine(["Parcel Id: ",hoaRec.Parcel_ID+", Lot: "+hoaRec.LotNo]); 
 	}
 
+	pdfLineColIncrArray = [-4.5];
+	//yearlyDuesStatementAddLine(['']);
+	yearlyDuesStatementAddLine(['    Contact Information:']);
 	pdfLineColIncrArray = [4.5];
-	yearlyDuesStatementAddLine(['']);
 	yearlyDuesStatementAddLine([ownerRec.Owner_Name1+' '+ownerRec.Owner_Name2]);
 	yearlyDuesStatementAddLine([hoaRec.Parcel_Location]); 
 	yearlyDuesStatementAddLine([hoaRec.Property_City+', '+hoaRec.Property_State+' '+hoaRec.Property_Zip]); 
-	yearlyDuesStatementAddLine([ownerRec.Owner_Phone]); 
-
+	yearlyDuesStatementAddLine(['Phone # '+ownerRec.Owner_Phone]); 
+	yearlyDuesStatementAddLine(['Email: '+hoaRec.DuesEmailAddr]); 
+	
 	var displayAddress1 = ownerRec.Mailing_Name;
 	var displayAddress2 = hoaRec.Parcel_Location;
 	var displayAddress3 = hoaRec.Property_City+', '+hoaRec.Property_State+' '+hoaRec.Property_Zip;
@@ -1584,8 +1612,11 @@ function formatYearlyDuesStatement(hoaRec) {
 	yearlyDuesStatementAddLine(["Address Line 2:"]);
 	yearlyDuesStatementAddLine(["City State Zip:"]);
 	yearlyDuesStatementAddLine(["Phone Number:"]);
-
+	yearlyDuesStatementAddLine([""]);
+	yearlyDuesStatementAddLine(["Email:"]);
+	
 	// Survey description, questions (1,2,3)
+	/* Commenting out survey for now
 	pdfLineIncrement = 0.285;
 	pdfLineColIncrArray = [-1.0];
 	yearlyDuesStatementAddLine([surveyInstructions],null,11,6.28);
@@ -1593,11 +1624,21 @@ function formatYearlyDuesStatement(hoaRec) {
 	yearlyDuesStatementAddLine([surveyQuestion1]);
 	yearlyDuesStatementAddLine([surveyQuestion2]);
 	yearlyDuesStatementAddLine([surveyQuestion3]);
-
+	*/
+	pdfLineIncrement = 0.15;
+	pdfLineColIncrArray = [1.0];
+	yearlyDuesStatementAddLine([""]);
+	pdfLineIncrement = 0.21;
+	pdfLineColIncrArray = [-1.0];
+	yearlyDuesStatementAddLine(["Go Paperless - check here to turn off mailed paper notices"]);
+	pdfLineColIncrArray = [1.0];
+	yearlyDuesStatementAddLine(["(Make sure correct Email address is listed in Contact Info or entered above)"]);
+	
 	pdfLineIncrement = 0.21;
 
 	yearlyDuesStatementAddLine([''],null,10,3.9);
 	
+
 	// Print the Notice statement if it exists (2nd notice, etc.)
 	if (yearlyDuesStatementNotice.length > 0) {
 		pdfMaxLineChars = 35;
@@ -1722,9 +1763,9 @@ function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray,fontSize,lin
 		// Checkboxes for survey questions
 		// empty square (X,Y, X length, Y length)
 		pdf.setLineWidth(0.015);
-		pdf.rect(0.5, 6.4, 0.2, 0.2); 
+		//pdf.rect(0.5, 6.4, 0.2, 0.2); 
 		pdf.rect(0.5, 6.7, 0.2, 0.2); 
-		pdf.rect(0.5, 7.0, 0.2, 0.2); 
+		//pdf.rect(0.5, 7.0, 0.2, 0.2); 
 
 		// Date and Check No lines
 		pdf.setLineWidth(0.013);

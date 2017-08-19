@@ -30,7 +30,9 @@
  * 2016-10-25 JJK	Added HoaCommRec for the Communications records
  * 2016-11-28 JJK   Added $InterestNotPaid and $BankFee to HoaAssessmentRec
  * 					and to the dues calculations in both functions
- * 2017-08-16 JJK   Added $DuesEmailAddr for payment email address
+ * 2017-08-16 JJK   Added $DuesEmailAddr for payment email address.
+ *                  If there is an email from the last electronic payment, for the current Owner, 
+ *					only use it if they are not going paperless or the paperless email is blank
  *============================================================================*/
 
 function getConn() {
@@ -377,6 +379,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 	$hoaRec->paymentButton = '';
 	$hoaRec->paymentInstructions = '';
 	$hoaRec->DuesEmailAddr = '';
+	$CurrentOwnerID = 0;
 	
 	// Check if a database connection was passed or if it needs to be started
 	$connPassed = true;
@@ -461,6 +464,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				if ($hoaOwnerRec->CurrentOwner) {
 					// Get the email address for the current owner
 					$hoaRec->DuesEmailAddr = $hoaOwnerRec->EmailAddr;
+					$CurrentOwnerID = $hoaOwnerRec->OwnerID;
 				}
 
 				array_push($hoaRec->ownersList,$hoaOwnerRec);
@@ -472,13 +476,17 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 		//--------------------------------------------------------------------------------------------------------------------------
 		// Override email address to use if we get the last email used to make an electronic payment
 		//--------------------------------------------------------------------------------------------------------------------------
-		$stmt = $conn->prepare("SELECT payer_email FROM hoa_payments WHERE Parcel_ID = ? ORDER BY FY DESC ; ");
-		$stmt->bind_param("s", $parcelId);
+		$stmt = $conn->prepare("SELECT payer_email FROM hoa_payments WHERE Parcel_ID = ? AND OwnerID = ? ORDER BY FY DESC ; ");
+		$stmt->bind_param("ss", $parcelId,$CurrentOwnerID);
 		$stmt->execute();
 		$result = $stmt->get_result();
 		if ($result->num_rows > 0) {
 			if ($row = $result->fetch_assoc()) {
-				$hoaRec->DuesEmailAddr = $row["payer_email"];
+				// If there is an email from the last electronic payment, for the current Owner, only use it 
+				// if they are not going paperless or the paperless email is blank
+				if (!$hoaRec->UseEmail || $hoaRec->DuesEmailAddr == '') {
+					$hoaRec->DuesEmailAddr = $row["payer_email"];
+				}
 			}
 		} // End of Owners
 		$result->close();
