@@ -78,6 +78,8 @@
  * 2017-08-18 JJK   Added an unsubscribe message to the dues email
  * 2017-08-19 JJK   Added yearly dues statement notice and notes different
  * 					for 1st and Additional notices
+ * 2017-08-20 JJK   Added Mark notice mailed function and finished up
+ *                  Email logic
  *============================================================================*/
 
 var hoaName = '';
@@ -86,6 +88,7 @@ var paymentEmailList = '';
 var hoaNameShort = '';
 var hoaAddress1 = '';
 var hoaAddress2 = '';
+var displayAddress = '';
 var countyTreasurerUrl = '';
 var countyAuditorUrl = '';
 var duesStatementNotes = '';
@@ -102,6 +105,10 @@ var surveyInstructions = '';
 var surveyQuestion1 = '';
 var surveyQuestion2 = '';
 var surveyQuestion3 = '';
+var commDesc = '';
+var noticeType = '';
+var tempCommDesc = "";
+var sendEmailAddr = "";
 // Global variable for loop counter
 var adminRecCnt = 0;
 var adminEmailSkipCnt = 0;
@@ -709,7 +716,7 @@ $(document).ready(function(){
 				"&duesAmt="+$this.attr("data-duesAmt"),function(adminRec){
     		$('*').css('cursor', 'default');
     		
-    		if (action == 'DuesNotices' || action == 'DuesEmails' || action == 'DuesEmailsTest' || action == 'DuesRank') {
+    		if (action == 'DuesNotices' || action == 'DuesEmails' || action == 'DuesEmailsTest' || action == 'DuesRank' || action == 'MarkMailed') {
     			var currSysDate = new Date();
     			pdfTitle = "Member Dues Notice";
     			pdfTimestamp = currSysDate.toString().substr(0,24);
@@ -719,8 +726,7 @@ $(document).ready(function(){
         		adminEmailSkipCnt = 0;
         		
         		hoaRecList = [];
-				
-				console.log("Before adminLoop, hoaPropertyRecList.length = "+adminRec.hoaPropertyRecList.length);
+				//console.log("Before adminLoop, hoaPropertyRecList.length = "+adminRec.hoaPropertyRecList.length);
 
 				// Start asynchronous recursive loop to process the list and create Yearly Dues Statment PDF's
 				setTimeout(adminLoop, 5, adminRec.hoaPropertyRecList, action);
@@ -1399,16 +1405,11 @@ function adminLoop(hoaPropertyRecList,action) {
 			  	// Call function to format the yearly dues statement for an individual property
 			  	formatYearlyDuesStatement(hoaRec);
 
-				var tempCommDesc = "";
-				// maybe use this one if the UseEmail is set ???????????????????????????   but make sure it is valid
-				//var sendEmailAddr = hoaRec.ownersList[0].EmailAddr;
+				tempCommDesc = "";
+				sendEmailAddr = hoaRec.DuesEmailAddr;
 
-				var sendEmailAddr = hoaRec.DuesEmailAddr;
-				//console.log("sendEmailAddr = "+sendEmailAddr);
-				
 				if (action == 'DuesEmailsTest') {
-					sendEmailAddr = adminEmailList;
-					//sendEmailAddr = paymentEmailList;
+					sendEmailAddr = paymentEmailList;
 					console.log("ParcelId = "+hoaPropertyRecList[adminRecCnt].parcelId+", sendEmailAddr = "+sendEmailAddr);
 			}
 
@@ -1453,31 +1454,47 @@ function adminLoop(hoaPropertyRecList,action) {
 			if (firstNotice && hoaRec.UseEmail && hoaRec.DuesEmailAddr != '') {
 				adminEmailSkipCnt++;
 			} else {
-				// Create the PDF for yearly dues statements
-				if (adminRecCnt == 0) {
-			  		pdf = new jsPDF('p', 'in', 'letter');
-			    	pdf.setProperties({
-			    	    title: pdfTitle,
-			    	    subject: pdfTitle,
-			    	    author: hoaName
-			    	});
-			    	pdfPageCnt = 0;
-					pdfLineCnt = 0;
-				} else {
-					// If not the first record for DuesNotices, reset the line count and add a new page
-					pdfLineCnt = 0;
-					pdf.addPage('letter','p');
+				// Get a displayAddress for the Communication record
+				displayAddress = hoaRec.Parcel_Location;
+				if (hoaRec.ownersList[0].AlternateMailing) {
+					displayAddress = hoaRec.ownersList[0].Alt_Address_Line1;
 				}
 
-			  	// Call function to format the yearly dues statement for an individual property
-			  	formatYearlyDuesStatement(hoaRec);
+				noticeType = "Additional ";
+				if (firstNotice) {
+					noticeType = "1st ";
+				}
+
+				if (action == 'MarkMailed') {
+					commDesc = noticeType + "Notice for postal mail mailed for "+displayAddress;
+				} else {
+					commDesc = noticeType + "Notice for postal mail created for "+displayAddress;
+					// Create the PDF for yearly dues statements
+					if (adminRecCnt == 0) {
+						pdf = new jsPDF('p', 'in', 'letter');
+					  	pdf.setProperties({
+						  title: pdfTitle,
+						  subject: pdfTitle,
+						  author: hoaName
+					  });
+					  pdfPageCnt = 0;
+					  pdfLineCnt = 0;
+				  	} else {
+					  // If not the first record for DuesNotices, reset the line count and add a new page
+					  pdfLineCnt = 0;
+					  pdf.addPage('letter','p');
+				  	}
+  
+					// Call function to format the yearly dues statement for an individual property
+					formatYearlyDuesStatement(hoaRec);
+				}
 			  	
 	        	// log communication for notice created
 		        $.get("updHoaComm.php","parcelId="+hoaRec.Parcel_ID+
 							"&ownerId="+hoaRec.ownersList[0].OwnerID+
 							"&commId=NEW"+
 							"&commType=Dues Notice"+
-							"&commDesc=Dues Notice for postal mail created"+
+							"&commDesc="+commDesc+
 							"&CommAction=Edit",function(results){
 		        });
 			} // !if (firstNotice && hoaRec.UseEmail) {
@@ -1514,6 +1531,10 @@ function adminLoop(hoaPropertyRecList,action) {
 			} else if (action == 'DuesRank') {
 				formatDuesRankList(hoaRecList);
 				$("#ResultMessage").html("Unpaid Dues Ranking, total = "+hoaRecList.length);
+
+			} else if (action == 'MarkMailed') {
+				formatDuesRankList(hoaRecList);
+				$("#ResultMessage").html("Postal dues notices marked mailed, total = "+adminRecCnt);
 
 			} else {
 				$("#ResultMessage").html("Yearly dues notices created, total = "+adminRecCnt+", (Total skipped for UseEmail = "+adminEmailSkipCnt+")");

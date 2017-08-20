@@ -73,7 +73,7 @@ if ($action == "AddAssessments") {
 			$LienComment = "";
 				
 			$Comments = "";
-		
+
 			$sqlStr = 'INSERT INTO hoa_assessments (OwnerID,Parcel_ID,FY,DuesAmt,DateDue,Paid,NonCollectible,DatePaid,PaymentMethod,
 							Lien,LienRefNo,DateFiled,Disposition,FilingFee,ReleaseFee,DateReleased,LienDatePaid,AmountPaid,
 							StopInterestCalc,FilingFeeInterest,AssessmentInterest,InterestNotPaid,BankFee,LienComment,Comments,LastChangedBy,LastChangedTs) ';
@@ -94,6 +94,7 @@ if ($action == "AddAssessments") {
 					error_log("Add Assessment Execute failed: " . $stmt->errno . ", Error = " . $stmt->error);
 					echo "Add Assessment Execute failed: (" . $stmt->errno . ") " . $stmt->error;
 				}
+
 			} // End of while($row = $result->fetch_assoc()) {
 		} // End of if ($result->num_rows > 0) {
 		
@@ -103,7 +104,54 @@ if ($action == "AddAssessments") {
 		$adminRec->result = "Valid";
 	}
 // End of if ($action == "AddAssessments") {
-} else if ($action == "DuesNotices" || $action == "DuesEmails" || $action == "DuesEmailsTest" || $action == "DuesRank") {
+} else if ($action == "AdminFix") {
+
+							if ($adminLevel < 2) {
+								$adminRec->message = "You do not have permissions to run this command.";
+								$adminRec->result = "Not Valid";
+							} else {
+								// Loop through all the member properties
+								$sql = "SELECT * FROM hoa_properties p, hoa_payments y, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = y.Parcel_ID AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";		
+								$stmt = $conn->prepare($sql);
+								$stmt->execute();
+								$result = $stmt->get_result();
+								$stmt->close();
+								
+								$cnt = 0;
+								if ($result->num_rows > 0) {
+									$Parcel_ID = "";
+									$OwnerID = 0;
+									
+									// Loop through all member properties, set the statement with new values and execute to insert the Assessments record
+									while($row = $result->fetch_assoc()) {
+										$cnt = $cnt + 1;
+										$Parcel_ID = $row["Parcel_ID"];
+										$OwnerID = $row["OwnerID"];
+
+										if (!$stmt = $conn->prepare("UPDATE hoa_payments SET OwnerID=? WHERE Parcel_ID = ? ; ")) {
+											error_log("Update Payment Prepare failed: " . $stmt->errno . ", Error = " . $stmt->error . PHP_EOL, 3, LOG_FILE);
+										//echo "Prepare failed: (" . $stmt->errno . ") " . $stmt->error;
+										}
+										if (!$stmt->bind_param("is", $OwnerID,$Parcel_ID)) {
+											error_log("Update Payment Bind failed: " . $stmt->errno . ", Error = " . $stmt->error . PHP_EOL, 3, LOG_FILE);
+											//echo "Bind failed: (" . $stmt->errno . ") " . $stmt->error;
+										}
+	
+							error_log(date('[Y-m-d H:i] '). "AdminFix Cnt = " . $cnt . ", ParcelId = " . $Parcel_ID . ", OwnerId = " . $OwnerID . ", Email = " . $row["payer_email"] . PHP_EOL, 3, "jjk-AdminFix.log");
+										if (!$stmt->execute()) {
+											error_log("Add Assessment Execute failed: " . $stmt->errno . ", Error = " . $stmt->error);
+											echo "Add Assessment Execute failed: (" . $stmt->errno . ") " . $stmt->error;
+										}
+										$stmt->close();
+										
+									} // End of while($row = $result->fetch_assoc()) {
+								} // End of if ($result->num_rows > 0) {
+								
+								$adminRec->message = 'Successfully updated Payments';
+								$adminRec->result = "Valid";
+							}
+	
+} else if ($action == "DuesNotices" || $action == "DuesEmails" || $action == "DuesEmailsTest" || $action == "DuesRank" || $action == "MarkMailed") {
 
 	$outputArray = array();
 

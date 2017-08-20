@@ -6,6 +6,8 @@
  *----------------------------------------------------------------------------
  * Modification History
  * 2015-05-14 JJK 	Initial version to update assessment and payment records 
+ * 2017-08-19 JJK	Modified to use the Owner Id of the current owner when
+ *    				recording the payment
  *============================================================================*/
 
 include 'commonUtil.php';
@@ -24,6 +26,9 @@ function updAssessmentPaid($parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_e
 	} else {
 		
 		// double check total due ???
+
+		// Use the Owner Id of the current owner when recording the payment
+		$ownerId = $hoaRec->ownersList[0].OwnerID;
 		
 		// Idempotent check - Check for any payment record for this parcel and transaction id
 		$hoaPaymentRec = getHoaPaymentRec($conn,$parcelId,$txn_id);

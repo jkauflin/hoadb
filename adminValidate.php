@@ -53,6 +53,22 @@ if ($action == "AddAssessments") {
 		$adminRec->message = "Continue with email of Yearly Dues Notices?";
 		$adminRec->result = "Valid";
 	}
+} else if ($action == "AdminFix") {
+	if ($adminLevel < 2) {
+		$adminRec->message = "You do not have permissions to run this command.";
+		$adminRec->result = "Not Valid";
+	} else {
+		$adminRec->message = "Continue with admin fix?";
+		$adminRec->result = "Valid";
+	}
+} else if ($action == "MarkMailed") {
+	if ($adminLevel < 2) {
+		$adminRec->message = "You do not have permissions to run this command.";
+		$adminRec->result = "Not Valid";
+	} else {
+		$adminRec->message = "Continue to record Communication to mark paper notices as mailed?";
+		$adminRec->result = "Valid";
+	}
 } else if ($action == "DuesEmailsTest") {
 		$adminRec->message = "Continue with TEST email of Yearly Dues Notices?";
 		$adminRec->result = "Valid";
