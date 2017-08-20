@@ -79,7 +79,8 @@
  * 2017-08-19 JJK   Added yearly dues statement notice and notes different
  * 					for 1st and Additional notices
  * 2017-08-20 JJK   Added Mark notice mailed function and finished up
- *                  Email logic
+ *                  Email logic.
+ * 					Added logic to set NoticeDate
  *============================================================================*/
 
 var hoaName = '';
@@ -109,6 +110,11 @@ var commDesc = '';
 var noticeType = '';
 var tempCommDesc = "";
 var sendEmailAddr = "";
+var firstNotice = false;
+var adminRecCntMAX = 0;
+var sendEmail = true;
+var noticeDate = "";
+var noticeYear = "";
 // Global variable for loop counter
 var adminRecCnt = 0;
 var adminEmailSkipCnt = 0;
@@ -1358,29 +1364,20 @@ function formatAssessmentDetailEdit(hoaRec){
 //--------------------------------------------------------------------------------------------------------------------------------
 function adminLoop(hoaPropertyRecList,action) {
 	
-	var firstNotice = false;
+	firstNotice = false;
 	// If list of unpaid properties is the total number of properties, assume it is the 1st Dues Notice
 	if (hoaPropertyRecList.length == hoaPropertyListMAX) {
 		firstNotice = true;
 	}
 
-	var adminRecCntMAX = hoaPropertyRecList.length;
+	adminRecCntMAX = hoaPropertyRecList.length;
 	// If doing an email TEST, assume 1st notice
 	if (action == 'DuesEmailsTest') {
 		firstNotice = true;
 		adminRecCntMAX = 1;
 	}
-	var sendEmail = true;
+	sendEmail = true;
 
-
-	// Set the Notice and Notes field according to 1st or Additional notices
-	yearlyDuesStatementNotice = yearlyDuesStatementNoticeAdditional;
-	yearlyDuesStatementNotes = yearlyDuesStatementNotesAdditional;
-	if (firstNotice) {
-		yearlyDuesStatementNotice = yearlyDuesStatementNotice1st;
-		yearlyDuesStatementNotes = yearlyDuesStatementNotes1st;
-	}
-	
 	// getJSON to get detail data on each one and call function to add dues statement to a PDF
 	$.getJSON("getHoaDbData.php","parcelId="+hoaPropertyRecList[adminRecCnt].parcelId,function(hoaRec){
 
@@ -1553,6 +1550,17 @@ function formatYearlyDuesStatement(hoaRec) {
 	ownerRec = hoaRec.ownersList[0];
 	pdfMaxLineChars = 95;
 
+	// Set the Notice and Notes field according to 1st or Additional notices
+	noticeYear = '' + parseInt(hoaRec.assessmentsList[0].FY) - 1;
+	noticeDate = formatDate();
+	yearlyDuesStatementNotice = yearlyDuesStatementNoticeAdditional;
+	yearlyDuesStatementNotes = yearlyDuesStatementNotesAdditional;
+	if (firstNotice) {
+		noticeDate = 'September 1st, '+noticeYear;
+		yearlyDuesStatementNotice = yearlyDuesStatementNotice1st;
+		yearlyDuesStatementNotes = yearlyDuesStatementNotes1st;
+	}
+
 	pdfLineColIncrArray = [-4.5];
 	yearlyDuesStatementAddLine([hoaName],null,13,0.5); 
 	pdfLineColIncrArray = [4.5,-3.05];
@@ -1566,11 +1574,10 @@ function formatYearlyDuesStatement(hoaRec) {
 	yearlyDuesStatementAddLine([hoaAddress2]); 
 
 	pdfLineIncrement = 0.21;
-	var noticeYear = '' + parseInt(hoaRec.assessmentsList[0].FY) - 1;
 	pdfLineColIncrArray = [4.5,1.3];
 	yearlyDuesStatementAddLine(["For the Period: ",'Oct 1st, '+noticeYear+' thru Sept 30th, '+hoaRec.assessmentsList[0].FY],null,11,1.1); 
 	pdfLineColIncrArray = [-4.5,-1.3];
-	yearlyDuesStatementAddLine(["Notice Date: ",'September 1st, '+noticeYear]); 
+	yearlyDuesStatementAddLine(["Notice Date: ",noticeDate]); 
 	
 	$duesAmt = stringToMoney(hoaRec.assessmentsList[0].DuesAmt); 
 	yearlyDuesStatementAddLine(["Dues Amount: ",'$'+$duesAmt]);
@@ -1686,7 +1693,7 @@ function formatYearlyDuesStatement(hoaRec) {
 	pdfLineColIncrArray = [0.5,1.5];
 	yearlyDuesStatementAddLine(["For the Period: ",'Oct 1st, '+noticeYear+' thru Sept 30th, '+hoaRec.assessmentsList[0].FY],null,11,8.6); 
 	pdfLineColIncrArray = [-0.5,-1.5];
-	yearlyDuesStatementAddLine(["Notice Date: ",'September 1st, '+noticeYear]); 
+	yearlyDuesStatementAddLine(["Notice Date: ",noticeDate]); 
 
 	yearlyDuesStatementAddLine(["Dues Amount: ",'$'+$duesAmt]);
 	if ($duesAmt != hoaRec.TotalDue) {
