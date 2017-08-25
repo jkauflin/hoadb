@@ -27,18 +27,23 @@ define("USE_SANDBOX", 1);
 
 define("LOG_FILE", "paypal-ipn.log");
 
-
+	/*
 	$parcelId = getParamVal("parcelId");
 	$ownerId = getParamVal("ownerId");
+	*/
 
+	$parcelId = "";
+	$ownerId = "";
+	$fy = "2018";
+	$totalDue = "120";
 	
 	$payment_amt = 119.00;
 	$payment_fee = 3.75;
-	$txn_id = '97K72554DY1400312';
+	$txn_id = '97K72554DY1400735';
 	$payer_email = 'test@gmail.com';
 	$payment_date = 'Tue Apr 26 2016 14:04:17 GMT-0400 (Eastern Daylight Time)';
 	
-	$fy = '2016';
+	//$fy = '2016';
 		
 	updAssessmentPaid($parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_email,$payment_amt,$payment_fee);
 	

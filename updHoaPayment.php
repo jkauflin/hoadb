@@ -8,6 +8,7 @@
  * 2015-05-14 JJK 	Initial version to update assessment and payment records 
  * 2017-08-19 JJK	Modified to use the Owner Id of the current owner when
  *    				recording the payment
+ * 2017-08-21 JJK   Corrected bug in set of $ownerId from getHoaRec
  *============================================================================*/
 
 include 'commonUtil.php';
@@ -27,8 +28,9 @@ function updAssessmentPaid($parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_e
 		
 		// double check total due ???
 
+		//error_log(date('[Y-m-d H:i] ') . '$hoaRec->Parcel_ID = ' . $hoaRec->Parcel_ID . ', $hoaRec->ownersList[0]->OwnerID = ' . $hoaRec->ownersList[0]->OwnerID . PHP_EOL, 3, LOG_FILE);
 		// Use the Owner Id of the current owner when recording the payment
-		$ownerId = $hoaRec->ownersList[0].OwnerID;
+		$ownerId = $hoaRec->ownersList[0]->OwnerID;
 		
 		// Idempotent check - Check for any payment record for this parcel and transaction id
 		$hoaPaymentRec = getHoaPaymentRec($conn,$parcelId,$txn_id);
@@ -74,7 +76,6 @@ function updAssessmentPaid($parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_e
 		
 			$stmt->close();
 		
-
 			$payerInfo = 'Thank you for your GRHA member dues payment.  Our records have been successfully updated to show that the assessment has been PAID.  ';
 			$payerInfo .= 'You can use the Dues Checker on our website (www.grha-dayton.org) to see the updated record. ';
 			$payerInfo .= 'Your dues will be used to promote the recreation, health, safety, and welfare of the ';
@@ -98,7 +99,6 @@ function updAssessmentPaid($parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_e
 			$messageStr = '<h3>GRHA Payment Confirmation</h3>' . $payerInfo . $paymentInfoStr;
 			//sendHtmlEMail("johnkauflin@gmail.com",$subject,$messageStr,getConfigVal("fromEmailAddress"));
 			sendHtmlEMail($payer_email,$subject,$messageStr,getConfigVal("fromEmailAddress"));
-					
 			
 		} // End of if Transaction not found
 		
