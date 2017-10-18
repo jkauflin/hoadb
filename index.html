@@ -1,29 +1,29 @@
-<!doctype html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang=""> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8" lang=""> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9" lang=""> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang=""> <!--<![endif]-->
-<head>
-	<meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-	<title>HOA db</title>
-	<meta name="keywords" 		content="homewowners association database hoa db" />
-	<meta name="description"	content="This is the Homeowners Association database" />
-	<meta name="Author" 		content="John J Kauflin"/>
-	<meta name="viewport" 		content="width=device-width, initial-scale=1">
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+		<title>HOA db</title>
+		<meta name="keywords" 		content="homewowners association database hoa db" />
+		<meta name="description"	content="This is the Homeowners Association database" />
+		<meta name="Author" 		content="John J Kauflin"/>
+	
+    <!-- Place favicon.ico in the root directory -->
+    <link rel="icon"              href="favicon.ico">
+    <link rel="manifest"          href="site.webmanifest">
+    <link rel="apple-touch-icon"  href="icon.png">
+
+    <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="css/jquery.datetimepicker.css"/>
-	<link rel="stylesheet" href="css/bootstrap.min.css">
-	<link rel="stylesheet" href="css/bootstrap-theme.min.css">
-	<link rel="stylesheet" href="css/main.css?ver=1.0" />
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+		<link rel="stylesheet" href="css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="css/normalize.css">
+		<link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/main.css?ver=3.000">
+  </head>
 
-    <script src="js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
-</head>
 <body>
-	<!--[if lt IE 8]>
-    	<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-    <![endif]-->
 
 <nav class="navbar navbar-default navbar-fixed-top">
       <div class="container-fluid">
@@ -42,12 +42,12 @@
 
         <div id="navbar" class="navbar-collapse collapse">
 			<ul class="nav navbar-nav navbar-right">
-				<li class="active"><a href="#SearchPage" data-toggle="tab"><span class="glyphicon glyphicon-search"></span> Search</a></li>
-				<li><a href="#DetailPage" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> Detail</a></li>
-				<li><a href="#CommPage" data-toggle="tab"><span class="glyphicon glyphicon-earphone"></span> Comm</a></li>
-				<li><a href="#ReportsPage" data-toggle="tab"><span class="glyphicon glyphicon-signal"></span> Reports</a></li>
-				<li><a href="#AdminPage" data-toggle="tab"><span class="glyphicon glyphicon-user"></span> Admin</a></li>
-				<li><a href="#ConfigPage" data-toggle="tab"><span class="glyphicon glyphicon-pencil"></span> Config</a></li>
+				<li class="active"><a href="#SearchPage" data-toggle="tab"><i class="fa fa-search"></i> Search</a></li>
+				<li><a href="#DetailPage" data-toggle="tab"><i class="fa fa-list"></i> Detail</a></li>
+				<li><a href="#CommPage" data-toggle="tab"><i class="fa fa-phone"></i> Comm</a></li>
+				<li><a href="#ReportsPage" data-toggle="tab"><i class="fa fa-bar-chart"></i> Reports</a></li>
+				<li><a href="#AdminPage" data-toggle="tab"><i class="fa fa-user"></i> Admin</a></li>
+				<li><a href="#ConfigPage" data-toggle="tab"><i class="fa fa-cog"></i> Config</a></li>
 	    	</ul>
         </div> <!-- navbar-collapse (controlled by the collapse toggle button) -->
 
@@ -429,27 +429,18 @@
 	    </div>
 </div><!-- /DuesStatementPage -->
 	
-
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-<script>window.jQuery || document.write('<script src="js/vendor/jquery-1.11.2.min.js"><\/script>')</script>
-<script src="js/vendor/bootstrap.min.js"></script>
-<script src="js/vendor/bootstrap-add-clear.min.js"></script>
-<script src="js/vendor/jquery.datetimepicker.js"></script>
-<script src="js/vendor/jspdf.min.js" type="text/javascript" ></script>
-<script src="js/main.js?ver=1.35"></script>
-
-
-        <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
-        <!-- 
-        <script>
-            (function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
-            function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
-            e=o.createElement(i);r=o.getElementsByTagName(i)[0];
-            e.src='//www.google-analytics.com/analytics.js';
-            r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
-            ga('create','UA-XXXXX-X','auto');ga('send','pageview');
-        </script>
-         -->
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/vendor/modernizr-3.5.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write('<script src="js/vendor/jquery-3.2.1.min.js"><\/script>')</script>
+    <script src="js/vendor/bootstrap.min.js"></script>
+		<script src="js/vendor/bootstrap-add-clear.min.js"></script>
+		<script src="js/vendor/jquery.datetimepicker.js"></script>
+		<script src="js/vendor/jspdf.min.js" type="text/javascript" ></script>
+		<script src="js/plugins.js"></script>
+    <script src="js/main.js?ver=3.000"></script>
 
 </body>
 </html>
