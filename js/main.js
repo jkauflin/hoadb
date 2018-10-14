@@ -81,6 +81,8 @@
  * 2017-08-20 JJK   Added Mark notice mailed function and finished up
  *                  Email logic.
  * 					Added logic to set NoticeDate
+ * 2018-01-21 JJK	Corrected set of default firstNotice to false (so 2nd
+ * 					notices would correctly use the alternate notes)
  *============================================================================*/
 
 var hoaName = '';
@@ -1366,9 +1368,7 @@ function formatAssessmentDetailEdit(hoaRec){
 //--------------------------------------------------------------------------------------------------------------------------------
 function adminLoop(hoaPropertyRecList,action) {
 	
-	//firstNotice = false;
-	// Default to this while we re-send email ones
-	firstNotice = true;
+	firstNotice = false;
 	// If list of unpaid properties is the total number of properties, assume it is the 1st Dues Notice
 	if (hoaPropertyRecList.length == hoaPropertyListMAX) {
 		firstNotice = true;
