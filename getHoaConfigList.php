@@ -34,15 +34,17 @@ include 'hoaDbCommon.php';
 	$outputArray = array();
 	if ($result->num_rows > 0) {
 		while($row = $result->fetch_assoc()) {
+			/*
 			$hoaConfigRec = new HoaConfigRec();
-	
 			$hoaConfigRec->ConfigName = $row["ConfigName"];
 			$hoaConfigRec->ConfigDesc = $row["ConfigDesc"];
 			$hoaConfigRec->ConfigValue = $row["ConfigValue"];
-	
 			array_push($outputArray,$hoaConfigRec);
+			*/
+			array_push($outputArray,$row);
 		}
 	} else {
+		/*
 		$hoaConfigRec = new HoaConfigRec();
 		
 		$hoaConfigRec->ConfigName = '';
@@ -50,6 +52,7 @@ include 'hoaDbCommon.php';
 		$hoaConfigRec->ConfigValue = '';
 		
 		array_push($outputArray,$hoaConfigRec);
+		*/
 	}
 	
 	$stmt->close();

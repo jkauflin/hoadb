@@ -175,7 +175,7 @@ document.addEventListener( 'DOMContentLoaded', function( event ) {
             csvFilter:          csvFilter,
             stringToMoney:      stringToMoney,
             formatDate:         formatDate,
-            waitCursor:         waitCursor
+            waitCursor:         waitCursor,
             setBoolText:        setBoolText,
             setCheckbox:        setCheckbox,
             setCheckboxEdit:    setCheckboxEdit,
