@@ -8,63 +8,55 @@ var detail = (function(){
         var hoaRec;
         var tr = '';
         var checkedStr = '';
+        var parcelId = '';
         
         //=================================================================================================================
         // Variables cached from the DOM
         var $document = $(document);
-        var $ajaxError = $(".ajaxError");
-        var $wildcard = $('*');
         /*
         var $el = $('#peopleModule');
         var $button = $el.find('button');
-        var $input = $el.find('input');
-        var $ul = $el.find('ul');
-        var template = $el.find('#people-template').html();
-        
-    this.$button.on('click', this.addPerson.bind(this));
-    this.$ul.delegate('i.del','click', this.deletePerson.bind(this));
-
-    // If calling from the click, the value will be an "event", if passing in a name, it will be a string
-    function addPerson(value) {
-        // Pushing the value of the $input field into the people string array
-        // everwhere else this.people refers to the people object in this module
-        // but when an event fires, it sets the "this" to the item the event was bound on
-        // in this case, "this" = this.$button
-        // *** Accept a value from the call (for the API), or from the input box
-
-        // If a string was passed in then use value as the name, else get it from the "input" for the click event
-        var name = (typeof value === "string") ? value : $input.val();
-        people.push(name);
-        _render();
-        $input.val('');
-    }
-
-        
+        var template = $el.find('#people-template').html();       
         */
 
-// Respond to clicking on a property by reading details and display on detail tab
-    $(document).on("click","#PropertyListDisplay tr td a",function(){
-        waitCursor();
-        $("#PropertyDetail tbody").html("");
-    	$("#PropertyOwners tbody").html("");
-        $("#PropertyAssessments tbody").html("");
-        var $this = $(this);
-        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-parcelId"),function(outHoaRec){
-        	//formatPropertyDetailResults(hoaRec);
-            hoaRec = outHoaRec;
-            _render();
-    	    $('*').css('cursor', 'default');
-	        $('#navbar a[href="#DetailPage"]').tab('show');
-        });
-    });
+        var $propertyDetail = $("#PropertyDetail");
+        var $propertyOwners = $("#PropertyOwners");
+        var $propertyAssessments = $("#PropertyAssessments");
         
+        var $propDetail = $propertyDetail.find('tbody').html();
+        var $propOwners = $propertyOwners.find('tbody').html();
+        var $propAssessments = $propertyAssessments.find('tbody').html();
+        
+            $("#PropertyDetail tbody").html
+            $("#PropertyOwners tbody").html
+            $("#PropertyAssessments tbody").html
+
         
         //=================================================================================================================
         // Bind events
         //$button.on('click', addPerson);
         //$ul.delegate('i.del', 'click', deletePerson);              
-        // General AJAX error handler to log the exception and set a message in DIV tags with a ajaxError class
 
+        $document.on("click","#PropertyListDisplay tr td a",getHoaRec);
+        
+        function getHoaRec(value) {
+            // If a string was passed in then use value as the name, else get it from the attribute of the click event object
+            parcelId = (typeof value === "string") ? value : value.attr("data-parcelId");
+
+            waitCursor();
+            $("#PropertyDetail tbody").html("");
+            $("#PropertyOwners tbody").html("");
+            $("#PropertyAssessments tbody").html("");
+            var $this = $(this);
+            $.getJSON("getHoaDbData.php","parcelId="+parcelId,function(outHoaRec){
+                //formatPropertyDetailResults(hoaRec);
+                hoaRec = outHoaRec;
+                _render();
+                $('*').css('cursor', 'default');
+                $('#navbar a[href="#DetailPage"]').tab('show');
+            });          
+        }
+        
         //=================================================================================================================
         function _render() {
             tr = '';
@@ -229,101 +221,8 @@ var detail = (function(){
         //=================================================================================================================
         // This is what is exposed from this Module
         return {
+            getHoaRec: getHoaRec
         };
         
     }); // document.addEventListener( 'DOMContentLoaded', function( event ) {
 })(); // var detail = (function(){
-// util.cleanStr("this to clean");
-    
-
-
-/*
-    function addPerson(value) {
-        var name = (typeof value === "string") ? value : $input.val();
-        people.push(name);
-        _render();
-        $input.val('');
-    }
-    function deletePerson(event) {
-        var i;
-        if (typeof event === "number") {
-            i = event;
-        } else {
-            var $remove = $(event.target).closest('li');
-            i = $ul.find('li').index($remove);
-        }
-        people.splice(i, 1);
-        _render();
-    }
-*/  
-
-
-
-    // Response to Detail link clicks (Property Edit)
-	// *** 8/3/2015 fix so it only reacts to the clicks on the property one
-    $(document).on("click","#PropertyDetail tr td a",function(){
-        waitCursor();
-        var $this = $(this);
-        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId"),function(hoaRec){
-            formatPropertyDetailEdit(hoaRec);
-    	    $('*').css('cursor', 'default');
-            $("#EditPage").modal();
-        });
-    });	
-
-    $(document).on("click","#PropertyOwners tr td a",function(){
-        waitCursor();
-        var $this = $(this);
-        $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&ownerId="+$this.attr("data-OwnerId"),function(hoaRec){
-    		createNew = false;
-            formatOwnerDetailEdit(hoaRec,createNew);
-    	    $('*').css('cursor', 'default');
-            $("#EditPage2Col").modal();
-        });
-    });	
-
-function formatPropertyDetailResults(hoaRec){
-
-} // End of function formatDetailResults(hoaRec){
-
-
-
-function formatPropertyDetailEdit(hoaRec){
-    var tr = '';
-    var checkedStr = '';
-    $(".editValidationError").empty();
-
-    // action or type of update
-    $("#EditPageHeader").text("Edit Property");
-    
-	tr += '<div class="form-group">';
-    tr += '<tr><th>Parcel Id:</th><td>'+hoaRec.Parcel_ID+'</td></tr>';
-    tr += '<tr><th>Lot No:</th><td>'+hoaRec.LotNo+'</td></tr>';
-    tr += '<tr><th>Sub Division: </th><td>'+hoaRec.SubDivParcel+'</td></tr>';
-    tr += '<tr><th>Location: </th><td>'+hoaRec.Parcel_Location+'</td></tr>';
-    tr += '<tr><th>Street No: </th><td>'+hoaRec.Property_Street_No+'</td></tr>';
-    tr += '<tr><th>Street Name: </th><td>'+hoaRec.Property_Street_Name+'</td></tr>';
-    tr += '<tr><th>City: </th><td>'+hoaRec.Property_City+'</td></tr>';
-    tr += '<tr><th>State: </th><td>'+hoaRec.Property_State+'</td></tr>';
-    tr += '<tr><th>Zip Code: </th><td>'+hoaRec.Property_Zip+'</td></tr>';
-    //tr += '<tr><th>Member: </th><td>'+setCheckboxEdit(hoaRec.Member,'MemberCheckbox')+'</td></tr>';
-    tr += '<tr><th>Member: </th><td>'+setCheckbox(hoaRec.Member,'MemberCheckbox')+'</td></tr>';
-    tr += '<tr><th>Vacant: </th><td>'+setCheckboxEdit(hoaRec.Vacant,'VacantCheckbox')+'</td></tr>';
-    tr += '<tr><th>Rental: </th><td>'+setCheckboxEdit(hoaRec.Rental,'RentalCheckbox')+'</td></tr>';
-    tr += '<tr><th>Managed: </th><td>'+setCheckboxEdit(hoaRec.Managed,'ManagedCheckbox')+'</td></tr>';
-    tr += '<tr><th>Foreclosure: </th><td>'+setCheckboxEdit(hoaRec.Foreclosure,'ForeclosureCheckbox')+'</td></tr>';
-    tr += '<tr><th>Bankruptcy: </th><td>'+setCheckboxEdit(hoaRec.Bankruptcy,'BankruptcyCheckbox')+'</td></tr>';
-    tr += '<tr><th>ToBe Released: </th><td>'+setCheckboxEdit(hoaRec.Liens_2B_Released,'LiensCheckbox')+'</td></tr>';
-    tr += '<tr><th>Use Email: </th><td>'+setCheckboxEdit(hoaRec.UseEmail,'UseEmailCheckbox')+'</td></tr>';
-    tr += '<tr><th>Comments: </th><td >'+setInputText("PropertyComments",hoaRec.Comments,"90")+'</td></tr>';
-	tr += '</div>'
-	$("#EditTable tbody").html(tr);
-	//$("#EditTable2 tbody").html('');
-
-	tr = '<form class="form-inline" role="form">'+
-		 '<a id="SavePropertyEdit" data-ParcelId="'+hoaRec.Parcel_ID+'" href="#" class="btn btn-primary" role="button">Save</a>'+
-		          		'<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>'+
-		          		'</form>';
-    $("#EditPageButton").html(tr);
-
-} // End of function formatPropertyDetailEdit(hoaRec){
