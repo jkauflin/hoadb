@@ -7,13 +7,12 @@ var config = (function(){
 
     //=================================================================================================================
     // Variables cached from the DOM
-    document.addEventListener('DOMContentLoaded', function (event) {
-    }); // document.addEventListener( 'DOMContentLoaded', function( event ) {
 
     //=================================================================================================================
     // Bind events
 
     // When the javascript initializes do a one time get of the logo image data (for PDF writes)
+    // *** maybe move this to PDF module ***
     $.get("getLogoImgData.php", function (logoImgDataResults) {
         configVal.set('pdfLogoImgData', logoImgDataResults);
     });
