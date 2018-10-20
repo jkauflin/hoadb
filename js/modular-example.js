@@ -1,6 +1,22 @@
 var people = (function(){
     var people = ['Will', 'Steve'];
 
+    function test() {
+        console.log("in test");
+    }
+
+    return {
+        test: test
+    };
+
+})();
+
+//people.addPerson("Jake");
+//people.deletePerson(0);
+
+var people = (function(){
+    var people = ['Will', 'Steve'];
+
     //cache DOM
     var $el = $('#peopleModule');
     var $button = $el.find('button');
@@ -44,5 +60,3 @@ var people = (function(){
 
 })();
 
-//people.addPerson("Jake");
-//people.deletePerson(0);

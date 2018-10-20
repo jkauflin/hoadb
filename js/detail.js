@@ -4,7 +4,6 @@ var detail = (function(){
 
         //=================================================================================================================
         // Private variables for the Module
-        //var people = ['Will', 'Steve'];
         var hoaRec;
         var tr = '';
         var checkedStr = '';
@@ -12,41 +11,33 @@ var detail = (function(){
         
         //=================================================================================================================
         // Variables cached from the DOM
-        var $document = $(document);
-        /*
-        var $el = $('#peopleModule');
-        var $button = $el.find('button');
-        var template = $el.find('#people-template').html();       
-        */
+        //var $document = $(document);
+        var $moduleDiv = $('#DetailPage');
 
-        var $propertyDetail = $("#PropertyDetail");
-        var $propertyOwners = $("#PropertyOwners");
-        var $propertyAssessments = $("#PropertyAssessments");
+        var $propertyDetail = $moduleDiv.find("#PropertyDetail");
+        var $propertyOwners = $moduleDiv.find("#PropertyOwners");
+        var $propertyAssessments = $moduleDiv.find("#PropertyAssessments");
         
         var $propDetail = $propertyDetail.find('tbody').html();
         var $propOwners = $propertyOwners.find('tbody').html();
         var $propAssessments = $propertyAssessments.find('tbody').html();
         
-            $("#PropertyDetail tbody").html
-            $("#PropertyOwners tbody").html
-            $("#PropertyAssessments tbody").html
-
         
         //=================================================================================================================
         // Bind events
         //$button.on('click', addPerson);
         //$ul.delegate('i.del', 'click', deletePerson);              
 
-        $document.on("click","#PropertyListDisplay tr td a",getHoaRec);
+        $moduleDiv.on("click","#PropertyListDisplay tr td a",getHoaRec);
         
         function getHoaRec(value) {
             // If a string was passed in then use value as the name, else get it from the attribute of the click event object
             parcelId = (typeof value === "string") ? value : value.attr("data-parcelId");
 
             waitCursor();
-            $("#PropertyDetail tbody").html("");
-            $("#PropertyOwners tbody").html("");
-            $("#PropertyAssessments tbody").html("");
+            $propDetail("");
+            $propOwners("");
+            $propAssessments("");
             var $this = $(this);
             $.getJSON("getHoaDbData.php","parcelId="+parcelId,function(outHoaRec){
                 //formatPropertyDetailResults(hoaRec);
@@ -90,7 +81,7 @@ var detail = (function(){
             tr += '<tr><th>Use Email: </th><td>'+setCheckbox(hoaRec.UseEmail)+'</td></tr>';
             tr += '<tr><th>Comments: </th><td>'+hoaRec.Comments+'</td></tr>';
 
-            $("#PropertyDetail tbody").html(tr);
+            $propDetail(tr);
 
             var own1 = '';
             var currOwnerID = '';
@@ -128,7 +119,7 @@ var detail = (function(){
                 tr = tr +   '<td class="hidden-xs">'+rec.Comments+'</td>';
                 tr = tr + '</tr>';
             });
-            $("#PropertyOwners tbody").html(tr);
+            $propOwners(tr);
 
             var TaxYear = '';
             var LienButton = '';
@@ -192,7 +183,7 @@ var detail = (function(){
                 tr = tr +   '<td class="hidden-xs">'+rec.Comments+' '+rec.LienComment+'</td>';
                 tr = tr + '</tr>';
             });
-            $("#PropertyAssessments tbody").html(tr);
+            $propAssessments(tr);
 
             // Set the buttons from configuration values and current parcel id
             var mcTreasURI = countyTreasurerUrl + '?parid='+hoaRec.Parcel_ID+'&taxyr='+TaxYear+'&own1='+ownName1;
