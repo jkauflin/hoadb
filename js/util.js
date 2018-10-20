@@ -6,25 +6,20 @@ var util = (function(){
 
     //=================================================================================================================
     // Variables cached from the DOM
-    var $document;
-    var $ajaxError;
-    var $wildcard;
-    //document.addEventListener('DOMContentLoaded', function (event) {
-        $document = $(document);
-        $ajaxError = $document.find(".ajaxError");
-        $wildcard = $('*');
-    //}); // document.addEventListener( 'DOMContentLoaded', function( event ) {
+    var $document = $(document);
+    var $ajaxError = $document.find(".ajaxError");
+    var $wildcard = $('*');
 
     //=================================================================================================================
     // Bind events
     // General AJAX error handler to log the exception and set a message in DIV tags with a ajaxError class
-    /*
-    $document(function (e, xhr, settings, exception) {
+    $document.ajaxError(function (e, xhr, settings, exception) {
         console.log("ajax exception = " + exception);
-        console.log("ajax exception xhr.responseText = " + xhr.responseText);
+        console.log("ajax url = " + settings.url);
+        console.log("xhr.responseText = " + xhr.responseText);
+        defaultCursor();
         $ajaxError.html("An Error has occurred (see console log)");
     });
-    */
 
     //=================================================================================================================
     // Module methods
@@ -81,7 +76,7 @@ var util = (function(){
     var nonMoneyCharsStr = "[\x01-\x2D\x2F\x3A-\x7F]";
     //"g" global so it does more than 1 substitution
     var regexNonMoneyChars = new RegExp(nonMoneyCharsStr, "g");
-    function stringToMoney(inAmount) {
+    function formatMoney(inAmount) {
         var inAmountStr = '' + inAmount;
         inAmountStr = inAmountStr.replace(regexNonMoneyChars, '');
         return parseFloat(inAmountStr).toFixed(2);
@@ -165,7 +160,7 @@ var util = (function(){
         urlParam: urlParam,
         cleanStr: cleanStr,
         csvFilter: csvFilter,
-        stringToMoney: stringToMoney,
+        formatMoney: formatMoney,
         formatDate: formatDate,
         waitCursor: waitCursor,
         defaultCursor: defaultCursor,
