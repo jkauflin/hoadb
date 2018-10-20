@@ -6,38 +6,22 @@ var search = (function(){
     var hoaPropertyRecList;
     var tr = '';
 
-    var $moduleDiv;
-    var $displayPage;
-    var $searchButton;
-    var $searchStr;
-    var $parcelId;
-    var $lotNo;
-    var $address;
-    var $ownerName;
-    var $phoneNo;
-    var $altAddress;
-    var $propertyListDisplay;
-    var $propList;
-
     //=================================================================================================================
     // Variables cached from the DOM
-    //document.addEventListener('DOMContentLoaded', function (event) {
-        $moduleDiv = $('#SearchPage');
-        $displayPage = $moduleDiv.find('#navbar a[href="#SearchPage"]');
-        $searchButton = $moduleDiv.find("#SearchButton");
+    var $moduleDiv = $('#SearchPage');
+    var $displayPage = $moduleDiv.find('#navbar a[href="#SearchPage"]');
+    var $searchButton = $moduleDiv.find("#SearchButton");
 
-        $searchStr = $moduleDiv.find("#searchStr");
-        $parcelId = $moduleDiv.find("#parcelId");
-        $lotNo = $moduleDiv.find("#lotNo");
-        $address = $moduleDiv.find("#address");
-        $ownerName = $moduleDiv.find("#ownerName");
-        $phoneNo = $moduleDiv.find("#phoneNo");
-        $altAddress = $moduleDiv.find("#altAddress");
+    var $searchStr = $moduleDiv.find("#searchStr");
+    var $parcelId = $moduleDiv.find("#parcelId");
+    var $lotNo = $moduleDiv.find("#lotNo");
+    var $address = $moduleDiv.find("#address");
+    var $ownerName = $moduleDiv.find("#ownerName");
+    var $phoneNo = $moduleDiv.find("#phoneNo");
+    var $altAddress = $moduleDiv.find("#altAddress");
 
-        $propertyListDisplay = $("#PropertyListDisplay");
-        $propList = $propertyListDisplay.find('tbody');
-
-    //}); // document.addEventListener( 'DOMContentLoaded', function( event ) {
+    var $propertyListDisplay = $("#PropertyListDisplay");
+    var $propList = $propertyListDisplay.find('tbody');
 
     //=================================================================================================================
     // Bind events
@@ -45,10 +29,6 @@ var search = (function(){
 
     function getHoaPropertiesList() {
         util.waitCursor();
-
-        var tempStr = config.getVal('hoaNameShort');
-        console.log(">>> tempStr = " + tempStr);
-
         $propList.html("");
         $.getJSON("getHoaPropertiesList.php", "searchStr=" + util.cleanStr($searchStr.val()) +
             "&parcelId=" + util.cleanStr($parcelId.val()) +
@@ -61,7 +41,7 @@ var search = (function(){
                 _render();
                 util.defaultCursor();
                 $displayPage.tab('show');
-            });
+        });
     }
 
     //=================================================================================================================
