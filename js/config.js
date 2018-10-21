@@ -1,25 +1,43 @@
+/*==============================================================================
+ * (C) Copyright 2015,2016,2017,2018 John J Kauflin, All rights reserved. 
+ *----------------------------------------------------------------------------
+ * DESCRIPTION: 
+ *----------------------------------------------------------------------------
+ * Modification History
+ * 2016-05-17 JJK   Implemented Config update page
+ * 2016-05-18 JJK   Added setTextArea
+ * 2016-07-08 JJK   Modified to get all config list values on page load
+ * 2018-10-20 JJK   Re-factor for module design
+ * 2018-10-21 JJK   Re-factor for JSON based POST for updates
+ *============================================================================*/
 var config = (function(){
     'use strict';
 
     //=================================================================================================================
     // Private variables for the Module
-    var configVal = new Map();
     var hoaConfigRecList;
+    var configVal = new Map();
+    var tr = '';
+    var tr2 = '';
+    var checkedStr = '';
+    var buttonStr = '';
 
     //=================================================================================================================
     // Variables cached from the DOM
-
     var $document = $(document);
-    
     var $moduleDiv = $('#ConfigPage');
-    var $displayPage = $moduleDiv.find('#navbar a[href="#ConfigPage"]');
-
+    var $displayPage = $document.find('#navbar a[href="#ConfigPage"]');
+    var $ConfigListDisplay = $moduleDiv.find("tbody");
+    var $EditPage = $("#EditPage");
+    var $Configname = $("#ConfigName");
+    var $ConfigDesc = $("#ConfigDesc");
+    var $ConfigValue = $("#ConfigValue");
 
     //=================================================================================================================
     // Bind events
     $document.on('shown.bs.tab', 'a[data-toggle="tab"]', getHoaConfigList);
-
-
+    $document.on("click", ".NewConfig", editConfig);
+    $document.on("click", ".SaveConfigEdit", saveConfigEdit);
 
     // When the javascript initializes do a one time get of the logo image data (for PDF writes)
     // *** maybe move this to PDF module ***
@@ -27,6 +45,16 @@ var config = (function(){
         configVal.set('pdfLogoImgData', logoImgDataResults);
     });
 
+    // Load the configuration list when the page is loaded
+    $.getJSON("getHoaConfigList.php", "", function (outHoaConfigRecList) {
+        hoaConfigRecList = outHoaConfigRecList;
+        configVal.clear();
+        $.each(hoaConfigRecList, function (index, hoaConfigRec) {
+            // Load into Map for lookup
+            configVal.set(hoaConfigRec.ConfigName, hoaConfigRec.ConfigValue);
+        });
+        //console.log("in config, configVal.size = "+configVal.size);
+    });
 
     //=================================================================================================================
     // Module methods
@@ -37,7 +65,7 @@ var config = (function(){
         var configPage = activatedTab.toString().indexOf("ConfigPage");
         if (configPage) {
             util.waitCursor();
-//            $propList.html("");
+            $ConfigListDisplay.html("");
             // Get the list
             $.getJSON("getHoaConfigList.php", "", function (outHoaConfigRecList) {
                 hoaConfigRecList = outHoaConfigRecList;
@@ -50,18 +78,108 @@ var config = (function(){
 
     _render();
     function _render() {
-        //console.log("hoaConfigRecList.length = " + hoaConfigRecList.length);
-        $.each(hoaConfigRecList, function (index, configRec) {
-            configVal.set(configRec.ConfigName, configRec.ConfigValue);
+        //var tr = '<tr><td>No records found - try different search parameters</td></tr>';
+        tr = '';
+        configVal.clear();
+        $.each(hoaConfigRecList, function (index, hoaConfigRec) {
+            // Load into Map for lookup
+            configVal.set(hoaConfigRec.ConfigName, hoaConfigRec.ConfigValue);
+
+            if (index == 0) {
+                tr = '';
+                tr += '<tr>';
+                tr += '<th>Name</th>';
+                tr += '<th>Description</th>';
+                tr += '<th>Value</th>';
+                tr += '</tr>';
+            }
+            tr += '<tr>';
+            tr += '<td><a data-ConfigName="' + hoaConfigRec.ConfigName + '" class="NewConfig" href="#">' + hoaConfigRec.ConfigName + '</a></td>';
+            tr += '<td>' + hoaConfigRec.ConfigDesc + '</td>';
+            tr += '<td>' + hoaConfigRec.ConfigValue.substring(0, 80) + '</td>';
+            tr += '</tr>';
         });
 
-
-
+        $ConfigListDisplay.html(tr);
     }
 
     function getVal(name) {
         return configVal.get(name);
     }
+
+    function editConfig(event) {
+        // If a string was passed in then use value as the name, else get it from the attribute of the click event object
+        util.waitCursor();
+        $.getJSON("getHoaConfigList.php", "ConfigName=" + event.target.getAttribute("data-ConfigName"), function (hoaConfigRecList) {
+            formatConfigEdit(hoaConfigRecList[0]);
+            util.defaultCursor();
+            $EditPage.modal();
+        });
+    };
+
+    /*
+		document.getElementById('UpdateConcerts').addEventListener('click', function() {
+			var FormInputs = $("#ConcertsInput input,textarea");
+			//console.log("data = "+app.getJSONfromInputs(FormInputs));
+			$.ajax("updateConcerts.php", {
+            	type: "POST",
+                contentType: "application/json",
+                data: app.getJSONfromInputs(FormInputs),
+                dataType: "json",
+                success: function(list) {
+					app.displayList(list,"#ConcertsListDisplay tbody","EditConcert");
+					// Reset the current id and clear out all of the input fields
+					FormInputs.val("");
+                },
+                error: function() {
+                    //$('#notification-bar').text('An error occurred');
+            	}
+            });
+			event.stopPropagation();
+		});
+    */
+    function saveConfigEdit(event) {
+        util.waitCursor();
+        // ***  Need to change this to a POST (and pass all element as a JSON)
+        $.get("updHoaConfig.php", "ConfigName=" + util.cleanStr($("#ConfigName").val()) +
+            "&ConfigDesc=" + util.cleanStr($("#ConfigDesc").val()) +
+            "&ConfigValue=" + util.cleanStr($("#ConfigValue").val()) +
+            "&ConfigAction=" + event.target.getAttribute("data-ConfigAction"), function (results) {
+
+                $.getJSON("getHoaConfigList.php", function (hoaConfigRecList) {
+                    util.defaultCursor();
+                    displayConfigList(hoaConfigRecList);
+                    $EditPage.modal("hide");
+                    $displayPage.tab('show');
+                });
+
+            }); // End of 
+    };
+
+    function formatConfigEdit(hoaConfigRec) {
+        $(".editValidationError").empty();
+
+        $("#EditPageHeader").text("Edit Configuration");
+
+        //console.log("hoaConfigRec.ConfigName = "+hoaConfigRec.ConfigName);
+
+        tr = '';
+        tr += '<div class="form-group">';
+        tr += '<tr><th>Name:</th><td>' + setInputText("ConfigName", hoaConfigRec.ConfigName, "80") + '</td></tr>';
+        tr += '<tr><th>Description:</th><td>' + setInputText("ConfigDesc", hoaConfigRec.ConfigDesc, "100") + '</td></tr>';
+        tr += '<tr><th>Value:</th><td>' + setTextArea("ConfigValue", hoaConfigRec.ConfigValue, "15") + '</td></tr>';
+        tr += '</div>';
+
+        $("#EditTable tbody").html(tr);
+        //$("#EditTable2 tbody").html(tr2);
+
+        tr = '<form class="form-inline" role="form">';
+        tr += '<a data-ConfigAction="Edit" href="#" class="btn btn-primary SaveConfigEdit" role="button">Save</a>';
+        tr += '<a data-ConfigAction="Delete" href="#" class="btn btn-primary SaveConfigEdit" role="button">Delete</a>';
+        tr += '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button></form>';
+        $("#EditPageButton").html(tr);
+
+    } // End of function formatConfigEdit(hoaConfigRec){
 
     //=================================================================================================================
     // This is what is exposed from this Module
@@ -71,111 +189,4 @@ var config = (function(){
         
 })(); // var util = (function(){
 
-
-$(document).on("click", ".NewConfig", function () {
-    waitCursor();
-    var $this = $(this);
-    $.getJSON("getHoaConfigList.php", "ConfigName=" + $this.attr("data-ConfigName"), function (hoaConfigRecList) {
-        formatConfigEdit(hoaConfigRecList[0]);
-        $('*').css('cursor', 'default');
-        $("#EditPage").modal();
-    });
-});
-
-$(document).on("click", ".SaveConfigEdit", function () {
-    waitCursor();
-    var $this = $(this);
-
-    $.get("updHoaConfig.php", "ConfigName=" + cleanStr($("#ConfigName").val()) +
-        "&ConfigDesc=" + cleanStr($("#ConfigDesc").val()) +
-        "&ConfigValue=" + cleanStr($("#ConfigValue").val()) +
-        "&ConfigAction=" + $this.attr("data-ConfigAction"), function (results) {
-
-            $.getJSON("getHoaConfigList.php", function (hoaConfigRecList) {
-                $('*').css('cursor', 'default');
-                displayConfigList(hoaConfigRecList);
-                $("#EditPage").modal("hide");
-                $('#navbar a[href="#ConfigPage"]').tab('show');
-            });
-
-        }); // End of 
-    event.stopPropagation();
-});	// End of $(document).on("click","#SaveConfigEdit",function(){
-
-
-$(document).on("click", ".SaveCommEdit", function () {
-    waitCursor();
-    var $this = $(this);
-    var parcelId = $this.attr("data-ParcelId");
-    var ownerId = $this.attr("data-OwnerId");
-    var commId = $this.attr("data-CommId");
-
-    $.get("updHoaComm.php", "parcelId=" + parcelId +
-        "&ownerId=" + ownerId +
-        "&commId=" + commId +
-        "&commType=" + cleanStr($("#CommType").val()) +
-        "&commDesc=" + cleanStr($("#CommDesc").val()) +
-        "&CommAction=" + $this.attr("data-CommAction"), function (results) {
-
-            $.getJSON("getHoaCommList.php", "parcelId=" + parcelId + "&ownerId=" + ownerId, function (hoaCommRecList) {
-                $('*').css('cursor', 'default');
-                displayCommList(hoaCommRecList, parcelId, ownerId);
-                $("#EditPage").modal("hide");
-                $('#navbar a[href="#CommPage"]').tab('show');
-            });
-
-        }); // End of 
-    event.stopPropagation();
-});	// End of $(document).on("click",".SaveCommEdit",function(){
-
-function displayConfigList(hoaConfigRecList) {
-    //var tr = '<tr><td>No records found - try different search parameters</td></tr>';
-    var tr = '';
-    $.each(hoaConfigRecList, function (index, hoaConfigRec) {
-        if (index == 0) {
-            tr = '';
-            tr += '<tr>';
-            tr += '<th>Name</th>';
-            tr += '<th>Description</th>';
-            tr += '<th>Value</th>';
-            tr += '</tr>';
-        }
-        tr += '<tr>';
-        tr += '<td><a data-ConfigName="' + hoaConfigRec.ConfigName + '" class="NewConfig" href="#">' + hoaConfigRec.ConfigName + '</a></td>';
-        tr += '<td>' + hoaConfigRec.ConfigDesc + '</td>';
-        tr += '<td>' + hoaConfigRec.ConfigValue.substring(0, 80) + '</td>';
-        tr += '</tr>';
-    });
-
-    $("#ConfigListDisplay tbody").html(tr);
-}
-
-function formatConfigEdit(hoaConfigRec) {
-    var tr = '';
-    var tr2 = '';
-    var checkedStr = '';
-    var buttonStr = '';
-    $(".editValidationError").empty();
-
-    $("#EditPageHeader").text("Edit Configuration");
-
-    //console.log("hoaConfigRec.ConfigName = "+hoaConfigRec.ConfigName);
-
-    tr = '';
-    tr += '<div class="form-group">';
-    tr += '<tr><th>Name:</th><td>' + setInputText("ConfigName", hoaConfigRec.ConfigName, "80") + '</td></tr>';
-    tr += '<tr><th>Description:</th><td>' + setInputText("ConfigDesc", hoaConfigRec.ConfigDesc, "100") + '</td></tr>';
-    tr += '<tr><th>Value:</th><td>' + setTextArea("ConfigValue", hoaConfigRec.ConfigValue, "15") + '</td></tr>';
-    tr += '</div>';
-
-    $("#EditTable tbody").html(tr);
-    //$("#EditTable2 tbody").html(tr2);
-
-    tr = '<form class="form-inline" role="form">';
-    tr += '<a data-ConfigAction="Edit" href="#" class="btn btn-primary SaveConfigEdit" role="button">Save</a>';
-    tr += '<a data-ConfigAction="Delete" href="#" class="btn btn-primary SaveConfigEdit" role="button">Delete</a>';
-    tr += '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button></form>';
-    $("#EditPageButton").html(tr);
-
-} // End of function formatConfigEdit(hoaConfigRec){
 

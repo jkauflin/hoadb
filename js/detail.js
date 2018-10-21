@@ -10,8 +10,10 @@ var detail = (function(){
 
     //=================================================================================================================
     // Variables cached from the DOM
+    var $document = $(document);
     var $moduleDiv = $('#DetailPage');
-    var $displayPage = $moduleDiv.find('#navbar a[href="#DetailPage"]');
+    // Figure out a better way to do this
+    var $displayPage = $document.find('#navbar a[href="#DetailPage"]');
 
     var $propertyDetail = $moduleDiv.find("#PropertyDetail");
     var $propertyOwners = $moduleDiv.find("#PropertyOwners");
@@ -32,13 +34,13 @@ var detail = (function(){
     // Bind events
     //$button.on('click', addPerson);
     //$ul.delegate('i.del', 'click', deletePerson);              
-    $moduleDiv.on("click", "#PropertyListDisplay tr td a", getHoaRec);
+    $document.on("click", "#PropertyListDisplay tr td a", getHoaRec);
 
     //=================================================================================================================
     // Module methods
     function getHoaRec(value) {
         // If a string was passed in then use value as the name, else get it from the attribute of the click event object
-        parcelId = (typeof value === "string") ? value : value.attr("data-parcelId");
+        parcelId = (typeof value === "string") ? value : value.target.getAttribute("data-parcelId");
         util.waitCursor();
         $propDetail.html("");
         $propOwners.html("");
@@ -82,7 +84,7 @@ var detail = (function(){
 
         $propDetail.html(tr);
 
-        var own1 = '';
+        var ownName1 = '';
         var currOwnerID = '';
         tr = '';
         $.each(hoaRec.ownersList, function (index, rec) {
@@ -180,10 +182,10 @@ var detail = (function(){
         $propAssessments.html(tr);
 
         // Set the buttons from configuration values and current parcel id
-        var mcTreasURI = countyTreasurerUrl + '?parid=' + hoaRec.Parcel_ID + '&taxyr=' + TaxYear + '&own1=' + ownName1;
+        var mcTreasURI = config.getVal('countyTreasurerUrl') + '?parid=' + hoaRec.Parcel_ID + '&taxyr=' + TaxYear + '&own1=' + ownName1;
         $MCTreasLink.html('<a href="' + encodeURI(mcTreasURI) + '" class="btn btn-primary" role="button" target="_blank">County<br>Treasurer</a>');
 
-        var mcAuditorURI = countyAuditorUrl + '?mode=PARID';
+        var mcAuditorURI = config.getVal('countyAuditorUrl') + '?mode=PARID';
         $MCAuditorLink.html('<a href="' + encodeURI(mcAuditorURI) + '" class="btn btn-primary" role="button" target="_blank">County<br>Property</a>');
 
         $DuesStatement.html('<a id="DuesStatementButton" data-ParcelId="' + hoaRec.Parcel_ID + '" data-OwnerId="' + currOwnerID + '" href="#" class="btn btn-success" role="button">Dues Statement</a>');
