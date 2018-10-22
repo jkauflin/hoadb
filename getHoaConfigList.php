@@ -12,6 +12,18 @@ include 'commonUtil.php';
 // Include table record classes and db connection parameters
 include 'hoaDbCommon.php';
 
+
+if($_POST['action'] == "follow") {
+  /**
+   * we can pass any action like block, follow, unfollow, send PM....
+   * if we get a 'follow' action then we could take the user ID and create a SQL command
+   * but with no database, we can simply assume the follow action has been completed and return 'ok'
+  **/
+
+  echo "ok";
+}
+
+
 	// If they are set, get input parameters from the REQUEST
 	$configName = getParamVal("ConfigName");
 
