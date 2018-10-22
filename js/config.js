@@ -21,6 +21,7 @@ var config = (function(){
     var tr2 = '';
     var checkedStr = '';
     var buttonStr = '';
+    var Inputs;
 
     //=================================================================================================================
     // Variables cached from the DOM
@@ -32,6 +33,7 @@ var config = (function(){
     var $Configname = $("#ConfigName");
     var $ConfigDesc = $("#ConfigDesc");
     var $ConfigValue = $("#ConfigValue");
+    var $EditTable = $("#EditTable");
 
     //=================================================================================================================
     // Bind events
@@ -110,37 +112,39 @@ var config = (function(){
     function editConfig(event) {
         // If a string was passed in then use value as the name, else get it from the attribute of the click event object
         util.waitCursor();
+        
         $.getJSON("getHoaConfigList.php", "ConfigName=" + event.target.getAttribute("data-ConfigName"), function (hoaConfigRecList) {
             formatConfigEdit(hoaConfigRecList[0]);
             util.defaultCursor();
             $EditPage.modal();
         });
+        
+    
     };
 
     /*
-		document.getElementById('UpdateConcerts').addEventListener('click', function() {
-			var FormInputs = $("#ConcertsInput input,textarea");
-			//console.log("data = "+app.getJSONfromInputs(FormInputs));
-			$.ajax("updateConcerts.php", {
-            	type: "POST",
-                contentType: "application/json",
-                data: app.getJSONfromInputs(FormInputs),
-                dataType: "json",
-                success: function(list) {
-					app.displayList(list,"#ConcertsListDisplay tbody","EditConcert");
-					// Reset the current id and clear out all of the input fields
-					FormInputs.val("");
-                },
-                error: function() {
-                    //$('#notification-bar').text('An error occurred');
-            	}
-            });
-			event.stopPropagation();
-		});
     */
     function saveConfigEdit(event) {
         util.waitCursor();
         // ***  Need to change this to a POST (and pass all element as a JSON)
+        Inputs = $EditTable.find("input,textarea");
+        //console.log("data = "+app.getJSONfromInputs(FormInputs));
+        $.ajax("updateConcerts.php", {
+            type: "POST",
+            contentType: "application/json",
+            data: app.getJSONfromInputs(Inputs),
+            dataType: "json",
+            success: function (list) {
+                app.displayList(list, "#ConcertsListDisplay tbody", "EditConcert");
+                // Reset the current id and clear out all of the input fields
+                //FormInputs.val("");
+            },
+            error: function () {
+                //$('#notification-bar').text('An error occurred');
+            }
+        });
+
+
         $.get("updHoaConfig.php", "ConfigName=" + util.cleanStr($("#ConfigName").val()) +
             "&ConfigDesc=" + util.cleanStr($("#ConfigDesc").val()) +
             "&ConfigValue=" + util.cleanStr($("#ConfigValue").val()) +

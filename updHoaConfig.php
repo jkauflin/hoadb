@@ -13,12 +13,44 @@ include 'commonUtil.php';
 // Include table record classes and db connection parameters
 include 'hoaDbCommon.php';
 
+header("Content-Type: application/json; charset=UTF-8");
+# Get JSON as a string
+$json_str = file_get_contents('php://input');
+
+# Get as an object
+$param = json_decode($json_str);
+//$obj->table." LIMIT ".$obj->limit
+
+	// $obj = json_decode($json_str);
+	// echo "in PHP, name = " . $obj[0]->name . ', value = ' . $obj[0]->value;
+	// WORKED result = in PHP, name = Headliner, value = Jimmy Page
+
+	// $obj = json_decode($json_str,TRUE);
+	// echo "in PHP, name = " . $obj[0]['name'] . ', value = ' . $obj[0]['value'];
+	// WORKED result = in PHP, name = Headliner, value = Ted Nugent
+
+	//error_log(date('[Y-m-d H:i] '). '$sql = ' . $sql . PHP_EOL, 3, 'php.log');
+				
+	//$conn = getConn();
+
+	//if ($param->id == '') {
+
+
+
+
 	// If they are set, get input parameters from the REQUEST
 	$configName = getParamVal("ConfigName");
 	$configDesc = getParamVal("ConfigDesc");
 	$configValue = getParamVal("ConfigValue");
 	$configAction = getParamVal("ConfigAction");
-	
+
+       $.get("updHoaConfig.php", "ConfigName=" + util.cleanStr($("#ConfigName").val()) +
+            "&ConfigDesc=" + util.cleanStr($("#ConfigDesc").val()) +
+            "&ConfigValue=" + util.cleanStr($("#ConfigValue").val()) +
+            "&ConfigAction=" + event.target.getAttribute("data-ConfigAction"), function (results) {
+// for delete
+
+
 	/*
 	error_log(date('[Y-m-d H:i] '). "updHoaConfig, ConfigName = " . $configName . PHP_EOL, 3, "hoadb.log");
 	error_log(date('[Y-m-d H:i] '). "updHoaConfig, ConfigDesc = " . $configDesc . PHP_EOL, 3, "hoadb.log");
