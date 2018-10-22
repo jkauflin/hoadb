@@ -43,13 +43,13 @@ $param = json_decode($json_str);
 	$configDesc = getParamVal("ConfigDesc");
 	$configValue = getParamVal("ConfigValue");
 	$configAction = getParamVal("ConfigAction");
-
+/*
        $.get("updHoaConfig.php", "ConfigName=" + util.cleanStr($("#ConfigName").val()) +
             "&ConfigDesc=" + util.cleanStr($("#ConfigDesc").val()) +
             "&ConfigValue=" + util.cleanStr($("#ConfigValue").val()) +
             "&ConfigAction=" + event.target.getAttribute("data-ConfigAction"), function (results) {
+*/
 // for delete
-
 
 	/*
 	error_log(date('[Y-m-d H:i] '). "updHoaConfig, ConfigName = " . $configName . PHP_EOL, 3, "hoadb.log");
