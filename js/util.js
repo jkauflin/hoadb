@@ -1,6 +1,20 @@
 var util = (function(){
     'use strict';
-
+/*
+    // Place your settings in this file to overwrite the default settings
+{
+      "editor.fontSize": 12,
+      "git.confirmSync": false,
+      "extensions.ignoreRecommendations": false,
+      "git.enableSmartCommit": true,
+      "files.autoSave": "afterDelay",
+      "workbench.startupEditor": "newUntitledFile",
+      "html.autoClosingTags": false,
+      "workbench.editor.enablePreview": false,
+      "workbench.editor.enablePreviewFromQuickOpen": false,
+      "editor.formatOnPaste": true
+}
+*/
     //=================================================================================================================
     // Private variables for the Module
 
