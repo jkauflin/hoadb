@@ -21,7 +21,7 @@ var config = (function(){
     var tr2 = '';
     var checkedStr = '';
     var buttonStr = '';
-    var Inputs;
+    var FormInputs;
 
     //=================================================================================================================
     // Variables cached from the DOM
@@ -55,7 +55,7 @@ var config = (function(){
             // Load into Map for lookup
             configVal.set(hoaConfigRec.ConfigName, hoaConfigRec.ConfigValue);
         });
-        //console.log("in config, configVal.size = "+configVal.size);
+        console.log("in config, configVal.size = "+configVal.size);
     });
 
     //=================================================================================================================
@@ -112,14 +112,11 @@ var config = (function(){
     function editConfig(event) {
         // If a string was passed in then use value as the name, else get it from the attribute of the click event object
         util.waitCursor();
-        
         $.getJSON("getHoaConfigList.php", "ConfigName=" + event.target.getAttribute("data-ConfigName"), function (hoaConfigRecList) {
             formatConfigEdit(hoaConfigRecList[0]);
             util.defaultCursor();
             $EditPage.modal();
         });
-        
-    
     };
 
     /*
@@ -127,24 +124,32 @@ var config = (function(){
     function saveConfigEdit(event) {
         util.waitCursor();
         // ***  Need to change this to a POST (and pass all element as a JSON)
-        Inputs = $EditTable.find("input,textarea");
-        //console.log("data = "+app.getJSONfromInputs(FormInputs));
-        $.ajax("updateConcerts.php", {
+        FormInputs = $EditTable.find("input,textarea");
+        console.log("util.getJSONfromInputs(FormInputs) = "+util.getJSONfromInputs(FormInputs));
+        // *** add the action somehow to the JSON structure???
+        
+        //event.target.getAttribute("data-ConfigAction")
+
+        /*
+        $.ajax("updHoaConfig.php", {
             type: "POST",
             contentType: "application/json",
-            data: app.getJSONfromInputs(Inputs),
+            data: util.getJSONfromInputs(Inputs),
             dataType: "json",
             success: function (list) {
-                app.displayList(list, "#ConcertsListDisplay tbody", "EditConcert");
-                // Reset the current id and clear out all of the input fields
-                //FormInputs.val("");
+                util.defaultCursor();
+                hoaConfigRecList = list;
+                _render();
+                $EditPage.modal("hide");
+                $displayPage.tab('show');
             },
             error: function () {
                 //$('#notification-bar').text('An error occurred');
             }
         });
+        */
 
-
+        /*
         $.get("updHoaConfig.php", "ConfigName=" + util.cleanStr($("#ConfigName").val()) +
             "&ConfigDesc=" + util.cleanStr($("#ConfigDesc").val()) +
             "&ConfigValue=" + util.cleanStr($("#ConfigValue").val()) +
@@ -157,7 +162,8 @@ var config = (function(){
                     $displayPage.tab('show');
                 });
 
-            }); // End of 
+        }); // End of 
+        */
     };
 
     function formatConfigEdit(hoaConfigRec) {
@@ -167,12 +173,14 @@ var config = (function(){
 
         //console.log("hoaConfigRec.ConfigName = "+hoaConfigRec.ConfigName);
 
-        tr = '';
+        tr = '<form class="form-horizontal" action="">';
+        tr += '';
         tr += '<div class="form-group">';
-        tr += '<tr><th>Name:</th><td>' + setInputText("ConfigName", hoaConfigRec.ConfigName, "80") + '</td></tr>';
-        tr += '<tr><th>Description:</th><td>' + setInputText("ConfigDesc", hoaConfigRec.ConfigDesc, "100") + '</td></tr>';
-        tr += '<tr><th>Value:</th><td>' + setTextArea("ConfigValue", hoaConfigRec.ConfigValue, "15") + '</td></tr>';
+        tr += '<tr><th>Name:</th><td>' + util.setInputText("ConfigName", hoaConfigRec.ConfigName, "80") + '</td></tr>';
+        tr += '<tr><th>Description:</th><td>' + util.setInputText("ConfigDesc", hoaConfigRec.ConfigDesc, "100") + '</td></tr>';
+        tr += '<tr><th>Value:</th><td>' + util.setTextArea("ConfigValue", hoaConfigRec.ConfigValue, "15") + '</td></tr>';
         tr += '</div>';
+        tr += '</form>';
 
         $("#EditTable tbody").html(tr);
         //$("#EditTable2 tbody").html(tr2);
@@ -182,6 +190,15 @@ var config = (function(){
         tr += '<a data-ConfigAction="Delete" href="#" class="btn btn-primary SaveConfigEdit" role="button">Delete</a>';
         tr += '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button></form>';
         $("#EditPageButton").html(tr);
+
+        /*
+        return '<input id="' + idName + '" type="text" class="form-control input-sm resetval" value="' + textVal + '" size="' + textSize + '" maxlength="' + textSize + '">';
+
+        <form class="form-horizontal" action="">
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="Headliner">Headliner</label>
+                <div class="col-sm-10"><input type="text" class="form-control resetval" name="Headliner" id="Headliner" placeholder="Headliner"></div>
+        */
 
     } // End of function formatConfigEdit(hoaConfigRec){
 

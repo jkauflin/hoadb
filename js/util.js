@@ -167,6 +167,19 @@ var util = (function(){
         return outOpt;
     }
 
+    function getJSONfromInputs(FormInputs) {
+        var InputArray = FormInputs.serializeArray();
+        var jsonStr = '{';
+        $.each(InputArray, function (index, row) {
+            if (index > 0) {
+                jsonStr += ',';
+            }
+            jsonStr += '"' + row.name + '" : "' + cleanStr(row.value) + '"';
+        });
+        jsonStr += '}';
+        return jsonStr;
+    }
+
     //=================================================================================================================
     // This is what is exposed from this Module
     return {
@@ -184,7 +197,8 @@ var util = (function(){
         setInputText: setInputText,
         setTextArea: setTextArea,
         setInputDate: setInputDate,
-        setSelectOption: setSelectOption
+        setSelectOption: setSelectOption,
+        getJSONfromInputs: getJSONfromInputs
     };
         
 })(); // var util = (function(){
