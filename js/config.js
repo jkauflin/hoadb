@@ -21,7 +21,6 @@ var config = (function(){
     var tr2 = '';
     var checkedStr = '';
     var buttonStr = '';
-    var FormInputs;
 
     //=================================================================================================================
     // Variables cached from the DOM
@@ -119,22 +118,13 @@ var config = (function(){
         });
     };
 
-    /*
-    */
     function saveConfigEdit(event) {
         util.waitCursor();
-        // ***  Need to change this to a POST (and pass all element as a JSON)
-        FormInputs = $EditTable.find("input,textarea");
-        console.log("util.getJSONfromInputs(FormInputs) = "+util.getJSONfromInputs(FormInputs));
-        // *** add the action somehow to the JSON structure???
-        
-        //event.target.getAttribute("data-ConfigAction")
-
-        /*
-        $.ajax("updHoaConfig.php", {
+        //console.log("util.getJSONfromInputs($EditTable) = "+util.getJSONfromInputs($EditTable));
+        $.ajax("updHoaConfig.php?action=", {
             type: "POST",
             contentType: "application/json",
-            data: util.getJSONfromInputs(Inputs),
+            data: util.getJSONfromInputs($EditTable, event.target.getAttribute("data-ConfigAction")),
             dataType: "json",
             success: function (list) {
                 util.defaultCursor();
@@ -147,40 +137,24 @@ var config = (function(){
                 //$('#notification-bar').text('An error occurred');
             }
         });
-        */
-
-        /*
-        $.get("updHoaConfig.php", "ConfigName=" + util.cleanStr($("#ConfigName").val()) +
-            "&ConfigDesc=" + util.cleanStr($("#ConfigDesc").val()) +
-            "&ConfigValue=" + util.cleanStr($("#ConfigValue").val()) +
-            "&ConfigAction=" + event.target.getAttribute("data-ConfigAction"), function (results) {
-
-                $.getJSON("getHoaConfigList.php", function (hoaConfigRecList) {
-                    util.defaultCursor();
-                    displayConfigList(hoaConfigRecList);
-                    $EditPage.modal("hide");
-                    $displayPage.tab('show');
-                });
-
-        }); // End of 
-        */
     };
 
     function formatConfigEdit(hoaConfigRec) {
+
+//        hoaConfigRec    UNDEFINED
+
         $(".editValidationError").empty();
 
         $("#EditPageHeader").text("Edit Configuration");
 
-        //console.log("hoaConfigRec.ConfigName = "+hoaConfigRec.ConfigName);
-
-        tr = '<form class="form-horizontal" action="">';
-        tr += '';
+        tr = '';
+//        tr += '<form class="form-horizontal" action="">';
         tr += '<div class="form-group">';
         tr += '<tr><th>Name:</th><td>' + util.setInputText("ConfigName", hoaConfigRec.ConfigName, "80") + '</td></tr>';
         tr += '<tr><th>Description:</th><td>' + util.setInputText("ConfigDesc", hoaConfigRec.ConfigDesc, "100") + '</td></tr>';
         tr += '<tr><th>Value:</th><td>' + util.setTextArea("ConfigValue", hoaConfigRec.ConfigValue, "15") + '</td></tr>';
         tr += '</div>';
-        tr += '</form>';
+//        tr += '</form>';
 
         $("#EditTable tbody").html(tr);
         //$("#EditTable2 tbody").html(tr2);

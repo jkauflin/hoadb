@@ -148,8 +148,25 @@ var util = (function(){
         }
         return '<input id="' + idName + '" type="checkbox" ' + checkedStr + '>';
     }
+   
+    function getJSONfromInputs(InputsDiv,action) {
+        // Get all the input objects within the DIV
+        var FormInputs = InputsDiv.find("input,textarea,select");
+        // Loop through the objects and construct the JSON string
+        var jsonStr = '{"action" : "'+action+'"';
+        $.each(FormInputs, function (index) {
+            //console.log(index + ": id = " + $(this).attr('id') + ", val = " + $(this).val());
+            //if (index > 0) {
+            //    jsonStr += ',';
+            //}
+            jsonStr += ',"' + $(this).attr('id') + '" : "' + $(this).val() + '"';
+        });
+        jsonStr += '}';
+        return jsonStr;
+    }
+
     function setInputText(idName, textVal, textSize) {
-        return '<input id="' + idName + '" type="text" class="form-control input-sm resetval" value="' + textVal + '" size="' + textSize + '" maxlength="' + textSize + '">';
+        return '<input id="' + idName + '" name="' + idName + '" type="text" class="form-control input-sm resetval" value="' + textVal + '" size="' + textSize + '" maxlength="' + textSize + '">';
     }
     function setTextArea(idName, textVal, rows) {
         return '<textarea id="' + idName + '" class="form-control input-sm" rows="' + rows + '">' + textVal + '</textarea>';
@@ -167,18 +184,6 @@ var util = (function(){
         return outOpt;
     }
 
-    function getJSONfromInputs(FormInputs) {
-        var InputArray = FormInputs.serializeArray();
-        var jsonStr = '{';
-        $.each(InputArray, function (index, row) {
-            if (index > 0) {
-                jsonStr += ',';
-            }
-            jsonStr += '"' + row.name + '" : "' + cleanStr(row.value) + '"';
-        });
-        jsonStr += '}';
-        return jsonStr;
-    }
 
     //=================================================================================================================
     // This is what is exposed from this Module
