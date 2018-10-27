@@ -8,9 +8,9 @@
  * 2015-03-06 JJK 	Initial version to get data 
  *============================================================================*/
 
-include 'commonUtil.php';
-// Include table record classes and db connection parameters
-include 'hoaDbCommon.php';
+	include 'commonUtil.php';
+	// Include table record classes and db connection parameters
+	include 'hoaDbCommon.php';
 
 	// If they are set, get input parameters from the REQUEST
 	$parcelId = getParamVal("parcelId");
@@ -24,9 +24,6 @@ include 'hoaDbCommon.php';
 	$conn = getConn();
 	$hoaRec = getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate);
 	$hoaRec->adminLevel = getAdminLevel();
-	
 	$conn->close();
-	
 	echo json_encode($hoaRec);
-
 ?>

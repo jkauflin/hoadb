@@ -8,7 +8,8 @@
  * 2015-03-09 JJK 	Initial version to get properties list
  * 2015-10-20 JJK	Improved the search by adding wildCardStrFromTokens
  * 					function to build wildcard parameter string from tokens
- * 2017-02-26 JJK	Added a general search to look through all columns 
+ * 2017-02-26 JJK	Added a general search to look through all columns
+ * 					(someday switch to MySQL full text search for these fields)
  *============================================================================*/
 
 include 'commonUtil.php';
@@ -136,5 +137,4 @@ include 'hoaDbCommon.php';
 	}
 	
 	echo json_encode($outputArray);
-
 ?>

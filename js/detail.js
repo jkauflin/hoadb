@@ -14,15 +14,12 @@ var detail = (function(){
     var $moduleDiv = $('#DetailPage');
     // Figure out a better way to do this
     var $displayPage = $document.find('#navbar a[href="#DetailPage"]');
-
     var $propertyDetail = $moduleDiv.find("#PropertyDetail");
     var $propertyOwners = $moduleDiv.find("#PropertyOwners");
     var $propertyAssessments = $moduleDiv.find("#PropertyAssessments");
-
     var $propDetail = $propertyDetail.find('tbody');
     var $propOwners = $propertyOwners.find('tbody');
     var $propAssessments = $propertyAssessments.find('tbody');
-
     var $MCTreasLink = $("#MCTreasLink");
     var $MCAuditorLink = $("#MCAuditorLink");
     var $DuesStatement = $("#DuesStatement");
@@ -35,6 +32,42 @@ var detail = (function(){
     //$button.on('click', addPerson);
     //$ul.delegate('i.del', 'click', deletePerson);              
     $document.on("click", "#PropertyListDisplay tr td a", getHoaRec);
+
+
+    // Response to Detail link clicks
+    // *** 8/3/2015 fix so it only reacts to the clicks on the property one
+    $(document).on("click", "#PropertyDetail tr td a", function () {
+        waitCursor();
+        var $this = $(this);
+        $.getJSON("getHoaDbData.php", "parcelId=" + $this.attr("data-ParcelId"), function (hoaRec) {
+            formatPropertyDetailEdit(hoaRec);
+            $('*').css('cursor', 'default');
+            $("#EditPage").modal();
+        });
+    });
+
+    $(document).on("click", "#PropertyOwners tr td a", function () {
+        waitCursor();
+        var $this = $(this);
+        $.getJSON("getHoaDbData.php", "parcelId=" + $this.attr("data-ParcelId") + "&ownerId=" + $this.attr("data-OwnerId"), function (hoaRec) {
+            createNew = false;
+            formatOwnerDetailEdit(hoaRec, createNew);
+            $('*').css('cursor', 'default');
+            $("#EditPage2Col").modal();
+        });
+    });
+
+    $(document).on("click", "#DuesStatementButton", function () {
+        waitCursor();
+        var $this = $(this);
+        $.getJSON("getHoaDbData.php", "parcelId=" + $this.attr("data-ParcelId") + "&ownerId=" + $this.attr("data-OwnerId"), function (hoaRec) {
+            //console.log("Format Dues Statement, parcel = "+$this.attr("data-ParcelId")+", OwnerId = "+hoaRec.ownersList[0].OwnerID);
+            formatDuesStatementResults(hoaRec);
+            $('*').css('cursor', 'default');
+            $("#DuesStatementPage").modal();
+        });
+    });
+
 
     //=================================================================================================================
     // Module methods
