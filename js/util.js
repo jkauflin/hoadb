@@ -84,6 +84,8 @@
  * 2018-01-21 JJK	Corrected set of default firstNotice to false (so 2nd
  * 					notices would correctly use the alternate notes)
  * 2018-10-14 JJK   Corrected email send
+ * 2018-10-27 JJK   Modified getJSONfromInputs to just loop through the DIV
+ *                  looking for input fields, and added an action parameter
  *============================================================================*/
  var util = (function(){
     'use strict';
