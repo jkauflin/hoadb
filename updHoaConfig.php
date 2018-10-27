@@ -8,17 +8,16 @@
  * 2015-03-06 JJK 	Initial version to get data 
  * 2015-10-01 JJK	Added insert new owner logic
  *============================================================================*/
+	include 'commonUtil.php';
+	// Include table record classes and db connection parameters
+	include 'hoaDbCommon.php';
 
-include 'commonUtil.php';
-// Include table record classes and db connection parameters
-include 'hoaDbCommon.php';
+	header("Content-Type: application/json; charset=UTF-8");
+	# Get JSON as a string
+	$json_str = file_get_contents('php://input');
 
-header("Content-Type: application/json; charset=UTF-8");
-# Get JSON as a string
-$json_str = file_get_contents('php://input');
-
-# Get as an object
-$param = json_decode($json_str);
+	# Decode the string to get a JSON object
+	$param = json_decode($json_str);
 
 	//error_log(date('[Y-m-d H:i] '). "updHoaConfig, action = " . $param->action . PHP_EOL, 3, "hoadb.log");
 	//error_log(date('[Y-m-d H:i] '). "updHoaConfig, ConfigName = " . $param->ConfigName . PHP_EOL, 3, "hoadb.log");

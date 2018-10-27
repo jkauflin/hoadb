@@ -33,6 +33,7 @@
  * 2017-08-16 JJK   Added $DuesEmailAddr for payment email address.
  *                  If there is an email from the last electronic payment, for the current Owner, 
  *					only use it if they are not going paperless or the paperless email is blank
+ * 2018-10-27 JJK   Modified the error_log to write to hoadb.log
  *============================================================================*/
 
 function getConn() {
@@ -48,7 +49,7 @@ function getConn() {
 	$conn = new mysqli($host, $dbadmin, $password, $dbname);
 	// Check connection
 	if ($conn->connect_error) {
-		error_log("Connection failed: " . $conn->connect_error);
+		error_log(date('[Y-m-d H:i] '). "Connection failed: " . $conn->connect_error . PHP_EOL, 3, "hoadb.log");
 		die("Connection failed: " . $conn->connect_error);
 	}
 	return $conn;
