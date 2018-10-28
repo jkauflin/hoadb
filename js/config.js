@@ -17,8 +17,6 @@ var config = (function(){
     // Private variables for the Module
     var hoaConfigRecList;
     var configVal = new Map();
-    var tr = '';
-    var configName = '';
 
     //=================================================================================================================
     // Variables cached from the DOM
@@ -73,7 +71,7 @@ var config = (function(){
 
     _render();
     function _render() {
-        tr = '';
+        var tr = '';
         // Clear out the Map before loading with data
         configVal.clear();
         $.each(hoaConfigRecList, function (index, hoaConfigRec) {
@@ -105,7 +103,7 @@ var config = (function(){
 
     function editConfig(value) {
         // If a string was passed in then use value as the name, else get it from the attribute of the click event object
-        configName = (typeof value === "string") ? value : value.target.getAttribute("data-ConfigName");
+        var configName = (typeof value === "string") ? value : value.target.getAttribute("data-ConfigName");
         util.waitCursor();
         $.getJSON("getHoaConfigList.php", "ConfigName=" + configName, function (hoaConfigRec) {
             formatConfigEdit(hoaConfigRec[0]);
@@ -119,6 +117,7 @@ var config = (function(){
         $editValidationError.empty();
         $EditPageHeader.text("Edit Configuration");
 
+        var tr = '';
         tr = '<div class="form-group">';
         if (hoaConfigRec === undefined) {
             tr += '<tr><th>Name:</th><td>' + util.setInputText("ConfigName", "", "80") + '</td></tr>';
