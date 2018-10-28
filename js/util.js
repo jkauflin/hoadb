@@ -86,6 +86,7 @@
  * 2018-10-14 JJK   Corrected email send
  * 2018-10-27 JJK   Modified getJSONfromInputs to just loop through the DIV
  *                  looking for input fields, and added an action parameter
+ * 2018-10-28 JJK   Went back to declaring variables in the functions
  *============================================================================*/
  var util = (function(){
     'use strict';
@@ -220,59 +221,68 @@
 
     // Helper functions for setting UI components from data
     function setBoolText(inBool) {
-        var outBoolStr = "NO";
+        var tempStr = "NO";
         if (inBool) {
-            outBoolStr = "YES";
+            tempStr = "YES";
         }
-        return outBoolStr;
+        return tempStr;
     }
     function setCheckbox(checkVal) {
-        var checkedStr = '';
+        var tempStr = '';
         if (checkVal == 1) {
-            checkedStr = 'checked=true';
+            tempStr = 'checked=true';
         }
-        return '<input type="checkbox" ' + checkedStr + ' disabled="disabled">';
+        return '<input type="checkbox" ' + tempStr + ' disabled="disabled">';
     }
-    function setCheckboxEdit(checkVal, idName) {
-        var checkedStr = '';
+    //function setCheckboxEdit(checkVal, idName) {
+    function setCheckboxEdit(idName, checkVal) {
+        var tempStr = '';
         if (checkVal == 1) {
-            checkedStr = 'checked=true';
+            tempStr = 'checked=true';
         }
-        return '<input id="' + idName + '" type="checkbox" ' + checkedStr + '>';
+        return '<input id="' + idName + '" type="checkbox" ' + tempStr + '>';
     }
-   
-    function getJSONfromInputs(InputsDiv,action) {
-        // Get all the input objects within the DIV
-        var FormInputs = InputsDiv.find("input,textarea,select");
-        // Loop through the objects and construct the JSON string
-        var jsonStr = '{"action" : "'+action+'"';
-        $.each(FormInputs, function (index) {
-            jsonStr += ',"' + $(this).attr('id') + '" : "' + $(this).val() + '"';
-        });
-        jsonStr += '}';
-        return jsonStr;
-    }
-
     function setInputText(idName, textVal, textSize) {
         return '<input id="' + idName + '" name="' + idName + '" type="text" class="form-control input-sm resetval" value="' + textVal + '" size="' + textSize + '" maxlength="' + textSize + '">';
     }
     function setTextArea(idName, textVal, rows) {
         return '<textarea id="' + idName + '" class="form-control input-sm" rows="' + rows + '">' + textVal + '</textarea>';
     }
-
     function setInputDate(idName, textVal, textSize) {
         return '<input id="' + idName + '" type="text" class="form-control input-sm Date" value="' + textVal + '" size="' + textSize + '" maxlength="' + textSize + '" placeholder="YYYY-MM-DD">';
     }
     function setSelectOption(optVal, displayVal, selected, bg) {
-        var outOpt = '';
+        var tempStr = '';
         if (selected) {
-            outOpt = '<option class="' + bg + '" value="' + optVal + '" selected>' + displayVal + '</option>';
+            tempStr = '<option class="' + bg + '" value="' + optVal + '" selected>' + displayVal + '</option>';
         } else {
-            outOpt = '<option class="' + bg + '" value="' + optVal + '">' + displayVal + '</option>';
+            tempStr = '<option class="' + bg + '" value="' + optVal + '">' + displayVal + '</option>';
         }
-        return outOpt;
+        return tempStr;
     }
 
+    // Function to get all input objects within a DIV, and extra entries from a map
+    // and construct a JSON object with names and values (to pass in POST updates)
+    function getJSONfromInputs(InputsDiv, paramMap) {
+        // Get all the input objects within the DIV
+        var FormInputs = InputsDiv.find("input,textarea,select");
+        
+        // Loop through the objects and construct the JSON string
+        var jsonStr = '{';
+        $.each(FormInputs, function (index) {
+            if (index > 0) {
+                jsonStr += ',';
+            }
+            jsonStr += '"' + $(this).attr('id') + '" : "' + cleanStr($(this).val()) + '"';
+        });
+
+        paramMap.forEach(function (value, key) {
+            jsonStr += ',"' + key + '" : "' + value + '"';
+        });
+
+        jsonStr += '}';
+        return jsonStr;
+    }
 
     //=================================================================================================================
     // This is what is exposed from this Module
