@@ -2,6 +2,7 @@
  * (C) Copyright 2015,2016,2017,2018 John J Kauflin, All rights reserved. 
  *----------------------------------------------------------------------------
  * DESCRIPTION: 
+ * alias "/hoadb" "D:\Projects\hoadb"
  *----------------------------------------------------------------------------
  * Modification History
  * 2015-03-06 JJK 	Initial version 
@@ -87,6 +88,8 @@
  * 2018-10-27 JJK   Modified getJSONfromInputs to just loop through the DIV
  *                  looking for input fields, and added an action parameter
  * 2018-10-28 JJK   Went back to declaring variables in the functions
+ * 2018-11-01 JJK   Modified getJSONfromInputs to only include elements with
+ *                  an Id and check for checkbox "checked"
  *============================================================================*/
  var util = (function(){
     'use strict';
@@ -268,12 +271,30 @@
         var FormInputs = InputsDiv.find("input,textarea,select");
         
         // Loop through the objects and construct the JSON string
+        var first = true;
         var jsonStr = '{';
         $.each(FormInputs, function (index) {
-            if (index > 0) {
-                jsonStr += ',';
+            //id = useEmailCheckbox, type = checkbox
+            //id = propertyComments, type = text
+            // Only include elements that have an "id" in the JSON string
+            if (typeof $(this).attr('id') !== 'undefined') {
+                if (first) {
+                    first = false;
+                } else {
+                    jsonStr += ',';
+                }
+                //console.log("id = " + $(this).attr('id') + ", type = " + $(this).attr("type"));
+                if ($(this).attr("type") == "checkbox") {
+                    //console.log("id = " + $(this).attr('id') + ", $(this).prop('checked') = " + $(this).prop('checked'));
+                    if ($(this).prop('checked')) {
+                        jsonStr += '"' + $(this).attr('id') + '" : 1';
+                    } else {
+                        jsonStr += '"' + $(this).attr('id') + '" : 0';
+                    }
+                } else {
+                    jsonStr += '"' + $(this).attr('id') + '" : "' + cleanStr($(this).val()) + '"';
+                }
             }
-            jsonStr += '"' + $(this).attr('id') + '" : "' + cleanStr($(this).val()) + '"';
         });
 
         paramMap.forEach(function (value, key) {
