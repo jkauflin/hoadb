@@ -2,7 +2,6 @@
  * (C) Copyright 2015,2016,2017,2018 John J Kauflin, All rights reserved. 
  *----------------------------------------------------------------------------
  * DESCRIPTION: 
- * alias "/hoadb" "D:\Projects\hoadb"
  *----------------------------------------------------------------------------
  * Modification History
  * 2015-03-06 JJK 	Initial version 
