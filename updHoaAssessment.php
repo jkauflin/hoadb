@@ -1,6 +1,6 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2015,2016 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2018 John J Kauflin, All rights reserved. 
  *----------------------------------------------------------------------------
  * DESCRIPTION: 
  *----------------------------------------------------------------------------
@@ -10,61 +10,66 @@
  * 2016-07-08 JJK   Added logic to set current date on paid and lien if not 
  * 					specified
  * 2016-09-02 JJK   Added NonCollectible field 
+ * 2018-11-04 JJK	Re-factored to use POST and return JSON data of
+ *                  re-queried record
  *============================================================================*/
+	include 'commonUtil.php';
+	// Include table record classes and db connection parameters
+	include 'hoaDbCommon.php';
 
-include 'commonUtil.php';
-// Include table record classes and db connection parameters
-include 'hoaDbCommon.php';
-
-	$currDateStr = date("Y-m-d");
 	$username = getUsername();
 
-	// If they are set, get input parameters from the REQUEST
-	$parcelId = getParamVal("parcelId");
-	$fy = getParamVal("fy");
-	
-	$ownerId = getParamVal("ownerId");
-	$duesAmount = getParamVal("duesAmount");
-	$dateDue = getParamVal("dateDue");
-	$paidBoolean = paramBoolVal("paidBoolean");
-	$nonCollectibleBoolean = paramBoolVal("nonCollectibleBoolean");
-	$datePaid = getParamVal("datePaid");
-	$paymentMethod = getParamVal("paymentMethod");
-	$assessmentsComments = getParamVal("assessmentsComments");
+	header("Content-Type: application/json; charset=UTF-8");
+	# Get JSON as a string
+	$json_str = file_get_contents('php://input');
 
-	$lienBoolean = paramBoolVal("lienBoolean");
-	$lienRefNo = getParamVal("lienRefNo");
-	$dateFiled = getParamVal("dateFiled");
-	$disposition = getParamVal("disposition");
-	$filingFee = getParamVal("filingFee");
-	$releaseFee = getParamVal("releaseFee");
-	$dateReleased = getParamVal("dateReleased");
-	$lienDatePaid = getParamVal("lienDatePaid");
-	$amountPaid = getParamVal("amountPaid");
-	$stopInterestCalcBoolean = paramBoolVal("stopInterestCalcBoolean");
-	$filingFeeInterest = getParamVal("filingFeeInterest");
-	$assessmentInterest = getParamVal("assessmentInterest");
+	# Decode the string to get a JSON object
+	$param = json_decode($json_str);
+
+	/*
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, parcelId = " . $param->parcelId . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, ownerId = " . $param->ownerId . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, fy = " . $param->fy . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, duesAmount = " . $param->duesAmount . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, dateDue = " . $param->dateDue . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, paidCheckbox = " . $param->paidCheckbox . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, nonCollectibleCheckbox = " . $param->nonCollectibleCheckbox . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, datePaid = " . $param->datePaid . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, paymentMethod = " . $param->paymentMethod . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, assessmentsComments = " . $param->assessmentsComments . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, lienCheckbox = " . $param->lienCheckbox . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, lienRefNo = " . $param->lienRefNo . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, dateFiled = " . $param->dateFiled . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, disposition = " . $param->disposition . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, filingFee = " . $param->filingFee . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, releaseFee = " . $param->releaseFee . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, dateReleased = " . $param->dateReleased . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, lienDatePaid = " . $param->lienDatePaid . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, amountPaid = " . $param->amountPaid . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, stopInterestCalcCheckbox = " . $param->stopInterestCalcCheckbox . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, filingFeeInterest = " . $param->filingFeeInterest . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, assessmentInterest = " . $param->assessmentInterest . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, interestNotPaidCheckbox = " . $param->interestNotPaidCheckbox . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, bankFee = " . $param->bankFee . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, lienComment = " . $param->lienComment . PHP_EOL, 3, "hoadb.log");
+	*/
 	
-	$interestNotPaid = paramBoolVal("interestNotPaidBoolean");
-	$bankFee = getParamVal("bankFee");;
-	
-	$lienComment = getParamVal("lienComment");
-	
-	if ($lienBoolean && $disposition == '') {
-		$disposition = 'Open';
+	$currDateStr = date("Y-m-d");
+
+	if ($param->lienCheckbox && $param->disposition == '') {
+		$param->disposition = 'Open';
 	}
 	
 	// if paid and Date Paid not set - set it to current date?
-	if ($paidBoolean && $datePaid == '') {
-		$datePaid = $currDateStr;
+	if ($param->paidCheckbox && $param->datePaid == '') {
+		$param->datePaid = $currDateStr;
 	}
 	
 	// if lien and Date Filed not set - set to current date?
-	if ($lienBoolean && $dateFiled == '') {
-		$dateFiled = $currDateStr;
+	if ($param->lienCheckbox && $param->dateFiled == '') {
+		$param->dateFiled = $currDateStr;
 	}
 
-	
 	//--------------------------------------------------------------------------------------------------------
 	// Create connection to the database
 	//--------------------------------------------------------------------------------------------------------
@@ -77,10 +82,10 @@ include 'hoaDbCommon.php';
 		error_log("Prepare failed: " . $stmt->errno . ", Error = " . $stmt->error);
 		echo "Prepare failed: (" . $stmt->errno . ") " . $stmt->error;
 	}
-	if (!$stmt->bind_param("issiississssssssississssss", $ownerId,$duesAmount,$dateDue,$paidBoolean,$nonCollectibleBoolean,$datePaid,$paymentMethod,
-						$lienBoolean,$lienRefNo,$dateFiled,$disposition,$filingFee,$releaseFee,$dateReleased,$lienDatePaid,$amountPaid,
-						$stopInterestCalcBoolean,$filingFeeInterest,$assessmentInterest,$interestNotPaid,$bankFee,$lienComment,
-						$assessmentsComments,$username,$parcelId,$fy)) {
+	if (!$stmt->bind_param("issiississssssssississssss", $param->ownerId,$param->duesAmount,$param->dateDue,$param->paidCheckbox,$param->nonCollectibleCheckbox,$param->datePaid,$param->paymentMethod,
+						$param->lienCheckbox,$param->lienRefNo,$param->dateFiled,$param->disposition,$param->filingFee,$param->releaseFee,$param->dateReleased,$param->lienDatePaid,$param->amountPaid,
+						$param->stopInterestCalcCheckbox,$param->filingFeeInterest,$param->assessmentInterest,$param->interestNotPaidCheckbox,$param->bankFee,$param->lienComment,
+						$param->assessmentsComments,$username,$param->parcelId,$param->fy)) {
 		error_log("Bind failed: " . $stmt->errno . ", Error = " . $stmt->error);
 		echo "Bind failed: (" . $stmt->errno . ") " . $stmt->error;
 	}
@@ -91,8 +96,10 @@ include 'hoaDbCommon.php';
 	}
 	
 	$stmt->close();
-	$conn->close();
-
-	echo 'Update Successful, parcelId = ' . $parcelId;
 	
+	// Re-query the record from the database and return as a JSON structure
+	$hoaRec = getHoaRec($conn,$param->parcelId,"","","");
+	$hoaRec->adminLevel = getAdminLevel();
+	$conn->close();
+	echo json_encode($hoaRec);
 ?>

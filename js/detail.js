@@ -18,7 +18,9 @@
  * 2018-10-21 JJK   Re-factor for modules
  * 2018-10-28 JJK   Went back to declaring variables in the functions
  * 2018-11-03 JJK   Got update Properties working again with JSON POST
- * 2018-11-04 JJK   Got update Owner working again with JSON POST
+ * 2018-11-04 JJK   (Jackson's 16th birthday)
+ *                  Got update Owner working again with JSON POST
+ *                  Got update Assessment working again with JSON POST
  *============================================================================*/
 var detail = (function(){
     'use strict';
@@ -413,10 +415,7 @@ var detail = (function(){
     } // End of function _formatOwnerDetailEdit(editHoaRec){
 
     function _saveOwnerEdit(event) {
-        //var $currentOwnerBoolean = $("#CurrentOwnerCheckbox").is(":checked");
-        //var $alternateMailingBoolean = $("#AlternateMailingCheckbox").is(":checked");
-
-        /*
+        /* *** implement validator.js to validate form fields ***
         var tempEmailAddr = cleanStr($("#EmailAddr").val());
         if (tempEmailAddr.length > 0 && !validEmailAddr.test(tempEmailAddr)) {
             console.log('email address is NOT VALID');
@@ -450,37 +449,7 @@ var detail = (function(){
             }
         });
 
-        /*
-        $.get("updHoaOwner.php", "parcelId=" + $parcelId +
-            "&ownerId=" + $ownerId +
-            //"&currentOwnerBoolean="+$currentOwnerBoolean+
-            "&ownerName1=" + cleanStr($("#OwnerName1").val()) +
-            "&ownerName2=" + cleanStr($("#OwnerName2").val()) +
-            "&datePurchased=" + cleanStr($("#DatePurchased").val()) +
-            "&mailingName=" + cleanStr($("#MailingName").val()) +
-            "&alternateMailingBoolean=" + $alternateMailingBoolean +
-            "&addrLine1=" + cleanStr($("#AddrLine1").val()) +
-            "&addrLine2=" + cleanStr($("#AddrLine2").val()) +
-            "&altCity=" + cleanStr($("#AltCity").val()) +
-            "&altState=" + cleanStr($("#AltState").val()) +
-            "&altZip=" + cleanStr($("#AltZip").val()) +
-            "&ownerPhone=" + cleanStr($("#OwnerPhone").val()) +
-            "&emailAddr=" + cleanStr($("#EmailAddr").val()) +
-            "&ownerComments=" + cleanStr($("#OwnerComments").val()), function (results) {
-
-                // Re-read the updated data for the Detail page display
-                $.getJSON("getHoaDbData.php", "parcelId=" + $parcelId, function (hoaRec) {
-                    formatPropertyDetailResults(hoaRec);
-                    $('*').css('cursor', 'default');
-                    $("#EditPage2Col").modal("hide");
-                    $('#navbar a[href="#DetailPage"]').tab('show');
-                });
-            }); // End of $.get("updHoaDbData.php","parcelId="+$parcelId+
-        */
-
     };	// End of $(document).on("click","#SaveOwnerEdit",function(){
-
-
 
     function _editAssessment(event) {
         util.waitCursor();
@@ -493,9 +462,6 @@ var detail = (function(){
 
     function _formatAssessmentDetailEdit(editHoaRec) {
         var tr = '';
-        var checkedStr = '';
-        var buttonStr = '';
-        //var ownerId = '';
         var fy = '';
 
         // Clear the field where we report validation errors
@@ -503,26 +469,22 @@ var detail = (function(){
         // Action or type of update
         $EditPage2ColHeader.text("Edit Assessment");
 
-
-        //console.log("editHoaRec.ownersList.length = "+editHoaRec.ownersList.length);
         var rec = editHoaRec.assessmentsList[0];
 
         fy = rec.FY;
-        tr = '';
         tr += '<div class="form-group">';
         tr += '<tr><th>Fiscal Year: </th><td>' + rec.FY + '</td></tr>';
         tr += '<tr><th>Parcel Id: </th><td>' + rec.Parcel_ID + '</td></tr>';
 
-        var ownerSelect = '<select class="form-control" id="OwnerID">'
+        var ownerSelect = '<select class="form-control" id="ownerId">'
         $.each(editHoaRec.ownersList, function (index, rec) {
-            ownerSelect += setSelectOption(rec.OwnerID, rec.OwnerID + " - " + rec.Owner_Name1 + " " + rec.Owner_Name2, (index == 0), "");
+            ownerSelect += util.setSelectOption(rec.OwnerID, rec.OwnerID + " - " + rec.Owner_Name1 + " " + rec.Owner_Name2, (index == 0), "");
         });
         ownerSelect += '</select>';
         tr += '<tr><th>Owner: </th><td>' + ownerSelect + '</td></tr>';
-        //tr += '<tr><th>Owner Id: </th><td>'+rec.OwnerID+'</td></tr>';
 
         var tempDuesAmt = '' + rec.DuesAmt;
-        tr += '<tr><th>Dues Amount: </th><td>' + util.setInputText("duesAmount", stringToMoney(tempDuesAmt), "10") + '</td></tr>';
+        tr += '<tr><th>Dues Amount: </th><td>' + util.setInputText("duesAmount", util.formatMoney(tempDuesAmt), "10") + '</td></tr>';
 
         tr += '<tr><th>Date Due: </th><td>' + util.setInputDate("dateDue", rec.DateDue, "10") + '</td></tr>';
         tr += '<tr><th>Paid: </th><td>' + util.setCheckboxEdit('paidCheckbox', rec.Paid) + '</td></tr>';
@@ -541,7 +503,7 @@ var detail = (function(){
         tr += '<tr><th>LienRefNo: </th><td>' + util.setInputText("lienRefNo", rec.LienRefNo, "15") + '</td></tr>';
         tr += '<tr><th>DateFiled: </th><td>' + util.setInputDate("dateFiled", rec.DateFiled, "10") + '</td></tr>';
 
-        var selectOption = '<select class="form-control" id="Disposition">'
+        var selectOption = '<select class="form-control" id="disposition">'
             + util.setSelectOption("", "", ("" == rec.Disposition), "")
             + util.setSelectOption("Open", "Open", ("Open" == rec.Disposition), "bg-danger")
             + util.setSelectOption("Paid", "Paid", ("Paid" == rec.Disposition), "bg-success")
@@ -549,7 +511,6 @@ var detail = (function(){
             + util.setSelectOption("Closed", "Closed", ("Closed" == rec.Disposition), "bg-warning")
             + '</select>';
         tr += '<tr><th>Disposition: </th><td>' + selectOption + '</td></tr>';
-        //tr += '<tr><th>Disposition: </th><td>'+setInputText("Disposition",rec.Disposition,"10")+'</td></tr>';
 
         tr += '<tr><th>FilingFee: </th><td>' + util.setInputText("filingFee", rec.FilingFee, "10") + '</td></tr>';
         tr += '<tr><th>ReleaseFee: </th><td>' + util.setInputText("releaseFee", rec.ReleaseFee, "10") + '</td></tr>';
@@ -585,15 +546,14 @@ var detail = (function(){
         util.waitCursor();
         var paramMap = new Map();
         paramMap.set('parcelId', event.target.getAttribute("data-parcelId"));
-        //paramMap.set('ownerId', event.target.getAttribute("data-ownerId"));
         paramMap.set('fy', event.target.getAttribute("data-fy"));
 
-        console.log("util.getJSONfromInputs($EditTable,paramMap) = " + util.getJSONfromInputs($EditTable, paramMap));
+        //console.log("util.getJSONfromInputs($EditPage2Col,paramMap) = " + util.getJSONfromInputs($EditPage2Col, paramMap));
 
         $.ajax("updHoaAssessment.php", {
             type: "POST",
             contentType: "application/json",
-            data: util.getJSONfromInputs($EditTable, paramMap),
+            data: util.getJSONfromInputs($EditPage2Col, paramMap),
             dataType: "json",
             success: function (outHoaRec) {
                 util.defaultCursor();
@@ -601,64 +561,13 @@ var detail = (function(){
                 hoaRec = outHoaRec;
                 _render();
                 $EditPage2Col.modal("hide");
-                // Shouldn't have to do this
-                //$displayPage.tab('show');
             },
             error: function () {
                 $editValidationError.html("An error occurred in the update - see log");
             }
         });
 
-        /*
-        waitCursor();
-        var $this = $(this);
-        var $parcelId = $this.attr("data-parcelId");
-        //var $ownerId = $this.attr("data-ownerId");
-        var $fy = $this.attr("data-fy");
-        var $paidBoolean = $("#PaidCheckbox").is(":checked");
-        var $nonCollectibleBoolean = $("#NonCollectibleCheckbox").is(":checked");
-        var $lienBoolean = $("#LienCheckbox").is(":checked");
-        var $stopInterestCalcBoolean = $("#StopInterestCalcCheckbox").is(":checked");
-        var $interestNotPaidBoolean = $("#InterestNotPaidCheckbox").is(":checked");
-
-        $.get("updHoaAssessment.php", "parcelId=" + $parcelId +
-            "&fy=" + $fy +
-            "&ownerId=" + cleanStr($("#OwnerID").val()) +
-            "&duesAmount=" + cleanStr($("#DuesAmount").val()) +
-            "&dateDue=" + cleanStr($("#DateDue").val()) +
-            "&paidBoolean=" + $paidBoolean +
-            "&nonCollectibleBoolean=" + $nonCollectibleBoolean +
-            "&datePaid=" + cleanStr($("#DatePaid").val()) +
-            "&paymentMethod=" + cleanStr($("#PaymentMethod").val()) +
-            "&assessmentsComments=" + cleanStr($("#AssessmentsComments").val()) +
-            "&lienBoolean=" + $lienBoolean +
-            "&lienRefNo=" + cleanStr($("#LienRefNo").val()) +
-            "&dateFiled=" + cleanStr($("#DateFiled").val()) +
-            "&disposition=" + cleanStr($("#Disposition").val()) +
-            "&filingFee=" + cleanStr($("#FilingFee").val()) +
-            "&releaseFee=" + cleanStr($("#ReleaseFee").val()) +
-            "&dateReleased=" + cleanStr($("#DateReleased").val()) +
-            "&lienDatePaid=" + cleanStr($("#LienDatePaid").val()) +
-            "&amountPaid=" + cleanStr($("#AmountPaid").val()) +
-            "&stopInterestCalcBoolean=" + $stopInterestCalcBoolean +
-            "&filingFeeInterest=" + cleanStr($("#FilingFeeInterest").val()) +
-            "&assessmentInterest=" + cleanStr($("#AssessmentInterest").val()) +
-            "&interestNotPaidBoolean=" + $interestNotPaidBoolean +
-            "&bankFee=" + cleanStr($("#BankFee").val()) +
-            "&lienComment=" + cleanStr($("#LienComment").val()), function (results) {
-
-                // Re-read the updated data for the Detail page display
-                $.getJSON("getHoaDbData.php", "parcelId=" + $parcelId, function (hoaRec) {
-                    formatPropertyDetailResults(hoaRec);
-                    $('*').css('cursor', 'default');
-                    $("#EditPage2Col").modal("hide");
-                    $('#navbar a[href="#DetailPage"]').tab('show');
-                });
-            }); // End of $.get("updHoaDbData.php","parcelId="+$parcelId+
-        */
-
     };	// End of $(document).on("click","#SaveAssessmentEdit",function(){
-
 
     //=================================================================================================================
     // This is what is exposed from this Module
