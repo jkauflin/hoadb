@@ -22,15 +22,6 @@ var hoaRecList = [];
 //==========================================================================================================================
 $(document).ready(function(){
 
-    
-
-	
-
-
-
-
-
-	
     // Report requests
 	$(document).on("click",".reportRequest",function(){
         waitCursor();
