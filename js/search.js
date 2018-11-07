@@ -18,7 +18,6 @@ var search = (function(){
     //=================================================================================================================
     // Private variables for the Module
     var hoaPropertyRecList;
-    var tr = '';
 
     //=================================================================================================================
     // Variables cached from the DOM
@@ -62,7 +61,7 @@ var search = (function(){
 
     //=================================================================================================================
     function _render() {
-        tr = '<tr><td>No records found - try different search parameters</td></tr>';
+        var tr = '<tr><td>No records found - try different search parameters</td></tr>';
         $.each(hoaPropertyRecList, function (index, hoaPropertyRec) {
             if (index == 0) {
                 tr = '';

@@ -35,7 +35,7 @@ var config = (function(){
     // Bind events
     $document.on('shown.bs.tab', 'a[data-toggle="tab"]', getHoaConfigList);
     $moduleDiv.on("click", ".NewConfig", editConfig);
-    $EditPage.on("click", ".SaveConfigEdit", saveConfigEdit);
+    $EditPage.on("click", ".SaveConfigEdit", _saveConfigEdit);
 
     // When the javascript initializes do a one time get of the logo image data (for PDF writes)
     // *** maybe move this to PDF module *** <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -141,7 +141,7 @@ var config = (function(){
 
     } // End of function formatConfigEdit(hoaConfigRec){
 
-    function saveConfigEdit(event) {
+    function _saveConfigEdit(event) {
         util.waitCursor();
         //console.log("in saveConfigEdit, data-ConfigAction = " + event.target.getAttribute("data-ConfigAction"));
         var paramMap = new Map();

@@ -4,37 +4,12 @@
  * DESCRIPTION: 
  *----------------------------------------------------------------------------
  * Modification History
- * 2016-04-09 JJK   Adding Dues Statement calculation display logic
- * 2016-04-14 JJK   Adding Dues Report (working on csv and pdf downloads)
- * 2016-04-20 JJK   Completed test Dues Statement PDF
- * 2016-04-30 JJK   Implemented initial payment button functionality if
- *  				only current year dues are owed
- * 2016-06-09 JJK	Added duesStatementNotes to the individual dues
- * 					statement and adjusted the format
- * 2016-07-13 JJK   Finished intial version of yearly dues statements
- * 2016-07-14 JJK   Added Paid Dues Counts report
- * 2016-07-28 JJK	Corrected compound interest problem with a bad start date
- * 					Added print of LienComment after Total Due on Dues Statement
- * 2016-07-30 JJK   Changed the Yearly Dues Statues to just display prior
- * 					years due messages instead of amounts.
- * 					Added yearlyDuesStatementNotice for 2nd notice message.
- * 					Added DateDue to CSV for reports
+ * 2016-10-25 JJK   Added Communications table
+ * 2016-11-04 JJK   (Jackson's 14th birthday)
  * 2016-11-05 JJK   Added Admin option to send dues emails
  * 2016-11-12 JJK	Added Dues Notice email function and inserts of
  * 					Dues Notice functions into Communications table
- * 2017-06-10 JJK   Added unpaid dues ranking
- * 2017-08-13 JJK	Added a dues email test function, and use of payment
- * 					email for dues statements
- * 2017-08-18 JJK   Added an unsubscribe message to the dues email
- * 2017-08-19 JJK   Added yearly dues statement notice and notes different
- * 					for 1st and Additional notices
- * 2017-08-20 JJK   Added Mark notice mailed function and finished up
- *                  Email logic.
- * 					Added logic to set NoticeDate
- * 2018-01-21 JJK	Corrected set of default firstNotice to false (so 2nd
- * 					notices would correctly use the alternate notes)
- * 2018-10-14 JJK   Corrected email send
- * 2018-10-27 JJK   Re-factor for JSON based POST for updates
+ * 2018-11-07 JJK   Re-factor for JSON based POST for updates
  *============================================================================*/
 var communications = (function () {
     'use strict';
@@ -42,16 +17,13 @@ var communications = (function () {
     //=================================================================================================================
     // Private variables for the Module
     var hoaConfigRecList;
-    var configVal = new Map();
-    var tr = '';
-    var configName = '';
 
     //=================================================================================================================
     // Variables cached from the DOM
     var $document = $(document);
-    var $moduleDiv = $('#ConfigPage');
-    var $displayPage = $document.find('#navbar a[href="#ConfigPage"]');
-    var $ConfigListDisplay = $moduleDiv.find("tbody");
+    var $moduleDiv = $('#CommPage');
+    var $displayPage = $document.find('#navbar a[href="#CommPage"]');
+    var $CommListDisplay = $moduleDiv.find("tbody");
     var $EditPage = $("#EditPage");
     var $EditTable = $("#EditTable");
     var $EditTableBody = $("#EditTable").find("tbody");
@@ -191,8 +163,6 @@ var communications = (function () {
     _render();
     function _render() {
         tr = '';
-        // Clear out the Map before loading with data
-        configVal.clear();
         $.each(hoaConfigRecList, function (index, hoaConfigRec) {
             // Load into Map for lookup
             configVal.set(hoaConfigRec.ConfigName, hoaConfigRec.ConfigValue);
@@ -212,7 +182,7 @@ var communications = (function () {
             tr += '</tr>';
         });
 
-        $ConfigListDisplay.html(tr);
+        $CommListDisplay.html(tr);
     }
 
     // Return the value for a given name

@@ -5,13 +5,9 @@
  *----------------------------------------------------------------------------
  * Modification History
  * 2015-03-06 JJK 	Initial version 
- * 2015-03-26 JJK	Solved initial DetailPage checkbox display problem by
- * 					moving format after the pagecontainer change (instead of
- * 					before it.  Let the page initialize first, then fill it.
  * 2015-04-09 JJK   Added Regular Expressions and functions for validating
  * 					email addresses and replacing non-printable characters
- * 2015-08-03 JJK	Modified to put the data parameters on the "a" element
- * 					and only response to clicks to the anchor
+
  * 2015-09-08 JJK   Added GetSalesReport to show sales to HOA properties
  * 2015-09-25 JJK	Added adminLevel to HoaRec to control updates
  * 2015-09-30 JJK	Added Search button
@@ -62,11 +58,6 @@
  * 2016-09-01 JJK   Corrected Owner order by year not id
  * 2016-09-02 JJK   Added NonCollectible field 
  * 2016-09-20 JJK   Added NonCollectible fields to counts report 
- * 2016-10-25 JJK   Added Communications table
- * 2016-11-04 JJK   (Jackson's 14th birthday)
- * 2016-11-05 JJK   Added Admin option to send dues emails
- * 2016-11-12 JJK	Added Dues Notice email function and inserts of
- * 					Dues Notice functions into Communications table
  * 2016-11-13 JJK	Added NonCollectible field to Dues Statement
  * 2016-11-25 JJK	Added InterestNotPaid and BankFee fields to Assessment
  * 					table, inserts, and updates	
@@ -83,13 +74,14 @@
  * 					Added logic to set NoticeDate
  * 2018-01-21 JJK	Corrected set of default firstNotice to false (so 2nd
  * 					notices would correctly use the alternate notes)
- * 2018-10-14 JJK   Corrected email send
+ * 
+ * 
+ * 2018-10-14 JJK   Re-factored for modules
  * 2018-10-27 JJK   Modified getJSONfromInputs to just loop through the DIV
  *                  looking for input fields, and added an action parameter
  * 2018-10-28 JJK   Went back to declaring variables in the functions
  * 2018-11-01 JJK   Modified getJSONfromInputs to only include elements with
  *                  an Id and check for checkbox "checked"
- * new
  *============================================================================*/
  var util = (function(){
     'use strict';
