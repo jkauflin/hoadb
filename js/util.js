@@ -82,6 +82,7 @@
  * 2018-10-28 JJK   Went back to declaring variables in the functions
  * 2018-11-01 JJK   Modified getJSONfromInputs to only include elements with
  *                  an Id and check for checkbox "checked"
+ * jjktest
  *============================================================================*/
  var util = (function(){
     'use strict';
