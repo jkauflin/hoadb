@@ -16,7 +16,7 @@ var communications = (function () {
 
     //=================================================================================================================
     // Private variables for the Module
-    var hoaConfigRecList;
+    var hoaCommRecList;
 
     //=================================================================================================================
     // Variables cached from the DOM
@@ -33,23 +33,25 @@ var communications = (function () {
 
     //=================================================================================================================
     // Bind events
-    $document.on('shown.bs.tab', 'a[data-toggle="tab"]', getHoaConfigList);
-    $document.on("click", ".NewConfig", editConfig);
-    $document.on("click", ".SaveConfigEdit", saveConfigEdit);
+    $document.on("click", "#CommunicationsButton", getHoaCommList);
+    
 
+    $document.on("click", ".NewConfig", editComm);
+    $document.on("click", ".SaveConfigEdit", saveCommEdit);
 
-    $(document).on("click", "#CommunicationsButton", function () {
-        waitCursor();
-        var $this = $(this);
-        var parcelId = $this.attr("data-ParcelId");
-        var ownerId = $this.attr("data-OwnerId");
-
-        $.getJSON("getHoaCommList.php", "parcelId=" + $this.attr("data-ParcelId") + "&ownerId=" + $this.attr("data-OwnerId"), function (hoaCommRecList) {
-            displayCommList(hoaCommRecList, parcelId, ownerId);
-            $('*').css('cursor', 'default');
-            $('#navbar a[href="#CommPage"]').tab('show');
+    //=================================================================================================================
+    // Module methods
+    function getHoaCommList(event) {
+        util.waitCursor();
+        $.getJSON("getHoaCommList.php", "parcelId=" + value.target.getAttribute("data-parcelId") + "&ownerId=" + value.target.getAttribute("data-ownerId"), function (outHoaCommRecList) {
+            hoaCommRecList = outHoaCommRecList;
+            _render();
+            util.defaultCursor();
+            $displayPage.tab('show');
         });
-    });	
+    }
+
+
 
     $(document).on("click", ".NewComm", function () {
         waitCursor();
@@ -157,13 +159,11 @@ var communications = (function () {
 
 
 
-    //=================================================================================================================
-    // Module methods
 
     _render();
     function _render() {
-        tr = '';
-        $.each(hoaConfigRecList, function (index, hoaConfigRec) {
+        var tr = '';
+        $.each(hoaCommRecList, function (index, hoaConfigRec) {
             // Load into Map for lookup
             configVal.set(hoaConfigRec.ConfigName, hoaConfigRec.ConfigValue);
 
@@ -241,7 +241,7 @@ var communications = (function () {
             success: function (list) {
                 util.defaultCursor();
                 // Set the newest list from the update into the module variable (for render)
-                hoaConfigRecList = list;
+                hoaCommRecList = list;
                 _render();
                 $EditPage.modal("hide");
                 $displayPage.tab('show');
