@@ -34,9 +34,7 @@ var communications = (function () {
     //=================================================================================================================
     // Bind events
     $document.on("click", "#CommunicationsButton", getHoaCommList);
-    
-
-    $document.on("click", ".NewConfig", editComm);
+    $document.on("click", ".NewConfig", _newComm);
     $document.on("click", ".SaveConfigEdit", saveCommEdit);
 
     //=================================================================================================================
@@ -51,9 +49,38 @@ var communications = (function () {
         });
     }
 
+    //function displayCommList(hoaCommRecList, parcelId, ownerId) {
+    function _render() {
+        var tr = '';
+
+        // parcelId, ownerId
+        $("#CommunicationsNew").html('<a id="CommunicationsNewButton" data-ParcelId="' + parcelId + '" data-OwnerId="' + ownerId + '" data-CommId="NEW" href="#" class="btn btn-primary NewComm" role="button">New Communication</a>');
+        $("#CommunicationsParcel").html("<b>Parcel Id:</b> " + parcelId + " <b>Owner Id:</b> " + ownerId);
+
+        $.each(hoaCommRecList, function (index, hoaCommRec) {
+            if (index == 0) {
+                tr = '';
+                tr += '<tr>';
+                tr += '<th>CommID</th>';
+                tr += '<th>Datetime</th>';
+                tr += '<th>Type</th>';
+                tr += '<th>Description</th>';
+                tr += '</tr>';
+            }
+            tr += '<tr>';
+            //tr +=    '<td><a data-ParcelId="'+parcelId+'" data-OwnerId="'+ownerId+'" data-CommID="'+hoaCommRec.CommId+'" class="NewComm" href="#">'+hoaCommRec.CommID+'</a></td>';
+            tr += '<td>' + hoaCommRec.CommID + '</td>';
+            tr += '<td>' + hoaCommRec.CreateTs + '</td>';
+            tr += '<td>' + hoaCommRec.CommType + '</td>';
+            tr += '<td>' + hoaCommRec.CommDesc + '</td>';
+            tr += '</tr>';
+        });
+
+        $CommListDisplay.html(tr);
+    }
 
 
-    $(document).on("click", ".NewComm", function () {
+    function _newComm () {
         waitCursor();
         var $this = $(this);
         var parcelId = $this.attr("data-ParcelId");
@@ -64,7 +91,7 @@ var communications = (function () {
             $('*').css('cursor', 'default');
             $("#EditPage").modal();
         });
-    });
+    }
 
     $(document).on("click", ".SaveCommEdit", function () {
         waitCursor();
@@ -92,34 +119,6 @@ var communications = (function () {
     });	// End of $(document).on("click",".SaveCommEdit",function(){
 
 
-    function displayCommList(hoaCommRecList, parcelId, ownerId) {
-        //var tr = '<tr><td>No records found - try different search parameters</td></tr>';
-        var tr = '';
-
-        $("#CommunicationsNew").html('<a id="CommunicationsNewButton" data-ParcelId="' + parcelId + '" data-OwnerId="' + ownerId + '" data-CommId="NEW" href="#" class="btn btn-primary NewComm" role="button">New Communication</a>');
-        $("#CommunicationsParcel").html("<b>Parcel Id:</b> " + parcelId + " <b>Owner Id:</b> " + ownerId);
-
-        $.each(hoaCommRecList, function (index, hoaCommRec) {
-            if (index == 0) {
-                tr = '';
-                tr += '<tr>';
-                tr += '<th>CommID</th>';
-                tr += '<th>Datetime</th>';
-                tr += '<th>Type</th>';
-                tr += '<th>Description</th>';
-                tr += '</tr>';
-            }
-            tr += '<tr>';
-            //tr +=    '<td><a data-ParcelId="'+parcelId+'" data-OwnerId="'+ownerId+'" data-CommID="'+hoaCommRec.CommId+'" class="NewComm" href="#">'+hoaCommRec.CommID+'</a></td>';
-            tr += '<td>' + hoaCommRec.CommID + '</td>';
-            tr += '<td>' + hoaCommRec.CreateTs + '</td>';
-            tr += '<td>' + hoaCommRec.CommType + '</td>';
-            tr += '<td>' + hoaCommRec.CommDesc + '</td>';
-            tr += '</tr>';
-        });
-
-        $("#CommListDisplay tbody").html(tr);
-    }
 
     function formatCommEdit(hoaCommRec, parcelId, ownerId, commId) {
         var tr = '';
@@ -158,32 +157,6 @@ var communications = (function () {
     } // End of function formatCommEdit(hoaCommRec){
 
 
-
-
-    _render();
-    function _render() {
-        var tr = '';
-        $.each(hoaCommRecList, function (index, hoaConfigRec) {
-            // Load into Map for lookup
-            configVal.set(hoaConfigRec.ConfigName, hoaConfigRec.ConfigValue);
-
-            if (index == 0) {
-                tr = '';
-                tr += '<tr>';
-                tr += '<th>Name</th>';
-                tr += '<th>Description</th>';
-                tr += '<th>Value</th>';
-                tr += '</tr>';
-            }
-            tr += '<tr>';
-            tr += '<td><a data-ConfigName="' + hoaConfigRec.ConfigName + '" class="NewConfig" href="#">' + hoaConfigRec.ConfigName + '</a></td>';
-            tr += '<td>' + hoaConfigRec.ConfigDesc + '</td>';
-            tr += '<td>' + hoaConfigRec.ConfigValue.substring(0, 80) + '</td>';
-            tr += '</tr>';
-        });
-
-        $CommListDisplay.html(tr);
-    }
 
     // Return the value for a given name
     function getVal(name) {
