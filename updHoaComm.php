@@ -6,20 +6,27 @@
  *----------------------------------------------------------------------------
  * Modification History
  * 2016-10-25 JJK 	Initial version 
+ * 2018-11-12 JJK	Modified to handle POST and return queried list
  *============================================================================*/
+	include 'commonUtil.php';
+	// Include table record classes and db connection parameters
+	include 'hoaDbCommon.php';
 
-include 'commonUtil.php';
-// Include table record classes and db connection parameters
-include 'hoaDbCommon.php';
+	header("Content-Type: application/json; charset=UTF-8");
+	# Get JSON as a string
+	$json_str = file_get_contents('php://input');
 
-	// If they are set, get input parameters from the REQUEST
-	$parcelId = getParamVal("parcelId");
-	$commId = getParamVal("commId");
-	$ownerId = getParamVal("ownerId");
-	$commType = getParamVal("commType");
-	$commDesc = getParamVal("commDesc");
-	$CommAction = getParamVal("CommAction");
-	
+	# Decode the string to get a JSON object
+	$param = json_decode($json_str);
+
+	/*
+	error_log(date('[Y-m-d H:i] '). "updHoaComm, parcelId = " . $param->parcelId . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaComm, ownerId = " . $param->ownerId . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaComm, commId = " . $param->commId . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaComm, commType = " . $param->commType . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaComm, commDesc = " . $param->commDesc . PHP_EOL, 3, "hoadb.log");
+	*/
+
 	//--------------------------------------------------------------------------------------------------------
 	// Create connection to the database
 	//--------------------------------------------------------------------------------------------------------
@@ -27,12 +34,24 @@ include 'hoaDbCommon.php';
 
 	$sqlStr = 'INSERT INTO hoa_communications (Parcel_ID,CommID,CreateTs,OwnerID,CommType,CommDesc) VALUES(?,null,CURRENT_TIMESTAMP,?,?,?); ';
 	$stmt = $conn->prepare($sqlStr);
-	$stmt->bind_param("siss",$parcelId,$ownerId,$commType,$commDesc);
+	$stmt->bind_param("siss",$param->parcelId,$param->ownerId,$param->commType,$param->commDesc);
 	
 	$stmt->execute();
 	$stmt->close();
+	
+	// Re-query the list and pass it back for display
+	$sql = "SELECT * FROM hoa_communications WHERE Parcel_ID = ? ORDER BY CommID DESC ";
+	$stmt = $conn->prepare($sql);
+	$stmt->bind_param("s", $param->parcelId);
+	$stmt->execute();
+	$result = $stmt->get_result();
+	$outputArray = array();
+	if ($result != NULL) {
+		while($row = $result->fetch_assoc()) {
+			array_push($outputArray,$row);
+		}
+	}
+	$stmt->close();
 	$conn->close();
-	
-	echo 'Update Successful';
-	
+	echo json_encode($outputArray);
 ?>
