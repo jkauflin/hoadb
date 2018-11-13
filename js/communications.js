@@ -10,6 +10,7 @@
  * 2016-11-12 JJK	Added Dues Notice email function and inserts of
  * 					Dues Notice functions into Communications table
  * 2018-11-07 JJK   Re-factor for JSON based POST for updates
+ * 
  *============================================================================*/
 var communications = (function () {
     'use strict';
