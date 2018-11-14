@@ -39,9 +39,11 @@ var config = (function(){
 
     // When the javascript initializes do a one time get of the logo image data (for PDF writes)
     // *** maybe move this to PDF module *** <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    /*
     $.get("getLogoImgData.php", function (logoImgDataResults) {
         configVal.set('pdfLogoImgData', logoImgDataResults);
     });
+    */
 
     // Load the configuration list when the page is loaded
     $.getJSON("getHoaConfigList.php", "", function (outHoaConfigRecList) {
