@@ -20,7 +20,6 @@ var reports = (function () {
     // Global variable to hold CSV content for downloading
     var csvContent;
     var pdf;
-    var pdfLogoImgData = '';
     var pdfTitle = "";
     var pdfTimestamp = "";
     var pdfTotals = "";
@@ -34,7 +33,6 @@ var reports = (function () {
     var pdfColIncrement = 1.5;
     var pdfMaxLineChars = 95;
     var pdfFontSizeDefault = 11;
-    var pdfLogoImgData;
 
     //=================================================================================================================
     // Variables cached from the DOM
@@ -44,8 +42,10 @@ var reports = (function () {
     var $ReportListDisplay = $("#ReportListDisplay tbody");
     var $ReportRecCnt = $("#ReportRecCnt");
     var $ReportDownloadLinks = $("#ReportDownloadLinks");
-
-    // When the javascript initializes do a one time get of the logo image data (for PDF writes)
+    
+    //var pdfLogoImgData = config.getVal('pdfLogoImgData');
+    //console.log("in reports, pdfLogoImgData.length = " + pdfLogoImgData.length);
+    var pdfLogoImgData;
     $.get("getLogoImgData.php", function (logoImgDataResults) {
         pdfLogoImgData = logoImgDataResults;
     });
@@ -53,6 +53,9 @@ var reports = (function () {
     //=================================================================================================================
     // Bind events
     $moduleDiv.on("click", ".reportRequest", _reportRequest);
+    $moduleDiv.on("click", "#DownloadReportCSV", _downloadReportCSV);
+    $moduleDiv.on("click", "#DownloadReportPDF", _downloadReportPDF);
+    $moduleDiv.on("click", ".SalesNewOwnerIgnore", _salesNewOwnerIgnore);
 
     function _reportRequest(event) {
         var reportName = event.target.getAttribute("id");
@@ -69,21 +72,51 @@ var reports = (function () {
         });
     }
 
-    $(document).on("click", "#DownloadReportCSV", function () {
-        var $this = $(this);
+    function _downloadReportCSV(event) {
         var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         var pom = document.createElement('a');
         var url = URL.createObjectURL(blob);
         pom.href = url;
-        pom.setAttribute('download', $this.attr("data-reportName") + ".csv");
+        pom.setAttribute('download', event.target.getAttribute("data-reportName") + ".csv");
         pom.click();
-    });
+    };
 
-    $(document).on("click", "#DownloadReportPDF", function () {
-        var $this = $(this);
-        pdf.save($this.attr("data-reportName") + ".pdf");
-    });	
+    function _downloadReportPDF(event) {
+        pdf.save(event.target.getAttribute("data-reportName") + ".pdf");
+    };	
 
+    function _salesNewOwnerIgnore() {
+        util.waitCursor();
+        var reportName = event.target.getAttribute('id');
+        var reportTitle = event.target.getAttribute("data-reportTitle");
+        var paramMap = new Map();
+        paramMap.set('PARID', event.target.getAttribute("data-parcelId"));
+        paramMap.set('SALEDT', event.target.getAttribute("data-saleDate"));
+
+        //console.log("util.getJSONfromInputs(null,paramMap) = " + util.getJSONfromInputs(null, paramMap));
+
+        $.ajax("updHoaSales.php", {
+            type: "POST",
+            contentType: "application/json",
+            data: util.getJSONfromInputs(null, paramMap),
+            dataType: "text",
+            success: function (results) {
+                // Re-query and re-display the report list
+                $ReportHeader.html("");
+                $ReportListDisplay.html("");
+                $ReportRecCnt.html("");
+                $ReportDownloadLinks.html("");
+                util.waitCursor();
+                $.getJSON("getHoaReportData.php", "reportName=" + reportName, function (reportList) {
+                    _formatReportList(reportName, reportTitle, reportList);
+                    util.defaultCursor();
+                });
+            },
+            error: function () {
+                console.log("An error occurred in the Sales update");
+            }
+        });
+    }
 
     //=================================================================================================================
     // Module methods
@@ -129,15 +162,15 @@ var reports = (function () {
                     tr.append($('<td>')
                         .append($('<a>').attr('href', "#")
                             .attr('class', "SalesNewOwnerProcess")
-                            .attr('data-ParcelId', hoaSalesRec.PARID)
-                            .attr('data-SaleDate', hoaSalesRec.SALEDT)
+                            .attr('data-parcelId', hoaSalesRec.PARID)
+                            .attr('data-saleDate', hoaSalesRec.SALEDT)
                             .attr('data-Action', "Process")
                             .prop('style', 'margin-right:7px;')
                             .html(hoaSalesRec.SALEDT))
                         .append($('<a>').prop('id', reportName)
                             .attr('data-reportTitle', "County Reported Sales of HOA properties (for New Owner maintenance)")
-                            .attr('data-ParcelId', hoaSalesRec.PARID)
-                            .attr('data-SaleDate', hoaSalesRec.SALEDT)
+                            .attr('data-parcelId', hoaSalesRec.PARID)
+                            .attr('data-saleDate', hoaSalesRec.SALEDT)
                             .attr('data-Action', "Ignore")
                             .attr('href', "#")
                             .attr('class', "btn btn-warning btn-xs SalesNewOwnerIgnore")
@@ -160,7 +193,7 @@ var reports = (function () {
 
         } else if (reportName == "PaidDuesCountsReport") {
 
-            var pdfLineArray = [];
+            // ???????????  var pdfLineArray = [];
             $.each(reportList, function (index, cntsRec) {
                 rowId = index + 1;
 
@@ -215,7 +248,7 @@ var reports = (function () {
 
         } else {
 
-            var pdfLineArray = [];
+            // ??????  var pdfLineArray = [];
             // Loop through the list of properties / current owner
             $.each(reportList, function (index, hoaRec) {
                 rowId = index + 1;
@@ -473,7 +506,6 @@ var reports = (function () {
             pdf.text(2.5, 0.75, pdfTitle);
             pdf.setFontSize(10);
             pdf.text(3.8, 1.1, pdfTimestamp);
-
             pdf.addImage(pdfLogoImgData, 'JPEG', 0.4, 0.3, 0.9, 0.9);
             pdf.setFontSize(10);
 

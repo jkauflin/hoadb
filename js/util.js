@@ -260,39 +260,49 @@
     // Function to get all input objects within a DIV, and extra entries from a map
     // and construct a JSON object with names and values (to pass in POST updates)
     function getJSONfromInputs(InputsDiv, paramMap) {
-        // Get all the input objects within the DIV
-        var FormInputs = InputsDiv.find("input,textarea,select");
-        
-        // Loop through the objects and construct the JSON string
         var first = true;
         var jsonStr = '{';
-        $.each(FormInputs, function (index) {
-            //id = useEmailCheckbox, type = checkbox
-            //id = propertyComments, type = text
-            // Only include elements that have an "id" in the JSON string
-            if (typeof $(this).attr('id') !== 'undefined') {
+
+        if (InputsDiv !== null) {
+            // Get all the input objects within the DIV
+            var FormInputs = InputsDiv.find("input,textarea,select");
+
+            // Loop through the objects and construct the JSON string
+            $.each(FormInputs, function (index) {
+                //id = useEmailCheckbox, type = checkbox
+                //id = propertyComments, type = text
+                // Only include elements that have an "id" in the JSON string
+                if (typeof $(this).attr('id') !== 'undefined') {
+                    if (first) {
+                        first = false;
+                    } else {
+                        jsonStr += ',';
+                    }
+                    //console.log("id = " + $(this).attr('id') + ", type = " + $(this).attr("type"));
+                    if ($(this).attr("type") == "checkbox") {
+                        //console.log("id = " + $(this).attr('id') + ", $(this).prop('checked') = " + $(this).prop('checked'));
+                        if ($(this).prop('checked')) {
+                            jsonStr += '"' + $(this).attr('id') + '" : 1';
+                        } else {
+                            jsonStr += '"' + $(this).attr('id') + '" : 0';
+                        }
+                    } else {
+                        jsonStr += '"' + $(this).attr('id') + '" : "' + cleanStr($(this).val()) + '"';
+                    }
+                }
+            });
+        }
+
+        if (paramMap !== null) {
+            paramMap.forEach(function (value, key) {
                 if (first) {
                     first = false;
                 } else {
                     jsonStr += ',';
                 }
-                //console.log("id = " + $(this).attr('id') + ", type = " + $(this).attr("type"));
-                if ($(this).attr("type") == "checkbox") {
-                    //console.log("id = " + $(this).attr('id') + ", $(this).prop('checked') = " + $(this).prop('checked'));
-                    if ($(this).prop('checked')) {
-                        jsonStr += '"' + $(this).attr('id') + '" : 1';
-                    } else {
-                        jsonStr += '"' + $(this).attr('id') + '" : 0';
-                    }
-                } else {
-                    jsonStr += '"' + $(this).attr('id') + '" : "' + cleanStr($(this).val()) + '"';
-                }
-            }
-        });
-
-        paramMap.forEach(function (value, key) {
-            jsonStr += ',"' + key + '" : "' + value + '"';
-        });
+                jsonStr += '"' + key + '" : "' + value + '"';
+            });
+        }
 
         jsonStr += '}';
         return jsonStr;

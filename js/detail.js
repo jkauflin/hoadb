@@ -73,6 +73,7 @@ var detail = (function(){
     $moduleDiv.on("click", "#NewOwnerButton", _newOwner);
     $moduleDiv.on("click", "#PropertyAssessments tr td a", _editAssessment);
     $EditPage2Col.on("click", "#SaveAssessmentEdit", _saveAssessmentEdit);
+    $document.on("click", ".SalesNewOwnerProcess", _salesNewOwnerProcess);
 
     //=================================================================================================================
     // Module methods
@@ -245,6 +246,7 @@ var detail = (function(){
         });
     };
 
+
     function _formatPropertyDetailEdit(editHoaRec) {
         // Clear the field where we report validation errors
         $editValidationError.empty();
@@ -327,6 +329,18 @@ var detail = (function(){
             $EditPage2Col.modal();
         });
     };
+
+    function _salesNewOwnerProcess() {
+        util.waitCursor();
+        $.getJSON("getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&saleDate=" + event.target.getAttribute("data-saleDate"),
+            function (editHoaRec) {
+                var createNew = true;
+                _formatOwnerDetailEdit(editHoaRec, createNew);
+                util.defaultCursor();
+                $EditPage2Col.modal();
+            });
+
+    }
 
     function _formatOwnerDetailEdit(editHoaRec, createNew) {
         var tr = '';

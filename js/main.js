@@ -1,137 +1,8 @@
 
-var commDesc = '';
-var noticeType = '';
-var tempCommDesc = "";
-var sendEmailAddr = "";
-var firstNotice = false;
-var adminRecCntMAX = 0;
-var sendEmail = true;
-var noticeDate = "";
-var noticeYear = "";
-// Global variable for loop counter
-var adminRecCnt = 0;
-var emailRecCnt = 0;
-var adminEmailSkipCnt = 0;
-// Global variable for total number of parcels in the HOA
-var hoaPropertyListMAX = 542;
-var hoaRecList = [];
-
-
 //==========================================================================================================================
 // Main document ready function
 //==========================================================================================================================
 $(document).ready(function(){
-
-
-	$(document).on("click",".SalesNewOwnerProcess",function(){
-	    waitCursor();
-	    var $this = $(this);
-	    $.getJSON("getHoaDbData.php","parcelId="+$this.attr("data-ParcelId")+"&saleDate="+$this.attr("data-SaleDate"),function(hoaRec){
-	    	formatOwnerDetailEdit(hoaRec,true);
-	    	$('*').css('cursor', 'default');
-	    	$("#EditPage2Col").modal();
-	    });
-	});
-
-	$(document).on("click",".SalesNewOwnerIgnore",function(){
-	    waitCursor();
-	    var $this = $(this);
-	    var $parcelId = $this.attr("data-ParcelId");
-	    var $saleDate = $this.attr("data-SaleDate");
-
-	    $.get("updHoaSales.php","PARID="+$parcelId+"&SALEDT="+$saleDate,function(results){
-	    	// Re-read the update data and re-display sales new owner list
-	    	
-	    	//var reportName = "SalesNewOwnerReport";
-	    	var reportName = $this.attr('id');
-	    	var reportTitle = $this.attr("data-reportTitle");
-	    	
-			$("#ReportListDisplay tbody").html("");
-			$("#ReportRecCnt").html("");
-			$("#ReportDownloadLinks").html("");
-			
-	    	$.getJSON("getHoaReportData.php","reportName="+reportName,function(reportList){
-	    	    //formatReportList(reportName,reportList,onscreenDisplay,csvDownload,pdfDownload);
-	    	    formatReportList(reportName,reportTitle,reportList);
-	    	    $('*').css('cursor', 'default');
-	    	});
-	    });
-        event.stopPropagation();
-	});
-	
-
-	$(document).on("click",".AdminButton",function(){
-        waitCursor();
-	    var $this = $(this);
-
-        // Validate add assessments (check access permissions, timing, year, and amount)
-        // get confirmation message back
-        var FY = cleanStr($("#FiscalYear").val());
-        var duesAmt = cleanStr($("#DuesAmt").val());
-        
-    	$.getJSON("adminValidate.php","action="+$this.attr('id')+
-    										"&FY="+FY+
-    										"&duesAmt="+duesAmt,function(adminRec){
-    	    $("#ConfirmationMessage").html(adminRec.message);
-    	    
-    	    var confirmationButton = $("#ConfirmationButton");
-    	    confirmationButton.empty();
-    	    var buttonForm = $('<form>').prop('class',"form-inline").attr('role',"form");
-    	    // If the action was Valid, append an action button
-    	    if (adminRec.result == "Valid") {
-        	    buttonForm.append($('<button>').prop('id',"AdminExecute").prop('class',"btn btn-danger").attr('type',"button").attr('data-dismiss',"modal").html('Continue')
-	    								.attr('data-action',$this.attr('id')).attr('data-FY',FY).attr('data-duesAmt',duesAmt));
-    	    }
-    	    buttonForm.append($('<button>').prop('class',"btn btn-default").attr('type',"button").attr('data-dismiss',"modal").html('Close'));
-    	    confirmationButton.append(buttonForm);
-    	    
-    	    $('*').css('cursor', 'default');
-            $("#ConfirmationModal").modal();
-    	});
-        event.stopPropagation();
-    });
-
-    // Respond to the Continue click for an Admin Execute function 
-    $(document).on("click","#AdminExecute",function(){
-        waitCursor();
-        var $this = $(this);
-  	  	var action = $this.attr("data-action");
-
-		//console.log("action = "+action);
-
-    	$.getJSON("adminExecute.php","action="+action+
-				"&FY="+$this.attr("data-FY")+
-				"&duesAmt="+$this.attr("data-duesAmt"),function(adminRec){
-    		$('*').css('cursor', 'default');
-    		
-    		if (action == 'DuesNotices' || action == 'DuesEmails' || action == 'DuesEmailsTest' || action == 'DuesRank' || action == 'MarkMailed') {
-    			var currSysDate = new Date();
-    			pdfTitle = "Member Dues Notice";
-    			pdfTimestamp = currSysDate.toString().substr(0,24);
-    			
-        		// Reset the loop counter
-        		adminRecCnt = 0;
-        		adminEmailSkipCnt = 0;
-				emailRecCnt = 0;
-				
-        		hoaRecList = [];
-				//console.log("Before adminLoop, hoaPropertyRecList.length = "+adminRec.hoaPropertyRecList.length);
-
-				// Start asynchronous recursive loop to process the list and create Yearly Dues Statment PDF's
-				setTimeout(adminLoop, 5, adminRec.hoaPropertyRecList, action);
-
-    		} // End of if ($action == 'DuesNotices')
-    		else {
-    			//  If not doing an asynchronous recursive loop, just use the message from the adminExecute
-        		$("#ResultMessage").html(adminRec.message);
-    		}
-		
-		}); // $.getJSON("adminExecute.php","action="+action+
-
-    	event.stopPropagation();
-        
-    }); // $(document).on("click","#AdminExecute",function(){
-
 	/*
     $(document).on("click",".docModal",function(){
     	var $this = $(this);
@@ -144,16 +15,7 @@ $(document).ready(function(){
     	$("#docModal").modal("show");    	
 	});	
 	*/
-
-
-    
 }); // $(document).ready(function(){
-
-
-
-
-
-
 
 //--------------------------------------------------------------------------------------------------------------------------------
 // Asynchronous recursive loop to process the list for the AdminExecute
