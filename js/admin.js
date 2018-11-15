@@ -84,6 +84,8 @@ var admin = (function () {
 
     // Respond to the Continue click for an Admin Execute function 
     function _adminExecute(event) {
+        $ResultMessage.html("Starting loop...");
+
         util.waitCursor();
         var action = event.target.getAttribute("data-action");
         //console.log("in adminExecute, action = "+action);
@@ -105,6 +107,17 @@ var admin = (function () {
 
                 hoaRecList = [];
                 console.log("Before adminLoop, hoaPropertyRecList.length = " + adminRec.hoaPropertyRecList.length);
+
+                $.each(adminRec.hoaPropertyRecList, function (index, hoaPropertyRec) {
+                    console.log(index + ", parcelId = " + hoaPropertyRec.parcelId);
+                    //$ResultMessage.html(index + ", parcelId = " + hoaPropertyRec.parcelId);
+
+                    $.getJSON("getHoaDbData.php", "parcelId=" + hoaPropertyRec.parcelId, function (hoaRec) {
+                        console.log(index + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", hoaRec.DuesEmailAddr = " + hoaRec.DuesEmailAddr);
+                    }); // $.getJSON("getHoaDbData.php","parcelId="+hoaPropertyRecList[adminRecCnt].parcelId,function(hoaRec){
+
+                });
+                $ResultMessage.html("Done with loop, cnt = "+adminRec.hoaPropertyRecList.length);
 
                 // Start asynchronous recursive loop to process the list and create Yearly Dues Statment PDF's
                 //setTimeout(adminLoop, 5, adminRec.hoaPropertyRecList, action);
