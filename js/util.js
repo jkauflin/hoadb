@@ -7,82 +7,15 @@
  * 2015-03-06 JJK 	Initial version 
  * 2015-04-09 JJK   Added Regular Expressions and functions for validating
  * 					email addresses and replacing non-printable characters
-
- * 2015-09-08 JJK   Added GetSalesReport to show sales to HOA properties
- * 2015-09-25 JJK	Added adminLevel to HoaRec to control updates
- * 2015-09-30 JJK	Added Search button
- * 2015-10-01 JJK	Added Create New Owner functionality
- * 					add check to make sure current owner is set on new owners
- * 					and removed from others
- * 2016-02-09 JJK	Switching from JQuery Mobile to Twitter Bootstrap
- * 2016-02-21 JJK   Test new Git
- * 2016-02-26 JJK   Added search by Lot No and adjusted displays for mobile
- * 2016-04-03 JJK	Working on input fields
- * 2016-04-05 JJK   Adding Admin function for adding yearly dues assessments
- * 					Adding Liens
- * 2016-04-09 JJK   Adding Dues Statement calculation display logic
- * 2016-04-14 JJK   Adding Dues Report (working on csv and pdf downloads)
- * 2016-04-20 JJK   Completed test Dues Statement PDF
- * 2016-04-22 JJK	Finishing up reports (added formatDate and csvFilter)
- * 2016-04-30 JJK   Implemented initial payment button functionality if
- *  				only current year dues are owed
- * 2016-05-17 JJK   Implemented Config update page
  * 2016-05-18 JJK   Added setTextArea
- * 2016-05-19 JJK   Modified to get the country web site URL's from config
- * 2016-06-05 JJK   Split Edit modal into 1 and 2Col versions
- * 2016-06-09 JJK	Added duesStatementNotes to the individual dues 
- * 					statement and adjusted the format
- * 2016-06-10 JJK   Corrected reports query to remove current owner condition
- * 					Working on yearly dues statements
- * 2016-06-24 JJK	Working on adminExecute (for yearly dues statement)
- * 2016-07-01 JJK	Got progress bar for adminExecute working by moving loop
- * 					processing into an asynchronous recursive function.
- * 2016-07-07 JJK   Increased database field lengths for text fields and 
- * 					updated UI. Checked comments word wrap.
- * 					Corrected CSV output for reports to have one set of
- * 					MailingAddress fields set from parcel location or
- * 					Alt mailing address (if specified)
- * 2016-07-08 JJK   Modified to get all config list values on page load
- * 2016-07-13 JJK   Finished intial version of yearly dues statements
- * 2016-07-14 JJK   Added Paid Dues Counts report
- * 2016-07-28 JJK	Corrected compound interest problem with a bad start date
- * 					Added print of LienComment after Total Due on Dues Statement
- * 2016-07-30 JJK   Changed the Yearly Dues Statues to just display prior 
- * 					years due messages instead of amounts.
- * 					Added yearlyDuesStatementNotice for 2nd notice message.
- * 					Added DateDue to CSV for reports
  * 2016-08-14 JJK   Imported data from Access backup of 8/12/2016
- * 2016-08-19 JJK	Added UseMail to properties and EmailAddr to owners
- * 2016-08-20 JJK	Implemented email validation check
  * 2016-08-26 JJK   Went live, and Paypal payments working in Prod!!!
- * 2016-09-01 JJK   Corrected Owner order by year not id
- * 2016-09-02 JJK   Added NonCollectible field 
- * 2016-09-20 JJK   Added NonCollectible fields to counts report 
- * 2016-11-13 JJK	Added NonCollectible field to Dues Statement
- * 2016-11-25 JJK	Added InterestNotPaid and BankFee fields to Assessment
- * 					table, inserts, and updates	
- * 2016-12-06 JJK   Added version parameter in the links to solve cache
- * 					re-load problem (?ver=1.0)
- * 2017-06-10 JJK   Added unpaid dues ranking
- * 2017-08-13 JJK	Added a dues email test function, and use of payment
- * 					email for dues statements
- * 2017-08-18 JJK   Added an unsubscribe message to the dues email
- * 2017-08-19 JJK   Added yearly dues statement notice and notes different
- * 					for 1st and Additional notices
- * 2017-08-20 JJK   Added Mark notice mailed function and finished up
- *                  Email logic.
- * 					Added logic to set NoticeDate
- * 2018-01-21 JJK	Corrected set of default firstNotice to false (so 2nd
- * 					notices would correctly use the alternate notes)
- * 
- * 
  * 2018-10-14 JJK   Re-factored for modules
  * 2018-10-27 JJK   Modified getJSONfromInputs to just loop through the DIV
  *                  looking for input fields, and added an action parameter
  * 2018-10-28 JJK   Went back to declaring variables in the functions
  * 2018-11-01 JJK   Modified getJSONfromInputs to only include elements with
  *                  an Id and check for checkbox "checked"
- * jjktest
  *============================================================================*/
  var util = (function(){
     'use strict';

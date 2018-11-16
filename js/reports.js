@@ -10,6 +10,11 @@
  * 2016-04-22 JJK	Finishing up reports (added util.formatDate and util.csvFilter)
  * 2016-06-10 JJK   Corrected reports query to remove current owner condition
  * 2017-06-10 JJK   Added unpaid dues ranking
+ * 2016-07-07 JJK   Increased database field lengths for text fields and
+ * 					updated UI. Checked comments word wrap.
+ * 					Corrected CSV output for reports to have one set of
+ * 					MailingAddress fields set from parcel location or
+ * 					Alt mailing address (if specified)
  * 2018-11-13 JJK   Re-factored for modules
  *============================================================================*/
 var reports = (function () {
@@ -38,7 +43,6 @@ var reports = (function () {
     // Variables cached from the DOM
     var $moduleDiv = $('#ReportsPage');
     var $ReportHeader = $moduleDiv.find("#ReportHeader");
-    //var $ReportListDisplay = $moduleDiv.find("#ReportListDisplay");
     var $ReportListDisplay = $("#ReportListDisplay tbody");
     var $ReportRecCnt = $("#ReportRecCnt");
     var $ReportDownloadLinks = $("#ReportDownloadLinks");
@@ -193,7 +197,6 @@ var reports = (function () {
 
         } else if (reportName == "PaidDuesCountsReport") {
 
-            // ???????????  var pdfLineArray = [];
             $.each(reportList, function (index, cntsRec) {
                 rowId = index + 1;
 
@@ -248,7 +251,6 @@ var reports = (function () {
 
         } else {
 
-            // ??????  var pdfLineArray = [];
             // Loop through the list of properties / current owner
             $.each(reportList, function (index, hoaRec) {
                 rowId = index + 1;
@@ -436,15 +438,12 @@ var reports = (function () {
 
     // Create the CSV file for download from the dues rank array
     function formatDuesRankList(hoaRecList) {
-
         var currSysDate = new Date();
         var reportTitleFull = '';
         $ReportDownloadLinks.empty();
 
         var csvLine = "";
         csvContent = "";
-        //var paidCnt = 0;
-        //var unpaidCnt = 0;
 
         var length = hoaRecList.length;
         // Sort the array by the TotalDue for the property

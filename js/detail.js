@@ -15,6 +15,14 @@
  * 2016-02-09 JJK	Switching from JQuery Mobile to Twitter Bootstrap
  * 2016-02-21 JJK   Test new Git
  * 2016-11-04 JJK   (Jackson's 14th birthday)
+ * 2016-09-01 JJK   Corrected Owner order by year not id
+ * 2016-09-02 JJK   Added NonCollectible field
+ * 2016-09-20 JJK   Added NonCollectible fields to counts report
+ * 2016-11-13 JJK	Added NonCollectible field to Dues Statement
+ * 2016-11-25 JJK	Added InterestNotPaid and BankFee fields to Assessment
+ * 					table, inserts, and updates
+ * 2016-12-06 JJK   Added version parameter in the links to solve cache
+ * 					re-load problem (?ver=1.0)
  * 2018-10-21 JJK   Re-factor for modules
  * 2018-10-28 JJK   Went back to declaring variables in the functions
  * 2018-11-03 JJK   Got update Properties working again with JSON POST

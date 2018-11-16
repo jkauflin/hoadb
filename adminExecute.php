@@ -171,14 +171,15 @@
 
 		$sql = '';
 		if ($action == "DuesEmails" || $action == "DuesEmailsTest") {
+			
 			$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
 					"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
 					"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
-	/*
+			/*
 					$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
 					"WHERE p.UseEmail AND p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
 					"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
-	*/
+			*/
 			$adminRec->message = "Completed data lookup for Dues Emails";
 		} else if ($action == "DuesRank") {
 			$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";
@@ -190,8 +191,8 @@
 			$adminRec->message = "Completed data lookup for Dues Notices";
 		}
 
-	//18	R72617603 0022	81352	6070 Pine Glen Lane	Doring Thomas E and Susan G	(937) 236-9305   (they got an email with this next address on it)
-	//19	R72617603 0023	81353	6062 Pine Glen Lane	Davidson Silas R and Angela	(937) 237-7639
+		//18	R72617603 0022	81352	6070 Pine Glen Lane	Doring Thomas E and Susan G	(937) 236-9305   (they got an email with this next address on it)
+		//19	R72617603 0023	81353	6062 Pine Glen Lane	Davidson Silas R and Angela	(937) 237-7639
 
 		$stmt = $conn->prepare($sql);
 		$stmt->execute();

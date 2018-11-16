@@ -80,7 +80,8 @@
 			$adminRec->result = "Valid";
 		}
 	}
-/*
+
+	/*
 	$conn = getConn();
 	$hoaSalesReportRec = getHoaSalesRecList($conn,$notProcessedBoolean);
 

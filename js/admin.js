@@ -5,7 +5,36 @@
  *----------------------------------------------------------------------------
  * Modification History
  * 2015-03-06 JJK 	Initial version 
-
+ * 2016-05-19 JJK   Modified to get the country web site URL's from config
+ * 2016-06-05 JJK   Split Edit modal into 1 and 2Col versions
+ * 2016-06-09 JJK	Added duesStatementNotes to the individual dues
+ * 					statement and adjusted the format
+ * 2016-06-24 JJK	Working on adminExecute (for yearly dues statement)
+ * 2016-07-01 JJK	Got progress bar for adminExecute working by moving loop
+ * 					processing into an asynchronous recursive function.
+ * 2016-07-13 JJK   Finished intial version of yearly dues statements
+ * 2016-07-14 JJK   Added Paid Dues Counts report
+ * 2016-07-28 JJK	Corrected compound interest problem with a bad start date
+ * 					Added print of LienComment after Total Due on Dues Statement
+ * 2016-07-30 JJK   Changed the Yearly Dues Statues to just display prior
+ * 					years due messages instead of amounts.
+ * 					Added yearlyDuesStatementNotice for 2nd notice message.
+ * 					Added DateDue to CSV for reports
+ * 2016-08-19 JJK	Added UseMail to properties and EmailAddr to owners
+ * 2016-08-20 JJK	Implemented email validation check
+ * 2016-08-26 JJK   Went live, and Paypal payments working in Prod!!!
+ * 2017-06-10 JJK   Added unpaid dues ranking
+ * 2017-08-13 JJK	Added a dues email test function, and use of payment
+ * 					email for dues statements
+ * 2017-08-18 JJK   Added an unsubscribe message to the dues email
+ * 2017-08-19 JJK   Added yearly dues statement notice and notes different
+ * 					for 1st and Additional notices
+ * 2017-08-20 JJK   Added Mark notice mailed function and finished up
+ *                  Email logic.
+ * 					Added logic to set NoticeDate
+ * 2018-01-21 JJK	Corrected set of default firstNotice to false (so 2nd
+ * 					notices would correctly use the alternate notes)
+ * 2018-10-14 JJK   Re-factored for modules
  * 2018-11-03 JJK   Got update Properties working again with JSON POST
  * 2018-11-04 JJK   (Jackson's 16th birthday)
  *                  Got update Owner working again with JSON POST
@@ -84,7 +113,7 @@ var admin = (function () {
 
     // Respond to the Continue click for an Admin Execute function 
     function _adminExecute(event) {
-        $ResultMessage.html("Starting loop...");
+        $ResultMessage.html("Executing Admin request...");
 
         util.waitCursor();
         var action = event.target.getAttribute("data-action");
@@ -93,6 +122,7 @@ var admin = (function () {
             "&fy=" + event.target.getAttribute("data-fy") +
             "&duesAmt=" + event.target.getAttribute("data-duesAmt"), function (adminRec) {
             util.defaultCursor();
+            $ResultMessage.html(adminRec.message);
 
             if (action == 'DuesNotices' || action == 'DuesEmails' || action == 'DuesEmailsTest' || action == 'DuesRank' || action == 'MarkMailed') {
                 var currSysDate = new Date();
@@ -117,16 +147,14 @@ var admin = (function () {
                     }); // $.getJSON("getHoaDbData.php","parcelId="+hoaPropertyRecList[adminRecCnt].parcelId,function(hoaRec){
 
                 });
-                $ResultMessage.html("Done with loop, cnt = "+adminRec.hoaPropertyRecList.length);
+                //$ResultMessage.html("Done with loop, cnt = " + adminRec.hoaPropertyRecList.length);
+                console.log("Done with loop, cnt = " + adminRec.hoaPropertyRecList.length);
+                $ResultMessage.html("Done with loop - doing background processing...");
 
                 // Start asynchronous recursive loop to process the list and create Yearly Dues Statment PDF's
                 //setTimeout(adminLoop, 5, adminRec.hoaPropertyRecList, action);
 
-            } // End of if ($action == 'DuesNotices')
-            else {
-                //  If not doing an asynchronous recursive loop, just use the message from the adminExecute
-                $ResultMessage.html(adminRec.message);
-            }
+            } // End of if
 
         }); // $.getJSON("adminExecute.php","action="+action+
     }
