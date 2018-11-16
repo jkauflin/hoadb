@@ -118,10 +118,12 @@ var admin = (function () {
         util.waitCursor();
         var action = event.target.getAttribute("data-action");
         //console.log("in adminExecute, action = "+action);
+
         $.getJSON("adminExecute.php", "action=" + action +
             "&fy=" + event.target.getAttribute("data-fy") +
             "&duesAmt=" + event.target.getAttribute("data-duesAmt"), function (adminRec) {
             util.defaultCursor();
+
             $ResultMessage.html(adminRec.message);
 
             if (action == 'DuesNotices' || action == 'DuesEmails' || action == 'DuesEmailsTest' || action == 'DuesRank' || action == 'MarkMailed') {
@@ -136,6 +138,7 @@ var admin = (function () {
                 emailRecCnt = 0;
 
                 hoaRecList = [];
+                /*
                 console.log("Before adminLoop, hoaPropertyRecList.length = " + adminRec.hoaPropertyRecList.length);
 
                 $.each(adminRec.hoaPropertyRecList, function (index, hoaPropertyRec) {
@@ -144,16 +147,20 @@ var admin = (function () {
 
                     $.getJSON("getHoaDbData.php", "parcelId=" + hoaPropertyRec.parcelId, function (hoaRec) {
                         console.log(index + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", hoaRec.DuesEmailAddr = " + hoaRec.DuesEmailAddr);
-                    }); // $.getJSON("getHoaDbData.php","parcelId="+hoaPropertyRecList[adminRecCnt].parcelId,function(hoaRec){
+                        //$ResultMessage.html(index + ", parcelId = " + hoaPropertyRec.parcelId);
+                        if (index >= adminRec.hoaPropertyRecList.length-1) {
+                            $ResultMessage.html("Done with last one, index = "+index);
+                        }
+                    });
 
                 });
                 //$ResultMessage.html("Done with loop, cnt = " + adminRec.hoaPropertyRecList.length);
                 console.log("Done with loop, cnt = " + adminRec.hoaPropertyRecList.length);
+                */
                 $ResultMessage.html("Done with loop - doing background processing...");
 
                 // Start asynchronous recursive loop to process the list and create Yearly Dues Statment PDF's
                 //setTimeout(adminLoop, 5, adminRec.hoaPropertyRecList, action);
-
             } // End of if
 
         }); // $.getJSON("adminExecute.php","action="+action+

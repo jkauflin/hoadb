@@ -13,6 +13,8 @@
  * 2017-08-13 JJK   Added Dues email TEST, and addition of Paypal emails
  *                  to the member list of who to send emails to
  * 2018-11-14 JJK	Re-factor fror modules
+ * 2018-11-16 JJK	Modified Dues queries to return all data needed (to fix
+ * 					issues with async loop processing)
  *============================================================================*/
 	include 'commonUtil.php';
 	// Include table record classes and db connection parameters
@@ -153,6 +155,7 @@
 	} else if ($action == "DuesNotices" || $action == "DuesEmails" || $action == "DuesEmailsTest" || $action == "DuesRank" || $action == "MarkMailed") {
 
 		$outputArray = array();
+		$adminRec->hoaRecList = array();
 
 		// Get the current Fiscal Year value
 		$result = $conn->query("SELECT MAX(FY) AS maxFY FROM hoa_assessments; ");
@@ -204,21 +207,19 @@
 			while($row = $result->fetch_assoc()) {
 				$cnt = $cnt + 1;
 
-				//$Parcel_ID = $row["Parcel_ID"];
-				//$OwnerID = $row["OwnerID"];
+				$Parcel_ID = $row["Parcel_ID"];
+				$OwnerID = $row["OwnerID"];
 				//$FY = $row["Own"];
-				/*					
-					if (!$stmt->execute()) {
-						error_log("Execute failed: " . $stmt->errno . ", Error = " . $stmt->error);
-						echo "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
-					}
-				*/
-				
+
 				//if ($cnt < 101) {
 					//$hoaRec = getHoaRec($conn,$Parcel_ID,$OwnerID,NULL,NULL);
 					//array_push($outputArray,$hoaRec);
 				//}
 					
+				$hoaRec = getHoaRec($conn,$Parcel_ID,$OwnerID,NULL,NULL);
+				array_push($adminRec->hoaRecList,$hoaRec);
+				
+				/*
 				$hoaPropertyRec = new HoaPropertyRec();
 					
 				$hoaPropertyRec->parcelId = $row["Parcel_ID"];
@@ -229,22 +230,19 @@
 				$hoaPropertyRec->ownerPhone = $row["Owner_Phone"];
 					
 				array_push($outputArray,$hoaPropertyRec);
+				*/
 			}
 				
-				/*
-				$serializedArray = serialize($outputArray);
-				if (function_exists('mb_strlen')) {
-					$size = mb_strlen($serializedArray, '8bit');
-				} else {
-					$size = strlen($serializedArray);
-				}
+			//$serializedArray = serialize($outputArray);
+			$serializedArray = serialize($adminRec);
+			if (function_exists('mb_strlen')) {
+				$size = mb_strlen($serializedArray, '8bit');
+			} else {
+				$size = strlen($serializedArray);
+			}
+			error_log(date('[Y-m-d H:i] '). "Array cnt = " . count($adminRec->hoaRecList) . ', size = ' . round($size/1000,0) . 'K bytes' . PHP_EOL, 3, "hoadb.log");
 				
-				error_log("END Array cnt = " . count($outputArray) . ', size = ' . round($size/1000,0) . 'K bytes');
-				[09-Apr-2016 22:26:04 Europe/Paris] BEG Array
-				[09-Apr-2016 22:26:12 Europe/Paris] END Array cnt = 542, size = 5209K bytes				
-				*/
-				
-			$adminRec->hoaPropertyRecList = $outputArray;
+			//$adminRec->hoaPropertyRecList = $outputArray;
 		}
 
 		$adminRec->result = "Valid";

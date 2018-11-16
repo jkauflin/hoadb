@@ -34,6 +34,7 @@
  *                  If there is an email from the last electronic payment, for the current Owner, 
  *					only use it if they are not going paperless or the paperless email is blank
  * 2018-10-27 JJK   Modified the error_log to write to hoadb.log
+ * 2018-11-16 JJK	Added $hoaRecList to AdminRec to store all data needed for dues
  *============================================================================*/
 
 function getConn() {
@@ -269,6 +270,7 @@ class AdminRec
 	public $message;
 	
 	public $hoaPropertyRecList;
+	public $hoaRecList;
 }
 
 class TotalDuesCalcRec

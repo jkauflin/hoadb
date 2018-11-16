@@ -64,7 +64,7 @@ function adminLoop(hoaPropertyRecList,action) {
 				sendEmailAddr = hoaRec.DuesEmailAddr;
 
 				// email not blank
-console.log("Cnt = "+adminRecCnt+", ParcelId = "+hoaRec.Parcel_ID+", OwnerID = "+hoaRec.ownersList[0].OwnerID+", Owner = "+hoaRec.ownersList[0].Owner_Name1+", hoaRec.DuesEmailAddr = "+hoaRec.DuesEmailAddr);
+				console.log("Cnt = "+adminRecCnt+", ParcelId = "+hoaRec.Parcel_ID+", OwnerID = "+hoaRec.ownersList[0].OwnerID+", Owner = "+hoaRec.ownersList[0].Owner_Name1+", hoaRec.DuesEmailAddr = "+hoaRec.DuesEmailAddr);
 				emailRecCnt++;
 				/*
 				$.get("updHoaComm.php","parcelId="+hoaRec.Parcel_ID+
