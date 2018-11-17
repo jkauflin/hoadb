@@ -178,7 +178,7 @@
 			$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
 					"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
 					"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
-			/*
+			/* Can't just use UseEmail as a flag because we want to send emails to every email address we have, regardless if they say use specifically
 					$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
 					"WHERE p.UseEmail AND p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
 					"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
@@ -234,6 +234,7 @@
 			}
 				
 			//$serializedArray = serialize($outputArray);
+			/* add this as a common utility routine
 			$serializedArray = serialize($adminRec);
 			if (function_exists('mb_strlen')) {
 				$size = mb_strlen($serializedArray, '8bit');
@@ -241,6 +242,7 @@
 				$size = strlen($serializedArray);
 			}
 			error_log(date('[Y-m-d H:i] '). "Array cnt = " . count($adminRec->hoaRecList) . ', size = ' . round($size/1000,0) . 'K bytes' . PHP_EOL, 3, "hoadb.log");
+			*/
 				
 			//$adminRec->hoaPropertyRecList = $outputArray;
 		}
