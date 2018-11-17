@@ -18,7 +18,7 @@
  *                  an Id and check for checkbox "checked"
  *============================================================================*/
  var util = (function(){
-    'use strict';
+    'use strict';  // Force declaration of variables before use (among other things)
     //=================================================================================================================
     // Private variables for the Module
 

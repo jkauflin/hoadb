@@ -165,9 +165,33 @@ var communications = (function () {
         });
     }
 
+    function LogCommunication(parcelId,ownerId,commType,commDesc) {
+        var paramMap = new Map();
+        paramMap.set('parcelId', parcelId);
+        paramMap.set('ownerId', ownerId);
+        paramMap.set('commId', "NEW");
+        paramMap.set('commType', commType);
+        paramMap.set('commDesc', commDesc);
+        //console.log("util.getJSONfromInputs(null,paramMap) = " + util.getJSONfromInputs(null, paramMap));
+
+        $.ajax("updHoaComm.php", {
+            type: "POST",
+            contentType: "application/json",
+            data: util.getJSONfromInputs(null, paramMap),
+            dataType: "json",
+            success: function (list) {
+                // success actions
+            },
+            error: function () {
+                $editValidationError.html("An error occurred in the update - see log");
+            }
+        });
+    }
+
     //=================================================================================================================
     // This is what is exposed from this Module
     return {
+        LogCommunication: LogCommunication
     };
 
 })(); // var communications = (function(){

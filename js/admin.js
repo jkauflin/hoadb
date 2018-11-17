@@ -37,15 +37,16 @@
  * 2018-10-14 JJK   Re-factored for modules
  * 2018-11-03 JJK   Got update Properties working again with JSON POST
  * 2018-11-04 JJK   (Jackson's 16th birthday)
- *                  Got update Owner working again with JSON POST
- *                  Got update Assessment working again with JSON POST
+ * 2018-11-17 JJK   To solve the async loop issue I modified AdminRequest to 
+ *                  do all data queries in the PHP module and pass back a 
+ *                  large array of data to process in a sync loop
  *============================================================================*/
 var admin = (function () {
-    'use strict';
+    'use strict';  // Force declaration of variables before use (among other things)
 
     //=================================================================================================================
     // Private variables for the Module
-    //var hoaRec;
+    /*
     var commDesc = '';
     var noticeType = '';
     var tempCommDesc = "";
@@ -60,8 +61,34 @@ var admin = (function () {
     var emailRecCnt = 0;
     var adminEmailSkipCnt = 0;
     // Global variable for total number of parcels in the HOA
-    var hoaPropertyListMAX = 542;
     var hoaRecList = [];
+
+
+    var pdf;
+var pdfLogoImgData = '';
+var pdf.getTitle() = "";
+var pdfTimestamp = "";
+var pdfTotals = "";
+var pdfLineHeaderArray = [];
+var pdf.setLineColIncrArray([];
+var pdfPageCnt = 0;
+var pdfLineCnt = 0;
+var pdfLineYStart = 1.5;
+var pdfLineY = pdfLineYStart;
+var pdfLineIncrement = 0.25;
+var pdfColIncrement = 1.5;
+var pdfMaxLineChars = 95;
+var pdfFontSizeDefault = 11;
+
+    */
+
+    // Move this to a config value
+    //var hoaPropertyListMAX = config.getVal('numberOfProperties');
+    var hoaPropertyListMAX = 542;
+    var hoaName = config.getVal('hoaName');
+    var hoaNameShort = config.getVal('hoaNameShort');
+    var hoaAddress1 = config.getVal('hoaAddress1');
+    var hoaAddress2 = config.getVal('hoaAddress2');
 
     //=================================================================================================================
     // Variables cached from the DOM
@@ -113,68 +140,286 @@ var admin = (function () {
 
     // Respond to the Continue click for an Admin Execute function 
     function _adminExecute(event) {
-        $ResultMessage.html("Executing Admin request...");
-
+        $ResultMessage.html("Executing Admin request...(please wait)");
         util.waitCursor();
         var action = event.target.getAttribute("data-action");
         //console.log("in adminExecute, action = "+action);
 
+        // Get all the data needed for processing
+        // (modify to use POST at some point)
         $.getJSON("adminExecute.php", "action=" + action +
             "&fy=" + event.target.getAttribute("data-fy") +
             "&duesAmt=" + event.target.getAttribute("data-duesAmt"), function (adminRec) {
             util.defaultCursor();
-
             $ResultMessage.html(adminRec.message);
 
-            if (action == 'DuesNotices' || action == 'DuesEmails' || action == 'DuesEmailsTest' || action == 'DuesRank' || action == 'MarkMailed') {
-                var currSysDate = new Date();
-                
-                //pdfTitle = "Member Dues Notice";
-                //pdfTimestamp = currSysDate.toString().substr(0, 24);
+            if (action == 'DuesNotices') {
+                _duesNotices(adminRec.hoaRecList);
+            }
+            else if (action == 'DuesEmails' || action == 'DuesEmailsTest' || action == 'DuesRank' || action == 'MarkMailed') {
 
-                // Reset the loop counter
-                adminRecCnt = 0;
-                adminEmailSkipCnt = 0;
-                emailRecCnt = 0;
-
-                hoaRecList = [];
-
-                console.log("Before adminLoop, hoaRecList.length = " + adminRec.hoaRecList.length);
-
-                $.each(adminRec.hoaRecList, function (index, hoaRec) {
-                    //console.log(index + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", hoaRec.DuesEmailAddr = " + hoaRec.DuesEmailAddr);
-
-                });
-                //$ResultMessage.html("Done with loop, cnt = " + adminRec.hoaPropertyRecList.length);
-                console.log("Done with loop");
-
-                /*
-                console.log("Before adminLoop, hoaPropertyRecList.length = " + adminRec.hoaPropertyRecList.length);
-
-                $.each(adminRec.hoaPropertyRecList, function (index, hoaPropertyRec) {
-                    console.log(index + ", parcelId = " + hoaPropertyRec.parcelId);
-                    //$ResultMessage.html(index + ", parcelId = " + hoaPropertyRec.parcelId);
-
-                    $.getJSON("getHoaDbData.php", "parcelId=" + hoaPropertyRec.parcelId, function (hoaRec) {
-                        console.log(index + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", hoaRec.DuesEmailAddr = " + hoaRec.DuesEmailAddr);
-                        //$ResultMessage.html(index + ", parcelId = " + hoaPropertyRec.parcelId);
-                        if (index >= adminRec.hoaPropertyRecList.length-1) {
-                            $ResultMessage.html("Done with last one, index = "+index);
-                        }
-                    });
-
-                });
-                //$ResultMessage.html("Done with loop, cnt = " + adminRec.hoaPropertyRecList.length);
-                console.log("Done with loop, cnt = " + adminRec.hoaPropertyRecList.length);
-                */
-                $ResultMessage.html("Done with loop");
-
-                // Start asynchronous recursive loop to process the list and create Yearly Dues Statment PDF's
-                //setTimeout(adminLoop, 5, adminRec.hoaPropertyRecList, action);
             } // End of if
-
         }); // $.getJSON("adminExecute.php","action="+action+
     }
+
+    function _duesNotices(hoaRecList) {
+        var adminEmailSkipCnt = 0;
+        var displayAddress = '';
+        var noticeType = '';
+        var commType = 'Dues Notice';
+        var commDesc = '';
+
+        var firstNotice = false;
+        // If list of unpaid properties is the total number of properties, assume it is the 1st Dues Notice
+        if (hoaRecList.length == hoaPropertyListMAX) {
+            firstNotice = true;
+        }
+
+        // Initialize the PDF object
+        pdf.init('Member Dues Notice', 'letter');
+
+        console.log("Before adminLoop, hoaRecList.length = " + hoaRecList.length);
+        $ResultMessage.html("Executing Admin request...(processing list)");
+
+        $.each(hoaRecList, function (index, hoaRec) {
+            //console.log(index + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", hoaRec.DuesEmailAddr = " + hoaRec.DuesEmailAddr);
+
+            // When generating DuesNotices for the 1st notice, skip the ones with Property UseEmail set (if there is a valid email)
+            if (firstNotice && hoaRec.UseEmail && hoaRec.DuesEmailAddr != '') {
+                adminEmailSkipCnt++;
+            } else {
+                // Get a displayAddress for the Communication record
+                displayAddress = hoaRec.Parcel_Location;
+                if (hoaRec.ownersList[0].AlternateMailing) {
+                    displayAddress = hoaRec.ownersList[0].Alt_Address_Line1;
+                }
+
+                noticeType = "Additional";
+                if (firstNotice) {
+                    noticeType = "1st";
+                }
+
+                commDesc = noticeType + " Notice for postal mail created for " + displayAddress;
+                // Create the PDF for yearly dues statements
+                if (index > 0) {
+                    // If not the first record for DuesNotices, then add a new page for the next parcel
+                    pdf.addPage();
+                }
+
+                // Call function to format the yearly dues statement for an individual property
+                _formatYearlyDuesStatement(hoaRec);
+
+                // log communication for notice created
+                //communications.LogCommunication(hoaRec.Parcel_ID, hoaRec.ownersList[0].OwnerID, commType, commDesc);
+            }
+
+        }); // End of loop through Parcels
+
+        //$ResultMessage.html("Done with loop, cnt = " + adminRec.hoaPropertyRecList.length);
+        console.log("Done with loop");
+        $("#ResultMessage").html("Yearly dues notices created, total = " + hoaRecList.length + ", (Total skipped for UseEmail = " + adminEmailSkipCnt + ")");
+        // Download the PDF file
+        pdf.save(formatDate() + "-YearlyDuesNotices.pdf");
+    }
+
+    // function to format a Yearly dues statement
+    function _formatYearlyDuesStatement(hoaRec) {
+        var ownerRec = hoaRec.ownersList[0];
+        //var pdfMaxLineChars = 95;
+
+        // Set the Notice and Notes field according to 1st or Additional notices
+        var noticeYear = '' + parseInt(hoaRec.assessmentsList[0].FY) - 1;
+        var noticeDate = util.formatDate();
+        var yearlyDuesStatementNotice = config.getVal('yearlyDuesStatementNoticeAdditional');
+        var yearlyDuesStatementNotes = config.getVal('yearlyDuesStatementNotesAdditional');
+        if (firstNotice) {
+            noticeDate = 'September 1st, ' + noticeYear;
+            yearlyDuesStatementNotice = config.getVal('yearlyDuesStatementNotice1st');
+		    yearlyDuesStatementNotes = config.getVal('yearlyDuesStatementNotes1st');
+        }
+
+        pdf.setLineColIncrArray([-4.5]);
+        yearlyDuesStatementAddLine([hoaName], null, 13, 0.5);
+        pdf.setLineColIncrArray([4.5, -3.05]);
+        yearlyDuesStatementAddLine([pdf.getTitle() + " for Fiscal Year ", hoaRec.assessmentsList[0].FY], null, 12, 0.8);
+
+        // hoa name and address for return label
+        //var pdfLineIncrement = 0.2;
+        pdf.setLineIncrement(0.2);
+        pdf.setLineColIncrArray([1.0]);
+        yearlyDuesStatementAddLine([hoaName], null, 10, 1.0);
+        yearlyDuesStatementAddLine([hoaAddress1]);
+        yearlyDuesStatementAddLine([hoaAddress2]);
+
+        //pdfLineIncrement = 0.21;
+        pdf.setLineIncrement(0.21);
+        pdf.setLineColIncrArray([4.5, 1.3]);
+        yearlyDuesStatementAddLine(["For the Period: ", 'Oct 1st, ' + noticeYear + ' thru Sept 30th, ' + hoaRec.assessmentsList[0].FY], null, 11, 1.1);
+        pdf.setLineColIncrArray([-4.5, -1.3]);
+        yearlyDuesStatementAddLine(["Notice Date: ", noticeDate]);
+
+        var duesAmount = util.formatMoney(hoaRec.assessmentsList[0].DuesAmt);
+        yearlyDuesStatementAddLine(["Dues Amount: ", '$' + duesAmount]);
+        if (duesAmount == hoaRec.TotalDue) {
+            yearlyDuesStatementAddLine(["Due Date: ", 'October 1st, ' + noticeYear]);
+            pdf.setLineColIncrArray([-4.5, 1.3];
+            yearlyDuesStatementAddLine(["Parcel Id: ", hoaRec.Parcel_ID]);
+            yearlyDuesStatementAddLine(["Lot No: ", hoaRec.LotNo]);
+        } else {
+            yearlyDuesStatementAddLine(["********************* ", "There are prior year dues owed"]);
+            yearlyDuesStatementAddLine(["********************* ", "Please contact the Treasurer"]);
+            yearlyDuesStatementAddLine(["Due Date: ", 'October 1st, ' + noticeYear]);
+            pdf.setLineColIncrArray([-4.5, 1.3];
+            yearlyDuesStatementAddLine(["Parcel Id: ", hoaRec.Parcel_ID + ", Lot: " + hoaRec.LotNo]);
+        }
+
+        pdf.setLineColIncrArray([-4.5];
+        //yearlyDuesStatementAddLine(['']);
+        yearlyDuesStatementAddLine(['    Contact Information:']);
+        pdf.setLineColIncrArray([4.5];
+        yearlyDuesStatementAddLine([ownerRec.Owner_Name1 + ' ' + ownerRec.Owner_Name2]);
+        yearlyDuesStatementAddLine([hoaRec.Parcel_Location]);
+        yearlyDuesStatementAddLine([hoaRec.Property_City + ', ' + hoaRec.Property_State + ' ' + hoaRec.Property_Zip]);
+        yearlyDuesStatementAddLine(['Phone # ' + ownerRec.Owner_Phone]);
+        yearlyDuesStatementAddLine(['Email: ' + hoaRec.DuesEmailAddr]);
+
+        var displayAddress1 = ownerRec.Mailing_Name;
+        var displayAddress2 = hoaRec.Parcel_Location;
+        var displayAddress3 = hoaRec.Property_City + ', ' + hoaRec.Property_State + ' ' + hoaRec.Property_Zip;
+        var displayAddress4 = "";
+
+        if (hoaRec.ownersList[0].AlternateMailing) {
+            if (ownerRec.Alt_Address_Line2 != '') {
+                displayAddress2 = ownerRec.Alt_Address_Line1;
+                displayAddress3 = ownerRec.Alt_Address_Line2
+                displayAddress4 = ownerRec.Alt_City + ', ' + ownerRec.Alt_State + ' ' + ownerRec.Alt_Zip;
+            } else {
+                displayAddress2 = ownerRec.Alt_Address_Line1;
+                displayAddress3 = ownerRec.Alt_City + ', ' + ownerRec.Alt_State + ' ' + ownerRec.Alt_Zip;
+            }
+        }
+
+        // Display the mailing address
+        pdf.setLineIncrement(0.21);
+        //pdfLineIncrement = 0.21;
+        pdf.setLineColIncrArray([1.0];
+        yearlyDuesStatementAddLine([displayAddress1], null, 11, 2.5);
+        yearlyDuesStatementAddLine([displayAddress2]);
+        yearlyDuesStatementAddLine([displayAddress3]);
+        yearlyDuesStatementAddLine([displayAddress4]);
+
+        // Address corrections
+        pdfLineIncrement = 0.3;
+        pdf.setLineColIncrArray([-0.6];
+        yearlyDuesStatementAddLine(["Enter any information that needs to be corrected:"], null, 11, 4.3);
+        pdf.setLineColIncrArray([0.6];
+        yearlyDuesStatementAddLine(["Owner Name:"]);
+        yearlyDuesStatementAddLine(["Address Line 1:"]);
+        yearlyDuesStatementAddLine(["Address Line 2:"]);
+        yearlyDuesStatementAddLine(["City State Zip:"]);
+        yearlyDuesStatementAddLine(["Phone Number:"]);
+        yearlyDuesStatementAddLine([""]);
+        yearlyDuesStatementAddLine(["Email:"]);
+
+        // Survey description, questions (1,2,3)
+        /* Commenting out survey for now
+        pdfLineIncrement = 0.285;
+        pdf.setLineColIncrArray([-1.0];
+        yearlyDuesStatementAddLine([surveyInstructions],null,11,6.28);
+        pdf.setLineColIncrArray([1.0];
+        yearlyDuesStatementAddLine([surveyQuestion1]);
+        yearlyDuesStatementAddLine([surveyQuestion2]);
+        yearlyDuesStatementAddLine([surveyQuestion3]);
+        */
+        pdfLineIncrement = 0.15;
+        pdf.setLineColIncrArray([1.0];
+        yearlyDuesStatementAddLine([""]);
+        pdfLineIncrement = 0.21;
+        pdf.setLineColIncrArray([-1.0];
+        yearlyDuesStatementAddLine(["Go Paperless - check here to turn off mailed paper notices"]);
+        pdf.setLineColIncrArray([1.0];
+        yearlyDuesStatementAddLine(["(Make sure correct Email address is listed in Contact Info or entered above)"]);
+
+        pdfLineIncrement = 0.21;
+
+        yearlyDuesStatementAddLine([''], null, 10, 3.9);
+
+
+        // Print the Notice statement if it exists (2nd notice, etc.)
+        if (yearlyDuesStatementNotice.length > 0) {
+            pdfMaxLineChars = 35;
+            pdf.setLineColIncrArray([-5.2];
+            yearlyDuesStatementAddLine([yearlyDuesStatementNotice], null, 12);
+            yearlyDuesStatementAddLine([''], null);
+        }
+
+        // If there are notes - print them
+        pdfMaxLineChars = 45;
+        if (yearlyDuesStatementNotes.length > 0) {
+            pdf.setLineColIncrArray([5.2];
+            yearlyDuesStatementAddLine([yearlyDuesStatementNotes], null, 10);
+        }
+
+        // Print information on the user records portion
+        pdf.setLineColIncrArray([-0.5];
+        yearlyDuesStatementAddLine([hoaName], null, 13, 8.0);
+        pdf.setLineColIncrArray([0.5, -3.05];
+        yearlyDuesStatementAddLine([pdf.getTitle() + " for Fiscal Year ", hoaRec.assessmentsList[0].FY], null, 12, 8.3);
+
+        pdfLineIncrement = 0.21;
+        var noticeYear = '' + parseInt(hoaRec.assessmentsList[0].FY) - 1;
+        pdf.setLineColIncrArray([0.5, 1.5];
+        yearlyDuesStatementAddLine(["For the Period: ", 'Oct 1st, ' + noticeYear + ' thru Sept 30th, ' + hoaRec.assessmentsList[0].FY], null, 11, 8.6);
+        pdf.setLineColIncrArray([-0.5, -1.5];
+        yearlyDuesStatementAddLine(["Notice Date: ", noticeDate]);
+
+        yearlyDuesStatementAddLine(["Dues Amount: ", '$' + duesAmount]);
+        if (duesAmount != hoaRec.TotalDue) {
+            //yearlyDuesStatementAddLine(["Prior Due: ",'$'+(hoaRec.TotalDue-duesAmount)]); 
+            //yearlyDuesStatementAddLine(["Total Due: ",'$'+hoaRec.TotalDue]); 
+            yearlyDuesStatementAddLine(["************************ ", "There are prior year dues owed"]);
+            yearlyDuesStatementAddLine(["************************ ", "Please contact the Treasurer"]);
+        }
+        yearlyDuesStatementAddLine(["Due Date: ", 'October 1st, ' + noticeYear]);
+
+        pdf.setLineColIncrArray([-0.5, 1.5];
+        yearlyDuesStatementAddLine(['', '']);
+        yearlyDuesStatementAddLine(["Parcel Id: ", hoaRec.Parcel_ID]);
+        yearlyDuesStatementAddLine(["Lot No: ", hoaRec.LotNo]);
+        yearlyDuesStatementAddLine(["Property Location: ", hoaRec.Parcel_Location]);
+
+        // hoa name and address for payment
+        pdfLineIncrement = 0.21;
+        pdf.setLineColIncrArray([5.2];
+        yearlyDuesStatementAddLine(["Make checks payable to:"], null, 11, 8.0);
+        pdf.setLineColIncrArray([-5.2];
+        yearlyDuesStatementAddLine([hoaName]);
+        yearlyDuesStatementAddLine(['']);
+        pdf.setLineColIncrArray([-5.2, 0.8];
+        yearlyDuesStatementAddLine(["Send to:", hoaNameShort]);
+        yearlyDuesStatementAddLine(["", hoaAddress1]);
+        yearlyDuesStatementAddLine(["", hoaAddress2]);
+
+        pdfLineIncrement = 0.19;
+        pdf.setLineColIncrArray([-5.2];
+        yearlyDuesStatementAddLine(['']);
+        yearlyDuesStatementAddLine(["Date Paid:"], null, 12);
+        yearlyDuesStatementAddLine(['']);
+        yearlyDuesStatementAddLine(["Check No:"]);
+
+        // Help notes
+        yearlyDuesStatementAddLine([''], null, 10, 10.05);
+        pdfMaxLineChars = 55;
+        // If there are notes - print them
+        if (yearlyDuesStatementNotes.length > 0) {
+            pdf.setLineColIncrArray([4.7];
+            yearlyDuesStatementAddLine([yearlyDuesHelpNotes], null);
+        }
+
+    } // End of function formatYearlyDuesStatement(hoaRec) {
+
+
+
 
     //=================================================================================================================
     // This is what is exposed from this Module
@@ -215,8 +460,8 @@ var admin = (function () {
                 if (hoaRec.DuesEmailAddr != '') {
                     pdf = new jsPDF('p', 'in', 'letter');
                     pdf.setProperties({
-                        title: pdfTitle,
-                        subject: pdfTitle,
+                        title: pdf.getTitle(),
+                        subject: pdf.getTitle(),
                         author: hoaName
                     });
                     pdfPageCnt = 0;
@@ -300,8 +545,8 @@ var admin = (function () {
                         if (adminRecCnt == 0) {
                             pdf = new jsPDF('p', 'in', 'letter');
                             pdf.setProperties({
-                                title: pdfTitle,
-                                subject: pdfTitle,
+                                title: pdf.getTitle(),
+                                subject: pdf.getTitle(),
                                 author: hoaName
                             });
                             pdfPageCnt = 0;
@@ -376,336 +621,7 @@ var admin = (function () {
     } // function adminLoop(hoaPropertyRecList,action) {
 
 
-    // function to format a Yearly dues statement
-    function formatYearlyDuesStatement(hoaRec) {
-        ownerRec = hoaRec.ownersList[0];
-        pdfMaxLineChars = 95;
-
-        // Set the Notice and Notes field according to 1st or Additional notices
-        noticeYear = '' + parseInt(hoaRec.assessmentsList[0].FY) - 1;
-        noticeDate = formatDate();
-        yearlyDuesStatementNotice = yearlyDuesStatementNoticeAdditional;
-        yearlyDuesStatementNotes = yearlyDuesStatementNotesAdditional;
-        if (firstNotice) {
-            noticeDate = 'September 1st, ' + noticeYear;
-            yearlyDuesStatementNotice = yearlyDuesStatementNotice1st;
-            yearlyDuesStatementNotes = yearlyDuesStatementNotes1st;
-        }
-
-        pdfLineColIncrArray = [-4.5];
-        yearlyDuesStatementAddLine([hoaName], null, 13, 0.5);
-        pdfLineColIncrArray = [4.5, -3.05];
-        yearlyDuesStatementAddLine([pdfTitle + " for Fiscal Year ", hoaRec.assessmentsList[0].FY], null, 12, 0.8);
-
-        // hoa name and address for return label
-        pdfLineIncrement = 0.2;
-        pdfLineColIncrArray = [1.0];
-        yearlyDuesStatementAddLine([hoaName], null, 10, 1.0);
-        yearlyDuesStatementAddLine([hoaAddress1]);
-        yearlyDuesStatementAddLine([hoaAddress2]);
-
-        pdfLineIncrement = 0.21;
-        pdfLineColIncrArray = [4.5, 1.3];
-        yearlyDuesStatementAddLine(["For the Period: ", 'Oct 1st, ' + noticeYear + ' thru Sept 30th, ' + hoaRec.assessmentsList[0].FY], null, 11, 1.1);
-        pdfLineColIncrArray = [-4.5, -1.3];
-        yearlyDuesStatementAddLine(["Notice Date: ", noticeDate]);
-
-        $duesAmt = stringToMoney(hoaRec.assessmentsList[0].DuesAmt);
-        yearlyDuesStatementAddLine(["Dues Amount: ", '$' + $duesAmt]);
-        if ($duesAmt == hoaRec.TotalDue) {
-            yearlyDuesStatementAddLine(["Due Date: ", 'October 1st, ' + noticeYear]);
-            pdfLineColIncrArray = [-4.5, 1.3];
-            yearlyDuesStatementAddLine(["Parcel Id: ", hoaRec.Parcel_ID]);
-            yearlyDuesStatementAddLine(["Lot No: ", hoaRec.LotNo]);
-        } else {
-            //yearlyDuesStatementAddLine(["Prior Due: ",'$'+(hoaRec.TotalDue-$duesAmt)]); 
-            //yearlyDuesStatementAddLine(["Total Due: ",'$'+hoaRec.TotalDue]);
-            yearlyDuesStatementAddLine(["********************* ", "There are prior year dues owed"]);
-            yearlyDuesStatementAddLine(["********************* ", "Please contact the Treasurer"]);
-            yearlyDuesStatementAddLine(["Due Date: ", 'October 1st, ' + noticeYear]);
-            pdfLineColIncrArray = [-4.5, 1.3];
-            yearlyDuesStatementAddLine(["Parcel Id: ", hoaRec.Parcel_ID + ", Lot: " + hoaRec.LotNo]);
-        }
-
-        pdfLineColIncrArray = [-4.5];
-        //yearlyDuesStatementAddLine(['']);
-        yearlyDuesStatementAddLine(['    Contact Information:']);
-        pdfLineColIncrArray = [4.5];
-        yearlyDuesStatementAddLine([ownerRec.Owner_Name1 + ' ' + ownerRec.Owner_Name2]);
-        yearlyDuesStatementAddLine([hoaRec.Parcel_Location]);
-        yearlyDuesStatementAddLine([hoaRec.Property_City + ', ' + hoaRec.Property_State + ' ' + hoaRec.Property_Zip]);
-        yearlyDuesStatementAddLine(['Phone # ' + ownerRec.Owner_Phone]);
-        yearlyDuesStatementAddLine(['Email: ' + hoaRec.DuesEmailAddr]);
-
-        var displayAddress1 = ownerRec.Mailing_Name;
-        var displayAddress2 = hoaRec.Parcel_Location;
-        var displayAddress3 = hoaRec.Property_City + ', ' + hoaRec.Property_State + ' ' + hoaRec.Property_Zip;
-        var displayAddress4 = "";
-
-        if (hoaRec.ownersList[0].AlternateMailing) {
-            if (ownerRec.Alt_Address_Line2 != '') {
-                displayAddress2 = ownerRec.Alt_Address_Line1;
-                displayAddress3 = ownerRec.Alt_Address_Line2
-                displayAddress4 = ownerRec.Alt_City + ', ' + ownerRec.Alt_State + ' ' + ownerRec.Alt_Zip;
-            } else {
-                displayAddress2 = ownerRec.Alt_Address_Line1;
-                displayAddress3 = ownerRec.Alt_City + ', ' + ownerRec.Alt_State + ' ' + ownerRec.Alt_Zip;
-            }
-        }
-
-        // Display the mailing address
-        pdfLineIncrement = 0.21;
-        pdfLineColIncrArray = [1.0];
-        yearlyDuesStatementAddLine([displayAddress1], null, 11, 2.5);
-        yearlyDuesStatementAddLine([displayAddress2]);
-        yearlyDuesStatementAddLine([displayAddress3]);
-        yearlyDuesStatementAddLine([displayAddress4]);
-
-        // Address corrections
-        pdfLineIncrement = 0.3;
-        pdfLineColIncrArray = [-0.6];
-        yearlyDuesStatementAddLine(["Enter any information that needs to be corrected:"], null, 11, 4.3);
-        pdfLineColIncrArray = [0.6];
-        yearlyDuesStatementAddLine(["Owner Name:"]);
-        yearlyDuesStatementAddLine(["Address Line 1:"]);
-        yearlyDuesStatementAddLine(["Address Line 2:"]);
-        yearlyDuesStatementAddLine(["City State Zip:"]);
-        yearlyDuesStatementAddLine(["Phone Number:"]);
-        yearlyDuesStatementAddLine([""]);
-        yearlyDuesStatementAddLine(["Email:"]);
-
-        // Survey description, questions (1,2,3)
-        /* Commenting out survey for now
-        pdfLineIncrement = 0.285;
-        pdfLineColIncrArray = [-1.0];
-        yearlyDuesStatementAddLine([surveyInstructions],null,11,6.28);
-        pdfLineColIncrArray = [1.0];
-        yearlyDuesStatementAddLine([surveyQuestion1]);
-        yearlyDuesStatementAddLine([surveyQuestion2]);
-        yearlyDuesStatementAddLine([surveyQuestion3]);
-        */
-        pdfLineIncrement = 0.15;
-        pdfLineColIncrArray = [1.0];
-        yearlyDuesStatementAddLine([""]);
-        pdfLineIncrement = 0.21;
-        pdfLineColIncrArray = [-1.0];
-        yearlyDuesStatementAddLine(["Go Paperless - check here to turn off mailed paper notices"]);
-        pdfLineColIncrArray = [1.0];
-        yearlyDuesStatementAddLine(["(Make sure correct Email address is listed in Contact Info or entered above)"]);
-
-        pdfLineIncrement = 0.21;
-
-        yearlyDuesStatementAddLine([''], null, 10, 3.9);
-
-
-        // Print the Notice statement if it exists (2nd notice, etc.)
-        if (yearlyDuesStatementNotice.length > 0) {
-            pdfMaxLineChars = 35;
-            pdfLineColIncrArray = [-5.2];
-            yearlyDuesStatementAddLine([yearlyDuesStatementNotice], null, 12);
-            yearlyDuesStatementAddLine([''], null);
-        }
-
-        // If there are notes - print them
-        pdfMaxLineChars = 45;
-        if (yearlyDuesStatementNotes.length > 0) {
-            pdfLineColIncrArray = [5.2];
-            yearlyDuesStatementAddLine([yearlyDuesStatementNotes], null, 10);
-        }
-
-        // Print information on the user records portion
-        pdfLineColIncrArray = [-0.5];
-        yearlyDuesStatementAddLine([hoaName], null, 13, 8.0);
-        pdfLineColIncrArray = [0.5, -3.05];
-        yearlyDuesStatementAddLine([pdfTitle + " for Fiscal Year ", hoaRec.assessmentsList[0].FY], null, 12, 8.3);
-
-        pdfLineIncrement = 0.21;
-        var noticeYear = '' + parseInt(hoaRec.assessmentsList[0].FY) - 1;
-        pdfLineColIncrArray = [0.5, 1.5];
-        yearlyDuesStatementAddLine(["For the Period: ", 'Oct 1st, ' + noticeYear + ' thru Sept 30th, ' + hoaRec.assessmentsList[0].FY], null, 11, 8.6);
-        pdfLineColIncrArray = [-0.5, -1.5];
-        yearlyDuesStatementAddLine(["Notice Date: ", noticeDate]);
-
-        yearlyDuesStatementAddLine(["Dues Amount: ", '$' + $duesAmt]);
-        if ($duesAmt != hoaRec.TotalDue) {
-            //yearlyDuesStatementAddLine(["Prior Due: ",'$'+(hoaRec.TotalDue-$duesAmt)]); 
-            //yearlyDuesStatementAddLine(["Total Due: ",'$'+hoaRec.TotalDue]); 
-            yearlyDuesStatementAddLine(["************************ ", "There are prior year dues owed"]);
-            yearlyDuesStatementAddLine(["************************ ", "Please contact the Treasurer"]);
-        }
-        yearlyDuesStatementAddLine(["Due Date: ", 'October 1st, ' + noticeYear]);
-
-        pdfLineColIncrArray = [-0.5, 1.5];
-        yearlyDuesStatementAddLine(['', '']);
-        yearlyDuesStatementAddLine(["Parcel Id: ", hoaRec.Parcel_ID]);
-        yearlyDuesStatementAddLine(["Lot No: ", hoaRec.LotNo]);
-        yearlyDuesStatementAddLine(["Property Location: ", hoaRec.Parcel_Location]);
-
-        // hoa name and address for payment
-        pdfLineIncrement = 0.21;
-        pdfLineColIncrArray = [5.2];
-        yearlyDuesStatementAddLine(["Make checks payable to:"], null, 11, 8.0);
-        pdfLineColIncrArray = [-5.2];
-        yearlyDuesStatementAddLine([hoaName]);
-        yearlyDuesStatementAddLine(['']);
-        pdfLineColIncrArray = [-5.2, 0.8];
-        yearlyDuesStatementAddLine(["Send to:", hoaNameShort]);
-        yearlyDuesStatementAddLine(["", hoaAddress1]);
-        yearlyDuesStatementAddLine(["", hoaAddress2]);
-
-        pdfLineIncrement = 0.19;
-        pdfLineColIncrArray = [-5.2];
-        yearlyDuesStatementAddLine(['']);
-        yearlyDuesStatementAddLine(["Date Paid:"], null, 12);
-        yearlyDuesStatementAddLine(['']);
-        yearlyDuesStatementAddLine(["Check No:"]);
-
-        // Help notes
-        yearlyDuesStatementAddLine([''], null, 10, 10.05);
-        pdfMaxLineChars = 55;
-        // If there are notes - print them
-        if (yearlyDuesStatementNotes.length > 0) {
-            pdfLineColIncrArray = [4.7];
-            yearlyDuesStatementAddLine([yearlyDuesHelpNotes], null);
-        }
-
-    } // End of function formatYearlyDuesStatement(hoaRec) {
-
-    //Function to add a line to the Yearly Dues Statement PDF
-    function yearlyDuesStatementAddLine(pdfLineArray, pdfLineHeaderArray, fontSize, lineYStart) {
-        pdfLineCnt++;
-        var X = 0.0;
-        // X (horizontal), Y (vertical)
-
-        /*
-        pdf.setTextColor(255,0,0);
-        pdf.text(20, 40, 'This is red.');
     
-        pdf.setTextColor(0,255,0);
-        pdf.text(20, 50, 'This is green.');
-    
-        pdf.setTextColor(0,0,255);
-        pdf.text(20, 60, 'This is blue.');
-        */
-
-        // Print header and graphic sections
-        if (pdfLineCnt == 1) {
-            pdfPageCnt++;
-
-            // X (horizontal), Y (vertical)
-            pdf.setFontSize(9);
-            pdf.text(8.05, 0.3, pdfPageCnt.toString());
-
-            pdf.addImage(pdfLogoImgData, 'JPEG', 0.42, 0.9, 0.53, 0.53);
-
-            // Tri-fold lines
-            pdf.setLineWidth(0.01);
-            pdf.line(X, 3.75, 8.5, 3.75);
-            pdf.setLineWidth(0.02);
-            var segmentLength = 0.2;
-            dottedLine(0, 7.5, 8.5, 7.5, segmentLength)
-
-            // Text around bottom line
-            pdf.setFontSize(9);
-            pdf.text(3.0, 7.45, "Detach and mail above portion with your payment");
-            pdf.text(3.45, 7.65, "Keep below portion for your records");
-
-            // Lines for address corrections
-            pdf.setLineWidth(0.013);
-            pdf.rect(0.4, 4.0, 4.4, 2.0);
-            pdf.line(1.7, 4.65, 4.5, 4.65);
-            pdf.line(1.7, 4.95, 4.5, 4.95);
-            pdf.line(1.7, 5.25, 4.5, 5.25);
-            pdf.line(1.7, 5.55, 4.5, 5.55);
-            pdf.line(1.7, 5.85, 4.5, 5.85);
-
-            // Checkboxes for survey questions
-            // empty square (X,Y, X length, Y length)
-            pdf.setLineWidth(0.015);
-            //pdf.rect(0.5, 6.4, 0.2, 0.2); 
-            pdf.rect(0.5, 6.7, 0.2, 0.2);
-            //pdf.rect(0.5, 7.0, 0.2, 0.2); 
-
-            // Date and Check No lines
-            pdf.setLineWidth(0.013);
-            pdf.line(6.1, 9.5, 7.5, 9.5);
-            pdf.line(6.1, 9.9, 7.5, 9.9);
-
-            pdfLineY = pdfLineYStart;
-            pdfFontSize = pdfFontSizeDefault;
-        }
-
-        if (fontSize != null && fontSize !== 'undefined') {
-            pdfFontSize = fontSize;
-        }
-        if (lineYStart != null && lineYStart !== 'undefined') {
-            pdfLineY = lineYStart;
-        }
-
-        pdf.setFontSize(pdfFontSize);
-
-        if (pdfLineHeaderArray != null && pdfLineHeaderArray !== 'undefined') {
-            X = 0.0;
-            // Loop through all the column headers in the array
-            for (i = 0; i < pdfLineArray.length; i++) {
-                if (pdfLineColIncrArray[i] < 0) {
-                    pdf.setFontType("bold");
-                } else {
-                    pdf.setFontType("normal");
-                }
-                X += Math.abs(pdfLineColIncrArray[i]);
-                pdf.text(X, pdfLineY, '' + pdfLineHeaderArray[i]);
-            }
-            pdfLineY += pdfLineIncrement / 2.0;
-
-            X = pdfLineColIncrArray[0];
-            pdf.setLineWidth(0.015);
-            pdf.line(X, pdfLineY, 8, pdfLineY);
-            pdfLineY += pdfLineIncrement;
-        }
-
-        var textLine = '';
-        var breakPos = 0;
-        var j = 0;
-        X = 0.0;
-        // Loop through all the columns in the array
-        for (i = 0; i < pdfLineArray.length; i++) {
-            if (pdfLineColIncrArray[i] < 0) {
-                pdf.setFontType("bold");
-            } else {
-                pdf.setFontType("normal");
-            }
-
-            X += Math.abs(pdfLineColIncrArray[i]);
-            textLine = '' + pdfLineArray[i];
-
-            while (textLine.length > 0) {
-                if (textLine.length > pdfMaxLineChars) {
-                    breakPos = pdfMaxLineChars;
-                    j = breakPos;
-                    for (j; j > 0; j--) {
-                        if (textLine[j] == ' ') {
-                            breakPos = j;
-                            break;
-                        }
-                    }
-
-                    pdf.text(X, pdfLineY, textLine.substr(0, breakPos));
-                    pdfLineY += pdfLineIncrement;
-                    textLine = textLine.substr(breakPos, textLine.length - breakPos);
-
-                } else {
-                    pdf.text(X, pdfLineY, textLine);
-                    textLine = '';
-                }
-            } // while (textLine.length > 0) {
-
-        } // for (i = 0; i < pdfLineArray.length; i++) {
-        pdfLineY += pdfLineIncrement;
-        pdf.setFontType("normal");
-
-    } // End of function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray) {
-
 
     function formatDuesStatementResults(hoaRec) {
         var tr = '';
@@ -719,14 +635,14 @@ var admin = (function () {
         ownerRec = hoaRec.ownersList[0];
 
         var currSysDate = new Date();
-        pdfTitle = "Member Dues Statement";
+        pdf.getTitle() = "Member Dues Statement";
         pdfTimestamp = currSysDate.toString().substr(0, 24);
 
         pdfPageCnt = 0;
         pdfLineCnt = 0;
 
         if (duesStatementNotes.length > 0) {
-            pdfLineColIncrArray = [1.4];
+            pdf.setLineColIncrArray([1.4];
             duesStatementPDFaddLine([duesStatementNotes], null);
             duesStatementPDFaddLine([''], null);
         }
@@ -737,7 +653,7 @@ var admin = (function () {
             'Location',
             'Owner and Alt Address',
             'Phone'];
-        pdfLineColIncrArray = [0.6, 1.4, 0.8, 2.2, 1.9];
+        pdf.setLineColIncrArray([0.6, 1.4, 0.8, 2.2, 1.9];
 
         duesStatementPDFaddLine([hoaRec.Parcel_ID, hoaRec.LotNo, hoaRec.Parcel_Location, ownerRec.Mailing_Name,
         ownerRec.Owner_Phone], pdfLineHeaderArray);
@@ -759,7 +675,7 @@ var admin = (function () {
         tr += '<tr><th>Owner Name:</th><td>' + ownerRec.Owner_Name1 + ' ' + ownerRec.Owner_Name2 + '</td></tr>';
 
         var tempTotalDue = '' + hoaRec.TotalDue;
-        tr += '<tr><th>Total Due: </th><td>$' + stringToMoney(tempTotalDue) + '</td></tr>';
+        tr += '<tr><th>Total Due: </th><td>$' + util.formatMoney(tempTotalDue) + '</td></tr>';
         $("#DuesStatementPropertyTable tbody").html(tr);
 
         // If enabled, payment button and instructions will have values, else they will be blank if online payment is not allowed
@@ -779,7 +695,7 @@ var admin = (function () {
                 .attr('data-pdfName', 'DuesStatement')
                 .html('PDF'));
 
-        pdfLineColIncrArray = [0.6, 4.2, 0.5];
+        pdf.setLineColIncrArray([0.6, 4.2, 0.5];
         duesStatementPDFaddLine([''], null);
 
         tr = '';
@@ -831,13 +747,13 @@ var admin = (function () {
                     'Paid',
                     'Non-Collectible',
                     'Date Paid'];
-                pdfLineColIncrArray = [0.6, 0.8, 1.0, 1.7, 0.8, 1.5];
+                pdf.setLineColIncrArray([0.6, 0.8, 1.0, 1.7, 0.8, 1.5];
             }
 
             tempDuesAmt = '' + rec.DuesAmt;
             tr = tr + '<tr>';
             tr = tr + '<td>' + rec.FY + '</a></td>';
-            tr = tr + '<td>' + stringToMoney(tempDuesAmt) + '</td>';
+            tr = tr + '<td>' + util.formatMoney(tempDuesAmt) + '</td>';
             tr = tr + '<td>' + rec.DateDue + '</td>';
             tr = tr + '<td>' + setCheckbox(rec.Paid) + '</td>';
             tr = tr + '<td>' + setCheckbox(rec.NonCollectible) + '</td>';
@@ -885,7 +801,7 @@ var admin = (function () {
             pdf.setFontSize(15);
             pdf.text(1.5, 0.6, hoaName);
             pdf.setFontSize(13);
-            pdf.text(1.5, 0.9, pdfTitle + " - " + pdfTimestamp);
+            pdf.text(1.5, 0.9, pdf.getTitle() + " - " + pdfTimestamp);
             pdf.setFontSize(10);
             pdf.text(6.5, 0.6, hoaAddress1);
             pdf.text(6.5, 0.8, hoaAddress2);
@@ -900,12 +816,12 @@ var admin = (function () {
             X = 0.0;
             // Loop through all the column headers in the array
             for (i = 0; i < pdfLineArray.length; i++) {
-                X += pdfLineColIncrArray[i];
+                X += pdf.setLineColIncrArray([i];
                 pdf.text(X, pdfLineY, '' + pdfLineHeaderArray[i]);
             }
             pdfLineY += pdfLineIncrement / 2.0;
 
-            X = pdfLineColIncrArray[0];
+            X = pdf.setLineColIncrArray([0];
             pdf.setLineWidth(0.015);
             pdf.line(X, pdfLineY, 8, pdfLineY);
             pdfLineY += pdfLineIncrement;
@@ -917,7 +833,7 @@ var admin = (function () {
         X = 0.0;
         // Loop through all the columns in the array
         for (i = 0; i < pdfLineArray.length; i++) {
-            X += pdfLineColIncrArray[i];
+            X += pdf.setLineColIncrArray([i];
             textLine = '' + pdfLineArray[i];
 
             while (textLine.length > 0) {
@@ -944,7 +860,7 @@ var admin = (function () {
         } // for (i = 0; i < pdfLineArray.length; i++) {
         pdfLineY += pdfLineIncrement;
 
-    } // End of function reportPDFaddLine(pdfLineArray) {
+    } 
 
 
 

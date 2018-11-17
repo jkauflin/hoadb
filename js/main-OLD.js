@@ -1566,12 +1566,12 @@ function formatYearlyDuesStatement(hoaRec) {
 	// Set the Notice and Notes field according to 1st or Additional notices
 	noticeYear = '' + parseInt(hoaRec.assessmentsList[0].FY) - 1;
 	noticeDate = formatDate();
-	yearlyDuesStatementNotice = yearlyDuesStatementNoticeAdditional;
-	yearlyDuesStatementNotes = yearlyDuesStatementNotesAdditional;
+	yearlyDuesStatementNotice = config.getVal('yearlyDuesStatementNoticeAdditional');
+	yearlyDuesStatementNotes = config.getVal('yearlyDuesStatementNotesAdditional');
 	if (firstNotice) {
 		noticeDate = 'September 1st, '+noticeYear;
-		yearlyDuesStatementNotice = yearlyDuesStatementNotice1st;
-		yearlyDuesStatementNotes = yearlyDuesStatementNotes1st;
+		yearlyDuesStatementNotice = config.getVal('yearlyDuesStatementNotice1st');
+		yearlyDuesStatementNotes = config.getVal('yearlyDuesStatementNotes1st');
 	}
 
 	pdfLineColIncrArray = [-4.5];

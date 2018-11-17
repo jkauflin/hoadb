@@ -216,6 +216,7 @@
 					//array_push($outputArray,$hoaRec);
 				//}
 					
+				// Get all detail information and calculations for the given Parcel Id
 				$hoaRec = getHoaRec($conn,$Parcel_ID,$OwnerID,NULL,NULL);
 				array_push($adminRec->hoaRecList,$hoaRec);
 				
