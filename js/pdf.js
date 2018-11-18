@@ -33,10 +33,6 @@ var pdf = (function () {
     var pdfFontSizeDefault = 11;
     var pdfFontSize = 11;
 
-    var hoaName = config.getVal('hoaName');
-    var hoaNameShort = config.getVal('hoaNameShort');
-    //var pdfLogoImgData = config.getVal('pdfLogoImgData');
-    //console.log("in reports, pdfLogoImgData.length = " + pdfLogoImgData.length);
     var pdfLogoImgData;
     $.get("getLogoImgData.php", function (logoImgDataResults) {
         pdfLogoImgData = logoImgDataResults;
@@ -54,7 +50,7 @@ var pdf = (function () {
         pdf.setProperties({
             title: pdfTitle,
             subject: pdfTitle,
-            author: hoaName
+            author: config.getVal('hoaName')
         });
 
         // Initialize variables
@@ -89,7 +85,7 @@ var pdf = (function () {
     }
 
     function setLineColIncrArray(inLineColIncrArray) {
-        pdfLineColIncrArray = pdfLineColIncrArray;
+        pdfLineColIncrArray = inLineColIncrArray;
     }
 
     //Function to add a line to the Yearly Dues Statement PDF
@@ -109,7 +105,7 @@ var pdf = (function () {
         pdf.text(20, 60, 'This is blue.');
         */
 
-        // Print header and graphic sections
+        // Print header and graphic sections (at the start of each page)
         if (pdfLineCnt == 1) {
             pdfPageCnt++;
 
@@ -131,9 +127,12 @@ var pdf = (function () {
             pdf.text(3.0, 7.45, "Detach and mail above portion with your payment");
             pdf.text(3.45, 7.65, "Keep below portion for your records");
 
-            // Lines for address corrections
+            // Information correction area
             pdf.setLineWidth(0.013);
-            pdf.rect(0.4, 4.0, 4.4, 2.0);
+            // Box around area
+            //pdf.rect(0.4, 4.0, 4.4, 2.0);   Not including the email line
+            pdf.rect(0.4, 4.0, 4.4, 2.6);
+            // Lines for address corrections
             pdf.line(1.7, 4.65, 4.5, 4.65);
             pdf.line(1.7, 4.95, 4.5, 4.95);
             pdf.line(1.7, 5.25, 4.5, 5.25);
@@ -246,148 +245,6 @@ var pdf = (function () {
 
 
 
-    function formatDuesStatementResults(hoaRec) {
-        var tr = '';
-        var checkedStr = '';
-
-        pdfMaxLineChars = 95;
-
-        var duesStatementDownloadLinks = $("#DuesStatementDownloadLinks");
-        duesStatementDownloadLinks.empty();
-
-        ownerRec = hoaRec.ownersList[0];
-
-        var currSysDate = new Date();
-        pdfTitle = "Member Dues Statement";
-        pdfTimestamp = currSysDate.toString().substr(0, 24);
-
-        pdfPageCnt = 0;
-        pdfLineCnt = 0;
-
-        if (duesStatementNotes.length > 0) {
-            pdfLineColIncrArray = [1.4];
-            duesStatementPDFaddLine([duesStatementNotes], null);
-            duesStatementPDFaddLine([''], null);
-        }
-
-        pdfLineHeaderArray = [
-            'Parcel Id',
-            'Lot No',
-            'Location',
-            'Owner and Alt Address',
-            'Phone'];
-        pdfLineColIncrArray = [0.6, 1.4, 0.8, 2.2, 1.9];
-
-        duesStatementPDFaddLine([hoaRec.Parcel_ID, hoaRec.LotNo, hoaRec.Parcel_Location, ownerRec.Mailing_Name,
-        ownerRec.Owner_Phone], pdfLineHeaderArray);
-
-        if (hoaRec.ownersList[0].AlternateMailing) {
-            duesStatementPDFaddLine(['', '', '', ownerRec.Alt_Address_Line1, ''], null);
-            if (ownerRec.Alt_Address_Line2 != '') {
-                duesStatementPDFaddLine(['', '', '', ownerRec.Alt_Address_Line2, ''], null);
-            }
-            duesStatementPDFaddLine(['', '', '', ownerRec.Alt_City + ', ' + ownerRec.Alt_State + ' ' + ownerRec.Alt_Zip, ''], null);
-        }
-
-
-        tr += '<tr><th>Parcel Id:</th><td>' + hoaRec.Parcel_ID + '</a></td></tr>';
-        tr += '<tr><th>Lot No:</th><td>' + hoaRec.LotNo + '</td></tr>';
-        //tr += '<tr><th>Sub Division: </th><td>'+hoaRec.SubDivParcel+'</td></tr>';
-        tr += '<tr><th>Location: </th><td>' + hoaRec.Parcel_Location + '</td></tr>';
-        tr += '<tr><th>City State Zip: </th><td>' + hoaRec.Property_City + ', ' + hoaRec.Property_State + ' ' + hoaRec.Property_Zip + '</td></tr>';
-        tr += '<tr><th>Owner Name:</th><td>' + ownerRec.Owner_Name1 + ' ' + ownerRec.Owner_Name2 + '</td></tr>';
-
-        var tempTotalDue = '' + hoaRec.TotalDue;
-        tr += '<tr><th>Total Due: </th><td>$' + stringToMoney(tempTotalDue) + '</td></tr>';
-        $("#DuesStatementPropertyTable tbody").html(tr);
-
-        // If enabled, payment button and instructions will have values, else they will be blank if online payment is not allowed
-        if (hoaRec.TotalDue > 0) {
-            $("#PayDues").html(hoaRec.paymentButton);
-            if (hoaRec.paymentButton != '') {
-                $("#PayDuesInstructions").html(onlinePaymentInstructions);
-            } else {
-                $("#PayDuesInstructions").html(offlinePaymentInstructions);
-            }
-        }
-
-        duesStatementDownloadLinks.append(
-            $('<a>').prop('id', 'DownloadDuesStatementPDF')
-                .attr('href', '#')
-                .attr('class', "btn btn-danger downloadBtn")
-                .attr('data-pdfName', 'DuesStatement')
-                .html('PDF'));
-
-        pdfLineColIncrArray = [0.6, 4.2, 0.5];
-        duesStatementPDFaddLine([''], null);
-
-        tr = '';
-        $.each(hoaRec.totalDuesCalcList, function (index, rec) {
-            tr = tr + '<tr>';
-            tr = tr + '<td>' + rec.calcDesc + '</td>';
-            tr = tr + '<td>$</td>';
-            tr = tr + '<td align="right">' + parseFloat('' + rec.calcValue).toFixed(2) + '</td>';
-            tr = tr + '</tr>';
-            duesStatementPDFaddLine([rec.calcDesc, '$', parseFloat('' + rec.calcValue).toFixed(2)], null);
-        });
-        tr = tr + '<tr>';
-        tr = tr + '<td><b>Total Due:</b></td>';
-        tr = tr + '<td><b>$</b></td>';
-        tr = tr + '<td align="right"><b>' + parseFloat('' + hoaRec.TotalDue).toFixed(2) + '</b></td>';
-        tr = tr + '</tr>';
-        duesStatementPDFaddLine(['Total Due:', '$', parseFloat('' + hoaRec.TotalDue).toFixed(2)], null);
-
-        tr = tr + '<tr>';
-        tr = tr + '<td>' + hoaRec.assessmentsList[0].LienComment + '</td>';
-        tr = tr + '<td></td>';
-        tr = tr + '<td align="right"></td>';
-        tr = tr + '</tr>';
-        $("#DuesStatementCalculationTable tbody").html(tr);
-        duesStatementPDFaddLine([hoaRec.assessmentsList[0].LienComment, '', ''], null);
-
-        duesStatementPDFaddLine([''], null);
-
-        var TaxYear = '';
-        tr = '';
-        var tempDuesAmt = '';
-        $.each(hoaRec.assessmentsList, function (index, rec) {
-            pdfLineHeaderArray = null;
-            if (index == 0) {
-                tr = tr + '<tr>';
-                tr = tr + '<th>Year</th>';
-                tr = tr + '<th>Dues Amt</th>';
-                tr = tr + '<th>Date Due</th>';
-                tr = tr + '<th>Paid</th>';
-                tr = tr + '<th>Non-Collectible</th>';
-                tr = tr + '<th>Date Paid</th>';
-                tr = tr + '</tr>';
-                TaxYear = rec.DateDue.substring(0, 4);
-
-                pdfLineHeaderArray = [
-                    'Year',
-                    'Dues Amt',
-                    'Date Due',
-                    'Paid',
-                    'Non-Collectible',
-                    'Date Paid'];
-                pdfLineColIncrArray = [0.6, 0.8, 1.0, 1.7, 0.8, 1.5];
-            }
-
-            tempDuesAmt = '' + rec.DuesAmt;
-            tr = tr + '<tr>';
-            tr = tr + '<td>' + rec.FY + '</a></td>';
-            tr = tr + '<td>' + stringToMoney(tempDuesAmt) + '</td>';
-            tr = tr + '<td>' + rec.DateDue + '</td>';
-            tr = tr + '<td>' + setCheckbox(rec.Paid) + '</td>';
-            tr = tr + '<td>' + setCheckbox(rec.NonCollectible) + '</td>';
-            tr = tr + '<td>' + rec.DatePaid + '</td>';
-            tr = tr + '</tr>';
-            duesStatementPDFaddLine([rec.FY, rec.DuesAmt, rec.DateDue, setBoolText(rec.Paid), setBoolText(rec.NonCollectible), rec.DatePaid], pdfLineHeaderArray);
-        });
-
-        $("#DuesStatementAssessmentsTable tbody").html(tr);
-
-    } // End of function formatDuesStatementResults(hoaRec){
 
     //Function to add a line to the Dues Statement PDF
     function duesStatementPDFaddLine(pdfLineArray, pdfLineHeaderArray) {
@@ -402,8 +259,8 @@ var pdf = (function () {
         if (pdfLineCnt == 1) {
             pdf = new jsPDF('p', 'in', 'letter');
             pdf.setProperties({
-                title: hoaNameShort + ' Dues Statements',
-                subject: hoaNameShort + ' Dues Statements',
+                title: config.getVal('hoaNameShort') + ' Dues Statements',
+                subject: config.getVal('hoaNameShort') + ' Dues Statements',
                 author: 'Treasurer',
                 keywords: 'generated, javascript, web 2.0, ajax',
                 creator: 'MEEE'

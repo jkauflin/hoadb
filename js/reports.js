@@ -38,6 +38,11 @@ var reports = (function () {
     var pdfColIncrement = 1.5;
     var pdfMaxLineChars = 95;
     var pdfFontSizeDefault = 11;
+    
+    var pdfLogoImgData;
+    $.get("getLogoImgData.php", function (logoImgDataResults) {
+        pdfLogoImgData = logoImgDataResults;
+    });
 
     //=================================================================================================================
     // Variables cached from the DOM
@@ -47,13 +52,6 @@ var reports = (function () {
     var $ReportRecCnt = $("#ReportRecCnt");
     var $ReportDownloadLinks = $("#ReportDownloadLinks");
     
-    //var pdfLogoImgData = config.getVal('pdfLogoImgData');
-    //console.log("in reports, pdfLogoImgData.length = " + pdfLogoImgData.length);
-    var pdfLogoImgData;
-    $.get("getLogoImgData.php", function (logoImgDataResults) {
-        pdfLogoImgData = logoImgDataResults;
-    });
-
     //=================================================================================================================
     // Bind events
     $moduleDiv.on("click", ".reportRequest", _reportRequest);
