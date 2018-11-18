@@ -102,11 +102,36 @@ var pdfFontSizeDefault = 11;
     var $ConfirmationButton = $ConfirmationModal.find("#ConfirmationButton");
     var $ConfirmationMessage = $ConfirmationModal.find("#ConfirmationMessage");
     var $ResultMessage = $moduleDiv.find("#ResultMessage");
-    
+
+    var $DuesStatementButton = $document.find("#DuesStatementButton");
+    var $DownloadDuesStatement = $document.find("#DownloadDuesStatement");
+    var $DuesStatementPage = $document.find("#DuesStatementPage");
+
+    var $DuesStatementAssessmentsTable = $("#DuesStatementAssessmentsTable tbody");
+
     //=================================================================================================================
     // Bind events
     $moduleDiv.on("click", ".AdminButton", _adminRequest);
     $ConfirmationButton.on("click", "#AdminExecute", _adminExecute);
+    
+    $DuesStatementButton.click(createDuesStatement);
+    $DownloadDuesStatement.click(downloadDuesStatement);
+
+    function createDuesStatement(event) {
+        util.waitCursor();
+        $.getJSON("getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&ownerId=" + event.target.getAttribute("data-ownerId"), function (hoaRec) {
+            // Initialize the PDF object
+            pdf.init(config.getVal('hoaNameShort')+' Dues Statement', 'letter');
+            formatDuesStatementResults(hoaRec);
+            util.defaultCursor();
+            $DuesStatementPage.modal();
+        });
+    };
+
+    function downloadDuesStatement(event) {
+        pdf.download(event.target.getAttribute("data-pdfName"));
+    };
+
 
     //=================================================================================================================
     // Module methods
@@ -426,43 +451,36 @@ var pdfFontSizeDefault = 11;
         var tr = '';
         var checkedStr = '';
 
-        pdfMaxLineChars = 95;
+        pdf.setMaxLineChars(95);
 
         var duesStatementDownloadLinks = $("#DuesStatementDownloadLinks");
         duesStatementDownloadLinks.empty();
 
         ownerRec = hoaRec.ownersList[0];
 
-        var currSysDate = new Date();
-        pdfTitle = "Member Dues Statement";
-        pdfTimestamp = currSysDate.toString().substr(0, 24);
-
-        pdfPageCnt = 0;
-        pdfLineCnt = 0;
-
         if (duesStatementNotes.length > 0) {
-            pdfLineColIncrArray = [1.4];
-            duesStatementPDFaddLine([duesStatementNotes], null);
-            duesStatementPDFaddLine([''], null);
+            pdf.setLineColIncrArray([1.4]);
+            pdf.duesStatementAddLine([duesStatementNotes], null);
+            pdf.duesStatementAddLine([''], null);
         }
 
-        pdfLineHeaderArray = [
-            'Parcel Id',
-            'Lot No',
-            'Location',
-            'Owner and Alt Address',
-            'Phone'];
-        pdfLineColIncrArray = [0.6, 1.4, 0.8, 2.2, 1.9];
+        var pdfLineHeaderArray = [
+                'Parcel Id',
+                'Lot No',
+                'Location',
+                'Owner and Alt Address',
+                'Phone'];
+        pdf.setLineColIncrArray([0.6, 1.4, 0.8, 2.2, 1.9]);
 
-        duesStatementPDFaddLine([hoaRec.Parcel_ID, hoaRec.LotNo, hoaRec.Parcel_Location, ownerRec.Mailing_Name,
+        pdf.duesStatementAddLine([hoaRec.Parcel_ID, hoaRec.LotNo, hoaRec.Parcel_Location, ownerRec.Mailing_Name,
         ownerRec.Owner_Phone], pdfLineHeaderArray);
 
         if (hoaRec.ownersList[0].AlternateMailing) {
-            duesStatementPDFaddLine(['', '', '', ownerRec.Alt_Address_Line1, ''], null);
+            pdf.duesStatementAddLine(['', '', '', ownerRec.Alt_Address_Line1, ''], null);
             if (ownerRec.Alt_Address_Line2 != '') {
-                duesStatementPDFaddLine(['', '', '', ownerRec.Alt_Address_Line2, ''], null);
+                pdf.duesStatementAddLine(['', '', '', ownerRec.Alt_Address_Line2, ''], null);
             }
-            duesStatementPDFaddLine(['', '', '', ownerRec.Alt_City + ', ' + ownerRec.Alt_State + ' ' + ownerRec.Alt_Zip, ''], null);
+            pdf.duesStatementAddLine(['', '', '', ownerRec.Alt_City + ', ' + ownerRec.Alt_State + ' ' + ownerRec.Alt_Zip, ''], null);
         }
 
 
@@ -474,7 +492,7 @@ var pdfFontSizeDefault = 11;
         tr += '<tr><th>Owner Name:</th><td>' + ownerRec.Owner_Name1 + ' ' + ownerRec.Owner_Name2 + '</td></tr>';
 
         var tempTotalDue = '' + hoaRec.TotalDue;
-        tr += '<tr><th>Total Due: </th><td>$' + stringToMoney(tempTotalDue) + '</td></tr>';
+        tr += '<tr><th>Total Due: </th><td>$' + util.formatMoney(tempTotalDue) + '</td></tr>';
         $("#DuesStatementPropertyTable tbody").html(tr);
 
         // If enabled, payment button and instructions will have values, else they will be blank if online payment is not allowed
@@ -488,14 +506,14 @@ var pdfFontSizeDefault = 11;
         }
 
         duesStatementDownloadLinks.append(
-            $('<a>').prop('id', 'DownloadDuesStatementPDF')
+            $('<a>').prop('id', 'DownloadDuesStatement')
                 .attr('href', '#')
                 .attr('class', "btn btn-danger downloadBtn")
                 .attr('data-pdfName', 'DuesStatement')
                 .html('PDF'));
 
-        pdfLineColIncrArray = [0.6, 4.2, 0.5];
-        duesStatementPDFaddLine([''], null);
+        pdf.setLineColIncrArray([0.6, 4.2, 0.5]);
+        pdf.duesStatementAddLine([''], null);
 
         tr = '';
         $.each(hoaRec.totalDuesCalcList, function (index, rec) {
@@ -504,14 +522,14 @@ var pdfFontSizeDefault = 11;
             tr = tr + '<td>$</td>';
             tr = tr + '<td align="right">' + parseFloat('' + rec.calcValue).toFixed(2) + '</td>';
             tr = tr + '</tr>';
-            duesStatementPDFaddLine([rec.calcDesc, '$', parseFloat('' + rec.calcValue).toFixed(2)], null);
+            pdf.duesStatementAddLine([rec.calcDesc, '$', parseFloat('' + rec.calcValue).toFixed(2)], null);
         });
         tr = tr + '<tr>';
         tr = tr + '<td><b>Total Due:</b></td>';
         tr = tr + '<td><b>$</b></td>';
         tr = tr + '<td align="right"><b>' + parseFloat('' + hoaRec.TotalDue).toFixed(2) + '</b></td>';
         tr = tr + '</tr>';
-        duesStatementPDFaddLine(['Total Due:', '$', parseFloat('' + hoaRec.TotalDue).toFixed(2)], null);
+        pdf.duesStatementAddLine(['Total Due:', '$', parseFloat('' + hoaRec.TotalDue).toFixed(2)], null);
 
         tr = tr + '<tr>';
         tr = tr + '<td>' + hoaRec.assessmentsList[0].LienComment + '</td>';
@@ -519,15 +537,16 @@ var pdfFontSizeDefault = 11;
         tr = tr + '<td align="right"></td>';
         tr = tr + '</tr>';
         $("#DuesStatementCalculationTable tbody").html(tr);
-        duesStatementPDFaddLine([hoaRec.assessmentsList[0].LienComment, '', ''], null);
+        pdf.duesStatementAddLine([hoaRec.assessmentsList[0].LienComment, '', ''], null);
 
-        duesStatementPDFaddLine([''], null);
+        pdf.duesStatementAddLine([''], null);
 
         var TaxYear = '';
         tr = '';
         var tempDuesAmt = '';
         $.each(hoaRec.assessmentsList, function (index, rec) {
             pdfLineHeaderArray = null;
+
             if (index == 0) {
                 tr = tr + '<tr>';
                 tr = tr + '<th>Year</th>';
@@ -546,22 +565,22 @@ var pdfFontSizeDefault = 11;
                     'Paid',
                     'Non-Collectible',
                     'Date Paid'];
-                pdfLineColIncrArray = [0.6, 0.8, 1.0, 1.7, 0.8, 1.5];
+                pdf.setLineColIncrArray([0.6, 0.8, 1.0, 1.7, 0.8, 1.5]);
             }
 
             tempDuesAmt = '' + rec.DuesAmt;
             tr = tr + '<tr>';
             tr = tr + '<td>' + rec.FY + '</a></td>';
-            tr = tr + '<td>' + stringToMoney(tempDuesAmt) + '</td>';
+            tr = tr + '<td>' + util.formatMoney(tempDuesAmt) + '</td>';
             tr = tr + '<td>' + rec.DateDue + '</td>';
-            tr = tr + '<td>' + setCheckbox(rec.Paid) + '</td>';
-            tr = tr + '<td>' + setCheckbox(rec.NonCollectible) + '</td>';
+            tr = tr + '<td>' + util.setCheckbox(rec.Paid) + '</td>';
+            tr = tr + '<td>' + util.setCheckbox(rec.NonCollectible) + '</td>';
             tr = tr + '<td>' + rec.DatePaid + '</td>';
             tr = tr + '</tr>';
-            duesStatementPDFaddLine([rec.FY, rec.DuesAmt, rec.DateDue, setBoolText(rec.Paid), setBoolText(rec.NonCollectible), rec.DatePaid], pdfLineHeaderArray);
+            pdf.duesStatementAddLine([rec.FY, rec.DuesAmt, rec.DateDue, util.setBoolText(rec.Paid), util.setBoolText(rec.NonCollectible), rec.DatePaid], pdfLineHeaderArray);
         });
 
-        $("#DuesStatementAssessmentsTable tbody").html(tr);
+        $DuesStatementAssessmentsTable.html(tr);
 
     } // End of function formatDuesStatementResults(hoaRec){
 

@@ -21,7 +21,7 @@ var pdf = (function () {
     var pdfTimestamp = '';
 
     var pdfTotals = "";
-    var pdfLineHeaderArray = [];
+//    var pdfLineHeaderArray = [];
     var pdfLineColIncrArray = [];
     var pdfPageCnt = 0;
     var pdfLineCnt = 0;
@@ -32,6 +32,8 @@ var pdf = (function () {
     var pdfMaxLineChars = 95;
     var pdfFontSizeDefault = 11;
     var pdfFontSize = 11;
+
+    var pdfHeader = false;
 
     var pdfLogoImgData;
     $.get("getLogoImgData.php", function (logoImgDataResults) {
@@ -50,8 +52,14 @@ var pdf = (function () {
         pdf.setProperties({
             title: pdfTitle,
             subject: pdfTitle,
-            author: config.getVal('hoaName')
+            author: config.getVal('hoaName'),
+            keywords: 'generated, javascript, web 2.0, ajax',
+            creator: 'MEEE'
         });
+
+
+        pdfHeader = true;
+
 
         // Initialize variables
         pdfPageCnt = 0;
@@ -87,6 +95,12 @@ var pdf = (function () {
     function setLineColIncrArray(inLineColIncrArray) {
         pdfLineColIncrArray = inLineColIncrArray;
     }
+
+    /*
+    function setLineHeaderArray(inLineHeaderArray) {
+        pdfLineHeaderArray = inLineHeaderArray;
+    }
+    */
 
     //Function to add a line to the Yearly Dues Statement PDF
     function yearlyDuesStatementAddLine(pdfLineArray, pdfLineHeaderArray, fontSize, lineYStart) {
@@ -228,34 +242,17 @@ var pdf = (function () {
     } // End of function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray) {
 
 
-    //=================================================================================================================
-    // This is what is exposed from this Module
-    return {
-        init:               init,
-        addPage:            addPage,
-        getTitle:           getTitle,
-        setMaxLineChars:    setMaxLineChars,
-        setLineIncrement:   setLineIncrement,
-        setColIncrement:    setColIncrement,
-        setLineColIncrArray: setLineColIncrArray,
-        yearlyDuesStatementAddLine: yearlyDuesStatementAddLine,
-        download:           download
-    };
-
-
-
-
 
     //Function to add a line to the Dues Statement PDF
-    function duesStatementPDFaddLine(pdfLineArray, pdfLineHeaderArray) {
+    function duesStatementAddLine(pdfLineArray, pdfLineHeaderArray) {
         pdfLineCnt++;
-        var pdfHeader = false;
         var X = 0.0;
         // X (horizontal), Y (vertical)
 
         var hoaName = '';
         var hoaNameShort = '';
 
+        /*
         if (pdfLineCnt == 1) {
             pdf = new jsPDF('p', 'in', 'letter');
             pdf.setProperties({
@@ -267,12 +264,14 @@ var pdf = (function () {
             });
             pdfHeader = true;
         }
+        */
 
         //if (pdfLineY > 7.8) {
         if (pdfLineY > 10) {
             pdf.addPage('letter', 'p');
             pdfHeader = true;
         }
+        // pdfHeader = false at top ??????????????????????????????
 
         if (pdfHeader) {
             pdfPageCnt++;
@@ -371,5 +370,21 @@ var pdf = (function () {
             curY += 2 * deltaY;
         }
     }
+
+    //=================================================================================================================
+    // This is what is exposed from this Module
+    return {
+        init: init,
+        addPage: addPage,
+        getTitle: getTitle,
+        setMaxLineChars: setMaxLineChars,
+        setLineIncrement: setLineIncrement,
+        setColIncrement: setColIncrement,
+        setLineColIncrArray: setLineColIncrArray,
+//        setLineHeaderArray: setLineHeaderArray,
+        yearlyDuesStatementAddLine: yearlyDuesStatementAddLine,
+        duesStatementAddLine: duesStatementAddLine,
+        download: download
+    };
 
 })(); // var pdf = (function(){
