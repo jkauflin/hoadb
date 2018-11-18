@@ -31,6 +31,7 @@ var pdf = (function () {
     var pdfColIncrement = 1.5;
     var pdfMaxLineChars = 95;
     var pdfFontSizeDefault = 11;
+    var pdfFontSize = 11;
 
     var hoaName = config.getVal('hoaName');
     var hoaNameShort = config.getVal('hoaNameShort');
@@ -76,6 +77,10 @@ var pdf = (function () {
         return pdfTitle;
     }
 
+    function setMaxLineChars(inMaxLineChars) {
+        pdfMaxLineChars = inMaxLineChars;
+    }
+
     function setLineIncrement(inLineIncrement) {
         pdfLineIncrement = inLineIncrement;
     }
@@ -119,7 +124,7 @@ var pdf = (function () {
             pdf.line(X, 3.75, 8.5, 3.75);
             pdf.setLineWidth(0.02);
             var segmentLength = 0.2;
-            dottedLine(0, 7.5, 8.5, 7.5, segmentLength)
+            _dottedLine(0, 7.5, 8.5, 7.5, segmentLength)
 
             // Text around bottom line
             pdf.setFontSize(9);
@@ -182,6 +187,7 @@ var pdf = (function () {
 
         var textLine = '';
         var breakPos = 0;
+        var i = 0;
         var j = 0;
         X = 0.0;
         // Loop through all the columns in the array
@@ -229,6 +235,7 @@ var pdf = (function () {
         init:               init,
         addPage:            addPage,
         getTitle:           getTitle,
+        setMaxLineChars:    setMaxLineChars,
         setLineIncrement:   setLineIncrement,
         setColIncrement:    setColIncrement,
         setLineColIncrArray: setLineColIncrArray,
@@ -479,7 +486,33 @@ var pdf = (function () {
     }
 
 
+    /**
+     * Draws a dotted line on a jsPDF doc between two points.
+     * Note that the segment length is adjusted a little so
+     * that we end the line with a drawn segment and don't
+     * overflow.
+     */
+    function _dottedLine(xFrom, yFrom, xTo, yTo, segmentLength) {
+        // Calculate line length (c)
+        var a = Math.abs(xTo - xFrom);
+        var b = Math.abs(yTo - yFrom);
+        var c = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
 
+        // Make sure we have an odd number of line segments (drawn or blank)
+        // to fit it nicely
+        var fractions = c / segmentLength;
+        var adjustedSegmentLength = (Math.floor(fractions) % 2 === 0) ? (c / Math.ceil(fractions)) : (c / Math.floor(fractions));
 
+        // Calculate x, y deltas per segment
+        var deltaX = adjustedSegmentLength * (a / c);
+        var deltaY = adjustedSegmentLength * (b / c);
+
+        var curX = xFrom, curY = yFrom;
+        while (curX <= xTo && curY <= yTo) {
+            pdf.line(curX, curY, curX + deltaX, curY + deltaY);
+            curX += 2 * deltaX;
+            curY += 2 * deltaY;
+        }
+    }
 
 })(); // var pdf = (function(){
