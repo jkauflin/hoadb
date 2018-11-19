@@ -62,24 +62,6 @@ var admin = (function () {
     var adminEmailSkipCnt = 0;
     // Global variable for total number of parcels in the HOA
     var hoaRecList = [];
-
-
-    var pdf;
-var pdfLogoImgData = '';
-var pdf.getTitle() = "";
-var pdfTimestamp = "";
-var pdfTotals = "";
-var pdfLineHeaderArray = [];
-var pdf.setLineColIncrArray([];
-var pdfPageCnt = 0;
-var pdfLineCnt = 0;
-var pdfLineYStart = 1.5;
-var pdfLineY = pdfLineYStart;
-var pdfLineIncrement = 0.25;
-var pdfColIncrement = 1.5;
-var pdf.setMaxLineChars( = 95;
-var pdfFontSizeDefault = 11;
-
     */
 
     // Move this to a config value
@@ -103,21 +85,27 @@ var pdfFontSizeDefault = 11;
     var $ConfirmationMessage = $ConfirmationModal.find("#ConfirmationMessage");
     var $ResultMessage = $moduleDiv.find("#ResultMessage");
 
-    var $DuesStatementButton = $document.find("#DuesStatementButton");
-    var $DownloadDuesStatement = $document.find("#DownloadDuesStatement");
+    //var $DuesStatementButton = $document.find("#DuesStatementButton");
+    //var $DownloadDuesStatement = $document.find("#DownloadDuesStatement");
     var $DuesStatementPage = $document.find("#DuesStatementPage");
 
+    var $DuesStatementPropertyTable = $("#DuesStatementPropertyTable tbody");
     var $DuesStatementAssessmentsTable = $("#DuesStatementAssessmentsTable tbody");
+
+    var duesStatementDownloadLinks = $("#DuesStatementDownloadLinks");
 
     //=================================================================================================================
     // Bind events
     $moduleDiv.on("click", ".AdminButton", _adminRequest);
     $ConfirmationButton.on("click", "#AdminExecute", _adminExecute);
     
-    $DuesStatementButton.click(createDuesStatement);
-    $DownloadDuesStatement.click(downloadDuesStatement);
+    $document.on("click", "#DuesStatementButton", createDuesStatement);
+    $document.on("click", "#DownloadDuesStatement", downloadDuesStatement);
+    //$DuesStatementButton.click(createDuesStatement);
+    //$DownloadDuesStatement.click(downloadDuesStatement);
 
     function createDuesStatement(event) {
+        //console.log("create dues statement, parcel = " + event.target.getAttribute("data-parcelId") + ", owner = " + event.target.getAttribute("data-ownerId"));
         util.waitCursor();
         $.getJSON("getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&ownerId=" + event.target.getAttribute("data-ownerId"), function (hoaRec) {
             // Initialize the PDF object
@@ -158,10 +146,6 @@ var pdfFontSizeDefault = 11;
             $ConfirmationModal.modal();
         });
     }
-
-//MSR - molten salt reactor
-// LFTR - lithium floride thorium reactor (a type of MSR)
-// Tesla powerwall
 
     // Respond to the Continue click for an Admin Execute function 
     function _adminExecute(event) {
@@ -448,15 +432,12 @@ var pdfFontSizeDefault = 11;
 
 
     function formatDuesStatementResults(hoaRec) {
+        var ownerRec = hoaRec.ownersList[0];
         var tr = '';
         var checkedStr = '';
-
-        pdf.setMaxLineChars(95);
-
-        var duesStatementDownloadLinks = $("#DuesStatementDownloadLinks");
+        var duesStatementNotes = config.getVal('duesStatementNotes');
         duesStatementDownloadLinks.empty();
-
-        ownerRec = hoaRec.ownersList[0];
+        pdf.setMaxLineChars(95);
 
         if (duesStatementNotes.length > 0) {
             pdf.setLineColIncrArray([1.4]);
@@ -483,25 +464,23 @@ var pdfFontSizeDefault = 11;
             pdf.duesStatementAddLine(['', '', '', ownerRec.Alt_City + ', ' + ownerRec.Alt_State + ' ' + ownerRec.Alt_Zip, ''], null);
         }
 
-
         tr += '<tr><th>Parcel Id:</th><td>' + hoaRec.Parcel_ID + '</a></td></tr>';
         tr += '<tr><th>Lot No:</th><td>' + hoaRec.LotNo + '</td></tr>';
-        //tr += '<tr><th>Sub Division: </th><td>'+hoaRec.SubDivParcel+'</td></tr>';
         tr += '<tr><th>Location: </th><td>' + hoaRec.Parcel_Location + '</td></tr>';
         tr += '<tr><th>City State Zip: </th><td>' + hoaRec.Property_City + ', ' + hoaRec.Property_State + ' ' + hoaRec.Property_Zip + '</td></tr>';
         tr += '<tr><th>Owner Name:</th><td>' + ownerRec.Owner_Name1 + ' ' + ownerRec.Owner_Name2 + '</td></tr>';
 
         var tempTotalDue = '' + hoaRec.TotalDue;
         tr += '<tr><th>Total Due: </th><td>$' + util.formatMoney(tempTotalDue) + '</td></tr>';
-        $("#DuesStatementPropertyTable tbody").html(tr);
+        $DuesStatementPropertyTable.html(tr);
 
         // If enabled, payment button and instructions will have values, else they will be blank if online payment is not allowed
         if (hoaRec.TotalDue > 0) {
             $("#PayDues").html(hoaRec.paymentButton);
             if (hoaRec.paymentButton != '') {
-                $("#PayDuesInstructions").html(onlinePaymentInstructions);
+                $("#PayDuesInstructions").html(config.getVal('onlinePaymentInstructions'));
             } else {
-                $("#PayDuesInstructions").html(offlinePaymentInstructions);
+                $("#PayDuesInstructions").html(config.getVal('offlinePaymentInstructions'));
             }
         }
 

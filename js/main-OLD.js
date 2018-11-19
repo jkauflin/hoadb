@@ -1907,6 +1907,7 @@ function formatDuesStatementResults(hoaRec) {
 	pdfPageCnt = 0;
 	pdfLineCnt = 0;
 
+	var duesStatementNotes = config.getVal('duesStatementNotes');
 	if (duesStatementNotes.length > 0) {
 		pdfLineColIncrArray = [1.4];
 		duesStatementPDFaddLine([duesStatementNotes],null);

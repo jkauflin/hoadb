@@ -249,41 +249,25 @@ var pdf = (function () {
         var X = 0.0;
         // X (horizontal), Y (vertical)
 
-        var hoaName = '';
-        var hoaNameShort = '';
-
-        /*
-        if (pdfLineCnt == 1) {
-            pdf = new jsPDF('p', 'in', 'letter');
-            pdf.setProperties({
-                title: config.getVal('hoaNameShort') + ' Dues Statements',
-                subject: config.getVal('hoaNameShort') + ' Dues Statements',
-                author: 'Treasurer',
-                keywords: 'generated, javascript, web 2.0, ajax',
-                creator: 'MEEE'
-            });
-            pdfHeader = true;
-        }
-        */
-
-        //if (pdfLineY > 7.8) {
+        // Check for new page
         if (pdfLineY > 10) {
             pdf.addPage('letter', 'p');
             pdfHeader = true;
         }
-        // pdfHeader = false at top ??????????????????????????????
 
+        // If new page, write the header
         if (pdfHeader) {
+            pdfHeader = false;
             pdfPageCnt++;
 
             // X (horizontal), Y (vertical)
             pdf.setFontSize(15);
-            pdf.text(1.5, 0.6, hoaName);
+            pdf.text(1.5, 0.6, config.getVal('hoaName'));
             pdf.setFontSize(13);
             pdf.text(1.5, 0.9, pdfTitle + " - " + pdfTimestamp);
             pdf.setFontSize(10);
-            pdf.text(6.5, 0.6, hoaAddress1);
-            pdf.text(6.5, 0.8, hoaAddress2);
+            pdf.text(6.5, 0.6, config.getVal('hoaAddress1'));
+            pdf.text(6.5, 0.8, config.getVal('hoaAddress2'));
 
             pdf.addImage(pdfLogoImgData, 'JPEG', 0.4, 0.3, 0.9, 0.9);
             pdf.setFontSize(10);
@@ -308,6 +292,7 @@ var pdf = (function () {
 
         var textLine = '';
         var breakPos = 0;
+        var i = 0;
         var j = 0;
         X = 0.0;
         // Loop through all the columns in the array
@@ -338,9 +323,7 @@ var pdf = (function () {
 
         } // for (i = 0; i < pdfLineArray.length; i++) {
         pdfLineY += pdfLineIncrement;
-
     }
-
 
     /**
      * Draws a dotted line on a jsPDF doc between two points.
