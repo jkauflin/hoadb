@@ -487,7 +487,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 			if ($row = $result->fetch_assoc()) {
 				// If there is an email from the last electronic payment, for the current Owner, only use it 
 				// if they are not going paperless or the paperless email is blank
-				// *** NEED TO SEND email dues TO ALL EMAIL addresses (array of addresses)
+				// *** NEED TO SEND email dues TO ALL EMAIL addresses (array of addresses???)
 				if (!$hoaRec->UseEmail || $hoaRec->DuesEmailAddr == '') {
 					$hoaRec->DuesEmailAddr = $row["payer_email"];
 				}

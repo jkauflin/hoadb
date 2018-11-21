@@ -1413,7 +1413,7 @@ function adminLoop(hoaPropertyRecList,action) {
 				// email not blank
 console.log("Cnt = "+adminRecCnt+", ParcelId = "+hoaRec.Parcel_ID+", OwnerID = "+hoaRec.ownersList[0].OwnerID+", Owner = "+hoaRec.ownersList[0].Owner_Name1+", hoaRec.DuesEmailAddr = "+hoaRec.DuesEmailAddr);
 				emailRecCnt++;
-				/*
+				
 				$.get("updHoaComm.php","parcelId="+hoaRec.Parcel_ID+
 						"&ownerId="+hoaRec.ownersList[0].OwnerID+
 						"&commId=NEW"+
@@ -1444,8 +1444,10 @@ console.log("Cnt = "+adminRecCnt+", ParcelId = "+hoaRec.Parcel_ID+", OwnerID = "
 					}); // End of $.post("sendMail.php"
 
 				}); // End of $.get("updHoaComm.php"
-				*/
+				
 			}
+
+			
 		} else if (action == 'DuesRank') {
 			if (hoaRec.TotalDue > 0) {
         		hoaRecList.push(hoaRec);

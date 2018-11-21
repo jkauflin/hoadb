@@ -8,12 +8,11 @@
  * 2016-11-06 JJK 	Initial version to send mail with PDF attachment 
  * 2016-11-07 JJK   Modified to use swiftmailer.org library
  *============================================================================*/
+	require_once 'swiftmailer/lib/swift_required.php';
 
-require_once 'swiftmailer/lib/swift_required.php';
-
-include 'commonUtil.php';
-// Include table record classes and db connection parameters
-include 'hoaDbCommon.php';
+	include 'commonUtil.php';
+	// Include table record classes and db connection parameters
+	include 'hoaDbCommon.php';
 
 	$toEmail = $_POST['toEmail'];
 	$subject = $_POST['subject'];
@@ -31,6 +30,12 @@ include 'hoaDbCommon.php';
 	// And optionally an alternative body
 	//	->addPart($messageStr, 'text/plain');
 	
+    // swiftmailer PHP read receipt capability
+    // $message -> setReadReceiptTo('your@address.tld');
+    // When the email is opened, if the mail client supports it a notification will be sent to this address.
+    // Read receipts won't work for the majority of recipients since many mail clients auto-disable them. 
+    // Those clients that will send a read receipt will make the user aware that one has been requested.
+
 	// Create the attachment with your data
 	$attachment = Swift_Attachment::newInstance($filedata, $filename, 'application/pdf');
 	// Attach it to the message

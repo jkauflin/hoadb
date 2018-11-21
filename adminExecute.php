@@ -15,6 +15,7 @@
  * 2018-11-14 JJK	Re-factor fror modules
  * 2018-11-16 JJK	Modified Dues queries to return all data needed (to fix
  * 					issues with async loop processing)
+ * 2018-11-21 JJK	Modified to accept a Parcel Id for the due email test
  *============================================================================*/
 	include 'commonUtil.php';
 	// Include table record classes and db connection parameters
@@ -29,6 +30,7 @@
 	$action = getParamVal("action");
 	$fiscalYear = getParamVal("fy");
 	$duesAmt = strToUSD(getParamVal("duesAmt"));
+	$duesEmailTestParcel = getParamVal("duesEmailTestParcel");
 
 	$adminLevel = getAdminLevel();
 	$conn = getConn();
@@ -174,15 +176,20 @@
 
 		$sql = '';
 		if ($action == "DuesEmails" || $action == "DuesEmailsTest") {
-			
-			$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-					"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
-					"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
-			/* Can't just use UseEmail as a flag because we want to send emails to every email address we have, regardless if they say use specifically
-					$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-					"WHERE p.UseEmail AND p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
-					"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
-			*/
+			if ($action == "DuesEmailsTest") {
+				$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+						"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
+						"AND a.FY = " . $fy . " AND p.Parcel_ID = '".$duesEmailTestParcel."'; ";
+			} else {
+				$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+						"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
+						"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
+				/* Can't just use UseEmail as a flag because we want to send emails to every email address we have, regardless if they say use specifically
+						$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+						"WHERE p.UseEmail AND p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
+						"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
+				*/
+			}
 			$adminRec->message = "Completed data lookup for Dues Emails";
 		} else if ($action == "DuesRank") {
 			$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";

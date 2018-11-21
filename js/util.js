@@ -241,25 +241,30 @@
         return jsonStr;
     }
 
+    function displayError(errorMessage) {
+        $ajaxError.html(errorMessage);
+    }
+
     //=================================================================================================================
     // This is what is exposed from this Module
     return {
-        sleep: sleep,
-        urlParam: urlParam,
-        cleanStr: cleanStr,
-        csvFilter: csvFilter,
-        formatMoney: formatMoney,
-        formatDate: formatDate,
-        waitCursor: waitCursor,
-        defaultCursor: defaultCursor,
-        setBoolText: setBoolText,
-        setCheckbox: setCheckbox,
-        setCheckboxEdit: setCheckboxEdit,
-        setInputText: setInputText,
-        setTextArea: setTextArea,
-        setInputDate: setInputDate,
-        setSelectOption: setSelectOption,
-        getJSONfromInputs: getJSONfromInputs
+        sleep:              sleep,
+        urlParam:           urlParam,
+        cleanStr:           cleanStr,
+        csvFilter:          csvFilter,
+        formatMoney:        formatMoney,
+        formatDate:         formatDate,
+        waitCursor:         waitCursor,
+        defaultCursor:      defaultCursor,
+        setBoolText:        setBoolText,
+        setCheckbox:        setCheckbox,
+        setCheckboxEdit:    setCheckboxEdit,
+        setInputText:       setInputText,
+        setTextArea:        setTextArea,
+        setInputDate:       setInputDate,
+        setSelectOption:    setSelectOption,
+        getJSONfromInputs:  getJSONfromInputs,
+        displayError:       displayError
     };
         
 })(); // var util = (function(){

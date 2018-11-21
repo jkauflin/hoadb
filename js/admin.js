@@ -163,14 +163,16 @@ var admin = (function () {
         // (modify to use POST at some point)
         $.getJSON("adminExecute.php", "action=" + action +
             "&fy=" + event.target.getAttribute("data-fy") +
-            "&duesAmt=" + event.target.getAttribute("data-duesAmt"), function (adminRec) {
+            "&duesAmt=" + event.target.getAttribute("data-duesAmt") + 
+            "&duesEmailTestParcel=" + config.getVal('duesEmailTestParcel'), function (adminRec) {
             util.defaultCursor();
             $ResultMessage.html(adminRec.message);
 
             if (action == 'DuesNotices') {
                 _duesNotices(adminRec.hoaRecList);
-            }
-            else if (action == 'DuesEmails' || action == 'DuesEmailsTest' || action == 'DuesRank' || action == 'MarkMailed') {
+            } else if (action == 'DuesEmails' || action == 'DuesEmailsTest') {
+                _duesEmails(adminRec.hoaRecList,action);
+            } else if (action == 'DuesRank' || action == 'MarkMailed') {
 
             } // End of if
         }); // $.getJSON("adminExecute.php","action="+action+
@@ -179,14 +181,14 @@ var admin = (function () {
     function _duesNotices(hoaRecList) {
         var adminEmailSkipCnt = 0;
         var displayAddress = '';
-        var noticeType = '';
         var commType = 'Dues Notice';
         var commDesc = '';
-
         var firstNotice = false;
+        var noticeType = 'Additional';
         // If list of unpaid properties is the total number of properties, assume it is the 1st Dues Notice
         if (hoaRecList.length == hoaPropertyListMAX) {
             firstNotice = true;
+            noticeType = "1st";
         }
 
         // Initialize the PDF object
@@ -208,11 +210,6 @@ var admin = (function () {
                     displayAddress = hoaRec.ownersList[0].Alt_Address_Line1;
                 }
 
-                noticeType = "Additional";
-                if (firstNotice) {
-                    noticeType = "1st";
-                }
-
                 commDesc = noticeType + " Notice for postal mail created for " + displayAddress;
                 // Create the PDF for yearly dues statements
                 if (index > 0) {
@@ -224,18 +221,85 @@ var admin = (function () {
                 _formatYearlyDuesStatement(hoaRec, firstNotice);
 
                 // log communication for notice created
-                //communications.LogCommunication(hoaRec.Parcel_ID, hoaRec.ownersList[0].OwnerID, commType, commDesc);
+                communications.LogCommunication(hoaRec.Parcel_ID, hoaRec.ownersList[0].OwnerID, commType, commDesc);
             }
 
         }); // End of loop through Parcels
 
-        //$ResultMessage.html("Done with loop, cnt = " + adminRec.hoaPropertyRecList.length);
-        console.log("Done with loop");
         $("#ResultMessage").html("Yearly dues notices created, total = " + hoaRecList.length + ", (Total skipped for UseEmail = " + adminEmailSkipCnt + ")");
         // Download the PDF file
         pdf.download('YearlyDuesNotices');
     }
 
+    function _duesEmails(hoaRecList,action) {
+        var emailRecCnt = 0;
+        var commType = 'Dues Notice Email';
+        var commDesc = '';
+        var sendEmailAddr = '';
+        var firstNotice = false;
+        var noticeType = "Additional";
+        // If list of unpaid properties is the total number of properties, assume it is the 1st Dues Notice
+        if (hoaRecList.length == hoaPropertyListMAX) {
+            firstNotice = true;
+            noticeType = "1st";
+        }
+        // ************************ NEED A BETTER WAY TO FIGURE OUT FIRST NOTICES - date?  number paid against total membership?
+        // maybe make it a input set by requestor (like an email to use?)
+
+        console.log("Before adminLoop, hoaRecList.length = " + hoaRecList.length);
+        $ResultMessage.html("Executing Admin request...(processing list)");
+
+        $.each(hoaRecList, function (index, hoaRec) {
+            sendEmailAddr = hoaRec.DuesEmailAddr;
+            if (action == 'DuesEmailsTest') {
+                sendEmailAddr = config.getVal('duesEmailTestAddress');
+            }
+
+            // just check for a valid email address (NOT UseEmail - just use that to skip in the else)
+            // if (hoaRec.UseEmail || action == 'DuesEmailsTest') {
+            if (sendEmailAddr != '') {
+                emailRecCnt++;
+                console.log(index + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", sendEmailAddr = " + sendEmailAddr);
+
+                // Initialize the PDF object
+                pdf.init('Member Dues Notice', 'letter');
+
+                // Call function to format the yearly dues statement for an individual property
+                _formatYearlyDuesStatement(hoaRec, firstNotice);
+
+                // swiftmailer PHP read receipt capability
+                // $message -> setReadReceiptTo('your@address.tld');
+                // When the email is opened, if the mail client supports it a notification will be sent to this address.
+                // Read receipts won't work for the majority of recipients since many mail clients auto-disable them. 
+                // Those clients that will send a read receipt will make the user aware that one has been requested.
+
+                $.post("sendMail.php", {
+                    toEmail: sendEmailAddr,
+                    subject: config.getVal('hoaNameShort') + ' Dues Notice',
+                    messageStr: 'Attached is the ' + config.getVal('hoaName') + ' Dues Notice.  *** Reply to this email to request unsubscribe ***',
+                    filename: config.getVal('hoaNameShort') + 'DuesNotice.pdf',
+                    filedata: btoa(pdf.getOutput())
+                }, function (response, status) {
+                    console.log("response from sendMail = " + response + ", for sendEmailAddr = " + sendEmailAddr);
+                    if (response == 'SUCCESS') {
+                        commDesc = noticeType + " Dues Notice emailed to " + sendEmailAddr;
+                    } else {
+                        commDesc = noticeType + " Dues Notice, ERROR emailing to " + sendEmailAddr;
+                        util.displayError(commDesc + ", ParcelId = " + hoaRec.Parcel_ID);
+                    }
+                    // log communication for notice created
+                    communications.LogCommunication(hoaRec.Parcel_ID, hoaRec.ownersList[0].OwnerID, commType, commDesc);
+                }); // End of $.post("sendMail.php"
+            }
+        }); // End of loop through Parcels
+
+        //console.log("Done with loop, cnt = " + adminRec.hoaPropertyRecList.length);
+        if (action == 'DuesEmailsTest') {
+            $("#ResultMessage").html("TEST Yearly dues notices emailed, total = " + emailRecCnt);
+        } else {
+            $("#ResultMessage").html("Yearly dues notices emailed, total = " + emailRecCnt);
+        }
+    }
 
     // function to format a Yearly dues statement
     function _formatYearlyDuesStatement(hoaRec, firstNotice) {
