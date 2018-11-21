@@ -94,14 +94,15 @@
     }
     */
 
-    //Non-Printable characters - Hex 01 to 1F, and 7F
+    // Non-Printable characters - Hex 01 to 1F, and 7F
     var nonPrintableCharsStr = "[\x01-\x1F\x7F]";
-    //"g" global so it does more than 1 substitution
+    // "g" global so it does more than 1 substitution
     var regexNonPrintableChars = new RegExp(nonPrintableCharsStr, "g");
     function cleanStr(inStr) {
         return inStr.replace(regexNonPrintableChars, '');
     }
 
+    // Filter out commas (for CSV outputs)
     var commaHexStr = "[\x2C]";
     var regexCommaHexStr = new RegExp(commaHexStr, "g");
     function csvFilter(inVal) {

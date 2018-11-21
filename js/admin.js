@@ -23,7 +23,6 @@
  * 2016-08-19 JJK	Added UseMail to properties and EmailAddr to owners
  * 2016-08-20 JJK	Implemented email validation check
  * 2016-08-26 JJK   Went live, and Paypal payments working in Prod!!!
- * 2017-06-10 JJK   Added unpaid dues ranking
  * 2017-08-13 JJK	Added a dues email test function, and use of payment
  * 					email for dues statements
  * 2017-08-18 JJK   Added an unsubscribe message to the dues email
@@ -93,6 +92,8 @@ var admin = (function () {
     var $DuesStatementAssessmentsTable = $("#DuesStatementAssessmentsTable tbody");
 
     var duesStatementDownloadLinks = $("#DuesStatementDownloadLinks");
+    
+    //var reportDownloadLinks = $("#AdminDownloadLinks");
 
     //=================================================================================================================
     // Bind events
@@ -160,7 +161,6 @@ var admin = (function () {
         hoaAddress2 = config.getVal('hoaAddress2');
 
         // Get all the data needed for processing
-        // (modify to use POST at some point)
         $.getJSON("adminExecute.php", "action=" + action +
             "&fy=" + event.target.getAttribute("data-fy") +
             "&duesAmt=" + event.target.getAttribute("data-duesAmt") + 
@@ -172,7 +172,7 @@ var admin = (function () {
                 _duesNotices(adminRec.hoaRecList);
             } else if (action == 'DuesEmails' || action == 'DuesEmailsTest') {
                 _duesEmails(adminRec.hoaRecList,action);
-            } else if (action == 'DuesRank' || action == 'MarkMailed') {
+            } else if (action == 'MarkMailed') {
 
             } // End of if
         }); // $.getJSON("adminExecute.php","action="+action+

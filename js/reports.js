@@ -16,6 +16,7 @@
  * 					MailingAddress fields set from parcel location or
  * 					Alt mailing address (if specified)
  * 2018-11-13 JJK   Re-factored for modules
+ * 2018-11-21 JJK   d
  *============================================================================*/
 var reports = (function () {
     'use strict';
@@ -68,10 +69,57 @@ var reports = (function () {
         $ReportDownloadLinks.html("");
 
         util.waitCursor();
-        $.getJSON("getHoaReportData.php", "reportName=" + reportName, function (reportList) {
-            _formatReportList(reportName, reportTitle, reportList);
-            util.defaultCursor();
+
+        if (reportName == 'UnpaidDuesRankingReport') {
+            $ReportRecCnt.html("Executing request...(please wait)");
+            util.waitCursor();
+            // Get all the data needed for processing
+            $.getJSON("adminExecute.php", "action=DuesRank", function (adminRec) {
+                util.defaultCursor();
+                $ReportRecCnt.html(adminRec.message);
+                _duesRank(adminRec.hoaRecList, reportName);
+            });
+        } else {
+            $.getJSON("getHoaReportData.php", "reportName=" + reportName, function (reportList) {
+                _formatReportList(reportName, reportTitle, reportList);
+                util.defaultCursor();
+            });
+        }
+    }
+
+    function _duesRank(hoaRecList, reportName) {
+        var unpaidDuesCnt = 0;
+        var csvLine = "";
+        csvContent = "";
+
+        // Sort the array by the TotalDue for the property
+        hoaRecList.sort(function (a, b) {
+            // Sort descending
+            return b.TotalDue - a.TotalDue;
         });
+
+        // Create the CSV header/column name line
+        csvLine = "ParcelLocation";
+        csvLine += ',' + "TotalDue";
+        csvContent += csvLine + '\n';
+
+        $.each(hoaRecList, function (index, hoaRec) {
+            if (hoaRec.TotalDue > 0) {
+                unpaidDuesCnt++;
+                csvLine = util.csvFilter(hoaRec.Parcel_Location);
+                csvLine += ',' + util.csvFilter(hoaRec.TotalDue);
+                csvContent += csvLine + '\n';
+            }
+        }); // End of loop through Parcels
+
+        $ReportDownloadLinks.append(
+            $('<a>').prop('id', 'DownloadReportCSV')
+                .attr('href', '#')
+                .attr('class', "btn btn-warning")
+                .attr('data-reportName', util.formatDate() + '-' + reportName)
+                .html('CSV'));
+
+        $ReportRecCnt.html("Unpaid Dues Ranking, total = " + unpaidDuesCnt);
     }
 
     function _downloadReportCSV(event) {
@@ -433,44 +481,6 @@ var reports = (function () {
         }
 
     } // function formatReportList(reportName,reportList){
-
-    // Create the CSV file for download from the dues rank array
-    function formatDuesRankList(hoaRecList) {
-        var currSysDate = new Date();
-        var reportTitleFull = '';
-        $ReportDownloadLinks.empty();
-
-        var csvLine = "";
-        csvContent = "";
-
-        var length = hoaRecList.length;
-        // Sort the array by the TotalDue for the property
-        hoaRecList.sort(function (a, b) {
-            return a.TotalDue - b.TotalDue;
-        });
-
-        csvLine = util.csvFilter("ParcelLocation");
-        csvLine += ',' + util.csvFilter("TotalDue");
-        csvContent += csvLine + '\n';
-        var hoaRec;
-        for (var i = (length - 1); i >= 0; i--) {
-            //console.log("Cnt = "+i+", Address = "+hoaRecList[i].Parcel_Location+", Total Due = "+hoaRecList[i].TotalDue);
-            hoaRec = hoaRecList[i];
-
-            csvLine = util.csvFilter(hoaRec.Parcel_Location);
-            csvLine += ',' + util.csvFilter(hoaRec.TotalDue);
-            csvContent += csvLine + '\n';
-
-        } // End of For loop through the array
-
-        $ReportDownloadLinks.append(
-            $('<a>').prop('id', 'DownloadReportCSV')
-                .attr('href', '#')
-                .attr('class', "btn btn-warning")
-                .attr('data-reportName', util.formatDate() + '-UnpaidDuesRanking')
-                .html('CSV'));
-
-    } // function formatDuesRankList(
 
 
     // Function to add a line to the report PDF

@@ -174,7 +174,9 @@
 	                    	<button id="PaidDuesCountsReport" data-reportTitle="Paid Dues Counts Report" 
 	                    		type="button" class="btn btn-primary reportRequest form-control">Paid Dues Counts</button>
 	                    	<button id="PropertyOwnerReport" data-reportTitle="Property/Owner Report" 
-	                    		type="button" class="btn btn-primary reportRequest form-control">Property Owner</button>
+													type="button" class="btn btn-primary reportRequest form-control">Property Owner</button>
+												<button id="UnpaidDuesRankingReport" data-reportTitle="Unpaid Dues Ranking Report" 
+													type="button" class="btn btn-primary reportRequest form-control">Unpaid Dues Ranking</button>
 		                </div>
 	       					
 					</div>
@@ -186,7 +188,15 @@
 			            <table id="ReportListDisplay" class="table table-striped table-condensed">
 			            	<tbody>
 			               	</tbody>
-			           	</table>
+									 </table>
+									 
+
+										<h4>Results</h4>
+										<div class="ajaxError"></div>
+										<div id="AdminDownloadLinks" class="pull-right"></div>
+										<div id="ResultMessage" style="margin-top:10px;"></div>
+
+
 					</div>
 				</div>
 	    </div><!-- end of Reports -->
@@ -219,7 +229,6 @@
 											<button id="MarkMailed" type="button" class="btn btn-primary form-control AdminButton">Mark paper Dues mailed</button>
 	                    <button id="DuesEmailsTest" type="button" class="btn btn-primary form-control AdminButton">TEST Dues Notice emails</button>
 	                    <button id="DuesEmails" type="button" class="btn btn-primary form-control AdminButton">Send Dues Notice emails</button>
-											<button id="DuesRank" type="button" class="btn btn-primary form-control AdminButton">Unpaid Dues Ranking</button>
 											<!--
 											<button id="AdminFix" type="button" class="btn btn-primary form-control AdminButton">Fix Payment Owner Id</button>
 											-->
@@ -442,8 +451,8 @@
     <script src="js/detail.js?ver=1.061"></script>
 		<script src="js/communications.js?ver=1.061"></script>
 		<script src="js/pdf.js?ver=1.062"></script>
-		<script src="js/reports.js?ver=1.061"></script>
-		<script src="js/admin.js?ver=1.062"></script>
+		<script src="js/reports.js?ver=1.062"></script>
+		<script src="js/admin.js?ver=1.063"></script>
 	
 		<!--
 		<script src="js/dues.js?ver=1.001"></script>
