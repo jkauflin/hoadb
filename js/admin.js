@@ -92,8 +92,6 @@ var admin = (function () {
     var $DuesStatementAssessmentsTable = $("#DuesStatementAssessmentsTable tbody");
 
     var duesStatementDownloadLinks = $("#DuesStatementDownloadLinks");
-    
-    //var reportDownloadLinks = $("#AdminDownloadLinks");
 
     //=================================================================================================================
     // Bind events
@@ -170,12 +168,43 @@ var admin = (function () {
 
             if (action == 'DuesNotices') {
                 _duesNotices(adminRec.hoaRecList);
+            } else if (action == 'MarkMailed') {
+                _markMailed(adminRec.hoaRecList);
             } else if (action == 'DuesEmails' || action == 'DuesEmailsTest') {
                 _duesEmails(adminRec.hoaRecList,action);
-            } else if (action == 'MarkMailed') {
+            }
 
-            } // End of if
         }); // $.getJSON("adminExecute.php","action="+action+
+    }
+
+    function _markMailed(hoaRecList) {
+        var adminEmailSkipCnt = 0;
+        var markMailedCnt = 0;
+        var displayAddress = '';
+        var commType = 'Dues Notice';
+        var commDesc = '';
+
+        $ResultMessage.html("Executing Admin request...(processing list)");
+
+        $.each(hoaRecList, function (index, hoaRec) {
+            if (hoaRec.UseEmail && hoaRec.DuesEmailAddr != '') {
+                adminEmailSkipCnt++;
+            } else {
+                markMailedCnt++;
+                // Get a displayAddress for the Communication record
+                displayAddress = hoaRec.Parcel_Location;
+                if (hoaRec.ownersList[0].AlternateMailing) {
+                    displayAddress = hoaRec.ownersList[0].Alt_Address_Line1;
+                }
+
+                commDesc = "Notice for postal mail mailed for " + displayAddress;
+                // log communication for notice created
+                communications.LogCommunication(hoaRec.Parcel_ID, hoaRec.ownersList[0].OwnerID, commType, commDesc);
+            }
+
+        }); // End of loop through Parcels
+
+        $ResultMessage.html("Postal dues notices marked mailed, total = " + markMailedCnt + ", (Total skipped for UseEmail = " + adminEmailSkipCnt + ")");
     }
 
     function _duesNotices(hoaRecList) {
