@@ -45,27 +45,6 @@ var admin = (function () {
 
     //=================================================================================================================
     // Private variables for the Module
-    /*
-    var commDesc = '';
-    var noticeType = '';
-    var tempCommDesc = "";
-    var sendEmailAddr = "";
-    var firstNotice = false;
-    var adminRecCntMAX = 0;
-    var sendEmail = true;
-    var noticeDate = "";
-    var noticeYear = "";
-    // Global variable for loop counter
-    var adminRecCnt = 0;
-    var emailRecCnt = 0;
-    var adminEmailSkipCnt = 0;
-    // Global variable for total number of parcels in the HOA
-    var hoaRecList = [];
-    */
-
-    // Move this to a config value
-    //var hoaPropertyListMAX = config.getVal('numberOfProperties');
-    var hoaPropertyListMAX = 542;
     var hoaName;
     var hoaNameShort;
     var hoaAddress1;
@@ -215,7 +194,7 @@ var admin = (function () {
         var firstNotice = false;
         var noticeType = 'Additional';
         // If list of unpaid properties is the total number of properties, assume it is the 1st Dues Notice
-        if (hoaRecList.length == hoaPropertyListMAX) {
+        if (hoaRecList.length == parseInt(config.getVal('numberOfProperties'))) {
             firstNotice = true;
             noticeType = "1st";
         }
@@ -268,7 +247,7 @@ var admin = (function () {
         var firstNotice = false;
         var noticeType = "Additional";
         // If list of unpaid properties is the total number of properties, assume it is the 1st Dues Notice
-        if (hoaRecList.length == hoaPropertyListMAX) {
+        if (hoaRecList.length == parseInt(config.getVal('numberOfProperties'))) {
             firstNotice = true;
             noticeType = "1st";
         }
