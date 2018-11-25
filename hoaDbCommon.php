@@ -281,6 +281,8 @@ class SendEmailRec
 	public $result;
 	public $message;
 	public $sendEmailAddr;
+	public $Parcel_ID;
+	public $OwnerID;
 }
 
 class TotalDuesCalcRec

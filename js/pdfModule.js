@@ -81,41 +81,17 @@ var pdfModule = (function () {
         return pdfRec;
     }
 
-    function download(filename) {
-        pdfRec.pdf.save(util.formatDate()+"-"+filename+".pdf");
-    }
-    function getOutput() {
-        pdfRec.pdf.output();
-    }
-
     function addPage(pdfRec) {
         pdfRec.pdf.addPage(pdfRec.orientation, 'p');
         pdfRec.lineCnt = 0;
         pdfRec.header = true;
         return pdfRec;
     }
-    function getTitle() {
-        return pdfRec.title;
-    }
-    /*
-    function setMaxLineChars(inMaxLineChars) {
-        pdfRec.maxLineChars = inMaxLineChars;
-    }
-    function setLineIncrement(inLineIncrement) {
-        pdfRec.lineIncrement = inLineIncrement;
-    }
-    function setColIncrement(inColIncrement) {
-        pdfRec.colIncrement = inColIncrement;
-    }
-    function setLineColIncrArray(inLineColIncrArray) {
-        pdfRec.lineColIncrArray = inLineColIncrArray;
-    }
-    */
 
-    // function to format a Yearly dues statement
+    // function to format a Yearly dues statement and add to the PDF
     function formatYearlyDuesStatement(pdfRec, hoaRec, firstNotice) {
         var ownerRec = hoaRec.ownersList[0];
-        pdfRec.pdf.setMaxLineChars(95);
+        pdfRec.maxLineChars = 95;
 
         // Set the Notice and Notes field according to 1st or Additional notices
         var noticeYear = '' + parseInt(hoaRec.assessmentsList[0].FY) - 1;
@@ -128,50 +104,48 @@ var pdfModule = (function () {
             yearlyDuesStatementNotes = config.getVal('yearlyDuesStatementNotes1st');
         }
 
-        pdfRec.pdf.setLineColIncrArray([-4.5]);
-        pdfRec.pdf.yearlyDuesStatementAddLine([hoaName], null, 13, 0.5);
-        pdfRec.pdf.setLineColIncrArray([4.5, -3.05]);
-        pdfRec.pdf.yearlyDuesStatementAddLine([pdfRec.pdf.getTitle() + " for Fiscal Year ", hoaRec.assessmentsList[0].FY], null, 12, 0.8);
+        pdfRec.lineColIncrArray = [-4.5];
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,[config.getVal('hoaName')], null, 13, 0.5);
+        pdfRec.lineColIncrArray = [4.5, -3.05];
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,[pdfRec.title + " for Fiscal Year ", hoaRec.assessmentsList[0].FY], null, 12, 0.8);
 
         // hoa name and address for return label
-        //var pdfLineIncrement = 0.2;
-        pdfRec.pdf.setLineIncrement(0.2);
-        pdfRec.pdf.setLineColIncrArray([1.0]);
-        pdfRec.pdf.yearlyDuesStatementAddLine([hoaName], null, 10, 1.0);
-        pdfRec.pdf.yearlyDuesStatementAddLine([hoaAddress1]);
-        pdfRec.pdf.yearlyDuesStatementAddLine([hoaAddress2]);
+        pdfRec.lineIncrement = 0.2;
+        pdfRec.lineColIncrArray = [1.0];
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,[config.getVal('hoaName')], null, 10, 1.0);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,[config.getVal('hoaAddress1')]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,[config.getVal('hoaAddress2')]);
 
-        //pdfLineIncrement = 0.21;
-        pdfRec.pdf.setLineIncrement(0.21);
-        pdfRec.pdf.setLineColIncrArray([4.5, 1.3]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["For the Period: ", 'Oct 1st, ' + noticeYear + ' thru Sept 30th, ' + hoaRec.assessmentsList[0].FY], null, 11, 1.1);
-        pdfRec.pdf.setLineColIncrArray([-4.5, -1.3]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["Notice Date: ", noticeDate]);
+        pdfRec.lineIncrement = 0.21;
+        pdfRec.lineColIncrArray = [4.5, 1.3];
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["For the Period: ", 'Oct 1st, ' + noticeYear + ' thru Sept 30th, ' + hoaRec.assessmentsList[0].FY], null, 11, 1.1);
+        pdfRec.lineColIncrArray = [-4.5, -1.3];
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["Notice Date: ", noticeDate]);
 
         var duesAmount = util.formatMoney(hoaRec.assessmentsList[0].DuesAmt);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["Dues Amount: ", '$' + duesAmount]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["Dues Amount: ", '$' + duesAmount]);
         if (duesAmount == hoaRec.TotalDue) {
-            pdfRec.pdf.yearlyDuesStatementAddLine(["Due Date: ", 'October 1st, ' + noticeYear]);
-            pdfRec.pdf.setLineColIncrArray([-4.5, 1.3]);
-            pdfRec.pdf.yearlyDuesStatementAddLine(["Parcel Id: ", hoaRec.Parcel_ID]);
-            pdfRec.pdf.yearlyDuesStatementAddLine(["Lot No: ", hoaRec.LotNo]);
+            pdfRec = yearlyDuesStatementAddLine(pdfRec,["Due Date: ", 'October 1st, ' + noticeYear]);
+            pdfRec.lineColIncrArray = [-4.5, 1.3];
+            pdfRec = yearlyDuesStatementAddLine(pdfRec,["Parcel Id: ", hoaRec.Parcel_ID]);
+            pdfRec = yearlyDuesStatementAddLine(pdfRec,["Lot No: ", hoaRec.LotNo]);
         } else {
-            pdfRec.pdf.yearlyDuesStatementAddLine(["********************* ", "There are prior year dues owed"]);
-            pdfRec.pdf.yearlyDuesStatementAddLine(["********************* ", "Please contact the Treasurer"]);
-            pdfRec.pdf.yearlyDuesStatementAddLine(["Due Date: ", 'October 1st, ' + noticeYear]);
-            pdfRec.pdf.setLineColIncrArray([-4.5, 1.3]);
-            pdfRec.pdf.yearlyDuesStatementAddLine(["Parcel Id: ", hoaRec.Parcel_ID + ", Lot: " + hoaRec.LotNo]);
+            pdfRec = yearlyDuesStatementAddLine(pdfRec,["********************* ", "There are prior year dues owed"]);
+            pdfRec = yearlyDuesStatementAddLine(pdfRec,["********************* ", "Please contact the Treasurer"]);
+            pdfRec = yearlyDuesStatementAddLine(pdfRec,["Due Date: ", 'October 1st, ' + noticeYear]);
+            pdfRec.lineColIncrArray = [-4.5, 1.3];
+            pdfRec = yearlyDuesStatementAddLine(pdfRec,["Parcel Id: ", hoaRec.Parcel_ID + ", Lot: " + hoaRec.LotNo]);
         }
 
-        pdfRec.pdf.setLineColIncrArray([-4.5]);
-        //pdfRec.pdf.yearlyDuesStatementAddLine(['']);
-        pdfRec.pdf.yearlyDuesStatementAddLine(['    Contact Information:']);
-        pdfRec.pdf.setLineColIncrArray([4.5]);
-        pdfRec.pdf.yearlyDuesStatementAddLine([ownerRec.Owner_Name1 + ' ' + ownerRec.Owner_Name2]);
-        pdfRec.pdf.yearlyDuesStatementAddLine([hoaRec.Parcel_Location]);
-        pdfRec.pdf.yearlyDuesStatementAddLine([hoaRec.Property_City + ', ' + hoaRec.Property_State + ' ' + hoaRec.Property_Zip]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(['Phone # ' + ownerRec.Owner_Phone]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(['Email: ' + hoaRec.DuesEmailAddr]);
+        pdfRec.lineColIncrArray = [-4.5];
+        //pdfRec = yearlyDuesStatementAddLine(pdfRec,['']);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,['    Contact Information:']);
+        pdfRec.lineColIncrArray = [4.5];
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,[ownerRec.Owner_Name1 + ' ' + ownerRec.Owner_Name2]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,[hoaRec.Parcel_Location]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,[hoaRec.Property_City + ', ' + hoaRec.Property_State + ' ' + hoaRec.Property_Zip]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,['Phone # ' + ownerRec.Owner_Phone]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,['Email: ' + hoaRec.DuesEmailAddr]);
         // *** display multiple ones from the array list ???????????????????????????????????????
 
         var displayAddress1 = ownerRec.Mailing_Name;
@@ -191,126 +165,122 @@ var pdfModule = (function () {
         }
 
         // Display the mailing address
-        pdfRec.pdf.setLineIncrement(0.21);
-        //pdfLineIncrement = 0.21;
-        pdfRec.pdf.setLineColIncrArray([1.0]);
-        pdfRec.pdf.yearlyDuesStatementAddLine([displayAddress1], null, 11, 2.5);
-        pdfRec.pdf.yearlyDuesStatementAddLine([displayAddress2]);
-        pdfRec.pdf.yearlyDuesStatementAddLine([displayAddress3]);
-        pdfRec.pdf.yearlyDuesStatementAddLine([displayAddress4]);
+        pdfRec.lineIncrement = 0.21;
+        pdfRec.lineColIncrArray = [1.0];
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,[displayAddress1], null, 11, 2.5);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,[displayAddress2]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,[displayAddress3]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,[displayAddress4]);
 
         // Address corrections
-        //pdfLineIncrement = 0.3;
-        pdfRec.pdf.setLineIncrement(0.3);
-        pdfRec.pdf.setLineColIncrArray([-0.6]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["Enter any information that needs to be corrected:"], null, 11, 4.3);
-        pdfRec.pdf.setLineColIncrArray([0.6]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["Owner Name:"]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["Address Line 1:"]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["Address Line 2:"]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["City State Zip:"]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["Phone Number:"]);
-        pdfRec.pdf.yearlyDuesStatementAddLine([""]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["Email:"]);
+        pdfRec.lineIncrement = 0.3;
+        pdfRec.lineColIncrArray = [-0.6];
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["Enter any information that needs to be corrected:"], null, 11, 4.3);
+        pdfRec.lineColIncrArray = [0.6];
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["Owner Name:"]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["Address Line 1:"]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["Address Line 2:"]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["City State Zip:"]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["Phone Number:"]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,[""]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["Email:"]);
 
         // Survey description, questions (1,2,3)
         // Commenting out survey for now
-        //pdfRec.pdf.setLineIncrement(0.285);
-        //pdfRec.pdf.setLineColIncrArray([-1.0]);
-        //pdfRec.pdf.yearlyDuesStatementAddLine([surveyInstructions],null,11,6.28);
-        //pdfRec.pdf.setLineColIncrArray([1.0]);
-        //pdfRec.pdf.yearlyDuesStatementAddLine([surveyQuestion1]);
-        //pdfRec.pdf.yearlyDuesStatementAddLine([surveyQuestion2]);
-        //pdfRec.pdf.yearlyDuesStatementAddLine([surveyQuestion3]);
+        //pdfRec.lineIncrement = 0.285);
+        //pdfRec.lineColIncrArray = [-1.0]);
+        //pdfRec = yearlyDuesStatementAddLine(pdfRec,[surveyInstructions],null,11,6.28);
+        //pdfRec.lineColIncrArray = [1.0]);
+        //pdfRec = yearlyDuesStatementAddLine(pdfRec,[surveyQuestion1]);
+        //pdfRec = yearlyDuesStatementAddLine(pdfRec,[surveyQuestion2]);
+        //pdfRec = yearlyDuesStatementAddLine(pdfRec,[surveyQuestion3]);
 
-        pdfRec.pdf.setLineIncrement(0.15);
-        pdfRec.pdf.setLineColIncrArray([1.0]);
-        pdfRec.pdf.yearlyDuesStatementAddLine([""]);
-        pdfRec.pdf.setLineIncrement(0.21);
-        pdfRec.pdf.setLineColIncrArray([-1.0]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["Go Paperless - check here to turn off mailed paper notices"]);
-        pdfRec.pdf.setLineColIncrArray([1.0]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["(Make sure correct Email address is listed in Contact Info or entered above)"]);
+        pdfRec.lineIncrement = 0.15;
+        pdfRec.lineColIncrArray = [1.0];
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,[""]);
+        pdfRec.lineIncrement = 0.21;
+        pdfRec.lineColIncrArray = [-1.0];
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["Go Paperless - check here to turn off mailed paper notices"]);
+        pdfRec.lineColIncrArray = [1.0];
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["(Make sure correct Email address is listed in Contact Info or entered above)"]);
 
-        pdfRec.pdf.setLineIncrement(0.21);
-        pdfRec.pdf.yearlyDuesStatementAddLine([''], null, 10, 3.9);
+        pdfRec.lineIncrement = 0.21;
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,[''], null, 10, 3.9);
 
         // Print the Notice statement if it exists (2nd notice, etc.)
         if (yearlyDuesStatementNotice.length > 0) {
-            pdfRec.pdf.setMaxLineChars(35);
-            pdfRec.pdf.setLineColIncrArray([-5.2]);
-            pdfRec.pdf.yearlyDuesStatementAddLine([yearlyDuesStatementNotice], null, 12);
-            pdfRec.pdf.yearlyDuesStatementAddLine([''], null);
+            pdfRec.maxLineChars = 35;
+            pdfRec.lineColIncrArray = [-5.2];
+            pdfRec = yearlyDuesStatementAddLine(pdfRec,[yearlyDuesStatementNotice], null, 12);
+            pdfRec = yearlyDuesStatementAddLine(pdfRec,[''], null);
         }
 
         // If there are notes - print them
-        pdfRec.pdf.setMaxLineChars(45);
+        pdfRec.maxLineChars = 45;
         if (yearlyDuesStatementNotes.length > 0) {
-            pdfRec.pdf.setLineColIncrArray([5.2]);
-            pdfRec.pdf.yearlyDuesStatementAddLine([yearlyDuesStatementNotes], null, 10);
+            pdfRec.lineColIncrArray = [5.2];
+            pdfRec = yearlyDuesStatementAddLine(pdfRec,[yearlyDuesStatementNotes], null, 10);
         }
 
         // Print information on the user records portion
-        pdfRec.pdf.setLineColIncrArray([-0.5]);
-        pdfRec.pdf.yearlyDuesStatementAddLine([hoaName], null, 13, 8.0);
-        pdfRec.pdf.setLineColIncrArray([0.5, -3.05]);
-        pdfRec.pdf.yearlyDuesStatementAddLine([pdfRec.pdf.getTitle() + " for Fiscal Year ", hoaRec.assessmentsList[0].FY], null, 12, 8.3);
+        pdfRec.lineColIncrArray = [-0.5];
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,[config.getVal('hoaName')], null, 13, 8.0);
+        pdfRec.lineColIncrArray = [0.5, -3.05];
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,[pdfRec.title + " for Fiscal Year ", hoaRec.assessmentsList[0].FY], null, 12, 8.3);
 
-        pdfRec.pdf.setLineIncrement(0.21);
+        pdfRec.lineIncrement = 0.21;
         noticeYear = '' + parseInt(hoaRec.assessmentsList[0].FY) - 1;
-        pdfRec.pdf.setLineColIncrArray([0.5, 1.5]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["For the Period: ", 'Oct 1st, ' + noticeYear + ' thru Sept 30th, ' + hoaRec.assessmentsList[0].FY], null, 11, 8.6);
-        pdfRec.pdf.setLineColIncrArray([-0.5, -1.5]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["Notice Date: ", noticeDate]);
+        pdfRec.lineColIncrArray = [0.5, 1.5];
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["For the Period: ", 'Oct 1st, ' + noticeYear + ' thru Sept 30th, ' + hoaRec.assessmentsList[0].FY], null, 11, 8.6);
+        pdfRec.lineColIncrArray = [-0.5, -1.5];
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["Notice Date: ", noticeDate]);
 
-        pdfRec.pdf.yearlyDuesStatementAddLine(["Dues Amount: ", '$' + duesAmount]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["Dues Amount: ", '$' + duesAmount]);
         if (duesAmount != hoaRec.TotalDue) {
-            pdfRec.pdf.yearlyDuesStatementAddLine(["************************ ", "There are prior year dues owed"]);
-            pdfRec.pdf.yearlyDuesStatementAddLine(["************************ ", "Please contact the Treasurer"]);
+            pdfRec = yearlyDuesStatementAddLine(pdfRec,["************************ ", "There are prior year dues owed"]);
+            pdfRec = yearlyDuesStatementAddLine(pdfRec,["************************ ", "Please contact the Treasurer"]);
         }
-        pdfRec.pdf.yearlyDuesStatementAddLine(["Due Date: ", 'October 1st, ' + noticeYear]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["Due Date: ", 'October 1st, ' + noticeYear]);
 
-        pdfRec.pdf.setLineColIncrArray([-0.5, 1.5]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(['', '']);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["Parcel Id: ", hoaRec.Parcel_ID]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["Lot No: ", hoaRec.LotNo]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["Property Location: ", hoaRec.Parcel_Location]);
+        pdfRec.lineColIncrArray = [-0.5, 1.5];
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,['', '']);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["Parcel Id: ", hoaRec.Parcel_ID]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["Lot No: ", hoaRec.LotNo]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["Property Location: ", hoaRec.Parcel_Location]);
 
         // hoa name and address for payment
-        pdfRec.pdf.setLineIncrement(0.21);
-        pdfRec.pdf.setLineColIncrArray([5.2]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["Make checks payable to:"], null, 11, 8.0);
-        pdfRec.pdf.setLineColIncrArray([-5.2]);
-        pdfRec.pdf.yearlyDuesStatementAddLine([hoaName]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(['']);
-        pdfRec.pdf.setLineColIncrArray([-5.2, 0.8]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["Send to:", hoaNameShort]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["", hoaAddress1]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["", hoaAddress2]);
+        pdfRec.lineIncrement = 0.21;
+        pdfRec.lineColIncrArray = [5.2];
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["Make checks payable to:"], null, 11, 8.0);
+        pdfRec.lineColIncrArray = [-5.2];
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,[config.getVal('hoaName')]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,['']);
+        pdfRec.lineColIncrArray = [-5.2, 0.8];
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["Send to:", config.getVal('hoaNameShort')]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec, ["", config.getVal('hoaAddress1')]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec, ["", config.getVal('hoaAddress2')]);
 
-        pdfRec.pdf.setLineIncrement(0.19);
-        pdfRec.pdf.setLineColIncrArray([-5.2]);
-        pdfRec.pdf.yearlyDuesStatementAddLine(['']);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["Date Paid:"], null, 12);
-        pdfRec.pdf.yearlyDuesStatementAddLine(['']);
-        pdfRec.pdf.yearlyDuesStatementAddLine(["Check No:"]);
+        pdfRec.lineIncrement = 0.19;
+        pdfRec.lineColIncrArray = [-5.2];
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,['']);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["Date Paid:"], null, 12);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,['']);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,["Check No:"]);
 
         // Help notes
-        pdfRec.pdf.yearlyDuesStatementAddLine([''], null, 10, 10.05);
-        pdfRec.pdf.setMaxLineChars(55);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec,[''], null, 10, 10.05);
+        pdfRec.maxLineChars = 55;
         // If there are notes - print them
         if (yearlyDuesStatementNotes.length > 0) {
-            pdfRec.pdf.setLineColIncrArray([4.7]);
-            pdfRec.pdf.yearlyDuesStatementAddLine([config.getVal('yearlyDuesHelpNotes')], null);
+            pdfRec.lineColIncrArray = [4.7];
+            pdfRec = yearlyDuesStatementAddLine(pdfRec,[config.getVal('yearlyDuesHelpNotes')], null);
         }
 
         return pdfRec;
     } // End of function formatYearlyDuesStatement(hoaRec) {
 
-
-
     //Function to add a line to the Yearly Dues Statement PDF
-    function yearlyDuesStatementAddLine(pdfLineArray, pdfLineHeaderArray, fontSize, lineYStart) {
+    function yearlyDuesStatementAddLine(pdfRec, pdfLineArray, pdfLineHeaderArray, fontSize, lineYStart) {
         pdfRec.lineCnt++;
         var X = 0.0;
         // X (horizontal), Y (vertical)
@@ -341,7 +311,7 @@ var pdfModule = (function () {
             pdfRec.pdf.line(X, 3.75, 8.5, 3.75);
             pdfRec.pdf.setLineWidth(0.02);
             var segmentLength = 0.2;
-            _dottedLine(0, 7.5, 8.5, 7.5, segmentLength)
+            pdfRec = _dottedLine(pdfRec, 0, 7.5, 8.5, 7.5, segmentLength)
 
             // Text around bottom line
             pdfRec.pdf.setFontSize(9);
@@ -446,11 +416,12 @@ var pdfModule = (function () {
         pdfRec.lineY += pdfRec.lineIncrement;
         pdfRec.pdf.setFontType("normal");
 
+        return pdfRec;
     } // End of function yearlyDuesStatementAddLine(pdfLineArray,pdfLineHeaderArray) {
 
 
     //Function to add a line to the Dues Statement PDF
-    function duesStatementAddLine(pdfLineArray, pdfLineHeaderArray) {
+    function duesStatementAddLine(pdfRec, pdfLineArray, pdfLineHeaderArray) {
         pdfRec.lineCnt++;
         var X = 0.0;
         // X (horizontal), Y (vertical)
@@ -529,6 +500,8 @@ var pdfModule = (function () {
 
         } // for (i = 0; i < pdfLineArray.length; i++) {
         pdfRec.lineY += pdfRec.lineIncrement;
+
+        return pdfRec;
     }
 
     /**
@@ -537,7 +510,7 @@ var pdfModule = (function () {
      * that we end the line with a drawn segment and don't
      * overflow.
      */
-    function _dottedLine(xFrom, yFrom, xTo, yTo, segmentLength) {
+    function _dottedLine(pdfRec, xFrom, yFrom, xTo, yTo, segmentLength) {
         // Calculate line length (c)
         var a = Math.abs(xTo - xFrom);
         var b = Math.abs(yTo - yFrom);
@@ -558,19 +531,17 @@ var pdfModule = (function () {
             curX += 2 * deltaX;
             curY += 2 * deltaY;
         }
+
+        return pdfRec;
     }
 
     //=================================================================================================================
     // This is what is exposed from this Module
     return {
         init:                       init,
-
         addPage:                    addPage,
-        getTitle:                   getTitle,
-
         formatYearlyDuesStatement:  formatYearlyDuesStatement,
         yearlyDuesStatementAddLine: yearlyDuesStatementAddLine,
-
         duesStatementAddLine:       duesStatementAddLine
     };
 

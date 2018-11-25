@@ -19,6 +19,8 @@
 	$toEmail = $_POST['toEmail'];
 	$subject = $_POST['subject'];
 	$messageStr = $_POST['messageStr'];
+	$parcelId = $_POST['parcelId'];
+	$ownerId = $_POST['ownerId'];
 	$filename = $_POST['filename'];
 	// Decode the PDF data stream from character back to binary
 	$filedata = base64_decode($_POST['filedata']);
@@ -37,6 +39,8 @@
 	$sendEmailRec->result = '';
 	$sendEmailRec->message = '';
 	$sendEmailRec->sendEmailAddr = $toEmail;
+	$sendEmailRec->Parcel_ID = $parcelId;
+	$sendEmailRec->OwnerID = $ownerId;
 
     // swiftmailer PHP read receipt capability
     // $message -> setReadReceiptTo('your@address.tld');
