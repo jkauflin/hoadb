@@ -35,6 +35,8 @@
  *					only use it if they are not going paperless or the paperless email is blank
  * 2018-10-27 JJK   Modified the error_log to write to hoadb.log
  * 2018-11-16 JJK	Added $hoaRecList to AdminRec to store all data needed for dues
+ * 2018-11-24 JJK	Added $emailAddrList to store multiple email addresses, 
+ * 					and 
  *============================================================================*/
 
 function getConn() {
@@ -153,6 +155,7 @@ class HoaRec
 	public $assessmentsList;
 	public $totalDuesCalcList;
 	public $salesList;
+	public $emailAddrList;
 	
 	public $adminLevel;
 	public $TotalDue;
@@ -271,6 +274,13 @@ class AdminRec
 	
 	public $hoaPropertyRecList;
 	public $hoaRecList;
+}
+
+class SendEmailRec
+{
+	public $result;
+	public $message;
+	public $sendEmailAddr;
 }
 
 class TotalDuesCalcRec
@@ -424,6 +434,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 			$hoaRec->assessmentsList = array();
 			$hoaRec->totalDuesCalcList = array();
 			$hoaRec->salesList = array();
+			$hoaRec->emailAddrList = array();
 		}
 		$result->close();
 		$stmt->close();
@@ -467,6 +478,11 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				if ($hoaOwnerRec->CurrentOwner) {
 					// Get the email address for the current owner
 					$hoaRec->DuesEmailAddr = $hoaOwnerRec->EmailAddr;
+					// If an email address is specified, add it to the list for the current owner
+					if ($hoaOwnerRec->EmailAddr != '') {
+						array_push($hoaRec->emailAddrList,$hoaOwnerRec->EmailAddr);
+					}
+					// *** check and add other email addresses here
 					$CurrentOwnerID = $hoaOwnerRec->OwnerID;
 				}
 
@@ -483,13 +499,20 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 		$stmt->bind_param("ss", $parcelId,$CurrentOwnerID);
 		$stmt->execute();
 		$result = $stmt->get_result();
+		$tempEmail = '';
 		if ($result->num_rows > 0) {
 			if ($row = $result->fetch_assoc()) {
+				$tempEmail = $row["payer_email"];
 				// If there is an email from the last electronic payment, for the current Owner, only use it 
 				// if they are not going paperless or the paperless email is blank
-				// *** NEED TO SEND email dues TO ALL EMAIL addresses (array of addresses???)
-				if (!$hoaRec->UseEmail || $hoaRec->DuesEmailAddr == '') {
-					$hoaRec->DuesEmailAddr = $row["payer_email"];
+				//if (!$hoaRec->UseEmail || $hoaRec->DuesEmailAddr == '') {
+				//	$hoaRec->DuesEmailAddr = $row["payer_email"];
+				//}
+
+				// If there is an email from the last electronic payment, for the current Owner, 
+				// add it to the email list (if not already in the array)
+				if (!in_array($tempEmail, $hoaRec->emailAddrList)) {
+					array_push($hoaRec->emailAddrList,$tempEmail);
 				}
 			}
 		} // End of Owners
