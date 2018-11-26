@@ -505,6 +505,8 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 		if ($result->num_rows > 0) {
 			if ($row = $result->fetch_assoc()) {
 				$tempEmail = $row["payer_email"];
+				error_log(date('[Y-m-d H:i] '). " tempEmail = " . $tempEmail . PHP_EOL, 3, "hoadb.log");
+
 				// If there is an email from the last electronic payment, for the current Owner, only use it 
 				// if they are not going paperless or the paperless email is blank
 				//if (!$hoaRec->UseEmail || $hoaRec->DuesEmailAddr == '') {
@@ -514,6 +516,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				// If there is an email from the last electronic payment, for the current Owner, 
 				// add it to the email list (if not already in the array)
 				if (!in_array($tempEmail, $hoaRec->emailAddrList)) {
+					//error_log(date('[Y-m-d H:i] '). " push tempEmail = " . $tempEmail . PHP_EOL, 3, "hoadb.log");
 					array_push($hoaRec->emailAddrList,$tempEmail);
 				}
 			}

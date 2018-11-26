@@ -234,9 +234,8 @@ var admin = (function () {
 
         var pdfRec;
         $.each(hoaRecList, function (index, hoaRec) {
+            //console.log(index + ", len = " + hoaRec.emailAddrList.length + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", DuesEmailAddr = " + hoaRec.DuesEmailAddr);
             // If there is an email address for this property, then create the dues notice attachment
-            //???????????????
-            // NO - CAN'T USE THE COMMON PDF with the global !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             if (hoaRec.emailAddrList.length > 0) {
                 emailRecCnt++;
                 //console.log(index + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", sendEmailAddr = " + sendEmailAddr);
@@ -263,7 +262,7 @@ var admin = (function () {
                     filename: config.getVal('hoaNameShort') + 'DuesNotice.pdf',
                     filedata: btoa(pdfRec.pdf.output())
                 }, function (response, status) {
-                    console.log("response from sendMail = " + response + ", status = "+status);
+                    console.log("result from sendMail = " + response.result + ", ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID + ", response.sendEmailAddr" + response.sendEmailAddr);
                     if (response.result == 'SUCCESS') {
                         commDesc = noticeType + " Dues Notice emailed to " + response.sendEmailAddr;
                     } else {
@@ -274,8 +273,9 @@ var admin = (function () {
                     if (action != 'DuesEmailsTest') {
                         communications.LogCommunication(response.Parcel_ID, response.OwnerID, commType, commDesc);
                     }
-                }); // End of $.post("sendMail.php"
+                },'json'); // End of $.post("sendMail.php"
             }); // End of loop through Email addresses
+            
         }); // End of loop through Parcels
 
         if (action == 'DuesEmailsTest') {

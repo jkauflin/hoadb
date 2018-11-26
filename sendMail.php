@@ -12,6 +12,8 @@
  *============================================================================*/
 	require_once 'swiftmailer/lib/swift_required.php';
 
+//https://github.com/egulias/EmailValidator
+
 	include 'commonUtil.php';
 	// Include table record classes and db connection parameters
 	include 'hoaDbCommon.php';
@@ -24,23 +26,52 @@
 	$filename = $_POST['filename'];
 	// Decode the PDF data stream from character back to binary
 	$filedata = base64_decode($_POST['filedata']);
-	
-	// Create the message
-	$message = Swift_Message::newInstance()
-	->setSubject($subject)
-	->setFrom(getConfigVal("fromTreasurerEmailAddress"))
-	->setTo($toEmail)
-	->setBody($messageStr);
-	// And optionally an alternative body
-	//	->addPart($messageStr, 'text/plain');
 
-	// Create the record to send back as a result of the POST
+		// Create the record to send back as a result of the POST
 	$sendEmailRec = new SendEmailRec();
 	$sendEmailRec->result = '';
 	$sendEmailRec->message = '';
 	$sendEmailRec->sendEmailAddr = $toEmail;
 	$sendEmailRec->Parcel_ID = $parcelId;
 	$sendEmailRec->OwnerID = $ownerId;
+
+	// Create the Transport
+	$transport = (new Swift_SmtpTransport('smtp.server.com', 25))
+	->setUsername('')
+	->setPassword('')
+	;
+
+	/*
+	You could alternatively use a different transport such as Sendmail:
+	// Sendmail
+	$transport = new Swift_SendmailTransport('/usr/sbin/sendmail -bs');
+	*/
+
+	// Create the Mailer using your created Transport
+	$mailer = new Swift_Mailer($transport);
+
+
+	// Create a message
+	$message = (new Swift_Message($subject))
+	->setFrom([getConfigVal("fromTreasurerEmailAddress")])
+	->setTo([$toEmail])
+	->setBody($messageStr);
+		/*
+		->setFrom(['john@doe.com' => 'John Doe'])
+	->setTo(['receiver@domain.org', 'other@domain.org' => 'A name'])
+	->setBody('Here is the message itself')
+		*/
+
+	// Create the message
+	/*
+	$message = Swift_Message::newInstance()
+	->setSubject($subject)
+	->setFrom(getConfigVal("fromTreasurerEmailAddress"))
+	->setTo($toEmail)
+	->setBody($messageStr);
+	*/
+	// And optionally an alternative body
+	//	->addPart($messageStr, 'text/plain');
 
     // swiftmailer PHP read receipt capability
     // $message -> setReadReceiptTo('your@address.tld');
@@ -54,9 +85,9 @@
 	$message->attach($attachment);
 	
 	// Create the Transport
-	$transport = Swift_MailTransport::newInstance();
+	//$transport = Swift_MailTransport::newInstance();
 	// Create the Mailer using your created Transport
-	$mailer = Swift_Mailer::newInstance($transport);
+	//$mailer = Swift_Mailer::newInstance($transport);
 
 	// Send the message and check for success
 	if ($mailer->send($message)) {
