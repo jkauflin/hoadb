@@ -9,10 +9,11 @@
  * 2016-11-07 JJK   Modified to use swiftmailer.org library
  * 2018-11-25 JJK	Modified to return a JSON record which includes the
  * 					email address for the send and the send result
+ * 2018-11-26 JJK	Modifying to use the newest version of swiftmailer
+ * 					and trapped exceptions to return error message
  *============================================================================*/
-	require_once 'swiftmailer/lib/swift_required.php';
-
-//https://github.com/egulias/EmailValidator
+	//require_once 'swiftmailer/lib/swift_required.php';
+	require_once("swiftmailer/autoload.php"); 
 
 	include 'commonUtil.php';
 	// Include table record classes and db connection parameters
@@ -35,69 +36,69 @@
 	$sendEmailRec->Parcel_ID = $parcelId;
 	$sendEmailRec->OwnerID = $ownerId;
 
-	// Create the Transport
-	$transport = (new Swift_SmtpTransport('smtp.server.com', 25))
-	->setUsername('')
-	->setPassword('')
-	;
-
-	/*
-	You could alternatively use a different transport such as Sendmail:
-	// Sendmail
-	$transport = new Swift_SendmailTransport('/usr/sbin/sendmail -bs');
-	*/
-
-	// Create the Mailer using your created Transport
-	$mailer = new Swift_Mailer($transport);
-
-
-	// Create a message
-	$message = (new Swift_Message($subject))
-	->setFrom([getConfigVal("fromTreasurerEmailAddress")])
-	->setTo([$toEmail])
-	->setBody($messageStr);
+	try {
+		// Create the Transport
+		$transport = new Swift_SendmailTransport();
 		/*
-		->setFrom(['john@doe.com' => 'John Doe'])
-	->setTo(['receiver@domain.org', 'other@domain.org' => 'A name'])
-	->setBody('Here is the message itself')
+		You could alternatively use a different transport such as Sendmail:
+		// Sendmail
+		$transport = new Swift_SendmailTransport('/usr/sbin/sendmail -bs');
 		*/
 
-	// Create the message
-	/*
-	$message = Swift_Message::newInstance()
-	->setSubject($subject)
-	->setFrom(getConfigVal("fromTreasurerEmailAddress"))
-	->setTo($toEmail)
-	->setBody($messageStr);
-	*/
-	// And optionally an alternative body
-	//	->addPart($messageStr, 'text/plain');
+		// Create the Mailer using your created Transport
+		$mailer = new Swift_Mailer($transport);
 
-    // swiftmailer PHP read receipt capability
-    // $message -> setReadReceiptTo('your@address.tld');
-    // When the email is opened, if the mail client supports it a notification will be sent to this address.
-    // Read receipts won't work for the majority of recipients since many mail clients auto-disable them. 
-    // Those clients that will send a read receipt will make the user aware that one has been requested.
+		// Create a message
+		$message = (new Swift_Message($subject))
+		->setFrom([getConfigVal("fromTreasurerEmailAddress")])
+		->setTo([$toEmail])
+		->setBody($messageStr);
 
-	// Create the attachment with your data
-	$attachment = Swift_Attachment::newInstance($filedata, $filename, 'application/pdf');
-	// Attach it to the message
-	$message->attach($attachment);
-	
-	// Create the Transport
-	//$transport = Swift_MailTransport::newInstance();
-	// Create the Mailer using your created Transport
-	//$mailer = Swift_Mailer::newInstance($transport);
+		// Create the message
+		/*
+		$message = Swift_Message::newInstance()
+		->setSubject($subject)
+		->setFrom(getConfigVal("fromTreasurerEmailAddress"))
+		->setTo($toEmail)
+		->setBody($messageStr);
+		*/
+		// And optionally an alternative body
+		//	->addPart($messageStr, 'text/plain');
 
-	// Send the message and check for success
-	if ($mailer->send($message)) {
-		//echo "SUCCESS";
-		$sendEmailRec->result = 'SUCCESS';
-		$sendEmailRec->message = 'Email sent successfully to ' . $toEmail;
-	} else {
-		//echo "ERROR";
+		// swiftmailer PHP read receipt capability
+		// $message -> setReadReceiptTo('your@address.tld');
+		// When the email is opened, if the mail client supports it a notification will be sent to this address.
+		// Read receipts won't work for the majority of recipients since many mail clients auto-disable them. 
+		// Those clients that will send a read receipt will make the user aware that one has been requested.
+
+		// Create the attachment with your data
+		//$attachment = Swift_Attachment::newInstance($filedata, $filename, 'application/pdf');
+		// Attach it to the message
+		//$message->attach($attachment);
+		
+		// Create the attachment with your data
+		$attachment = new Swift_Attachment($filedata, $filename, 'application/pdf');
+		// Attach it to the message
+		$message->attach($attachment);
+
+		// Create the Transport
+		//$transport = Swift_MailTransport::newInstance();
+		// Create the Mailer using your created Transport
+		//$mailer = Swift_Mailer::newInstance($transport);
+
+		// Send the message and check for success
+		if ($mailer->send($message)) {
+			//echo "SUCCESS";
+			$sendEmailRec->result = 'SUCCESS';
+			$sendEmailRec->message = 'Email sent successfully to ' . $toEmail;
+		} else {
+			//echo "ERROR";
+			$sendEmailRec->result = 'ERROR';
+			$sendEmailRec->message = 'Error sending Email to ' . $toEmail;
+		}
+	} catch (Exception $e) {
 		$sendEmailRec->result = 'ERROR';
-		$sendEmailRec->message = 'Error sending Email to ' . $toEmail;
+		$sendEmailRec->message = $e->getMessage();
 	}
 
 	echo json_encode($sendEmailRec);

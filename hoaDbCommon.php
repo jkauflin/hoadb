@@ -505,7 +505,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 		if ($result->num_rows > 0) {
 			if ($row = $result->fetch_assoc()) {
 				$tempEmail = $row["payer_email"];
-				error_log(date('[Y-m-d H:i] '). " tempEmail = " . $tempEmail . PHP_EOL, 3, "hoadb.log");
+				//error_log(date('[Y-m-d H:i] '). " tempEmail = " . $tempEmail . PHP_EOL, 3, "hoadb.log");
 
 				// If there is an email from the last electronic payment, for the current Owner, only use it 
 				// if they are not going paperless or the paperless email is blank

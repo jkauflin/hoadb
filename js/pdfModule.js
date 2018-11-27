@@ -17,24 +17,6 @@ var pdfModule = (function () {
 
     //=================================================================================================================
     // Private variables for the Module
-    /*
-    var pdf;
-    var pdfTitle = '';
-    var pdfRec.orientation = 'letter';
-    var pdfRec.createTimestamp = '';
-    var pdfRec.lineColIncrArray = [];
-    var pdfRec.pageCnt = 0;
-    var pdfRec.lineCnt = 0;
-    var pdfRec.lineYStart = 1.5;
-    var pdfRec.lineY = pdfRec.lineYStart;
-    var pdfRec.lineIncrement = 0.25;
-    var pdfRec.colIncrement = 1.5;
-    var pdfRec.maxLineChars = 95;
-    var pdfRec.fontSizeDefault = 11;
-    var pdfRec.fontSize = 11;
-    var pdfRec.header = false;
-    */
-
     var defaultOrientation = 'letter';
     var defaultFontSize = 11;
     var startLineY = 1.5;

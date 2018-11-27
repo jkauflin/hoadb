@@ -40,19 +40,15 @@
  *                  do all data queries in the PHP module and pass back a 
  *                  large array of data to process in a sync loop
  * 2018-11-25 JJK   Renamed to pdfModule and implemented configuration object
- *                  rather than global variables
+ *                  rather than global variables (to solve email issue)
+ * 2018-11-26 JJK   Implemented error handling and logging for failed 
+ *                  email sends
  *============================================================================*/
 var admin = (function () {
     'use strict';  // Force declaration of variables before use (among other things)
 
     //=================================================================================================================
     // Private variables for the Module
-    /*
-    var hoaName;
-    var hoaNameShort;
-    var hoaAddress1;
-    var hoaAddress2;
-    */
 
     //=================================================================================================================
     // Variables cached from the DOM
@@ -104,13 +100,6 @@ var admin = (function () {
         util.waitCursor();
         var action = event.target.getAttribute("data-action");
         //console.log("in adminExecute, action = "+action);
-
-        /*
-        hoaName = config.getVal('hoaName');
-        hoaNameShort = config.getVal('hoaNameShort');
-        hoaAddress1 = config.getVal('hoaAddress1');
-        hoaAddress2 = config.getVal('hoaAddress2');
-        */
        
         // Get all the data needed for processing
         $.getJSON("adminExecute.php", "action=" + action +
@@ -133,6 +122,7 @@ var admin = (function () {
 
     function _duesNotices(hoaRecList) {
         var adminEmailSkipCnt = 0;
+        var duesNoticeCnt = 0;
         var displayAddress = '';
         var commType = 'Dues Notice';
         var commDesc = '';
@@ -156,6 +146,7 @@ var admin = (function () {
             if (firstNotice && hoaRec.UseEmail && hoaRec.DuesEmailAddr != '') {
                 adminEmailSkipCnt++;
             } else {
+                duesNoticeCnt++;
                 if (index > 0) {
                     // If not the first record for DuesNotices, then add a new page for the next parcel
                     pdfRec = pdfModule.addPage(pdfRec);
@@ -174,7 +165,7 @@ var admin = (function () {
             }
         }); // End of loop through Parcels
 
-        $("#ResultMessage").html("Yearly dues notices created, total = " + hoaRecList.length + ", (Total skipped for UseEmail = " + adminEmailSkipCnt + ")");
+        $("#ResultMessage").html("Yearly dues notices created, total = " + duesNoticeCnt + ", (Total skipped for UseEmail = " + adminEmailSkipCnt + ")");
         // Download the PDF file
         pdfRec.pdf.save(util.formatDate() + "-YearlyDuesNotices.pdf");
     }
@@ -226,10 +217,7 @@ var admin = (function () {
             firstNotice = true;
             noticeType = "1st";
         }
-        // ************************ NEED A BETTER WAY TO FIGURE OUT FIRST NOTICES - date?  number paid against total membership?
-        // maybe make it a input set by requestor (like an email to use?)
 
-        console.log("Before adminLoop, hoaRecList.length = " + hoaRecList.length);
         $ResultMessage.html("Executing Admin request...(processing list)");
 
         var pdfRec;
@@ -251,7 +239,7 @@ var admin = (function () {
                 if (action == 'DuesEmailsTest') {
                     sendEmailAddr = config.getVal('duesEmailTestAddress');
                 }
-                console.log(index + " " + index2 + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", sendEmailAddr = " + sendEmailAddr);
+                //console.log(index + " " + index2 + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", sendEmailAddr = " + sendEmailAddr);
 
                 $.post("sendMail.php", {
                     toEmail: sendEmailAddr,
@@ -261,19 +249,25 @@ var admin = (function () {
                     ownerId: hoaRec.ownersList[0].OwnerID,
                     filename: config.getVal('hoaNameShort') + 'DuesNotice.pdf',
                     filedata: btoa(pdfRec.pdf.output())
-                }, function (response, status) {
-                    console.log("result from sendMail = " + response.result + ", ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID + ", response.sendEmailAddr" + response.sendEmailAddr);
+                }, function (response) {
+                    //console.log("result from sendMail = " + response.result + ", ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID + ", response.sendEmailAddr = " + response.sendEmailAddr);
                     if (response.result == 'SUCCESS') {
                         commDesc = noticeType + " Dues Notice emailed to " + response.sendEmailAddr;
                     } else {
                         commDesc = noticeType + " Dues Notice, ERROR emailing to " + response.sendEmailAddr;
                         util.displayError(commDesc + ", ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID);
+                        console.log("Error sending Email, ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID + ", sendEmailAddr = " + response.sendEmailAddr + ", message = " + response.message);
                     }
                     // log communication for notice created
                     if (action != 'DuesEmailsTest') {
                         communications.LogCommunication(response.Parcel_ID, response.OwnerID, commType, commDesc);
                     }
-                },'json'); // End of $.post("sendMail.php"
+                }, 'json'); // End of $.post("sendMail.php"
+                /*
+                .fail(function (xhr, status, error) {
+                    //console.log("ERROR in sendMail, xhr.responseText = " + xhr.responseText);
+                }); // End of $.post("sendMail.php"
+                */
             }); // End of loop through Email addresses
             
         }); // End of loop through Parcels
@@ -288,7 +282,6 @@ var admin = (function () {
     //=================================================================================================================
     // This is what is exposed from this Module
     return {
-        //getHoaRec: getHoaRec
     };
 
 })(); // var admin = (function(){

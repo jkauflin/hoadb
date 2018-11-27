@@ -29,6 +29,7 @@
  * 2018-11-04 JJK   (Jackson's 16th birthday)
  *                  Got update Owner working again with JSON POST
  *                  Got update Assessment working again with JSON POST
+ * 2018-11-25 JJK   Moved Dues Statement back to here
  *============================================================================*/
 var detail = (function(){
     'use strict';
@@ -605,7 +606,6 @@ var detail = (function(){
     };	// End of $(document).on("click","#SaveAssessmentEdit",function(){
 
 
-    // ************** MOVE these to a dues module ??? *************************************************************************************
     function createDuesStatement(event) {
         //console.log("create dues statement, parcel = " + event.target.getAttribute("data-parcelId") + ", owner = " + event.target.getAttribute("data-ownerId"));
         util.waitCursor();
