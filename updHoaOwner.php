@@ -10,6 +10,7 @@
  * 2016-08-19 JJK	Added EmailAddr
  * 2018-11-04 JJK	Re-factored to use POST and return JSON data of
  *                  re-queried record
+ * 2018-11-27 JJK	Added EmailAddr2
  *============================================================================*/
 	include 'commonUtil.php';
 	// Include table record classes and db connection parameters
@@ -39,6 +40,7 @@
 	error_log(date('[Y-m-d H:i] '). "updHoaProperty, altZip = " . $param->altZip . PHP_EOL, 3, "hoadb.log");
 	error_log(date('[Y-m-d H:i] '). "updHoaProperty, ownerPhone = " . $param->ownerPhone . PHP_EOL, 3, "hoadb.log");
 	error_log(date('[Y-m-d H:i] '). "updHoaProperty, emailAddr = " . $param->emailAddr . PHP_EOL, 3, "hoadb.log");
+	error_log(date('[Y-m-d H:i] '). "updHoaProperty, emailAddr2 = " . $param->emailAddr2 . PHP_EOL, 3, "hoadb.log");
 	error_log(date('[Y-m-d H:i] '). "updHoaProperty, ownerComments = " . $param->ownerComments . PHP_EOL, 3, "hoadb.log");
 	*/
 	
@@ -81,14 +83,14 @@
 		
 		// Make new owners the current owner
 		$currentOwnerBoolean = 1;
-		$sqlStr = 'INSERT INTO hoa_owners (OwnerID,Parcel_ID,CurrentOwner,Owner_Name1,Owner_Name2,DatePurchased,Mailing_Name,AlternateMailing,Alt_Address_Line1,Alt_Address_Line2,Alt_City,Alt_State,Alt_Zip,Owner_Phone,EmailAddr,Comments,LastChangedBy,LastChangedTs) ';
-		$sqlStr = $sqlStr . ' VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ';
+		$sqlStr = 'INSERT INTO hoa_owners (OwnerID,Parcel_ID,CurrentOwner,Owner_Name1,Owner_Name2,DatePurchased,Mailing_Name,AlternateMailing,Alt_Address_Line1,Alt_Address_Line2,Alt_City,Alt_State,Alt_Zip,Owner_Phone,EmailAddr,EmailAddr2,Comments,LastChangedBy,LastChangedTs) ';
+		$sqlStr = $sqlStr . ' VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ';
 		$stmt = $conn->prepare($sqlStr);
-		$stmt->bind_param("ssissssisssssssss",$maxOwnerID,$param->parcelId,$currentOwnerBoolean,$param->ownerName1,$param->ownerName2,$param->datePurchased,$param->mailingName,$param->alternateMailingCheckbox,$param->addrLine1,$param->addrLine2,$param->altCity,$param->altState,$param->altZip,$param->ownerPhone,$param->emailAddr,$param->ownerComments,$username);
+		$stmt->bind_param("ssissssissssssssss",$maxOwnerID,$param->parcelId,$currentOwnerBoolean,$param->ownerName1,$param->ownerName2,$param->datePurchased,$param->mailingName,$param->alternateMailingCheckbox,$param->addrLine1,$param->addrLine2,$param->altCity,$param->altState,$param->altZip,$param->ownerPhone,$param->emailAddr,$param->emailAddr2,$param->ownerComments,$username);
 		
 	} else {
-		$stmt = $conn->prepare("UPDATE hoa_owners SET Owner_Name1=?,Owner_Name2=?,DatePurchased=?,Mailing_Name=?,AlternateMailing=?,Alt_Address_Line1=?,Alt_Address_Line2=?,Alt_City=?,Alt_State=?,Alt_Zip=?,Owner_Phone=?,EmailAddr=?,Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND OwnerID = ?; ");
-		$stmt->bind_param("ssssisssssssssss",$param->ownerName1,$param->ownerName2,$param->datePurchased,$param->mailingName,$param->alternateMailingCheckbox,$param->addrLine1,$param->addrLine2,$param->altCity,$param->altState,$param->altZip,$param->ownerPhone,$param->emailAddr,$param->ownerComments,$username,$param->parcelId,$param->ownerId);
+		$stmt = $conn->prepare("UPDATE hoa_owners SET Owner_Name1=?,Owner_Name2=?,DatePurchased=?,Mailing_Name=?,AlternateMailing=?,Alt_Address_Line1=?,Alt_Address_Line2=?,Alt_City=?,Alt_State=?,Alt_Zip=?,Owner_Phone=?,EmailAddr=?,EmailAddr2=?,Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND OwnerID = ?; ");
+		$stmt->bind_param("ssssissssssssssss",$param->ownerName1,$param->ownerName2,$param->datePurchased,$param->mailingName,$param->alternateMailingCheckbox,$param->addrLine1,$param->addrLine2,$param->altCity,$param->altState,$param->altZip,$param->ownerPhone,$param->emailAddr,$param->emailAddr2,$param->ownerComments,$username,$param->parcelId,$param->ownerId);
 	}
 	
 	$stmt->execute();

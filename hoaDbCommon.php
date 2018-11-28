@@ -35,8 +35,8 @@
  *					only use it if they are not going paperless or the paperless email is blank
  * 2018-10-27 JJK   Modified the error_log to write to hoadb.log
  * 2018-11-16 JJK	Added $hoaRecList to AdminRec to store all data needed for dues
- * 2018-11-24 JJK	Added $emailAddrList to store multiple email addresses, 
- * 					and 
+ * 2018-11-24 JJK	Added $emailAddrList to store multiple email addresses
+ * 2018-11-27 JJK	Added $EmailAddr2 to Owner rec and to emailAddrList
  *============================================================================*/
 
 function getConn() {
@@ -180,6 +180,7 @@ class HoaOwnerRec
   	public $Alt_Zip;
   	public $Owner_Phone;
   	public $EmailAddr;
+  	public $EmailAddr2;
   	public $Comments;
   	public $EntryTimestamp;
   	public $UpdateTimestamp;
@@ -471,6 +472,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 				$hoaOwnerRec->Alt_Zip = $row["Alt_Zip"];
 				$hoaOwnerRec->Owner_Phone = $row["Owner_Phone"];
 				$hoaOwnerRec->EmailAddr = $row["EmailAddr"];
+				$hoaOwnerRec->EmailAddr2 = $row["EmailAddr2"];
 				$hoaOwnerRec->Comments = $row["Comments"];
 				$hoaOwnerRec->EntryTimestamp = $row["EntryTimestamp"];
 				$hoaOwnerRec->UpdateTimestamp = $row["UpdateTimestamp"];
@@ -483,6 +485,9 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 					// If an email address is specified, add it to the list for the current owner
 					if ($hoaOwnerRec->EmailAddr != '') {
 						array_push($hoaRec->emailAddrList,$hoaOwnerRec->EmailAddr);
+					}
+					if ($hoaOwnerRec->EmailAddr2 != '') {
+						array_push($hoaRec->emailAddrList,$hoaOwnerRec->EmailAddr2);
 					}
 					// *** check and add other email addresses here
 					$CurrentOwnerID = $hoaOwnerRec->OwnerID;

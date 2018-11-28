@@ -11,6 +11,7 @@
  * 2018-11-17 JJK   Moved PDF data and functions to seperate module
  * 2018-11-25 JJK   Renamed to pdfModule and implemented configuration object
  *                  rather than global variables
+ * 2018-11-27 JJK   Added EmailAddr2
  *============================================================================*/
 var pdfModule = (function () {
     'use strict';
@@ -127,8 +128,8 @@ var pdfModule = (function () {
         pdfRec = yearlyDuesStatementAddLine(pdfRec,[hoaRec.Parcel_Location]);
         pdfRec = yearlyDuesStatementAddLine(pdfRec,[hoaRec.Property_City + ', ' + hoaRec.Property_State + ' ' + hoaRec.Property_Zip]);
         pdfRec = yearlyDuesStatementAddLine(pdfRec,['Phone # ' + ownerRec.Owner_Phone]);
-        pdfRec = yearlyDuesStatementAddLine(pdfRec,['Email: ' + hoaRec.DuesEmailAddr]);
-        // *** display multiple ones from the array list ???????????????????????????????????????
+        pdfRec = yearlyDuesStatementAddLine(pdfRec, ['Email: ' + hoaRec.DuesEmailAddr]);
+        pdfRec = yearlyDuesStatementAddLine(pdfRec, ['Email2: ' + ownerRec.EmailAddr2]);
 
         var displayAddress1 = ownerRec.Mailing_Name;
         var displayAddress2 = hoaRec.Parcel_Location;

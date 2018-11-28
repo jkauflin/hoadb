@@ -30,6 +30,7 @@
  *                  Got update Owner working again with JSON POST
  *                  Got update Assessment working again with JSON POST
  * 2018-11-25 JJK   Moved Dues Statement back to here
+ * 2018-11-27 JJK   Added EmailAddr2
  *============================================================================*/
 var detail = (function(){
     'use strict';
@@ -407,6 +408,7 @@ var detail = (function(){
         tr += '<tr><th>Zip:</th><td>' + util.setInputText("altZip", rec.Alt_Zip, "20") + '</td></tr>';
         tr += '<tr><th>Owner Phone:</th><td>' + util.setInputText("ownerPhone", rec.Owner_Phone, "30") + '</td></tr>';
         tr += '<tr><th>Email Addr: </th><td>' + util.setInputText("emailAddr", rec.EmailAddr, "90") + '</td></tr>';
+        tr += '<tr><th>Email Addr2: </th><td>' + util.setInputText("emailAddr2", rec.EmailAddr2, "90") + '</td></tr>';
         tr += '<tr><th>Comments: </th><td>' + util.setInputText("ownerComments", rec.Comments, "90") + '</td></tr>';
         tr += '<tr><th>Last Changed:</th><td>' + rec.LastChangedTs + '</td></tr>';
         tr += '<tr><th>Changed by:</th><td>' + rec.LastChangedBy + '</td></tr>';
