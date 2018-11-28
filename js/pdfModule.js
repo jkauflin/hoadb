@@ -106,17 +106,17 @@ var pdfModule = (function () {
 
         var duesAmount = util.formatMoney(hoaRec.assessmentsList[0].DuesAmt);
         pdfRec = yearlyDuesStatementAddLine(pdfRec,["Dues Amount: ", '$' + duesAmount]);
-        if (duesAmount == hoaRec.TotalDue) {
+        if (hoaRec.TotalDue > duesAmount) {
+            pdfRec = yearlyDuesStatementAddLine(pdfRec, ["********************* ", "There are prior year dues owed"]);
+            pdfRec = yearlyDuesStatementAddLine(pdfRec, ["********************* ", "Please contact the Treasurer"]);
+            pdfRec = yearlyDuesStatementAddLine(pdfRec, ["Due Date: ", 'October 1st, ' + noticeYear]);
+            pdfRec.lineColIncrArray = [-4.5, 1.3];
+            pdfRec = yearlyDuesStatementAddLine(pdfRec, ["Parcel Id: ", hoaRec.Parcel_ID + ", Lot: " + hoaRec.LotNo]);
+        } else {
             pdfRec = yearlyDuesStatementAddLine(pdfRec,["Due Date: ", 'October 1st, ' + noticeYear]);
             pdfRec.lineColIncrArray = [-4.5, 1.3];
             pdfRec = yearlyDuesStatementAddLine(pdfRec,["Parcel Id: ", hoaRec.Parcel_ID]);
             pdfRec = yearlyDuesStatementAddLine(pdfRec,["Lot No: ", hoaRec.LotNo]);
-        } else {
-            pdfRec = yearlyDuesStatementAddLine(pdfRec,["********************* ", "There are prior year dues owed"]);
-            pdfRec = yearlyDuesStatementAddLine(pdfRec,["********************* ", "Please contact the Treasurer"]);
-            pdfRec = yearlyDuesStatementAddLine(pdfRec,["Due Date: ", 'October 1st, ' + noticeYear]);
-            pdfRec.lineColIncrArray = [-4.5, 1.3];
-            pdfRec = yearlyDuesStatementAddLine(pdfRec,["Parcel Id: ", hoaRec.Parcel_ID + ", Lot: " + hoaRec.LotNo]);
         }
 
         pdfRec.lineColIncrArray = [-4.5];
