@@ -16,7 +16,7 @@
  * 					MailingAddress fields set from parcel location or
  * 					Alt mailing address (if specified)
  * 2018-11-13 JJK   Re-factored for modules
- * 2018-11-21 JJK   d
+ * 2019-01-19 JJK   Added Parcel Id to the unpaid dues ranking list
  *============================================================================*/
 var reports = (function () {
     'use strict';
@@ -99,14 +99,16 @@ var reports = (function () {
         });
 
         // Create the CSV header/column name line
-        csvLine = "ParcelLocation";
+        csvLine = "ParcelId";
+        csvLine += ',' + "ParcelLocation";
         csvLine += ',' + "TotalDue";
         csvContent += csvLine + '\n';
 
         $.each(hoaRecList, function (index, hoaRec) {
             if (hoaRec.TotalDue > 0) {
                 unpaidDuesCnt++;
-                csvLine = util.csvFilter(hoaRec.Parcel_Location);
+                csvLine = util.csvFilter(hoaRec.Parcel_ID);
+                csvLine += ',' + util.csvFilter(hoaRec.Parcel_Location);
                 csvLine += ',' + util.csvFilter(hoaRec.TotalDue);
                 csvContent += csvLine + '\n';
             }
