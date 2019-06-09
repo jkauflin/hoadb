@@ -14,11 +14,15 @@
  * 					updated for new sales table fields
  * 2016-04-02 JJK	Added getConn() function
  * 2016-04-13 JJK   Checked function and added getConfigVal calss
+ * 2019-06-09 JJK	Added some logging, updated the URL for the website
+ * 					and got this working again
  *============================================================================*/
 
 include 'commonUtil.php';
 // Include table record classes and db connection parameters
 include 'hoaDbCommon.php';
+
+define("LOG_FILE", "./getSales.log");
 
 $errorStr = '';
 $currTimestampStr = date("Y-m-d H:i:s");
@@ -29,6 +33,8 @@ $salesYear = substr($currTimestampStr,0,4);
 $url = getConfigVal("countySalesDataUrl") . $salesYear . '.zip';
 $zipFileName = 'SALES_' . $salesYear . '.zip';
 downloadUrlToFile($url, $zipFileName);
+
+//error_log(date('[Y-m-d H:i] '). "Sales file url = $url" . PHP_EOL, 3, LOG_FILE);
 
 if (is_file($zipFileName)) {
 	$sendMessage = false;
@@ -60,6 +66,9 @@ if (is_file($zipFileName)) {
 			$salesRecArray = fgetcsv($file);
 					
 			$parcelId = $salesRecArray[0];
+
+			//error_log(date('[Y-m-d H:i] '). "Parcel Id = $parcelId" . PHP_EOL, 3, LOG_FILE);
+
 			// Check if the Parcel Id from the sales record matches any in our HOA database
 			//function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 			$hoaRec = getHoaRec($conn,$parcelId,"","",$salesRecArray[2]);
