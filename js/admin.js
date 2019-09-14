@@ -43,6 +43,10 @@
  *                  rather than global variables (to solve email issue)
  * 2018-11-26 JJK   Implemented error handling and logging for failed 
  *                  email sends
+ * 2019-09-14 JJK   Added a FirstNoticeCheckbox for explicit designation
+ *                  of 1st or Additional notices.  Pass along and use in
+ *                  the functions instead of comparing array count with 
+ *                  total number of properties
  *============================================================================*/
 var admin = (function () {
     'use strict';  // Force declaration of variables before use (among other things)
