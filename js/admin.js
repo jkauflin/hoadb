@@ -213,6 +213,7 @@ var admin = (function () {
         var firstNotice = false;
         var noticeType = "Additional";
         // If list of unpaid properties is the total number of properties, assume it is the 1st Dues Notice
+        console.log("hoaRecList.length = " + hoaRecList.length + ", numberOfProperties = " +parseInt(config.getVal('numberOfProperties')));
         if (hoaRecList.length == parseInt(config.getVal('numberOfProperties'))) {
             firstNotice = true;
             noticeType = "1st";
@@ -221,6 +222,8 @@ var admin = (function () {
         $ResultMessage.html("Executing Admin request...(processing list)");
 
         var pdfRec;
+        // 2019-09-14 working on this
+        /*
         $.each(hoaRecList, function (index, hoaRec) {
             //console.log(index + ", len = " + hoaRec.emailAddrList.length + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", DuesEmailAddr = " + hoaRec.DuesEmailAddr);
             // If there is an email address for this property, then create the dues notice attachment
@@ -263,14 +266,13 @@ var admin = (function () {
                         communications.LogCommunication(response.Parcel_ID, response.OwnerID, commType, commDesc);
                     }
                 }, 'json'); // End of $.post("sendMail.php"
-                /*
-                .fail(function (xhr, status, error) {
+                //.fail(function (xhr, status, error) {
                     //console.log("ERROR in sendMail, xhr.responseText = " + xhr.responseText);
-                }); // End of $.post("sendMail.php"
-                */
+                //}); // End of $.post("sendMail.php"
             }); // End of loop through Email addresses
             
         }); // End of loop through Parcels
+        */
 
         if (action == 'DuesEmailsTest') {
             $("#ResultMessage").html("TEST Yearly dues notices emailed, total = " + emailRecCnt);
