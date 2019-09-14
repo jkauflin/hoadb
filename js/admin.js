@@ -62,6 +62,7 @@ var admin = (function () {
     var $ConfirmationButton = $ConfirmationModal.find("#ConfirmationButton");
     var $ConfirmationMessage = $ConfirmationModal.find("#ConfirmationMessage");
     var $ResultMessage = $moduleDiv.find("#ResultMessage");
+    var $FirstNoticeCheckbox = $moduleDiv.find("#FirstNoticeCheckbox");
 
     //=================================================================================================================
     // Bind events
@@ -71,6 +72,12 @@ var admin = (function () {
     //=================================================================================================================
     // Module methods
     function _adminRequest(event) {
+        var firstNotice = true;
+        if (!$FirstNoticeCheckbox.prop('checked')) {
+            //console.log("FirstNoticeCheckbox NOT CHECKED ");
+            firstNotice = false;
+        }
+
         // Validate add assessments (check access permissions, timing, year, and amount)
         // get confirmation message back
         var fy = util.cleanStr($FiscalYear.val());
@@ -85,7 +92,7 @@ var admin = (function () {
             // If the action was Valid, append an action button
             if (adminRec.result == "Valid") {
                 buttonForm.append($('<button>').prop('id', "AdminExecute").prop('class', "btn btn-danger").attr('type', "button").attr('data-dismiss', "modal").html('Continue')
-                    .attr('data-action', event.target.getAttribute('id')).attr('data-fy', fy).attr('data-duesAmt', duesAmt));
+                    .attr('data-action', event.target.getAttribute('id')).attr('data-fy', fy).attr('data-duesAmt', duesAmt).attr('data-firstNotice', firstNotice));
             }
             buttonForm.append($('<button>').prop('class', "btn btn-default").attr('type', "button").attr('data-dismiss', "modal").html('Close'));
             $ConfirmationButton.append(buttonForm);
@@ -99,8 +106,10 @@ var admin = (function () {
         $ResultMessage.html("Executing Admin request...(please wait)");
         util.waitCursor();
         var action = event.target.getAttribute("data-action");
+        var firstNotice = event.target.getAttribute("data-firstNotice");
         //console.log("in adminExecute, action = "+action);
-       
+        //console.log("in adminExecute, firstNotice = "+firstNotice);
+
         // Get all the data needed for processing
         $.getJSON("adminExecute.php", "action=" + action +
             "&fy=" + event.target.getAttribute("data-fy") +
@@ -110,28 +119,25 @@ var admin = (function () {
             $ResultMessage.html(adminRec.message);
 
             if (action == 'DuesNotices') {
-                _duesNotices(adminRec.hoaRecList);
+                _duesNotices(adminRec.hoaRecList,firstNotice);
             } else if (action == 'MarkMailed') {
-                _markMailed(adminRec.hoaRecList);
+                _markMailed(adminRec.hoaRecList,firstNotice);
             } else if (action == 'DuesEmails' || action == 'DuesEmailsTest') {
-                _duesEmails(adminRec.hoaRecList,action);
+                _duesEmails(adminRec.hoaRecList,action,firstNotice);
             }
 
         }); // $.getJSON("adminExecute.php","action="+action+
     }
 
-    function _duesNotices(hoaRecList) {
+    function _duesNotices(hoaRecList,firstNotice) {
         var adminEmailSkipCnt = 0;
         var duesNoticeCnt = 0;
         var displayAddress = '';
         var commType = 'Dues Notice';
         var commDesc = '';
-        var firstNotice = false;
-        var noticeType = 'Additional';
-        // If list of unpaid properties is the total number of properties, assume it is the 1st Dues Notice
-        if (hoaRecList.length == parseInt(config.getVal('numberOfProperties'))) {
-            firstNotice = true;
-            noticeType = "1st";
+        var noticeType = "1st";
+        if (!firstNotice) {
+            noticeType = 'Additional';
         }
 
         // Create a pdfRec and initialize the PDF object
@@ -170,17 +176,12 @@ var admin = (function () {
         pdfRec.pdf.save(util.formatDate() + "-YearlyDuesNotices.pdf");
     }
 
-    function _markMailed(hoaRecList) {
+    function _markMailed(hoaRecList,firstNotice) {
         var adminEmailSkipCnt = 0;
         var markMailedCnt = 0;
         var displayAddress = '';
         var commType = 'Dues Notice';
         var commDesc = '';
-        var firstNotice = false;
-        // If list of unpaid properties is the total number of properties, assume it is the 1st Dues Notice
-        if (hoaRecList.length == parseInt(config.getVal('numberOfProperties'))) {
-            firstNotice = true;
-        }
 
         $ResultMessage.html("Executing Admin request...(processing list)");
 
@@ -205,25 +206,19 @@ var admin = (function () {
         $ResultMessage.html("Postal dues notices marked mailed, total = " + markMailedCnt + ", (Total skipped for UseEmail = " + adminEmailSkipCnt + ")");
     }
 
-    function _duesEmails(hoaRecList,action) {
+    function _duesEmails(hoaRecList,action,firstNotice) {
         var emailRecCnt = 0;
         var commType = 'Dues Notice Email';
         var commDesc = '';
         var sendEmailAddr = '';
-        var firstNotice = false;
-        var noticeType = "Additional";
-        // If list of unpaid properties is the total number of properties, assume it is the 1st Dues Notice
-        console.log("hoaRecList.length = " + hoaRecList.length + ", numberOfProperties = " +parseInt(config.getVal('numberOfProperties')));
-        if (hoaRecList.length == parseInt(config.getVal('numberOfProperties'))) {
-            firstNotice = true;
-            noticeType = "1st";
+        var noticeType = "1st";
+        if (!firstNotice) {
+            noticeType = "Additional";
         }
 
         $ResultMessage.html("Executing Admin request...(processing list)");
 
         var pdfRec;
-        // 2019-09-14 working on this
-        /*
         $.each(hoaRecList, function (index, hoaRec) {
             //console.log(index + ", len = " + hoaRec.emailAddrList.length + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", DuesEmailAddr = " + hoaRec.DuesEmailAddr);
             // If there is an email address for this property, then create the dues notice attachment
@@ -272,7 +267,6 @@ var admin = (function () {
             }); // End of loop through Email addresses
             
         }); // End of loop through Parcels
-        */
 
         if (action == 'DuesEmailsTest') {
             $("#ResultMessage").html("TEST Yearly dues notices emailed, total = " + emailRecCnt);
