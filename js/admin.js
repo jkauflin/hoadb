@@ -47,6 +47,7 @@
  *                  of 1st or Additional notices.  Pass along and use in
  *                  the functions instead of comparing array count with 
  *                  total number of properties
+ * 2019-09-22 JJK   Checked logic for dues emails and communications
  *============================================================================*/
 var admin = (function () {
     'use strict';  // Force declaration of variables before use (among other things)

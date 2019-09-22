@@ -16,6 +16,7 @@
  * 2018-11-16 JJK	Modified Dues queries to return all data needed (to fix
  * 					issues with async loop processing)
  * 2018-11-21 JJK	Modified to accept a Parcel Id for the due email test
+ * 2019-09-22 JJK   Checked logic for dues emails and communications
  *============================================================================*/
 	include 'commonUtil.php';
 	// Include table record classes and db connection parameters

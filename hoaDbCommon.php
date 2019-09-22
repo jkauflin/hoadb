@@ -37,6 +37,7 @@
  * 2018-11-16 JJK	Added $hoaRecList to AdminRec to store all data needed for dues
  * 2018-11-24 JJK	Added $emailAddrList to store multiple email addresses
  * 2018-11-27 JJK	Added $EmailAddr2 to Owner rec and to emailAddrList
+ * 2019-09-22 JJK   Checked logic for dues emails and communications
  *============================================================================*/
 
 function getConn() {
