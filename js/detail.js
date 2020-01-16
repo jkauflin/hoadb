@@ -142,6 +142,7 @@ var detail = (function(){
         tr += '<tr><th>ToBe Released: </th><td>' + util.setCheckbox(hoaRec.Liens_2B_Released) + '</td></tr>';
         tr += '<tr><th>Use Email: </th><td>' + util.setCheckbox(hoaRec.UseEmail) + '</td></tr>';
         tr += '<tr><th>Comments: </th><td>' + hoaRec.Comments + '</td></tr>';
+        tr += '<tr><th>adminLevel: </th><td>' + hoaRec.adminLevel + '</td></tr>';
 
         $propDetail.html(tr);
 
@@ -445,10 +446,12 @@ var detail = (function(){
         $EditPage2ColButton.html(tr);
 
         // Initialize the date picker object
+        /*
         $(".Date").datetimepicker({
             timepicker: false,
             format: 'Y-m-d'
         });
+        */
 
     } // End of function _formatOwnerDetailEdit(editHoaRec){
 
@@ -573,10 +576,12 @@ var detail = (function(){
         $("#EditPage2ColButton").html(tr);
 
         // Initialize the date picker object
+        /*
         $(".Date").datetimepicker({
             timepicker: false,
             format: 'Y-m-d'
         });
+        */
 
     } // End of function formatAssessmentDetailEdit(editHoaRec){
 

@@ -33,6 +33,8 @@ function getAdminLevel() {
 			$adminLevel = 4;
 		} else if ($username == 'treasurer') {
 			$adminLevel = 2;
+		} else if ($username == 'grha-guest') {
+			$adminLevel = 1;
 		}
 	}
 	
