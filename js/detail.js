@@ -142,7 +142,8 @@ var detail = (function(){
         tr += '<tr><th>ToBe Released: </th><td>' + util.setCheckbox(hoaRec.Liens_2B_Released) + '</td></tr>';
         tr += '<tr><th>Use Email: </th><td>' + util.setCheckbox(hoaRec.UseEmail) + '</td></tr>';
         tr += '<tr><th>Comments: </th><td>' + hoaRec.Comments + '</td></tr>';
-        tr += '<tr><th>adminLevel: </th><td>' + hoaRec.adminLevel + '</td></tr>';
+        tr += '<tr><th>AdminLevel: </th><td>' + hoaRec.adminLevel + '</td></tr>';
+        tr += '<tr><th>UserName: </th><td>' + hoaRec.userName + '</td></tr>';
 
         $propDetail.html(tr);
 

@@ -24,6 +24,7 @@
 	$conn = getConn();
 	$hoaRec = getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate);
 	$hoaRec->adminLevel = getAdminLevel();
+	$hoaRec->userName = getUsername();
 	$conn->close();
 	echo json_encode($hoaRec);
 ?>

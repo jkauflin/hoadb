@@ -162,6 +162,7 @@ class HoaRec
 	public $TotalDue;
 	public $paymentButton;
 	public $paymentInstructions;
+	public $userName;
 }
 
 class HoaOwnerRec
@@ -271,6 +272,8 @@ class HoaPaymentRec
 
 class AdminRec
 {
+	public $userName;
+	public $userLevel;
 	public $result;
 	public $message;
 	

@@ -21,11 +21,22 @@
 
 //$currTimestampStr = date("Y-m-d H:i:s");
 //JJK test, date = 2015-04-22 19:45:09
+//define("LOG_FILE", "./app.log");
 
 // common method to return admin level based on authenticated user name from the server
 function getAdminLevel() {
-	$adminLevel = 0;
-	
+    $adminLevel = 0;
+    $servername = "";
+
+    // Default to all privs if running locally (for testing)
+    if (isset($_SERVER['SERVER_NAME'])) {
+        $servername = $_SERVER['SERVER_NAME'];
+        //error_log(date('[Y-m-d H:i] '). "Servername = $servername" . PHP_EOL, 3, LOG_FILE);
+        if ($servername == 'localhost' || $servername == '127.0.0.1') {
+			$adminLevel = 4;
+        }
+    }
+
 	if (isset($_SERVER['PHP_AUTH_USER'])) {
 		$username = strtolower(trim($_SERVER['PHP_AUTH_USER']));
 		// Just hard-code this check for now and put in the DB later

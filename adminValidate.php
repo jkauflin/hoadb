@@ -23,7 +23,9 @@
 	$fy = getParamVal("fy");
 	$duesAmt = strToUSD(getParamVal("duesAmt"));
 
-	$adminLevel = getAdminLevel();
+    $adminLevel = getAdminLevel();
+    $adminRec->userName = "";
+    $adminRec->userLevel = $adminLevel;
 
 	if ($action == "AddAssessments") {
 		if ($adminLevel < 2) {
