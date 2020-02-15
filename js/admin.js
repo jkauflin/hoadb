@@ -50,6 +50,8 @@
  * 2019-09-22 JJK   Checked logic for dues emails and communications
  * 2020-02-15 JJK   For the dues emails, adding display list of records
  *                  (for both test and real) to confirm logic
+ *                  Fixed the bug that was getting string 'false' value 
+ *                  instead of boolean false
  *============================================================================*/
 var admin = (function () {
     'use strict';  // Force declaration of variables before use (among other things)
@@ -113,10 +115,14 @@ var admin = (function () {
         $ResultMessage.html("Executing Admin request...(please wait)");
         util.waitCursor();
         var action = event.target.getAttribute("data-action");
-        var firstNotice = event.target.getAttribute("data-firstNotice");
+        var firstNotice = true;
+        // 2/15/2020 JJK - fixed the bug that was getting string 'false' value instead of boolean false
+        if (event.target.getAttribute("data-firstNotice") == "false") {
+            firstNotice = false;
+        }
 
-        console.log("in adminExecute, action = "+action);
-        console.log("in adminExecute, firstNotice = "+firstNotice);
+        //console.log("in adminExecute, action = "+action);
+        //console.log("in adminExecute, firstNotice = "+firstNotice);
 
         // Get all the data needed for processing
         $.getJSON("adminExecute.php", "action=" + action +

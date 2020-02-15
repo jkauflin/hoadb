@@ -82,6 +82,7 @@ var pdfModule = (function () {
         var yearlyDuesStatementNotice = config.getVal('yearlyDuesStatementNoticeAdditional');
         var yearlyDuesStatementNotes = config.getVal('yearlyDuesStatementNotesAdditional');
         if (firstNotice) {
+            console.log("IN firstNotice, noticeDate = " + noticeDate + ", firstNotice = " + firstNotice);
             noticeDate = 'September 1st, ' + noticeYear;
             yearlyDuesStatementNotice = config.getVal('yearlyDuesStatementNotice1st');
             yearlyDuesStatementNotes = config.getVal('yearlyDuesStatementNotes1st');
@@ -122,7 +123,7 @@ var pdfModule = (function () {
 
         pdfRec.lineColIncrArray = [-4.5];
         //pdfRec = yearlyDuesStatementAddLine(pdfRec,['']);
-        pdfRec = yearlyDuesStatementAddLine(pdfRec,['    Contact Information:']);
+        //pdfRec = yearlyDuesStatementAddLine(pdfRec,['    Contact Information:']);
         pdfRec.lineColIncrArray = [4.5];
         pdfRec = yearlyDuesStatementAddLine(pdfRec,[ownerRec.Owner_Name1 + ' ' + ownerRec.Owner_Name2]);
         pdfRec = yearlyDuesStatementAddLine(pdfRec,[hoaRec.Parcel_Location]);
