@@ -177,11 +177,12 @@
 
 		$sql = '';
 		if ($action == "DuesEmails" || $action == "DuesEmailsTest") {
-			if ($action == "DuesEmailsTest") {
-				$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-						"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
-						"AND a.FY = " . $fy . " AND p.Parcel_ID = '".$duesEmailTestParcel."'; ";
-			} else {
+            // 2/15/2020 JJK - Removed the TEST parcel functionality - just query the same list and send a test email for the 1st one
+			//if ($action == "DuesEmailsTest") {
+			//	$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+			//			"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
+			//			"AND a.FY = " . $fy . " AND p.Parcel_ID = '".$duesEmailTestParcel."'; ";
+			//} else {
 				$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
 						"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
 						"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
@@ -190,7 +191,7 @@
 						"WHERE p.UseEmail AND p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
 						"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
 				*/
-			}
+			//}
 			$adminRec->message = "Completed data lookup for Dues Emails";
 		} else if ($action == "DuesRank") {
 			$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";

@@ -48,6 +48,8 @@
  *                  the functions instead of comparing array count with 
  *                  total number of properties
  * 2019-09-22 JJK   Checked logic for dues emails and communications
+ * 2020-02-15 JJK   For the dues emails, adding display list of records
+ *                  (for both test and real) to confirm logic
  *============================================================================*/
 var admin = (function () {
     'use strict';  // Force declaration of variables before use (among other things)
@@ -112,8 +114,9 @@ var admin = (function () {
         util.waitCursor();
         var action = event.target.getAttribute("data-action");
         var firstNotice = event.target.getAttribute("data-firstNotice");
-        //console.log("in adminExecute, action = "+action);
-        //console.log("in adminExecute, firstNotice = "+firstNotice);
+
+        console.log("in adminExecute, action = "+action);
+        console.log("in adminExecute, firstNotice = "+firstNotice);
 
         // Get all the data needed for processing
         $.getJSON("adminExecute.php", "action=" + action +
@@ -223,13 +226,17 @@ var admin = (function () {
 
         $ResultMessage.html("Executing Admin request...(processing list)");
 
+        var firstTestRec = true;
+        var testEmailAddr = config.getVal('duesEmailTestAddress');
+        var resultDetails = '';
         var pdfRec;
         $.each(hoaRecList, function (index, hoaRec) {
-            //console.log(index + ", len = " + hoaRec.emailAddrList.length + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", DuesEmailAddr = " + hoaRec.DuesEmailAddr);
-            // If there is an email address for this property, then create the dues notice attachment
+            //console.log(index + ", len = " + hoaRec.emailAddrList.length + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1);
+
+            // If there is an email address for this property, then create the dues notice attachment (to send to all email addresses for this property)
             if (hoaRec.emailAddrList.length > 0) {
                 emailRecCnt++;
-                //console.log(index + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", sendEmailAddr = " + sendEmailAddr);
+                //console.log(index + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1);
                 // Create a pdfRec and initialize the PDF object
                 pdfRec = pdfModule.init('Member Dues Notice');
                 // Call function to format the yearly dues statement for an individual property
@@ -239,44 +246,67 @@ var admin = (function () {
             // loop through email address list and send to each one
             $.each(hoaRec.emailAddrList, function (index2, emailAddr) {
                 sendEmailAddr = emailAddr;
-                if (action == 'DuesEmailsTest') {
-                    sendEmailAddr = config.getVal('duesEmailTestAddress');
-                }
-                //console.log(index + " " + index2 + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", sendEmailAddr = " + sendEmailAddr);
 
-                $.post("sendMail.php", {
-                    toEmail: sendEmailAddr,
-                    subject: config.getVal('hoaNameShort') + ' Dues Notice',
-                    messageStr: 'Attached is the ' + config.getVal('hoaName') + ' Dues Notice.  *** Reply to this email to request unsubscribe ***',
-                    parcelId: hoaRec.Parcel_ID, 
-                    ownerId: hoaRec.ownersList[0].OwnerID,
-                    filename: config.getVal('hoaNameShort') + 'DuesNotice.pdf',
-                    filedata: btoa(pdfRec.pdf.output())
-                }, function (response) {
-                    //console.log("result from sendMail = " + response.result + ", ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID + ", response.sendEmailAddr = " + response.sendEmailAddr);
-                    if (response.result == 'SUCCESS') {
-                        commDesc = noticeType + " Dues Notice emailed to " + response.sendEmailAddr;
-                    } else {
-                        commDesc = noticeType + " Dues Notice, ERROR emailing to " + response.sendEmailAddr;
-                        util.displayError(commDesc + ", ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID);
-                        console.log("Error sending Email, ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID + ", sendEmailAddr = " + response.sendEmailAddr + ", message = " + response.message);
+                if (action == 'DuesEmailsTest') {
+                    // This is a Test
+                    //console.log(index + " " + index2 + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", emailAddr = " + emailAddr);
+                    resultDetails = resultDetails + "<br>" + index + " " + index2 + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " 
+                        + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + " " 
+                        + hoaRec.ownersList[0].Owner_Name2 + ", emailAddr = " + emailAddr;
+
+                    if (firstTestRec) {
+                        firstTestRec = false;
+                        $.post("sendMail.php", {
+                            toEmail: testEmailAddr,
+                            subject: config.getVal('hoaNameShort') + ' Dues Notice',
+                            messageStr: 'Attached is the ' + config.getVal('hoaName') + ' Dues Notice.  *** Reply to this email to request unsubscribe ***',
+                            parcelId: hoaRec.Parcel_ID,
+                            ownerId: hoaRec.ownersList[0].OwnerID,
+                            filename: config.getVal('hoaNameShort') + 'DuesNotice.pdf',
+                            filedata: btoa(pdfRec.pdf.output())
+                        }, function (response) {
+                            console.log("result from sendMail = " + response.result + ", ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID + ", response.sendEmailAddr = " + response.sendEmailAddr);
+                        }, 'json'); // End of $.post("sendMail.php"
                     }
-                    // log communication for notice created
-                    if (action != 'DuesEmailsTest') {
+
+                } else {
+                    //  This is NOT a Test
+                    //console.log(index + " " + index2 + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", sendEmailAddr = " + sendEmailAddr);
+                    resultDetails = resultDetails + "<br>" + index + " " + index2 + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = "
+                        + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + " "
+                        + hoaRec.ownersList[0].Owner_Name2 + ", emailAddr = " + emailAddr;
+
+                    $.post("sendMail.php", {
+                        toEmail: sendEmailAddr,
+                        subject: config.getVal('hoaNameShort') + ' Dues Notice',
+                        messageStr: 'Attached is the ' + config.getVal('hoaName') + ' Dues Notice.  *** Reply to this email to request unsubscribe ***',
+                        parcelId: hoaRec.Parcel_ID,
+                        ownerId: hoaRec.ownersList[0].OwnerID,
+                        filename: config.getVal('hoaNameShort') + 'DuesNotice.pdf',
+                        filedata: btoa(pdfRec.pdf.output())
+                    }, function (response) {
+                        //console.log("result from sendMail = " + response.result + ", ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID + ", response.sendEmailAddr = " + response.sendEmailAddr);
+                        if (response.result == 'SUCCESS') {
+                            commDesc = noticeType + " Dues Notice emailed to " + response.sendEmailAddr;
+                        } else {
+                            commDesc = noticeType + " Dues Notice, ERROR emailing to " + response.sendEmailAddr;
+                            util.displayError(commDesc + ", ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID);
+                            console.log("Error sending Email, ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID + ", sendEmailAddr = " + response.sendEmailAddr + ", message = " + response.message);
+                        }
+                        // log communication for notice created
                         communications.LogCommunication(response.Parcel_ID, response.OwnerID, commType, commDesc);
-                    }
-                }, 'json'); // End of $.post("sendMail.php"
-                //.fail(function (xhr, status, error) {
-                    //console.log("ERROR in sendMail, xhr.responseText = " + xhr.responseText);
-                //}); // End of $.post("sendMail.php"
+                    }, 'json'); // End of $.post("sendMail.php"
+                    
+                }
+
             }); // End of loop through Email addresses
             
         }); // End of loop through Parcels
 
         if (action == 'DuesEmailsTest') {
-            $("#ResultMessage").html("TEST Yearly dues notices emailed, total = " + emailRecCnt);
+            $("#ResultMessage").html("TEST Yearly dues notices emailed, total = " + emailRecCnt + "<br>" + resultDetails);
         } else {
-            $("#ResultMessage").html("Yearly dues notices emailed, total = " + emailRecCnt);
+            $("#ResultMessage").html("Yearly dues notices emailed, total = " + emailRecCnt + "<br>" + resultDetails);
         }
     }
 
