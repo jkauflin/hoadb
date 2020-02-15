@@ -82,7 +82,6 @@ var pdfModule = (function () {
         var yearlyDuesStatementNotice = config.getVal('yearlyDuesStatementNoticeAdditional');
         var yearlyDuesStatementNotes = config.getVal('yearlyDuesStatementNotesAdditional');
         if (firstNotice) {
-            console.log("IN firstNotice, noticeDate = " + noticeDate + ", firstNotice = " + firstNotice);
             noticeDate = 'September 1st, ' + noticeYear;
             yearlyDuesStatementNotice = config.getVal('yearlyDuesStatementNotice1st');
             yearlyDuesStatementNotes = config.getVal('yearlyDuesStatementNotes1st');
