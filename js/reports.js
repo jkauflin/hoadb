@@ -119,7 +119,7 @@ var reports = (function () {
                 .attr('href', '#')
                 .attr('class', "btn btn-warning")
                 .attr('data-reportName', util.formatDate() + '-' + reportName)
-                .html('CSV'));
+                .html('Download CSV'));
 
         $ReportRecCnt.html("Unpaid Dues Ranking, total = " + unpaidDuesCnt);
     }
@@ -295,7 +295,7 @@ var reports = (function () {
                     .attr('href', '#')
                     .attr('class', "btn btn-warning")
                     .attr('data-reportName', util.formatDate() + '-' + reportName)
-                    .html('CSV'));
+                    .html('Download CSV'));
 
         } else {
 
@@ -459,7 +459,7 @@ var reports = (function () {
                     .attr('href', '#')
                     .attr('class', "btn btn-warning")
                     .attr('data-reportName', util.formatDate() + '-' + reportName)
-                    .html('CSV'));
+                    .html('Download CSV'));
 
             // Include downloadBtn class to add space to left margin
             $ReportDownloadLinks.append(
@@ -467,7 +467,7 @@ var reports = (function () {
                     .attr('href', '#')
                     .attr('class', "btn btn-danger downloadBtn")
                     .attr('data-reportName', util.formatDate() + '-' + reportName)
-                    .html('PDF'));
+                    .html('Download PDF'));
 
         } // End of Properties / current owner reports
 
