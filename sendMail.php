@@ -12,8 +12,10 @@
  * 					email address for the send and the send result
  * 2018-11-26 JJK	Modifying to use the newest version of swiftmailer
  * 					and trapped exceptions to return error message
+ * 2020-07-04 JJK   Modified to use PHP Composer and switched require
+ *                  to "vendor/autoload.php"
  *============================================================================*/
-	require_once("swiftmailer/autoload.php"); 
+    require_once("vendor/autoload.php"); 
 
 	include 'commonUtil.php';
 	// Include table record classes and db connection parameters

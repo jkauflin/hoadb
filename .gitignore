@@ -1,5 +1,5 @@
 /hoaDbCred.php
 /*.zip
-/swiftmailer/
+vendor/
 hoadb.log
 app.log
