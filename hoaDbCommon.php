@@ -46,7 +46,7 @@ define("LOG_FILE", "./hoadb.log");
 
 function getConn() {
 	// Include db connection credentials
-	include "../../external_includes/hoaDbCred.php";
+	include "../../../external_includes/hoaDbCred.php";
 	// This include will have the following variables set
 	//$host = 'localhost';
 	//$dbadmin = "username";
@@ -65,13 +65,13 @@ function getConn() {
 
 function mysqldumpHoaDb($backupfile) {
 	// Include db connection credentials
-	include "../../external_includes/hoaDbCred.php";
+	include "../../../external_includes/hoaDbCred.php";
 	system("mysqldump -h $host -u $dbadmin -p$password $dbname > $backupfile");
 }
 
 function getConfigVal($configName) {
 	// Include db connection credentials (use for site specific config values for now)
-    include "../../external_includes/hoaDbCred.php";
+    include "../../../external_includes/hoaDbCred.php";
 	
 	$configVal = "";
 	
@@ -393,7 +393,7 @@ function getHoaPaymentRec($conn,$parcelId,$transId) {
 //--------------------------------------------------------------------------------------------------------------
 function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 	// Include to get paypal button scripts
-	include "../../external_includes/hoaDbCred.php";
+	include "../../../external_includes/hoaDbCred.php";
 	
 	$hoaRec = new HoaRec();
 
@@ -833,7 +833,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 
 function getHoaRec2($conn,$parcelId) {
 	// Include to get paypal button scripts
-	include "../../external_includes/hoaDbCred.php";
+	include "../../../external_includes/hoaDbCred.php";
 
 	$ownerId = '';
 	$fy = '';
