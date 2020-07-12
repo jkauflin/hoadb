@@ -38,20 +38,20 @@
  * 2018-11-24 JJK	Added $emailAddrList to store multiple email addresses
  * 2018-11-27 JJK	Added $EmailAddr2 to Owner rec and to emailAddrList
  * 2019-09-22 JJK   Checked logic for dues emails and communications
- * 2020-07-12 JJK   Modified 
+ * 2020-07-12 JJK   Modified to move the database credentials under an
+ *                  external_includes folder above the public root
  *============================================================================*/
 
-//require_once("../../external_includes/hoaDbCred.php");
-require_once("/u111646332/domains/johnkauflin.com/external_includes/hoaDbCred.php");
+define("LOG_FILE", "./hoadb.log");
+
+function getConn() {
+	// Include db connection credentials
+	include "../../external_includes/hoaDbCred.php";
 	// This include will have the following variables set
 	//$host = 'localhost';
 	//$dbadmin = "username";
 	//$password = "password";
 	//$dbname = "<name of the mysql database>";
-
-function getConn() {
-	// Include db connection credentials
-	//include 'hoaDbCred.php';
 	
 	// User variables set in the db connection credentials include and open a connection
 	$conn = new mysqli($host, $dbadmin, $password, $dbname);
@@ -65,13 +65,13 @@ function getConn() {
 
 function mysqldumpHoaDb($backupfile) {
 	// Include db connection credentials
-	//include 'hoaDbCred.php';
+	include "../../external_includes/hoaDbCred.php";
 	system("mysqldump -h $host -u $dbadmin -p$password $dbname > $backupfile");
 }
 
 function getConfigVal($configName) {
 	// Include db connection credentials (use for site specific config values for now)
-	//include 'hoaDbCred.php';
+    include "../../external_includes/hoaDbCred.php";
 	
 	$configVal = "";
 	
@@ -393,7 +393,7 @@ function getHoaPaymentRec($conn,$parcelId,$transId) {
 //--------------------------------------------------------------------------------------------------------------
 function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 	// Include to get paypal button scripts
-	include 'hoaDbCred.php';
+	include "../../external_includes/hoaDbCred.php";
 	
 	$hoaRec = new HoaRec();
 
@@ -833,8 +833,8 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 
 function getHoaRec2($conn,$parcelId) {
 	// Include to get paypal button scripts
-	include 'hoaDbCred.php';
-	
+	include "../../external_includes/hoaDbCred.php";
+
 	$ownerId = '';
 	$fy = '';
 	$saleDate = '';
