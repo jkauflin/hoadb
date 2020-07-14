@@ -48,7 +48,7 @@ var communications = (function () {
         parcelId = event.target.getAttribute("data-parcelId");
         ownerId = event.target.getAttribute("data-ownerId");
         util.waitCursor();
-        $.getJSON("getHoaCommList.php", "parcelId=" + parcelId + "&ownerId=" + ownerId, function (outHoaCommRecList) {
+        $.getJSON("php/getHoaCommList.php", "parcelId=" + parcelId + "&ownerId=" + ownerId, function (outHoaCommRecList) {
             hoaCommRecList = outHoaCommRecList;
             _render();
             util.defaultCursor();
@@ -89,7 +89,7 @@ var communications = (function () {
         parcelId = event.target.getAttribute("data-parcelId");
         ownerId = event.target.getAttribute("data-ownerId");
         commId = event.target.getAttribute("data-commId");
-        $.getJSON("getHoaCommList.php", "parcelId=" + parcelId + "&ownerId=" + ownerId + "&commId=" + commId, function (outHoaCommRecList) {
+        $.getJSON("php/getHoaCommList.php", "parcelId=" + parcelId + "&ownerId=" + ownerId + "&commId=" + commId, function (outHoaCommRecList) {
             _formatCommEdit(outHoaCommRecList[0],parcelId,ownerId,commId);
             util.defaultCursor();
             $EditPage.modal();
@@ -146,7 +146,7 @@ var communications = (function () {
         paramMap.set('commId', event.target.getAttribute("data-commId"));
         //console.log("util.getJSONfromInputs($EditTable,paramMap) = " + util.getJSONfromInputs($EditTable, paramMap));
 
-        $.ajax("updHoaComm.php", {
+        $.ajax("php/updHoaComm.php", {
             type: "POST",
             contentType: "application/json",
             data: util.getJSONfromInputs($EditTable, paramMap),
@@ -174,7 +174,7 @@ var communications = (function () {
         paramMap.set('commDesc', commDesc);
         //console.log("util.getJSONfromInputs(null,paramMap) = " + util.getJSONfromInputs(null, paramMap));
 
-        $.ajax("updHoaComm.php", {
+        $.ajax("php/updHoaComm.php", {
             type: "POST",
             contentType: "application/json",
             data: util.getJSONfromInputs(null, paramMap),

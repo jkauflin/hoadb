@@ -1,3 +1,17 @@
+<?php 
+  session_start(); 
+
+  if (!isset($_SESSION['username'])) {
+  	$_SESSION['msg'] = "You must log in first";
+//  	header('location: login.php');
+  }
+  if (isset($_GET['logout'])) {
+  	session_destroy();
+  	unset($_SESSION['username']);
+  	header("location: login.php");
+  }
+?>
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -440,14 +454,14 @@
         
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js" type="text/javascript" ></script>
 
-		<script src="js/util.js?ver=1.310"></script>
-		<script src="js/config.js?ver=1.310"></script>
-		<script src="js/search.js?ver=1.310"></script>
-    	<script src="js/detail.js?ver=1.310"></script>
-		<script src="js/communications.js?ver=1.310"></script>
-		<script src="js/pdfModule.js?ver=1.311"></script>
-		<script src="js/reports.js?ver=1.312"></script>
-		<script src="js/admin.js?ver=1.310"></script>
+		<script src="js/util.js?ver=1.312"></script>
+		<script src="js/config.js?ver=1.312"></script>
+		<script src="js/search.js?ver=1.313"></script>
+    	<script src="js/detail.js?ver=1.312"></script>
+		<script src="js/communications.js?ver=1.312"></script>
+		<script src="js/pdfModule.js?ver=1.313"></script>
+		<script src="js/reports.js?ver=1.314"></script>
+		<script src="js/admin.js?ver=1.312"></script>
 
 </body>
 </html>

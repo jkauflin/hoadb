@@ -1,6 +1,6 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2015,2016 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2016,2020 John J Kauflin, All rights reserved. 
  *----------------------------------------------------------------------------
  * DESCRIPTION: 
  *----------------------------------------------------------------------------
@@ -40,9 +40,10 @@
  * 2019-09-22 JJK   Checked logic for dues emails and communications
  * 2020-07-12 JJK   Modified to move the database credentials under an
  *                  external_includes folder above the public root
+ * 2020-07-14 JJK   Moved php files to separate /php folder
  *============================================================================*/
 
-define("LOG_FILE", "./hoadb.log");
+define("LOG_FILE", "./hoadb-php.log");
 
 function getConn() {
 	// Include db connection credentials

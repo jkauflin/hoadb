@@ -11,6 +11,7 @@
  * 2016-02-09 JJK	Switching from JQuery Mobile to Twitter Bootstrap
  * 2016-04-03 JJK	Working on input fields
  * 2018-10-27 JJK   Added SearchInput for non-touch devices
+ * 2020-07-14 JJK   Modified 
  *============================================================================*/
 var search = (function(){
     'use strict';
@@ -46,7 +47,7 @@ var search = (function(){
     function getHoaPropertiesList() {
         util.waitCursor();
         $propList.html("");
-        $.getJSON("getHoaPropertiesList.php", "searchStr=" + util.cleanStr($searchStr.val()) +
+        $.getJSON("php/getHoaPropertiesList.php", "searchStr=" + util.cleanStr($searchStr.val()) +
             "&parcelId=" + util.cleanStr($parcelId.val()) +
             "&lotNo=" + util.cleanStr($lotNo.val()) +
             "&address=" + util.cleanStr($address.val()) +

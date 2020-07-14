@@ -41,7 +41,7 @@ var reports = (function () {
     var pdfFontSizeDefault = 11;
     
     var pdfLogoImgData;
-    $.get("getLogoImgData.php", function (logoImgDataResults) {
+    $.get("php/getLogoImgData.php", function (logoImgDataResults) {
         pdfLogoImgData = logoImgDataResults;
     });
 
@@ -74,13 +74,13 @@ var reports = (function () {
             $ReportRecCnt.html("Executing request...(please wait)");
             util.waitCursor();
             // Get all the data needed for processing
-            $.getJSON("adminExecute.php", "action=DuesRank", function (adminRec) {
+            $.getJSON("php/adminExecute.php", "action=DuesRank", function (adminRec) {
                 util.defaultCursor();
                 $ReportRecCnt.html(adminRec.message);
                 _duesRank(adminRec.hoaRecList, reportName);
             });
         } else {
-            $.getJSON("getHoaReportData.php", "reportName=" + reportName, function (reportList) {
+            $.getJSON("php/getHoaReportData.php", "reportName=" + reportName, function (reportList) {
                 _formatReportList(reportName, reportTitle, reportList);
                 util.defaultCursor();
             });
@@ -147,7 +147,7 @@ var reports = (function () {
 
         //console.log("util.getJSONfromInputs(null,paramMap) = " + util.getJSONfromInputs(null, paramMap));
 
-        $.ajax("updHoaSales.php", {
+        $.ajax("php/updHoaSales.php", {
             type: "POST",
             contentType: "application/json",
             data: util.getJSONfromInputs(null, paramMap),
@@ -159,7 +159,7 @@ var reports = (function () {
                 $ReportRecCnt.html("");
                 $ReportDownloadLinks.html("");
                 util.waitCursor();
-                $.getJSON("getHoaReportData.php", "reportName=" + reportName, function (reportList) {
+                $.getJSON("php/getHoaReportData.php", "reportName=" + reportName, function (reportList) {
                     _formatReportList(reportName, reportTitle, reportList);
                     util.defaultCursor();
                 });

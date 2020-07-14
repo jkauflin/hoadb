@@ -23,7 +23,7 @@ var pdfModule = (function () {
     var startLineY = 1.5;
 
     var pdfLogoImgData;
-    $.get("getLogoImgData.php", function (logoImgDataResults) {
+    $.get("php/getLogoImgData.php", function (logoImgDataResults) {
         pdfLogoImgData = logoImgDataResults;
     });
 

@@ -92,7 +92,7 @@ var admin = (function () {
         var fy = util.cleanStr($FiscalYear.val());
         var duesAmt = util.cleanStr($DuesAmt.val());
         util.waitCursor();
-        $.getJSON("adminValidate.php", "action=" + event.target.getAttribute('id') +
+        $.getJSON("php/adminValidate.php", "action=" + event.target.getAttribute('id') +
             "&fy=" + fy +
             "&duesAmt=" + duesAmt, function (adminRec) {
             $ConfirmationMessage.html(adminRec.message);
@@ -125,7 +125,7 @@ var admin = (function () {
         //console.log("in adminExecute, firstNotice = "+firstNotice);
 
         // Get all the data needed for processing
-        $.getJSON("adminExecute.php", "action=" + action +
+        $.getJSON("php/adminExecute.php", "action=" + action +
             "&fy=" + event.target.getAttribute("data-fy") +
             "&duesAmt=" + event.target.getAttribute("data-duesAmt") + 
             "&duesEmailTestParcel=" + config.getVal('duesEmailTestParcel'), function (adminRec) {
@@ -140,7 +140,7 @@ var admin = (function () {
                 _duesEmails(adminRec.hoaRecList,action,firstNotice);
             }
 
-        }); // $.getJSON("adminExecute.php","action="+action+
+        }); // $.getJSON("php/adminExecute.php","action="+action+
     }
 
     function _duesNotices(hoaRecList,firstNotice) {
