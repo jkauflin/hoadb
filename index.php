@@ -1,13 +1,13 @@
 <?php 
   session_start(); 
 
-  if (!isset($_SESSION['username'])) {
+  if (!isset($_SESSION['email'])) {
   	$_SESSION['msg'] = "You must log in first";
-//  	header('location: login.php');
+  	header('location: login.php');
   }
   if (isset($_GET['logout'])) {
   	session_destroy();
-  	unset($_SESSION['username']);
+  	unset($_SESSION['email']);
   	header("location: login.php");
   }
 ?>
@@ -28,7 +28,6 @@
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.min.css"/>
-
         <!-- Bootstrap core CSS -->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" />
         <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
@@ -70,6 +69,27 @@
 <div class="container-fluid">
 	<div class="tab-content">
 		
+
+<!-- notification message -->
+  	<?php if (isset($_SESSION['success'])) : ?>
+      <div class="error success" >
+      	<h3>
+          <?php 
+          	echo $_SESSION['success']; 
+          	unset($_SESSION['success']);
+          ?>
+      	</h3>
+      </div>
+  	<?php endif ?>
+
+    <!-- logged in user information -->
+    <?php  if (isset($_SESSION['email'])) : ?>
+    	<p>Welcome <strong><?php echo $_SESSION['email']; ?></strong></p>
+    	<p> <a href="index.php?logout='1'" style="color: red;">logout</a> </p>
+    <?php endif ?>
+
+
+
 		<div class="tab-pane active" id="SearchPage">
 			<div class="row">
 				  <div class="col-sm-4 col-md-3">
@@ -442,26 +462,36 @@
     <!-- Bootstrap core JavaScript
         ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js" crossorigin="anonymous"
-        integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT">
-        </script>
+
+
+
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" 
+        crossorigin="anonymous"></script>
+    <!--
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+        integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+        crossorigin="anonymous"></script>
+    -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" crossorigin="anonymous"
         integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd">
         </script>
 
-		<script src="https://cdn.jsdelivr.net/npm/bootstrap-add-clear@1.0.7/bootstrap-add-clear.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.min.js"></script>
-        
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js" type="text/javascript" ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js" type="text/javascript"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap-add-clear@1.0.7/bootstrap-add-clear.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.min.js"></script>
 
-		<script src="js/util.js?ver=1.312"></script>
-		<script src="js/config.js?ver=1.312"></script>
-		<script src="js/search.js?ver=1.313"></script>
-    	<script src="js/detail.js?ver=1.312"></script>
-		<script src="js/communications.js?ver=1.312"></script>
-		<script src="js/pdfModule.js?ver=1.313"></script>
-		<script src="js/reports.js?ver=1.314"></script>
-		<script src="js/admin.js?ver=1.312"></script>
+	<script src="js/util.js?ver=1.316"></script>
+	<script src="js/config.js?ver=1.316"></script>
+	<script src="js/search.js?ver=1.317"></script>
+    <script src="js/detail.js?ver=1.316"></script>
+	<script src="js/communications.js?ver=1.316"></script>
+	<script src="js/pdfModule.js?ver=1.316"></script>
+	<script src="js/reports.js?ver=1.316"></script>
+	<script src="js/admin.js?ver=1.316"></script>
 
 </body>
 </html>

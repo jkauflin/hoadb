@@ -29,6 +29,7 @@ function getAdminLevel() {
     $servername = "";
 
     // Default to all privs if running locally (for testing)
+    /*
     if (isset($_SERVER['SERVER_NAME'])) {
         $servername = $_SERVER['SERVER_NAME'];
         //error_log(date('[Y-m-d H:i] '). "Servername = $servername" . PHP_EOL, 3, LOG_FILE);
@@ -47,7 +48,10 @@ function getAdminLevel() {
 		} else if ($username == 'grha-guest') {
 			$adminLevel = 1;
 		}
-	}
+    }
+    */
+
+    // check the Session for user credentials
 	
 	return $adminLevel;
 }

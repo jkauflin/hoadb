@@ -107,7 +107,7 @@ var detail = (function(){
         $propDetail.html("");
         $propOwners.html("");
         $propAssessments.html("");
-        $.getJSON("php/getHoaDbData.php", "parcelId=" + parcelId, function (outHoaRec) {
+        $.getJSON("getHoaDbData.php", "parcelId=" + parcelId, function (outHoaRec) {
             hoaRec = outHoaRec;
             _render();
             util.defaultCursor();
@@ -264,7 +264,7 @@ var detail = (function(){
 
     function _editProperty(event) {
         util.waitCursor();
-        $.getJSON("php/getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId"), function (editHoaRec) {
+        $.getJSON("getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId"), function (editHoaRec) {
             _formatPropertyDetailEdit(editHoaRec);
             util.defaultCursor();
             $EditPage.modal();
@@ -315,7 +315,7 @@ var detail = (function(){
         var paramMap = new Map();
         paramMap.set('parcelId', event.target.getAttribute("data-parcelId"));
         //console.log("util.getJSONfromInputs($EditTable,paramMap) = " + util.getJSONfromInputs($EditTable, paramMap));
-        $.ajax("php/updHoaProperty.php", {
+        $.ajax("updHoaProperty.php", {
             type: "POST",
             contentType: "application/json",
             data: util.getJSONfromInputs($EditTable, paramMap),
@@ -335,7 +335,7 @@ var detail = (function(){
 
     function _editOwner(event) {
         util.waitCursor();
-        $.getJSON("php/getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&ownerId=" + event.target.getAttribute("data-ownerId"), 
+        $.getJSON("getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&ownerId=" + event.target.getAttribute("data-ownerId"), 
         function (editHoaRec) {
             var createNew = false;
             _formatOwnerDetailEdit(editHoaRec, createNew);
@@ -346,7 +346,7 @@ var detail = (function(){
 
     function _newOwner() {
         util.waitCursor();
-        $.getJSON("php/getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&ownerId=" + event.target.getAttribute("data-ownerId"), 
+        $.getJSON("getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&ownerId=" + event.target.getAttribute("data-ownerId"), 
         function (editHoaRec) {
             var createNew = true;
             _formatOwnerDetailEdit(editHoaRec, createNew);
@@ -357,7 +357,7 @@ var detail = (function(){
 
     function _salesNewOwnerProcess() {
         util.waitCursor();
-        $.getJSON("php/getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&saleDate=" + event.target.getAttribute("data-saleDate"),
+        $.getJSON("getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&saleDate=" + event.target.getAttribute("data-saleDate"),
             function (editHoaRec) {
                 var createNew = true;
                 _formatOwnerDetailEdit(editHoaRec, createNew);
@@ -474,7 +474,7 @@ var detail = (function(){
 
         //console.log("util.getJSONfromInputs($EditTable,paramMap) = " + util.getJSONfromInputs($EditTable2Col, paramMap));
 
-        $.ajax("php/updHoaOwner.php", {
+        $.ajax("updHoaOwner.php", {
             type: "POST",
             contentType: "application/json",
             data: util.getJSONfromInputs($EditTable2Col, paramMap),
@@ -491,11 +491,32 @@ var detail = (function(){
             }
         });
 
+        /*
+        $.ajax(url, {
+            type: "POST",
+            contentType: "application/json",
+            data: util.getJSONfromInputs($Inputs, paramMap),
+            dataType: "json"
+            //dataType: "html"
+        })
+            .done(function (storeRec) {
+                _renderConfig(storeRec);
+            })
+            .fail(function (xhr, status, error) {
+                //Ajax request failed.
+                console.log('Error in AJAX request to ' + url + ', xhr = ' + xhr.status + ': ' + xhr.statusText +
+                    ', status = ' + status + ', error = ' + error);
+                alert('Error in AJAX request to ' + url + ', xhr = ' + xhr.status + ': ' + xhr.statusText +
+                    ', status = ' + status + ', error = ' + error);
+            });
+            */
+
+
     };	// End of $(document).on("click","#SaveOwnerEdit",function(){
 
     function _editAssessment(event) {
         util.waitCursor();
-        $.getJSON("php/getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&fy=" + event.target.getAttribute("data-fy"), function (editHoaRec) {
+        $.getJSON("getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&fy=" + event.target.getAttribute("data-fy"), function (editHoaRec) {
             _formatAssessmentDetailEdit(editHoaRec);
             util.defaultCursor();
             $EditPage2Col.modal();
@@ -594,7 +615,7 @@ var detail = (function(){
 
         //console.log("util.getJSONfromInputs($EditPage2Col,paramMap) = " + util.getJSONfromInputs($EditPage2Col, paramMap));
 
-        $.ajax("php/updHoaAssessment.php", {
+        $.ajax("updHoaAssessment.php", {
             type: "POST",
             contentType: "application/json",
             data: util.getJSONfromInputs($EditPage2Col, paramMap),
@@ -617,7 +638,7 @@ var detail = (function(){
     function createDuesStatement(event) {
         //console.log("create dues statement, parcel = " + event.target.getAttribute("data-parcelId") + ", owner = " + event.target.getAttribute("data-ownerId"));
         util.waitCursor();
-        $.getJSON("php/getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&ownerId=" + event.target.getAttribute("data-ownerId"), function (hoaRec) {
+        $.getJSON("getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&ownerId=" + event.target.getAttribute("data-ownerId"), function (hoaRec) {
             formatDuesStatementResults(hoaRec);
             util.defaultCursor();
             $DuesStatementPage.modal();

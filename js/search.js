@@ -47,7 +47,8 @@ var search = (function(){
     function getHoaPropertiesList() {
         util.waitCursor();
         $propList.html("");
-        $.getJSON("php/getHoaPropertiesList.php", "searchStr=" + util.cleanStr($searchStr.val()) +
+        
+        $.getJSON("getHoaPropertiesList.php", "searchStr=" + util.cleanStr($searchStr.val()) +
             "&parcelId=" + util.cleanStr($parcelId.val()) +
             "&lotNo=" + util.cleanStr($lotNo.val()) +
             "&address=" + util.cleanStr($address.val()) +

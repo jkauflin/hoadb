@@ -45,7 +45,7 @@ var config = (function(){
     */
 
     // Load the configuration list when the page is loaded
-    $.getJSON("php/getHoaConfigList.php", "", function (outHoaConfigRecList) {
+    $.getJSON("getHoaConfigList.php", "", function (outHoaConfigRecList) {
         hoaConfigRecList = outHoaConfigRecList;
         // Clear the map for the data load
         configVal.clear();
@@ -56,6 +56,7 @@ var config = (function(){
         });
         //console.log("in config, configVal.size = "+configVal.size);
     });
+    
 
     //=================================================================================================================
     // Module methods
@@ -106,7 +107,7 @@ var config = (function(){
         // If a string was passed in then use value as the name, else get it from the attribute of the click event object
         var configName = (typeof value === "string") ? value : value.target.getAttribute("data-ConfigName");
         util.waitCursor();
-        $.getJSON("php/getHoaConfigList.php", "ConfigName=" + configName, function (hoaConfigRec) {
+        $.getJSON("getHoaConfigList.php", "ConfigName=" + configName, function (hoaConfigRec) {
             formatConfigEdit(hoaConfigRec[0]);
             util.defaultCursor();
             $EditPage.modal();
@@ -148,7 +149,7 @@ var config = (function(){
         var paramMap = new Map();
         paramMap.set('action', event.target.getAttribute("data-ConfigAction"));
         //console.log("util.getJSONfromInputs($EditTable,paramMap) = " + util.getJSONfromInputs($EditTable, paramMap));
-        $.ajax("php/updHoaConfig.php", {
+        $.ajax("updHoaConfig.php", {
             type: "POST",
             contentType: "application/json",
             data: util.getJSONfromInputs($EditTable, paramMap),

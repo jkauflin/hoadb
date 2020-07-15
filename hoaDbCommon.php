@@ -40,14 +40,14 @@
  * 2019-09-22 JJK   Checked logic for dues emails and communications
  * 2020-07-12 JJK   Modified to move the database credentials under an
  *                  external_includes folder above the public root
+ *                  (added "../../external_includes/") to get to the file
  * 2020-07-14 JJK   Moved php files to separate /php folder
  *============================================================================*/
 
-define("LOG_FILE", "./hoadb-php.log");
 
 function getConn() {
 	// Include db connection credentials
-	include "../../../external_includes/hoaDbCred.php";
+	include "../../external_includes/hoaDbCred.php";
 	// This include will have the following variables set
 	//$host = 'localhost';
 	//$dbadmin = "username";
@@ -58,7 +58,7 @@ function getConn() {
 	$conn = new mysqli($host, $dbadmin, $password, $dbname);
 	// Check connection
 	if ($conn->connect_error) {
-		error_log(date('[Y-m-d H:i] '). "Connection failed: " . $conn->connect_error . PHP_EOL, 3, "hoadb.log");
+		error_log(date('[Y-m-d H:i] '). "Connection failed: " . $conn->connect_error . PHP_EOL, 3, LOG_FILE);
 		die("Connection failed: " . $conn->connect_error);
 	}
 	return $conn;
@@ -66,13 +66,13 @@ function getConn() {
 
 function mysqldumpHoaDb($backupfile) {
 	// Include db connection credentials
-	include "../../../external_includes/hoaDbCred.php";
+	include "../../external_includes/hoaDbCred.php";
 	system("mysqldump -h $host -u $dbadmin -p$password $dbname > $backupfile");
 }
 
 function getConfigVal($configName) {
 	// Include db connection credentials (use for site specific config values for now)
-    include "../../../external_includes/hoaDbCred.php";
+    include "../../external_includes/hoaDbCred.php";
 	
 	$configVal = "";
 	
@@ -274,7 +274,31 @@ class HoaPaymentRec
 	public $LastChangedTs;
 }
 
+/*
 
+1	UserID                     Primary	int(7)			No	None		AUTO_INCREMENT	Change Change	Drop Drop	
+2	UserEmailAddr	    varchar(100)	utf8mb4_general_ci		No	None			Change Change	Drop Drop	
+3	UserPassword	    varchar(100)	utf8mb4_general_ci		No	None			Change Change	Drop Drop	
+4	UserName	    varchar(80)	utf8mb4_general_ci		No	None			Change Change	Drop Drop	
+5	UserLevel	    int(2)			No	None			Change Change	Drop Drop	
+6	RegistrationCode  varchar(100)	utf8mb4_general_ci		No	None			Change Change	Drop Drop	
+7	EmailVerified	int(1)			No	0			Change Change	Drop Drop	
+8	LastChangedBy	varchar(80)	utf8mb4_general_ci		No	None			Change Change	Drop Drop	
+9	LastChangedTs	datetime	
+
+hoa_users
+
+UserID
+UserEmailAddr
+UserPassword
+UserName
+UserLevel
+RegistrationCode
+EmailVerified
+LastChangedBy
+LastChangedTs
+
+*/
 class AdminRec
 {
 	public $userName;
@@ -394,7 +418,7 @@ function getHoaPaymentRec($conn,$parcelId,$transId) {
 //--------------------------------------------------------------------------------------------------------------
 function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 	// Include to get paypal button scripts
-	include "../../../external_includes/hoaDbCred.php";
+	include "../../external_includes/hoaDbCred.php";
 	
 	$hoaRec = new HoaRec();
 
@@ -834,7 +858,7 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 
 function getHoaRec2($conn,$parcelId) {
 	// Include to get paypal button scripts
-	include "../../../external_includes/hoaDbCred.php";
+	include "../../external_includes/hoaDbCred.php";
 
 	$ownerId = '';
 	$fy = '';
