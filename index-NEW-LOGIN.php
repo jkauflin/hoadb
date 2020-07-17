@@ -2,7 +2,7 @@
   session_start(); 
 
   if (!isset($_SESSION['email'])) {
-  	$_SESSION['msg'] = "You must log in first";
+      $_SESSION['msg'] = "You must log in first";
   	header('location: login.php');
   }
   if (isset($_GET['logout'])) {
@@ -21,7 +21,7 @@
 		<title>HOA db</title>
 		<meta name="keywords" 		content="homewowners association database hoa db" />
 		<meta name="description"	content="This is the Homeowners Association database" />
-		<meta name="Author" 			content="John J Kauflin"/>
+		<meta name="Author" 		content="John J Kauflin"/>
 	
     <!-- Place favicon.ico in the root directory -->
     <link rel="icon"              href="favicon.ico">
@@ -48,30 +48,13 @@
             <span class="icon-bar"></span>
           </button>
           <a class="navbar-brand" data-toggle="modal" href="#aboutDialog"><img id="header-image" alt="Brand logo photo" src="images/logo-photo.jpg"></a>
-          <a class="navbar-brand" style="outline: 0" data-toggle="modal" href="#aboutDialog">HOA DB v1.311</a>
+          <a class="navbar-brand" style="outline: 0" data-toggle="modal" href="#aboutDialog">HOA DB v1.4</a>
         </div> <!-- navbar-header -->
 
         <div id="navbar" class="navbar-collapse collapse">
 			<ul class="nav navbar-nav navbar-right">
-				<li class="active"><a href="#SearchPage" data-toggle="tab"><i class="fa fa-search fa-lg"></i> Search</a></li>
-				<li><a href="#DetailPage" data-toggle="tab"><i class="fa fa-list" fa-lg></i> Detail</a></li>
-				<li><a href="#CommPage" data-toggle="tab"><i class="fa fa-phone"></i> Comm</a></li>
-				<li><a href="#ReportsPage" data-toggle="tab"><i class="fa fa-bar-chart fa-lg"></i> Reports</a></li>
-				<li><a href="#AdminPage" data-toggle="tab"><i class="fa fa-user fa-lg"></i> Admin</a></li>
-				<li><a href="#ConfigPage" data-toggle="tab"><i class="fa fa-cog fa-lg"></i> Config</a></li>
-	    	</ul>
-        </div> <!-- navbar-collapse (controlled by the collapse toggle button) -->
 
-      </div> <!-- container-fluid -->
-	</nav><!-- <nav class="navbar navbar-default navbar-fixed-top"> -->
-
-
-<div class="container-fluid">
-	<div class="tab-content">
-		
-
-<!-- notification message -->
-  	<?php if (isset($_SESSION['success'])) : ?>
+	<?php if (isset($_SESSION['success'])) : ?>
       <div class="error success" >
       	<h3>
           <?php 
@@ -82,14 +65,24 @@
       </div>
   	<?php endif ?>
 
-    <!-- logged in user information -->
-    <?php  if (isset($_SESSION['email'])) : ?>
-    	<p>Welcome <strong><?php echo $_SESSION['email']; ?></strong></p>
-    	<p> <a href="index.php?logout='1'" style="color: red;">logout</a> </p>
-    <?php endif ?>
+				<li class="active"><a href="#SearchPage" data-toggle="tab"><i class="fa fa-search fa-lg"></i> Search</a></li>
+				<li><a href="#DetailPage" data-toggle="tab"><i class="fa fa-list" fa-lg></i> Detail</a></li>
+				<li><a href="#CommPage" data-toggle="tab"><i class="fa fa-phone"></i> Comm</a></li>
+				<li><a href="#ReportsPage" data-toggle="tab"><i class="fa fa-bar-chart fa-lg"></i> Reports</a></li>
+				<li><a href="#AdminPage" data-toggle="tab"><i class="fa fa-usd fa-lg"></i> Admin</a></li>
+				<li><a href="#UsersPage" data-toggle="tab"><i class="fa fa-user fa-lg"></i> Users</a></li>
+				<li><a href="#ConfigPage" data-toggle="tab"><i class="fa fa-cog fa-lg"></i> Config</a></li>
+				<li><a href="index.php?logout='1'" >Logout</a></li>
+	    	</ul>
+        </div> <!-- navbar-collapse (controlled by the collapse toggle button) -->
+
+      </div> <!-- container-fluid -->
+	</nav><!-- <nav class="navbar navbar-default navbar-fixed-top"> -->
 
 
-
+<div class="container-fluid">
+	<div class="tab-content">
+		
 		<div class="tab-pane active" id="SearchPage">
 			<div class="row">
 				  <div class="col-sm-4 col-md-3">
@@ -222,16 +215,7 @@
 			            <table id="ReportListDisplay" class="table table-striped table-condensed">
 			            	<tbody>
 			               	</tbody>
-									 </table>
-									 
-									 <!--
-										<h4>Results</h4>
-										<div class="ajaxError"></div>
-										<div id="AdminDownloadLinks" class="pull-right"></div>
-										<div id="ResultMessage" style="margin-top:10px;"></div>
-									-->
-
-
+						</table>
 					</div>
 				</div>
 	    </div><!-- end of Reports -->
@@ -279,10 +263,19 @@
 
 	     </div><!-- end of Admin -->
 
+	    <div class="tab-pane" id="UsersPage">
+			<h4>Users</h4>
+            <div class="ajaxError"></div>
+		    <table id="UsersListDisplay" class="table table-striped table-condensed" style="margin-top:10px;">
+		    	<tbody>
+		    	</tbody>
+		    </table>
+	 	</div><!-- end of Config -->
+
 	    <div class="tab-pane" id="ConfigPage">
-				<h4>Config</h4>
-        <div class="ajaxError"></div>
-				<a data-ConfigName="NEW-VALUE" href="#" class="btn btn-primary NewConfig" role="button">New Config Value</a>
+			<h4>Config</h4>
+            <div class="ajaxError"></div>
+			<a data-ConfigName="NEW-VALUE" href="#" class="btn btn-primary NewConfig" role="button">New Config Value</a>
 		    <table id="ConfigListDisplay" class="table table-striped table-condensed" style="margin-top:10px;">
 		    	<tbody>
 		    	</tbody>

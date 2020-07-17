@@ -127,7 +127,7 @@ if (isset($_POST['login_user'])) {
   	        header('location: index.php');
 
         } else {
-  		    array_push($errors, "User password for this email does not match");
+  		    array_push($errors, "Password for this email does not match");
         }
 
     } else {

@@ -44,7 +44,6 @@
  * 2020-07-14 JJK   Moved php files to separate /php folder
  *============================================================================*/
 
-
 function getConn() {
 	// Include db connection credentials
 	include "../../external_includes/hoaDbCred.php";
