@@ -12,9 +12,19 @@
  * 					(someday switch to MySQL full text search for these fields)
  *============================================================================*/
 
-include 'commonUtil.php';
+// Include db connection credentials
+include "../../external_includes/hoaDbCred.php";
+// This include will have the following variables set
+//$host = 'localhost';
+//$dbadmin = "username";
+//$password = "password";
+//$dbname = "<name of the mysql database>";
+
+error_log(date('[Y-m-d H:i] '). "in getHoaPropertiesList, dbadmin = $dbadmin" . PHP_EOL, 3, LOG_FILE);
+
+include 'php_secure/commonUtil.php';
 // Include table record classes and db connection parameters
-include 'hoaDbCommon.php';
+include 'php_secure/hoaDbCommon.php';
 
 	// If they are set, get input parameters from the REQUEST
 	$searchStr = getParamVal("searchStr");
