@@ -16,13 +16,42 @@
  * 2016-04-13 JJK   Checked function and added getConfigVal calss
  * 2019-06-09 JJK	Added some logging, updated the URL for the website
  * 					and got this working again
+ * 2020-08-03 JJK   Modified to check API key to verify execution
  *============================================================================*/
+require_once 'vendor/autoload.php'; 
 
-include 'commonUtil.php';
-// Include table record classes and db connection parameters
-include 'hoaDbCommon.php';
+// Common functions
+require_once 'php_secure/commonUtil.php';
+// Common database functions and table record classes
+require_once 'php_secure/hoaDbCommon.php';
+// Include database connection credentials from an external includes location
+require_once getSecretsFilename();
+// Define a super global constant for the log file (this will be in scope for all functions)
+define("LOG_FILE", "./php.log");
 
-define("LOG_FILE", "./getSales.log");
+/*
+try {
+    $userRec = LoginAuth::getUserRec($cookieName,$cookiePath,$serverKey);
+    if ($userRec->userName == null || $userRec->userName == '') {
+        throw new Exception('User is NOT logged in', 500);
+    }
+    if ($userRec->userLevel < 1) {
+        throw new Exception('User is NOT authorized (contact Administrator)', 500);
+    }
+
+
+} catch(Exception $e) {
+    //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
+    echo json_encode(
+        array(
+            'error' => $e->getMessage(),
+            'error_code' => $e->getCode()
+        )
+    );
+    exit;
+}
+*/
+
 
 $errorStr = '';
 $currTimestampStr = date("Y-m-d H:i:s");

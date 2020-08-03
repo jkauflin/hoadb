@@ -37,7 +37,7 @@ define("LOG_FILE", "./php.log");
 try {
     $userRec = LoginAuth::getUserRec($cookieName,$cookiePath,$serverKey);
     if ($userRec->userName == null || $userRec->userName == '') {
-        throw new Exception('User is NOT logged in', 512);
+        throw new Exception('User is NOT logged in', 500);
     }
     if ($userRec->userLevel < 1) {
         throw new Exception('User is NOT authorized (contact Administrator)', 500);

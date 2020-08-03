@@ -27,39 +27,11 @@ function getAdminLevel() {
     $adminLevel = 0;
     $servername = "";
 
-    // Default to all privs if running locally (for testing)
-    /*
-    if (isset($_SERVER['SERVER_NAME'])) {
-        $servername = $_SERVER['SERVER_NAME'];
-        //error_log(date('[Y-m-d H:i] '). "Servername = $servername" . PHP_EOL, 3, LOG_FILE);
-        if ($servername == 'localhost' || $servername == '127.0.0.1') {
-			$adminLevel = 4;
-        }
-    }
-
-	if (isset($_SERVER['PHP_AUTH_USER'])) {
-		$username = strtolower(trim($_SERVER['PHP_AUTH_USER']));
-		// Just hard-code this check for now and put in the DB later
-		if ($username == 'president') {
-			$adminLevel = 4;
-		} else if ($username == 'treasurer') {
-			$adminLevel = 2;
-		} else if ($username == 'grha-guest') {
-			$adminLevel = 1;
-		}
-    }
-    */
-
-    // check the Session for user credentials
-	
 	return $adminLevel;
 }
 
 function getUsername() {
 	$username = 'unknown';
-	if (isset($_SERVER['PHP_AUTH_USER'])) {
-		$username = strtolower(trim($_SERVER['PHP_AUTH_USER']));
-	}
 	return $username;
 }
 
