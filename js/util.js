@@ -17,6 +17,9 @@
  * 2018-11-01 JJK   Modified getJSONfromInputs to only include elements with
  *                  an Id and check for checkbox "checked"
  * 2019-09-22 JJK   Checked logic for dues emails and communications
+ * 2020-08-03 JJK   Removed ajaxError handling - error handling re-factor
+ *                  Moved result.error check and message display to the
+ *                  individual calls
  *============================================================================*/
  var util = (function(){
     'use strict';  // Force declaration of variables before use (among other things)
@@ -26,23 +29,12 @@
     //=================================================================================================================
     // Variables cached from the DOM
     var $document = $(document);
-    var $ajaxError = $document.find(".ajaxError");
     var $wildcard = $('*');
     var $resetval = $document.find(".resetval");
     var $Date = $document.find(".Date");
 
     //=================================================================================================================
     // Bind events
-    // General AJAX error handler to log the exception and set a message in DIV tags with a ajaxError class
-    /* 2019-09-28 JJK - Commented out (just handle within the AJAX calls)
-    $document.ajaxError(function (e, xhr, settings, exception) {
-        console.log("ajax exception = " + exception);
-        console.log("ajax url = " + settings.url);
-        console.log("xhr.responseText = " + xhr.responseText);
-        defaultCursor();
-        $ajaxError.html("An Error has occurred (see console log)");
-    });
-    */
    
      // Auto-close the collapse menu after clicking a non-dropdown menu item (in the bootstrap nav header)
      $document.on('click', '.navbar-collapse.in', function (e) {
@@ -133,12 +125,6 @@
         //$wildcard.css('cursor', 'progress');
         //$ajaxError.html("");
     }
-    /*
-    commented out because it messed up the cursor in other functions - put it individually around JSON services
-    $document.ajaxComplete(function(event, request, settings) {
-        $wildcard.css('cursor', 'default');
-    });
-    */
     function defaultCursor() {
         //$wildcard.css('cursor', 'default');
     }

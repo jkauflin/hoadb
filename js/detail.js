@@ -31,6 +31,7 @@
  *                  Got update Assessment working again with JSON POST
  * 2018-11-25 JJK   Moved Dues Statement back to here
  * 2018-11-27 JJK   Added EmailAddr2
+ * 2020-08-03 JJK   Re-factored for new error handling
  *============================================================================*/
 var detail = (function(){
     'use strict';
@@ -44,6 +45,7 @@ var detail = (function(){
     // Variables cached from the DOM
     var $document = $(document);
     var $moduleDiv = $('#DetailPage');
+    var $ajaxError = $moduleDiv.find(".ajaxError");
     // Figure out a better way to do this
     var $displayPage = $document.find('#navbar a[href="#DetailPage"]');
 

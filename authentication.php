@@ -22,11 +22,18 @@ require_once getSecretsFilename();
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
 
-$userRec = LoginAuth::getUserRec($cookieName,$cookiePath,$serverKey);
+try {
+    $userRec = LoginAuth::getUserRec($cookieName,$cookiePath,$serverKey);
+    echo json_encode($userRec);
 
-//error_log(date('[Y-m-d H:i] '). "in authentication, after getUserRec " . PHP_EOL, 3, LOG_FILE);
-//error_log(date('[Y-m-d H:i] '). "in authentication, userName = $userRec->userName" . PHP_EOL, 3, LOG_FILE);
-//    error_log(date('[Y-m-d H:i] '). "in " .   basename(__FILE__ , ".php")   . ", User NOT authenticated, DIE" . PHP_EOL, 3, LOG_FILE);
-
-echo json_encode($userRec);
+} catch(Exception $e) {
+    //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
+    echo json_encode(
+        array(
+            'error' => $e->getMessage(),
+            'error_code' => $e->getCode()
+        )
+    );
+    exit;
+}
 ?>

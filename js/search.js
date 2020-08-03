@@ -12,6 +12,7 @@
  * 2016-04-03 JJK	Working on input fields
  * 2018-10-27 JJK   Added SearchInput for non-touch devices
  * 2020-07-29 JJK   Modified for version 2.0 changes
+ * 2020-08-03 JJK   Re-factored for new error handling
  *============================================================================*/
 var search = (function(){
     'use strict';
@@ -23,6 +24,7 @@ var search = (function(){
     //=================================================================================================================
     // Variables cached from the DOM
     var $moduleDiv = $('#SearchPage');
+    var $ajaxError = $moduleDiv.find(".ajaxError");
     var $SearchButton = $moduleDiv.find("#SearchButton");
     var $SearchInput = $moduleDiv.find("#SearchInput");
     var $searchStr = $moduleDiv.find("#searchStr");
@@ -44,8 +46,10 @@ var search = (function(){
         $SearchInput.change(getHoaPropertiesList);
     }
 
+    // *** GOOD EXAMPLE OF NEW ERROR HANDLING ***
     function getHoaPropertiesList() {
         $propList.html("");
+        $ajaxError.html("");
         
         $.getJSON("getHoaPropertiesList.php", "searchStr=" + util.cleanStr($searchStr.val()) +
             "&parcelId=" + util.cleanStr($parcelId.val()) +
@@ -53,9 +57,15 @@ var search = (function(){
             "&address=" + util.cleanStr($address.val()) +
             "&ownerName=" + util.cleanStr($ownerName.val()) +
             "&phoneNo=" + util.cleanStr($phoneNo.val()) +
-            "&altAddress=" + util.cleanStr($altAddress.val()), function (outHoaPropertyRecList) {
-                hoaPropertyRecList = outHoaPropertyRecList;
+            "&altAddress=" + util.cleanStr($altAddress.val()), function (result) {
+
+            if (result.error) {
+                console.log("error = " + result.error);
+                $ajaxError.html("<b>"+result.error+"</b>");
+            } else {
+                hoaPropertyRecList = result;
                 _render();
+            }
         });
     }
 

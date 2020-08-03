@@ -32,7 +32,6 @@ class LoginAuth
         $userRec = new UserRec();
         $userRec->userMessage = '';
 
-        //error_log(date('[Y-m-d H:i] '). "in setUserCookie, at BEGINNING" . PHP_EOL, 3, LOG_FILE);
         $username = mysqli_real_escape_string($conn, $param->username);
 
         $sql = "SELECT * FROM users WHERE UserName = ? ";
@@ -115,7 +114,6 @@ class LoginAuth
         $token = null;
 
         if(isset($_COOKIE[$cookieName])) {
-            //error_log(date('[Y-m-d H:i] '). "in getUserRec, $cookieName SET, value = $_COOKIE[$cookieName]" . PHP_EOL, 3, LOG_FILE);
             $token = $_COOKIE[$cookieName];
 
             if (!is_null($token)) {
@@ -132,7 +130,6 @@ class LoginAuth
                 catch(Exception $e) {
                     // If the token is expired, the JWT::decode will throw an exception
                     if (strpos($e,"Expired") || strpos($e,"expired")) {
-                        //error_log(date('[Y-m-d H:i] '). "in getUserRec, Expired token" . PHP_EOL, 3, LOG_FILE);
                         // if expired, delete the cookie
                         deleteUserCookie($cookieName,$cookiePath);
                     } else {
@@ -161,6 +158,9 @@ class LoginAuth
 
         if ($user) {
             $userRec->userMessage = 'Username already exists';
+
+            // check if email exists as well - you can only create 1 user for username and email
+
             // password reset
         } else {
             //$password = md5($password_1);//encrypt the password before saving in the database

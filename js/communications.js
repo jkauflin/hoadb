@@ -10,6 +10,7 @@
  * 2016-11-12 JJK	Added Dues Notice email function and inserts of
  * 					Dues Notice functions into Communications table
  * 2018-11-07 JJK   Re-factor for JSON based POST for updates
+ * 2020-08-03 JJK   Re-factored for new error handling
  * 
  *============================================================================*/
 var communications = (function () {
@@ -26,6 +27,7 @@ var communications = (function () {
     // Variables cached from the DOM
     var $document = $(document);
     var $moduleDiv = $('#CommPage');
+    var $ajaxError = $moduleDiv.find(".ajaxError");
     var $displayPage = $document.find('#navbar a[href="#CommPage"]');
     var $CommListDisplay = $moduleDiv.find("tbody");
     var $EditPage = $("#EditPage");

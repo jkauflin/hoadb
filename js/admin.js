@@ -52,7 +52,8 @@
  *                  (for both test and real) to confirm logic
  *                  Fixed the bug that was getting string 'false' value 
  *                  instead of boolean false
- *============================================================================*/
+* 2020-08-03 JJK   Re-factored for new error handling
+*============================================================================*/
 var admin = (function () {
     'use strict';  // Force declaration of variables before use (among other things)
 
@@ -63,6 +64,7 @@ var admin = (function () {
     // Variables cached from the DOM
     var $document = $(document);
     var $moduleDiv = $('#AdminPage');
+    var $ajaxError = $moduleDiv.find(".ajaxError");
     // Figure out a better way to do this
     //var $displayPage = $document.find('#navbar a[href="#AdminPage"]');
     var $DuesAmt = $moduleDiv.find("#DuesAmt");

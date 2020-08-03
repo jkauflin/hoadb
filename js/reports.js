@@ -17,6 +17,7 @@
  * 					Alt mailing address (if specified)
  * 2018-11-13 JJK   Re-factored for modules
  * 2019-01-19 JJK   Added Parcel Id to the unpaid dues ranking list
+ * 2020-08-03 JJK   Re-factored for new error handling
  *============================================================================*/
 var reports = (function () {
     'use strict';
@@ -48,6 +49,7 @@ var reports = (function () {
     //=================================================================================================================
     // Variables cached from the DOM
     var $moduleDiv = $('#ReportsPage');
+    var $ajaxError = $moduleDiv.find(".ajaxError");
     var $ReportHeader = $moduleDiv.find("#ReportHeader");
     var $ReportListDisplay = $("#ReportListDisplay tbody");
     var $ReportRecCnt = $("#ReportRecCnt");

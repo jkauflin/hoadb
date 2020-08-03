@@ -19,6 +19,7 @@
  * 2020-07-24 JJK 	Initial version
  * 2020-07-28 JJK   Added Registration handling
  * 2020-08-01 JJK   Re-factored to be in the same path as project
+ * 2020-08-03 JJK   Re-factored for new error handling
  *============================================================================*/
 var jjklogin = (function () {
     'use strict'
@@ -35,10 +36,7 @@ var jjklogin = (function () {
     //=================================================================================================================
     // Variables cached from the DOM
     var $document = $(document)
-    //var $moduleDiv = $('#DetailPage');
-    // Figure out a better way to do this
-    //var $displayPage = $document.find('#navbar a[href="#DetailPage"]');
-
+    var $ajaxError = $document.find(".ajaxError");
     var $LoginModal = $document.find('#LoginModal')
     var $logout = $document.find('#logout')
     var $LoggedIn = $document.find('.username')
@@ -67,52 +65,38 @@ var jjklogin = (function () {
 
     //=================================================================================================================
     // Initial load - when the module loads check for the authentication token
+    $ajaxError.html("");
     url = jjkloginRoot + 'authentication.php'
     $.ajax(url, {
         type: 'GET',
         dataType: 'json' // Type of the data that is expected in the return
         //dataType: "html"
+            // For debugging PHP errors - set dataType to "html", manually parse with JSON.parse,
+            // and see what PHP has added to the result string (i.e. error messages from PHP)
     }).done(function (result) {
-        try {
-            //console.log("result = " + result);
-            //userRec = JSON.parse(result);
+        //console.log("result = " + result);
+        if (result.error) {
+            console.log("error = " + result.error);
+            $ajaxError.html("<b>" + result.error + "</b>");
+        } else {
             userRec = result
-            if (
-                userRec == null ||
+            if (userRec == null ||
                 userRec.userName == null ||
                 userRec.userName == '' ||
                 userRec.userLevel < 1
             ) {
+                // Add a Login link
+                $LoggedIn.html('<a data-toggle="modal" href="#LoginModal">Login</a>')
                 // redirect to Login
                 $LoginModal.modal()
             } else {
                 $LoggedIn.html('Logged in as ' + userRec.userName)
-                console.log(
-                    'After authentication, userName = ' +
-                    userRec.userName +
-                    ', level = ' +
-                    userRec.userLevel
-                )
             }
-        } catch (err) {
-            // For debugging PHP errors - set dataType to "html", manually parse with JSON.parse,
-            // and see what PHP has added to the result string (i.e. error messages from PHP)
-            // Err will be JSON parse error, but this will let you see the PHP errors
-            console.log('err = ' + err)
-            console.log('result = ' + result)
         }
     }).fail(function (xhr, status, error) {
-        //Ajax request failed.
-        console.log(
-            'Error in AJAX request to ' +
-            url +
-            ', status = ' +
-            status +
-            ', error = ' +
-            error
-        )
+        console.log('Error in AJAX request to ' + url + ', status = ' + status + ', error = ' + error)
         userRec = null
-        $LoginDisplay.html('Error in request')
+        $ajaxError.html("<b>" + "Error in request" + "</b>");
     })
 
 
@@ -120,16 +104,21 @@ var jjklogin = (function () {
     // Module methods
 
     function loginUser () {
+        $LoginDisplay.html("")
+        $ajaxError.html("");
         url = jjkloginRoot + 'login.php'
         $.ajax(url, {
             type: 'POST',
             data: getJSONfromInputs($LoginInput, null),
             contentType: 'application/json',
-            dataType: 'json' // Type of the data that is expected in the return
-            //dataType: "html"                                  // Type of the data that is expected in the return
-        })
-            .done(function (result) {
-                //console.log("result = " + result);
+            dataType: 'json' 
+            //dataType: "html"
+        }).done(function (result) {
+            //console.log("result = " + result);
+            if (result.error) {
+                console.log("error = " + result.error);
+                $ajaxError.html("<b>" + result.error + "</b>");
+            } else { 
                 userRec = result
                 if (
                     userRec == null ||
@@ -139,52 +128,47 @@ var jjklogin = (function () {
                 ) {
                     // redirect to Login
                     $LoginDisplay.html(userRec.userMessage)
+                    // Add a Login link
+                    $LoggedIn.html('<a data-toggle="modal" href="#LoginModal">Login</a>')
                     $LoginModal.modal()
                 } else {
                     $LoginModal.modal('hide')
                     $LoggedIn.html('Logged in as ' + userRec.userName)
                     //console.log("After authentication, userName = " + userRec.userName + ", level = " + userRec.userLevel)
                 }
-            })
-            .fail(function (xhr, status, error) {
-                //Ajax request failed.
-                console.log(
-                    'Error in AJAX request to ' +
-                        url +
-                        ', status = ' +
-                        status +
-                        ', error = ' +
-                        error
-                )
-                userRec = null
-                $LoginDisplay.html('Error in request')
-            })
+            }
+        }).fail(function (xhr, status, error) {
+            console.log('Error in AJAX request to ' + url + ', status = ' + status + ', error = ' + error)
+            userRec = null
+            $ajaxError.html("<b>" + "Error in request" + "</b>");
+        })
     }
 
     function logoutUser () {
+        $ajaxError.html("");
         url = jjkloginRoot + 'logout.php'
         $.ajax(url, {
             type: 'GET'
-        })
-            .done(function (result) {
+        }).done(function (result) {
+            if (result.error) {
+                console.log("error = " + result.error);
+                $ajaxError.html("<b>" + result.error + "</b>");
+            } else {
                 userRec = null
-                $LoggedIn.html('User is not logged in')
+                // Add a Login link
+                $LoggedIn.html('<a data-toggle="modal" href="#LoginModal">Login</a>')
                 $LoginModal.modal()
-            })
-            .fail(function (xhr, status, error) {
-                //Ajax request failed.
-                console.log(
-                    'Error in AJAX request to ' +
-                        url +
-                        ', status = ' +
-                        status +
-                        ', error = ' +
-                        error
-                )
-            })
+            }
+        }).fail(function (xhr, status, error) {
+            console.log('Error in AJAX request to ' + url + ', status = ' + status + ', error = ' + error)
+            userRec = null
+            $ajaxError.html("<b>" + "Error in request" + "</b>");
+        })
     }
 
     function registerUser () {
+        $RegisterDisplay.html("")
+        $ajaxError.html("");
         url = jjkloginRoot + 'register.php'
         $.ajax(url, {
             type: 'POST',
@@ -192,52 +176,35 @@ var jjklogin = (function () {
             contentType: 'application/json',
             dataType: 'json' // Type of the data that is expected in the return
             //dataType: "html"                                  // Type of the data that is expected in the return
-        })
-            .done(function (result) {
-                //console.log("result = " + result);
-                try {
-                    //userRec = JSON.parse(result);
-                    userRec = result
+        }).done(function (result) {
+            //console.log("result = " + result);
+            if (result.error) {
+                console.log("error = " + result.error);
+                $ajaxError.html("<b>" + result.error + "</b>");
+            } else { 
+                userRec = result
 
-                    // successful registration???
+                // successful registration???
 
-                    if (
-                        userRec == null ||
-                        userRec.userName == null ||
-                        userRec.userName == '' ||
-                        userRec.userLevel < 1
-                    ) {
-                        // redirect to Login
-                        $RegisterDisplay.html(userRec.userMessage)
-                        $RegisterModal.modal()
-                    } else {
-                        $RegisterModal.modal('hide')
-                        $LoggedIn.html('Logged in as ' + userRec.userName)
-                        console.log(
-                            'After authentication, userName = ' +
-                                userRec.userName +
-                                ', level = ' +
-                                userRec.userLevel
-                        )
-                    }
-                } catch (err) {
-                    console.log('err = ' + err)
-                    console.log('result = ' + result)
+                if (
+                    userRec == null ||
+                    userRec.userName == null ||
+                    userRec.userName == '' ||
+                    userRec.userLevel < 1
+                ) {
+                    // redirect to Login
+                    $RegisterDisplay.html(userRec.userMessage)
+                    $RegisterModal.modal()
+                } else {
+                    $RegisterModal.modal('hide')
+                    $LoggedIn.html('Logged in as ' + userRec.userName)
                 }
-            })
-            .fail(function (xhr, status, error) {
-                //Ajax request failed.
-                console.log(
-                    'Error in AJAX request to ' +
-                        url +
-                        ', status = ' +
-                        status +
-                        ', error = ' +
-                        error
-                )
-                userRec = null
-                $RegisterDisplay.html('Error in request')
-            })
+            }
+        }).fail(function (xhr, status, error) {
+            console.log('Error in AJAX request to ' + url + ', status = ' + status + ', error = ' + error)
+            userRec = null
+            $ajaxError.html("<b>" + "Error in request" + "</b>");
+        })
     }
 
     // Function to get all input objects within a DIV, and extra entries from a map

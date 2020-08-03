@@ -9,6 +9,7 @@
  * 2016-07-08 JJK   Modified to get all config list values on page load
  * 2018-10-20 JJK   Re-factor for module design
  * 2018-10-21 JJK   Re-factor for JSON based POST for updates
+ * 2020-08-03 JJK   Re-factored for new error handling
  *============================================================================*/
 var config = (function(){
     'use strict';
@@ -22,6 +23,7 @@ var config = (function(){
     // Variables cached from the DOM
     var $document = $(document);
     var $moduleDiv = $('#ConfigPage');
+    var $ajaxError = $moduleDiv.find(".ajaxError");
     var $displayPage = $document.find('#navbar a[href="#ConfigPage"]');
     var $ConfigListDisplay = $moduleDiv.find("tbody");
     var $EditPage = $("#EditPage");

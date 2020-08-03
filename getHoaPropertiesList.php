@@ -29,16 +29,41 @@ require_once getSecretsFilename();
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
 
-//error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php")  . PHP_EOL, 3, LOG_FILE);
 //error_log(date('[Y-m-d H:i] '). "in getHoaPropertiesList, dirname(__FILE__) = " . dirname(__FILE__) . PHP_EOL, 3, LOG_FILE);
 //error_log(date('[Y-m-d H:i] '). "in getHoaPropertiesList, dbadmin = $dbadmin" . PHP_EOL, 3, LOG_FILE);
 
-$userRec = LoginAuth::getUserRec($cookieName,$cookiePath,$serverKey);
-//error_log(date('[Y-m-d H:i] '). "in " . __FILE__ . ", userName = $userRec->userName" . PHP_EOL, 3, LOG_FILE);
-if ($userRec->userName == null || $userRec->userName == '') {
-    error_log(date('[Y-m-d H:i] '). "in " .   basename(__FILE__ , ".php")   . ", User NOT authenticated, DIE" . PHP_EOL, 3, LOG_FILE);
-	die("USER IS NOT AUTHENTICATED");
+// *** GOOD EXAMPLE OF ERROR HANDLING ***
+/*
+try {
+    $userRec = LoginAuth::getUserRec($cookieName,$cookiePath,$serverKey);
+    if ($userRec->userName == null || $userRec->userName == '') {
+        throw new Exception('User is NOT logged in', 512);
+    }
+    if ($userRec->userLevel < 1) {
+        throw new Exception('User is NOT authorized (contact Administrator)', 500);
+    }
+
+
+} catch(Exception $e) {
+    //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
+    echo json_encode(
+        array(
+            'error' => $e->getMessage(),
+            'error_code' => $e->getCode()
+        )
+    );
+    exit;
 }
+*/
+
+try {
+    $userRec = LoginAuth::getUserRec($cookieName,$cookiePath,$serverKey);
+    if ($userRec->userName == null || $userRec->userName == '') {
+        throw new Exception('User is NOT logged in', 500);
+    }
+    if ($userRec->userLevel < 1) {
+        throw new Exception('User is NOT authorized (contact Administrator)', 500);
+    }
 
 
 	// If they are set, get input parameters from the REQUEST
@@ -162,4 +187,15 @@ if ($userRec->userName == null || $userRec->userName == '') {
 	}
 	
 	echo json_encode($outputArray);
+
+} catch(Exception $e) {
+    //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
+    echo json_encode(
+        array(
+            'error' => $e->getMessage(),
+            'error_code' => $e->getCode()
+        )
+    );
+    exit;
+}
 ?>
