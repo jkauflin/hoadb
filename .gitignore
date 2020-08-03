@@ -1,5 +1,5 @@
-hoaDbCred.php
+.vscode
 /*.zip
 vendor/
 *.log
-php/*.log
+LOG_FILE

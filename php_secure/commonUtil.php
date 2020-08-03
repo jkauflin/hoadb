@@ -1,6 +1,6 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2015 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2020 John J Kauflin, All rights reserved. 
  *----------------------------------------------------------------------------
  * DESCRIPTION: 
  *----------------------------------------------------------------------------
@@ -21,7 +21,6 @@
 
 //$currTimestampStr = date("Y-m-d H:i:s");
 //JJK test, date = 2015-04-22 19:45:09
-//define("LOG_FILE", "./app.log");
 
 // common method to return admin level based on authenticated user name from the server
 function getAdminLevel() {

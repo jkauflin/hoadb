@@ -42,19 +42,25 @@
  *                  external_includes folder above the public root
  *                  (added "../../external_includes/") to get to the file
  * 2020-07-14 JJK   Moved php files to separate /php folder
+ * 2020-07-23 JJK   Changed philosophy of connections - always start in 
+ *                  upper level calling file, don't try to start at this
+ *                  "included functions" level and don't try to include
+ *                  credentials at this level.  Just write functions and
+ *                  pass them whatever they need.  (enforce thread isolation)
+ * 2020-07-23 JJK   Added a function to return the name/location of the
+ *                  credentials/secrets file (in the external includes)
  *============================================================================*/
 
-function getConn() {
-	// Include db connection credentials
-include "../../../external_includes/hoaDbCred.php";
-	//include "../../external_includes/hoaDbCred.php";
-	// This include will have the following variables set
-	//$host = 'localhost';
-	//$dbadmin = "username";
-	//$password = "password";
-	//$dbname = "<name of the mysql database>";
+function externalIncludesDir() {
+    return "../../external_includes/";
+}
 
-error_log(date('[Y-m-d H:i] '). "in getConn, dbadmin = $dbadmin" . PHP_EOL, 3, LOG_FILE);
+function getSecretsFilename() {
+    return "../../external_includes/hoadbSecrets.php";
+}
+
+function getConn($host, $dbadmin, $password, $dbname) {
+    //error_log(date('[Y-m-d H:i] '). "in getConn, dbadmin = $dbadmin" . PHP_EOL, 3, LOG_FILE);
 
 	// User variables set in the db connection credentials include and open a connection
 	$conn = new mysqli($host, $dbadmin, $password, $dbname);
@@ -66,9 +72,7 @@ error_log(date('[Y-m-d H:i] '). "in getConn, dbadmin = $dbadmin" . PHP_EOL, 3, L
 	return $conn;
 }
 
-function mysqldumpHoaDb($backupfile) {
-	// Include db connection credentials
-	//include "../../external_includes/hoaDbCred.php";
+function mysqldumpHoaDb($host, $dbadmin, $password, $dbname, $backupfile) {
 	system("mysqldump -h $host -u $dbadmin -p$password $dbname > $backupfile");
 }
 
@@ -106,13 +110,6 @@ function getConfigVal($configName) {
 function getConfigValDB($conn,$configName) {
 	$configVal = "";
 
-	// Check if a database connection was passed or if it needs to be started
-	$connPassed = true;
-	if ($conn == NULL) {
-		$connPassed = false;
-		$conn = getConn();
-	}
-	
 	$sql = "SELECT ConfigValue FROM hoa_config WHERE ConfigName = ? ";
 	$stmt = $conn->prepare($sql);
 	$stmt->bind_param("s", $configName);
@@ -276,31 +273,6 @@ class HoaPaymentRec
 	public $LastChangedTs;
 }
 
-/*
-
-1	UserID                     Primary	int(7)			No	None		AUTO_INCREMENT	Change Change	Drop Drop	
-2	UserEmailAddr	    varchar(100)	utf8mb4_general_ci		No	None			Change Change	Drop Drop	
-3	UserPassword	    varchar(100)	utf8mb4_general_ci		No	None			Change Change	Drop Drop	
-4	UserName	    varchar(80)	utf8mb4_general_ci		No	None			Change Change	Drop Drop	
-5	UserLevel	    int(2)			No	None			Change Change	Drop Drop	
-6	RegistrationCode  varchar(100)	utf8mb4_general_ci		No	None			Change Change	Drop Drop	
-7	EmailVerified	int(1)			No	0			Change Change	Drop Drop	
-8	LastChangedBy	varchar(80)	utf8mb4_general_ci		No	None			Change Change	Drop Drop	
-9	LastChangedTs	datetime	
-
-hoa_users
-
-UserID
-UserEmailAddr
-UserPassword
-UserName
-UserLevel
-RegistrationCode
-EmailVerified
-LastChangedBy
-LastChangedTs
-
-*/
 class AdminRec
 {
 	public $userName;
@@ -346,7 +318,7 @@ function getHoaSalesRec($conn,$parcelId,$saleDate) {
 	
 	$hoaSalesRec = new HoaSalesRec();
 
-	$conn = getConn();
+	//$conn = getConn();
 	$stmt = $conn->prepare("SELECT * FROM hoa_sales WHERE PARID = ? AND SALEDT = ?; ");
 	$stmt->bind_param("ss", $parcelId,$saleDate);
 	$stmt->execute();
@@ -432,12 +404,14 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 	$hoaRec->DuesEmailAddr = '';
 	$CurrentOwnerID = 0;
 	
-	// Check if a database connection was passed or if it needs to be started
+    // Check if a database connection was passed or if it needs to be started
+    /*
 	$connPassed = true;
 	if ($conn == NULL) {
 		$connPassed = false;
 		$conn = getConn();
-	}
+    }
+    */
 
 	// Get values from database and load into structure that will be returned as JSON
 	$stmt = $conn->prepare("SELECT * FROM hoa_properties WHERE Parcel_ID = ? ; ");
@@ -874,12 +848,14 @@ function getHoaRec2($conn,$parcelId) {
 	$hoaRec->paymentButton = '';
 	$hoaRec->paymentInstructions = '';
 	
-	// Check if a database connection was passed or if it needs to be started
+    // Check if a database connection was passed or if it needs to be started
+    /*
 	$connPassed = true;
 	if ($conn == NULL) {
 		$connPassed = false;
 		$conn = getConn();
-	}
+    }
+    */
 	
 	// Get values from database and load into structure that will be returned as JSON
 	$stmt = $conn->prepare("SELECT * FROM hoa_properties WHERE Parcel_ID = ? ; ");

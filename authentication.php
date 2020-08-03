@@ -2,10 +2,11 @@
 /*==============================================================================
  * (C) Copyright 2020 John J Kauflin, All rights reserved. 
  *----------------------------------------------------------------------------
- * DESCRIPTION: Authenticate login against database and create JWT token
+ * DESCRIPTION: Check for JWT token to authenticate user
  *----------------------------------------------------------------------------
  * Modification History
  * 2020-07-25 JJK 	Initial version
+ * 2020-07-31 JJK   Re-factor to use new class
  *============================================================================*/
 require_once 'vendor/autoload.php'; 
 
@@ -21,27 +22,11 @@ require_once getSecretsFilename();
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
 
+$userRec = LoginAuth::getUserRec($cookieName,$cookiePath,$serverKey);
 
-header("Content-Type: application/json; charset=UTF-8");
-# Get JSON as a string
-$json_str = file_get_contents('php://input');
-
-//error_log(date('[Y-m-d H:i] '). "in login, json_str = $json_str" . PHP_EOL, 3, LOG_FILE);
-
-# Decode the string to get a JSON object
-$param = json_decode($json_str);
-
-//$loginAuth = new LoginAuth();
-
-//error_log(date('[Y-m-d H:i] '). "in login, username = " . $param->username . PHP_EOL, 3, LOG_FILE);
-if (empty($param->username) || empty($param->password)) {
-    $userRec = LoginAuth::initUserRec();
-    $userRec->userMessage = 'Username and Password are required';
-} else {
-    $conn = getConn($host, $dbadmin, $password, $dbname);
-    $userRec = LoginAuth::setUserCookie($conn,$cookieName,$cookiePath,$serverKey,$param);
-    $conn->close();
-}
+//error_log(date('[Y-m-d H:i] '). "in authentication, after getUserRec " . PHP_EOL, 3, LOG_FILE);
+//error_log(date('[Y-m-d H:i] '). "in authentication, userName = $userRec->userName" . PHP_EOL, 3, LOG_FILE);
+//    error_log(date('[Y-m-d H:i] '). "in " .   basename(__FILE__ , ".php")   . ", User NOT authenticated, DIE" . PHP_EOL, 3, LOG_FILE);
 
 echo json_encode($userRec);
 ?>

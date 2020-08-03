@@ -23,7 +23,7 @@ $backupfile = $dbname . '-' . date("Y-m-d") . '.sql';
 $backupzip = $backupfile . '.tar.gz';
 
 //system("mysqldump -h $host -u $dbadmin -p$password $dbname > $backupfile");
-mysqldumpHoaDb($backupfile);
+mysqldumpHoaDb($host, $dbadmin, $password, $dbname, $backupfile);
 system("tar -czvf $backupzip $backupfile");
 
 $bodytext = "Attached is an MYSQLDUMP of the HOA MySQL database";

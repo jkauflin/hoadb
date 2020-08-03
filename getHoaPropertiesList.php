@@ -1,6 +1,6 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2015 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2020 John J Kauflin, All rights reserved. 
  *----------------------------------------------------------------------------
  * DESCRIPTION: 
  *----------------------------------------------------------------------------
@@ -10,21 +10,36 @@
  * 					function to build wildcard parameter string from tokens
  * 2017-02-26 JJK	Added a general search to look through all columns
  * 					(someday switch to MySQL full text search for these fields)
+ * 2020-07-23 JJK   Modified to require files from a secure location, use a 
+ *                  function to get the Credentials file, and pass parameters 
+ *                  to the getConn function
+ * 2020-08-01 JJK   Re-factored to use jjklogin for authentication
  *============================================================================*/
+require_once 'vendor/autoload.php'; 
 
-// Include db connection credentials
-include "../../external_includes/hoaDbCred.php";
-// This include will have the following variables set
-//$host = 'localhost';
-//$dbadmin = "username";
-//$password = "password";
-//$dbname = "<name of the mysql database>";
+// Common functions
+require_once 'php_secure/commonUtil.php';
+// Common database functions and table record classes
+require_once 'php_secure/hoaDbCommon.php';
+// Login Authentication class
+require_once 'php_secure/jjklogin.php';
+use \jkauflin\jjklogin\LoginAuth;
+// Include database connection credentials from an external includes location
+require_once getSecretsFilename();
+// Define a super global constant for the log file (this will be in scope for all functions)
+define("LOG_FILE", "./php.log");
 
-error_log(date('[Y-m-d H:i] '). "in getHoaPropertiesList, dbadmin = $dbadmin" . PHP_EOL, 3, LOG_FILE);
+//error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php")  . PHP_EOL, 3, LOG_FILE);
+//error_log(date('[Y-m-d H:i] '). "in getHoaPropertiesList, dirname(__FILE__) = " . dirname(__FILE__) . PHP_EOL, 3, LOG_FILE);
+//error_log(date('[Y-m-d H:i] '). "in getHoaPropertiesList, dbadmin = $dbadmin" . PHP_EOL, 3, LOG_FILE);
 
-include 'php_secure/commonUtil.php';
-// Include table record classes and db connection parameters
-include 'php_secure/hoaDbCommon.php';
+$userRec = LoginAuth::getUserRec($cookieName,$cookiePath,$serverKey);
+//error_log(date('[Y-m-d H:i] '). "in " . __FILE__ . ", userName = $userRec->userName" . PHP_EOL, 3, LOG_FILE);
+if ($userRec->userName == null || $userRec->userName == '') {
+    error_log(date('[Y-m-d H:i] '). "in " .   basename(__FILE__ , ".php")   . ", User NOT authenticated, DIE" . PHP_EOL, 3, LOG_FILE);
+	die("USER IS NOT AUTHENTICATED");
+}
+
 
 	// If they are set, get input parameters from the REQUEST
 	$searchStr = getParamVal("searchStr");
@@ -58,7 +73,7 @@ include 'php_secure/hoaDbCommon.php';
 
 		//error_log(date('[Y-m-d H:i] '). '$sql = ' . $sql . PHP_EOL, 3, 'php.log');
 		
-		$conn = getConn();
+		$conn = getConn($host, $dbadmin, $password, $dbname);
 		$stmt = $conn->prepare($sql);
 		//$stmt->bind_param("s", $paramStr);
 		$stmt->execute();
@@ -120,7 +135,7 @@ include 'php_secure/hoaDbCommon.php';
 		$sql = $sql . "LIKE UPPER(?) ORDER BY p.Parcel_ID; ";
 		//error_log('$sql = ' . $sql);
 		
-		$conn = getConn();
+		$conn = getConn($host, $dbadmin, $password, $dbname);
 		$stmt = $conn->prepare($sql);
 		$stmt->bind_param("s", $paramStr);
 		$stmt->execute();

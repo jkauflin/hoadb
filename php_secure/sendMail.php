@@ -15,7 +15,7 @@
  * 2020-07-04 JJK   Modified to use PHP Composer and switched require
  *                  to "vendor/autoload.php"
  *============================================================================*/
-    require_once("vendor/autoload.php"); 
+require_once __DIR__ . '/vendor/autoload.php';
 
 	include 'commonUtil.php';
 	// Include table record classes and db connection parameters

@@ -87,16 +87,6 @@
         rlParam('param2');      // null
     */
 
-    var validEmailAddrRegExStr = "^((\"([ !#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\]^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])*\"|([!#$%&'*+\\-/0-9=?A-Z^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])+)(\\.(\"([ !#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\]^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])*\"|([!#$%&'*+\\-/0-9=?A-Z^_`a-z{|}~]|\\\\[ !\"#$%&'()*+,\\-./0-9:;<=>?@A-Z[\\\\\\]^_`a-z{|}~])+))*)@([a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?)*\\.(?![0-9]*\\.?$)[a-zA-Z0-9]{2,}\\.?)$";
-    var validEmailAddr = new RegExp(validEmailAddrRegExStr, "g");
-    /*
-    if (validEmailAddr.test(inStr)) {
-        resultStr = '<b style="color:green;">VALID</b>';
-    } else {
-        resultStr = '<b style="color:red;">INVALID</b>';
-    }
-    */
-
     // Non-Printable characters - Hex 01 to 1F, and 7F
     var nonPrintableCharsStr = "[\x01-\x1F\x7F]";
     // "g" global so it does more than 1 substitution
@@ -138,9 +128,10 @@
         return tempDate.getFullYear() + '-' + tempMonth + '-' + tempDay;
     }
 
+    // 2020-07-29 Turning off this changing cursor idea
     function waitCursor() {
-        $wildcard.css('cursor', 'progress');
-        $ajaxError.html("");
+        //$wildcard.css('cursor', 'progress');
+        //$ajaxError.html("");
     }
     /*
     commented out because it messed up the cursor in other functions - put it individually around JSON services
@@ -149,7 +140,7 @@
     });
     */
     function defaultCursor() {
-        $wildcard.css('cursor', 'default');
+        //$wildcard.css('cursor', 'default');
     }
 
     // Helper functions for setting UI components from data
