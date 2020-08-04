@@ -20,6 +20,7 @@
  * 2020-07-28 JJK   Added Registration handling
  * 2020-08-01 JJK   Re-factored to be in the same path as project
  * 2020-08-03 JJK   Re-factored for new error handling
+ * 2020-08-04 JJK   Added password set logic
  *============================================================================*/
 var jjklogin = (function () {
     'use strict'
@@ -45,10 +46,24 @@ var jjklogin = (function () {
     var $LoginButton = $LoginModal.find('#LoginButton')
     var $LoginDisplay = $LoginModal.find('#LoginDisplay')
 
+    var $ForgotPassword = $document.find('#ForgotPassword')
+    var $ResetPasswordModal = $document.find('#ResetPasswordModal')
+    var $ResetPasswordInput = $ResetPasswordModal.find('#ResetPasswordInput')
+    var $ResetPasswordButton = $ResetPasswordModal.find('#ResetPasswordButton')
+    var $ResetPasswordDisplay = $ResetPasswordModal.find('#ResetPasswordDisplay')
+
+    var $PasswordModal = $document.find('#PasswordModal')
+    var $PasswordInput = $PasswordModal.find('#PasswordInput')
+    var $regCode = $PasswordInput.find('#regCode')
+    var $PasswordButton = $PasswordModal.find('#PasswordButton')
+    var $PasswordDisplay = $PasswordModal.find('#PasswordDisplay')
+
+    /*
     var $RegisterModal = $document.find('#RegisterModal')
     var $RegisterInput = $RegisterModal.find('#RegisterInput')
     var $RegisterButton = $RegisterModal.find('#RegisterButton')
     var $RegisterDisplay = $RegisterModal.find('#RegisterDisplay')
+    */
 
     //var isTouchDevice = 'ontouchstart' in document.documentElement;
 
@@ -61,49 +76,62 @@ var jjklogin = (function () {
     //}
 
     $logout.on('click', logoutUser)
-    $RegisterButton.on('click', registerUser)
+    $ForgotPassword.on('click', forgotPassword)
+    $ResetPasswordButton.on('click', resetPassword)
+    $PasswordButton.on('click', setPassword)
+    //$RegisterButton.on('click', registerUser)
 
     //=================================================================================================================
-    // Initial load - when the module loads check for the authentication token
+    // Checks on initial load
     $ajaxError.html("");
-    url = jjkloginRoot + 'authentication.php'
-    $.ajax(url, {
-        type: 'GET',
-        dataType: 'json' // Type of the data that is expected in the return
-        //dataType: "html"
+
+    // Check for password reset in the request url
+    var urlParam = 'resetPass';
+    var results = new RegExp('[\?&]' + urlParam + '=([^&#]*)').exec(window.location.href);
+    if (results != null) {
+        var regCode = results[1] || 0;
+        //console.log("regCode = " + regCode);
+        $regCode.val(regCode);
+        $PasswordModal.modal()
+    } else {
+        // Check for the authentication token when the page loads
+        url = jjkloginRoot + 'authentication.php'
+        $.ajax(url, {
+            type: 'GET',
+            dataType: 'json' // Type of the data that is expected in the return
+            //dataType: "html"
             // For debugging PHP errors - set dataType to "html", manually parse with JSON.parse,
             // and see what PHP has added to the result string (i.e. error messages from PHP)
-    }).done(function (result) {
-        //console.log("result = " + result);
-        if (result.error) {
-            console.log("error = " + result.error);
-            $ajaxError.html("<b>" + result.error + "</b>");
-        } else {
-            userRec = result
-            if (userRec == null ||
-                userRec.userName == null ||
-                userRec.userName == '' ||
-                userRec.userLevel < 1
-            ) {
-                // Add a Login link
-                $LoggedIn.html('<a data-toggle="modal" href="#LoginModal">Login</a>')
-                // redirect to Login
-                $LoginModal.modal()
+        }).done(function (result) {
+            //console.log("result = " + result);
+            if (result.error) {
+                console.log("error = " + result.error);
+                $ajaxError.html("<b>" + result.error + "</b>");
             } else {
-                $LoggedIn.html('Logged in as ' + userRec.userName)
+                userRec = result
+                if (userRec == null ||
+                    userRec.userName == null ||
+                    userRec.userName == '' ||
+                    userRec.userLevel < 1
+                ) {
+                    // Add a Login link
+                    $LoggedIn.html('<a data-toggle="modal" href="#LoginModal">Login</a>')
+                    // redirect to Login
+                    $LoginModal.modal()
+                } else {
+                    $LoggedIn.html('Logged in as ' + userRec.userName)
+                }
             }
-        }
-    }).fail(function (xhr, status, error) {
-        console.log('Error in AJAX request to ' + url + ', status = ' + status + ', error = ' + error)
-        userRec = null
-        $ajaxError.html("<b>" + "Error in request" + "</b>");
-    })
-
+        }).fail(function (xhr, status, error) {
+            console.log('Error in AJAX request to ' + url + ', status = ' + status + ', error = ' + error)
+            userRec = null
+            $ajaxError.html("<b>" + "Error in request" + "</b>");
+        })
+    }
 
     //=================================================================================================================
     // Module methods
-
-    function loginUser () {
+    function loginUser() {
         $LoginDisplay.html("")
         $ajaxError.html("");
         url = jjkloginRoot + 'login.php'
@@ -144,7 +172,7 @@ var jjklogin = (function () {
         })
     }
 
-    function logoutUser () {
+    function logoutUser() {
         $ajaxError.html("");
         url = jjkloginRoot + 'logout.php'
         $.ajax(url, {
@@ -166,7 +194,83 @@ var jjklogin = (function () {
         })
     }
 
-    function registerUser () {
+    function forgotPassword() {
+        $LoginModal.modal('hide')
+        // Add a Login link (in case they kill this modal)
+        $LoggedIn.html('<a data-toggle="modal" href="#LoginModal">Login</a>')
+        $ResetPasswordDisplay.html("")
+        $ajaxError.html("");
+        $ResetPasswordModal.modal()
+    }
+
+    function resetPassword() {
+        $LoginModal.modal('hide')
+        $ResetPasswordDisplay.html("")
+        $ajaxError.html("");
+        url = jjkloginRoot + 'passwordReset.php'
+        $.ajax(url, {
+            type: 'POST',
+            data: getJSONfromInputs($ResetPasswordInput, null),
+            contentType: 'application/json',
+            dataType: 'json'
+            //dataType: "html"
+        }).done(function (result) {
+            //console.log("result = " + result);
+            if (result.error) {
+                console.log("error = " + result.error);
+                $ajaxError.html("<b>" + result.error + "</b>");
+            } else {
+                userRec = result
+                $ResetPasswordDisplay.html(userRec.userMessage)
+            }
+        }).fail(function (xhr, status, error) {
+            console.log('Error in AJAX request to ' + url + ', status = ' + status + ', error = ' + error)
+            userRec = null
+            $ajaxError.html("<b>" + "Error in request" + "</b>");
+        })
+    }
+
+    function setPassword() {
+        $LoginModal.modal('hide')
+        $PasswordDisplay.html("")
+        $ajaxError.html("");
+        url = jjkloginRoot + 'password.php'
+        $.ajax(url, {
+            type: 'POST',
+            data: getJSONfromInputs($PasswordInput, null),
+            contentType: 'application/json',
+            dataType: 'json' 
+            //dataType: "html"
+        }).done(function (result) {
+            //console.log("result = " + result);
+            if (result.error) {
+                console.log("error = " + result.error);
+                $ajaxError.html("<b>" + result.error + "</b>");
+            } else { 
+                userRec = result
+                if (
+                    userRec == null ||
+                    userRec.userName == null ||
+                    userRec.userName == '' ||
+                    userRec.userLevel < 1
+                ) {
+                    // redirect to Login
+                    $PasswordDisplay.html(userRec.userMessage)
+                    $PasswordModal.modal()
+                } else {
+                    $PasswordModal.modal('hide')
+                    $LoggedIn.html('Logged in as ' + userRec.userName)
+                }
+            }
+        }).fail(function (xhr, status, error) {
+            console.log('Error in AJAX request to ' + url + ', status = ' + status + ', error = ' + error)
+            userRec = null
+            $ajaxError.html("<b>" + "Error in request" + "</b>");
+        })
+    }
+
+    function registerUser() {
+        $LoginModal.modal('hide')
         $RegisterDisplay.html("")
         $ajaxError.html("");
         url = jjkloginRoot + 'register.php'
@@ -181,7 +285,7 @@ var jjklogin = (function () {
             if (result.error) {
                 console.log("error = " + result.error);
                 $ajaxError.html("<b>" + result.error + "</b>");
-            } else { 
+            } else {
                 userRec = result
 
                 // successful registration???
@@ -206,7 +310,7 @@ var jjklogin = (function () {
             $ajaxError.html("<b>" + "Error in request" + "</b>");
         })
     }
-
+    
     // Function to get all input objects within a DIV, and extra entries from a map
     // and construct a JSON object with names and values (to pass in POST updates)
     function getJSONfromInputs (InputsDiv, paramMap) {

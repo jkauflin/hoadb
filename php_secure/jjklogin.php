@@ -9,6 +9,7 @@
  * 2020-07-25 JJK 	Initial version
  * 2020-07-28 JJK   Added registerUser and expired token check
  * 2020-07-31 JJK   Re-factor as a class
+ * 2020-08-04 JJK   Added setPassword, resetPassword, and setUserToken
  *============================================================================*/
 namespace jkauflin\jjklogin;
 
@@ -28,9 +29,38 @@ class LoginAuth
         return new UserRec();
     }
 
+    private static function setUserToken($cookieName,$cookiePath,$serverKey,$UserId,$UserName,$UserLevel) {
+        try {
+            if(isset($_COOKIE[$cookieName])) {
+                unset($_COOKIE[$cookieName]);
+            }
+
+            // create a token
+            $payloadArray = array();
+            $payloadArray['userId'] = $UserId;
+            $payloadArray['userName'] = $UserName;
+            $payloadArray['userLevel'] = $UserLevel;
+            $payloadArray['exp'] = strtotime("+1 Months");  // Set the token expiration datetime
+
+            $token = JWT::encode($payloadArray, $serverKey);
+
+            setcookie($cookieName, $token, [
+                'expires' => 0,
+                'path' => $cookiePath,
+                'samesite' => 'strict',
+                //'secure' => TRUE,
+                'httponly' => TRUE
+            ]);
+        }
+        catch(Exception $e) {
+            //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
+        }
+    }
+
+
     public static function setUserCookie($conn,$cookieName,$cookiePath,$serverKey,$param) {
         $userRec = new UserRec();
-        $userRec->userMessage = '';
+        $userRec->userMessage = 'Username not found';
 
         $username = mysqli_real_escape_string($conn, $param->username);
 
@@ -47,45 +77,13 @@ class LoginAuth
                 $userRec->userMessage = 'User is not authorized (contact Administrator)';
             } else {
                 if (password_verify($param->password, $user['UserPassword'])) {
-
-                    if(isset($_COOKIE[$cookieName])) {
-                        unset($_COOKIE[$cookieName]);
-                    }
-
-                    //Uncomment the following line and add an appropriate date and time to enable the "expire" feature.
-                    // Set the token to expire in 1 month
-                    $exp = strtotime("+1 Months");
-
-                    // create a token
-                    $payloadArray = array();
-                    $payloadArray['userId'] = $user['UserId'];
-                    $payloadArray['userName'] = $user['UserName'];
-                    $payloadArray['userLevel'] = $user['UserLevel'];
-                    if (isset($exp)) {$payloadArray['exp'] = $exp;}
-
-                    //error_log(date('[Y-m-d H:i] '). "in setUserCookie, BEFORE encode" . PHP_EOL, 3, LOG_FILE);
-                    $token = JWT::encode($payloadArray, $serverKey);
-                    //error_log(date('[Y-m-d H:i] '). "in setUserCookie, BEFORE cookie set" . PHP_EOL, 3, LOG_FILE);
-
-                    setcookie($cookieName, $token, [
-                        'expires' => 0,
-                        'path' => $cookiePath,
-                        'samesite' => 'strict',
-                //      'secure' => TRUE,
-                        'httponly' => TRUE
-                    ]);
-                            
-                    //error_log(date('[Y-m-d H:i] '). "in setUserCookie, AFTER cookie set" . PHP_EOL, 3, LOG_FILE);
-
+                    self::setUserToken($cookieName,$cookiePath,$serverKey,$user['UserId'],$user['UserName'],$user['UserLevel']);
                     $userRec->userName = $user['UserName'];
                     $userRec->userLevel = $user['UserLevel'];
-
                 } else {
                     $userRec->userMessage = 'Password for this username does not match';
                 }
             }
-        } else {
-            $userRec->userMessage = 'Username not found';
         }
 
         return $userRec;
@@ -136,6 +134,121 @@ class LoginAuth
                         error_log(date('[Y-m-d H:i] '). "in getUserRec, exception in decode = $e" . PHP_EOL, 3, LOG_FILE);
                     }
                 }
+            }
+        }
+
+        return $userRec;
+    }
+
+    public static function resetPassword($conn,$cookieName,$cookiePath,$serverKey,$param,$fromEmailAddress,$passwordResetUrl) {
+        $userRec = new UserRec();
+        $userRec->userMessage = 'Error in request';
+        
+        try {
+            $username = mysqli_real_escape_string($conn, $param->usernameReset);
+            $emailAddr = mysqli_real_escape_string($conn, $param->emailAddrReset);
+
+            $sql = null;
+            $stmt = null;
+            if (!empty($username)) {
+                $userRec->userMessage = 'Username not found';
+                $sql = "SELECT * FROM users WHERE UserName = ? ";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("s", $username);
+            }
+            if (!empty($emailAddr)) {
+                $userRec->userMessage = 'Email address not found';
+                $sql = "SELECT * FROM users WHERE UserEmailAddr = ? ";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("s", $emailAddr);
+            }
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $user = mysqli_fetch_assoc($result);
+            $stmt->close();
+
+        /*
+            1	UserId Primary	int(7)			No	None	AUTO_INCREMENT	Change Change	Drop Drop	
+            2	UserEmailAddr	varchar(100)	No	None			Change Change	Drop Drop	
+            3	UserPassword	varchar(100)	No	None			Change Change	Drop Drop	
+            4	UserName	    varchar(80)	    No	guest			Change Change	Drop Drop	
+            5	UserLevel	    int(2)			No	0			Change Change	Drop Drop	
+            6	UserLastLogin	datetime		No	current_timestamp()			Change Change	Drop Drop	
+            7	RegistrationCode varchar(100)	No	None			Change Change	Drop Drop	
+            8	EmailVerified	int(1)			No	0			Change Change	Drop Drop	
+            9	LastChangedBy	varchar(80)	    No	system			Change Change	Drop Drop	
+            10	LastChangedTs	datetime	        current_timestamp()
+        */
+
+            if ($user) {
+                if ($user['UserLevel'] < 1) {
+                    $userRec->userMessage = 'User is not authorized (contact Administrator)';
+                } else {
+
+    //set email with registration code
+    // reset registration code when updating password
+                    $subject = "GRHA password reset";
+                    $messageStr = 'Click the following to enter a new password for username [' . $user['UserName'] . ']:  ' . $passwordResetUrl . $user['RegistrationCode'];
+
+            //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", messageStr = $messageStr " . PHP_EOL, 3, LOG_FILE);
+
+                    //sendHtmlEMail($user['UserEmailAddr'],$subject,$messageStr,$fromEmailAddress);
+
+                    $userRec->userMessage = 'Reset password verification sent to your email address';
+                }
+            }
+
+        }
+        catch(Exception $e) {
+            //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
+        }
+
+        return $userRec;
+    }
+
+    public static function setPassword($conn,$cookieName,$cookiePath,$serverKey,$param) {
+        $userRec = new UserRec();
+        $userRec->userMessage = 'Error in request';
+
+        $regCode = mysqli_real_escape_string($conn, $param->regCode);
+        $password = mysqli_real_escape_string($conn, $param->password_1);
+
+        if (empty($regCode)) {
+            $userRec->userMessage = 'Registraction Code is missing';
+        } else {
+            // Make sure the user record exists for this registraction code
+            $sql = "SELECT * FROM users WHERE RegistrationCode = ? ";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("s", $regCode);
+
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $user = mysqli_fetch_assoc($result);
+            $stmt->close();
+
+            if ($user) {
+                //$password = md5($password_1);//encrypt the password before saving in the database
+                $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+                $registrationCode = uniqid();
+                /*
+                7	RegistrationCode varchar(100)	No	None			Change Change	Drop Drop	
+                8	EmailVerified	int(1)			No	0			Change Change	Drop Drop	
+                9	LastChangedBy	varchar(80)	    No	system			Change Change	Drop Drop	
+                10	LastChangedTs	datetime	        current_timestamp()
+                */
+                $sql = "UPDATE users SET UserPassword = ?, RegistrationCode = ? WHERE RegistrationCode = ? ";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("sss", $passwordHash,$registrationCode,$regCode);
+                $stmt->execute();
+                $stmt->close();
+
+                self::setUserToken($cookieName,$cookiePath,$serverKey,$user['UserId'],$user['UserName'],$user['UserLevel']);
+
+                $userRec->userName = $user['UserName'];
+                $userRec->userLevel = $user['UserLevel'];
+
+            } else {
+                $userRec->userMessage = 'User not found for this Registration Code';
             }
         }
 
@@ -196,52 +309,6 @@ class LoginAuth
 
             // set a token and a cookie or just make them login?
             $userRec->userMessage = 'Registration successful - contact Administrator to set user level';
-
-            /*
-            if ($user['UserLevel'] < 1) {
-                $userRec->userMessage = 'User is not authorized (contact Administrator)';
-            } else {
-                if (password_verify($param->password, $user['UserPassword'])) {
-
-                    if(isset($_COOKIE[$cookieName])) {
-                        unset($_COOKIE[$cookieName]);
-                    }
-
-                    //Uncomment the following line and add an appropriate date and time to enable the "expire" feature.
-                    $exp = strtotime('2021-01-01 00:00:01');
-
-                    // create a token
-                    $payloadArray = array();
-                    $payloadArray['userId'] = $user['UserId'];
-                    $payloadArray['userName'] = $user['UserName'];
-                    $payloadArray['userLevel'] = $user['UserLevel'];
-                    if (isset($exp)) {$payloadArray['exp'] = $exp;}
-
-                    //error_log(date('[Y-m-d H:i] '). "in setUserCookie, BEFORE encode" . PHP_EOL, 3, LOG_FILE);
-
-                    $token = JWT::encode($payloadArray, $serverKey);
-
-                    //error_log(date('[Y-m-d H:i] '). "in setUserCookie, BEFORE cookie set" . PHP_EOL, 3, LOG_FILE);
-
-                    setcookie($cookieName, $token, [
-                        'expires' => 0,
-                        'path' => $cookiePath,
-                        'samesite' => 'strict',
-                //      'secure' => TRUE,
-                        'httponly' => TRUE
-                    ]);
-                            
-                    //error_log(date('[Y-m-d H:i] '). "in setUserCookie, AFTER cookie set" . PHP_EOL, 3, LOG_FILE);
-
-                    $userRec->userName = $user['UserName'];
-                    $userRec->userLevel = $user['UserLevel'];
-
-                } else {
-                    $userRec->userMessage = 'Password for this username does not match';
-                }
-            }
-            */
-
         }
 
         return $userRec;

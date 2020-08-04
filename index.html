@@ -264,7 +264,7 @@
 	          	Gander Road Homoeowners Association</h4>
 	        </div>
 	        <div class="modal-body">
-	          <p>(C) Copyright 2016,2020 John J Kauflin, All rights reserved. </p>
+	          <p>(C) Copyright 2020, All rights reserved. </p>
 	        </div>
 	        <div class="modal-footer">
 	          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -369,18 +369,78 @@
                 </div>
                 <button id="LoginButton" type="button" class="btn btn-success">Login</button>
 
-                <div class="ajaxError"></div>
+                <div class="ajaxError" style="margin-top: 10px;"></div>
                 <div id="LoginDisplay" style="margin-top: 10px;">
                 </div>
             </div>
 
             <div class="modal-footer">
-                <a data-toggle="modal" href="#RegisterModal" class="button" role="button">Register</a>
+                <a id="ForgotPassword" href="#" class="button" role="button">Forgot password?</a>
             </div>
         </div>
     </div>
 </div>
 
+<div id="ResetPasswordModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">
+                    <img style="margin-top: -10px; margin-right: 5px;" alt="Brand logo photo"
+                        src="images/logo-photo.jpg">
+                    HOA DB Password Reset</h4>
+            </div>
+
+            <div id="ResetPasswordInput" class="modal-body">
+                <div class="form-group">
+                    <input type="text" class="form-control resetval" name="usernameReset" id="usernameReset" placeholder="Username">
+                    <input type="text" class="form-control resetval" name="emailAddrReset" id="emailAddrReset" placeholder="or Email address">
+                </div>
+                <button id="ResetPasswordButton" type="button" class="btn btn-success">Reset Password</button>
+
+                <div class="ajaxError" style="margin-top: 10px;"></div>
+                <div id="ResetPasswordDisplay" style="margin-top: 10px;">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="PasswordModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">
+                    <img style="margin-top: -10px; margin-right: 5px;" alt="Brand logo photo"
+                        src="images/logo-photo.jpg">
+                    HOA DB Set Password</h4>
+            </div>
+
+            <div id="PasswordInput" class="modal-body">
+                <div class="form-group">
+                    <input type="hidden" class="form-control resetval" name="regCode" id="regCode">
+                    <input type="password" class="form-control resetval" name="password_1" id="password_1" placeholder="Password">
+                    <input type="password" class="form-control resetval" name="password_2" id="password_2" placeholder="Confirm Password">
+                </div>
+                <button id="PasswordButton" type="button" class="btn btn-success">Set Password</button>
+
+                <div class="ajaxError" style="margin-top: 10px;"></div>
+                <div id="PasswordDisplay" style="margin-top: 10px;">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--
 <div id="RegisterModal" class="modal fade" role="dialog">
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
@@ -411,6 +471,7 @@
         </div>
     </div>
 </div>
+-->
 
 <div id="DuesStatementPage" class="modal fade" role="dialog">
 	    <div class="modal-dialog modal-lg">
@@ -484,7 +545,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.min.js"></script>
 
     <script src="js/util.js?ver=1.318"></script>
-    <script src="js/jjklogin.js?ver=1.057"></script>
+    <script src="js/jjklogin.js?ver=1.063"></script>
 	<script src="js/config.js?ver=1.318"></script>
 	<script src="js/search.js?ver=1.325"></script>
     <script src="js/detail.js?ver=1.318"></script>
