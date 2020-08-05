@@ -255,60 +255,57 @@ class LoginAuth
         return $userRec;
     }
 
-    public static function registerUser($conn,$cookieName,$cookiePath,$serverKey,$param) {
+    public static function registerUser($conn,$cookieName,$cookiePath,$serverKey,$param,$fromEmailAddress,$passwordResetUrl) {
         $userRec = new UserRec();
-        $userRec->userMessage = '';
+        $userRec->userMessage = 'Error in request';
 
-        $username = mysqli_real_escape_string($conn, $param->usernameReg);
+        try {
+            $username = mysqli_real_escape_string($conn, $param->usernameReg);
 
-        $sql = "SELECT * FROM users WHERE UserName = ? ";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("s", $username);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $user = mysqli_fetch_assoc($result);
-        $stmt->close();
-
-        if ($user) {
-            $userRec->userMessage = 'Username already exists';
-
-            // check if email exists as well - you can only create 1 user for username and email
-
-            // password reset
-        } else {
-            //$password = md5($password_1);//encrypt the password before saving in the database
-            $password = password_hash($param->password_1, PASSWORD_DEFAULT);
-            // sanitizing email(Remove unexpected symbol like <,>,?,#,!, etc.)
-            $email = filter_var($param->emailAddrReg, FILTER_SANITIZE_EMAIL); 
-
-    /*
-        1	UserId Primary	int(7)			No	None	AUTO_INCREMENT	Change Change	Drop Drop	
-        2	UserEmailAddr	varchar(100)	No	None			Change Change	Drop Drop	
-        3	UserPassword	varchar(100)	No	None			Change Change	Drop Drop	
-        4	UserName	    varchar(80)	    No	guest			Change Change	Drop Drop	
-        5	UserLevel	    int(2)			No	0			Change Change	Drop Drop	
-        6	UserLastLogin	datetime		No	current_timestamp()			Change Change	Drop Drop	
-        7	RegistrationCode varchar(100)	No	None			Change Change	Drop Drop	
-        8	EmailVerified	int(1)			No	0			Change Change	Drop Drop	
-        9	LastChangedBy	varchar(80)	    No	system			Change Change	Drop Drop	
-        10	LastChangedTs	datetime	        current_timestamp()
-    */
-
-            $registrationCode = uniqid();
-
-            $sqlStr = 'INSERT INTO users (UserEmailAddr,UserPassword,UserName,RegistrationCode) VALUES(?,?,?,?); ';
-            $stmt = $conn->prepare($sqlStr);
-            //$stmt->bind_param("sss", $email,$password,$registrationCode);
-            $stmt->bind_param("ssss", 
-                $email,
-                $password,
-                $username,
-                $registrationCode);
+            $sql = "SELECT * FROM users WHERE UserName = ? ";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("s", $username);
             $stmt->execute();
+            $result = $stmt->get_result();
+            $user = mysqli_fetch_assoc($result);
             $stmt->close();
 
-            // set a token and a cookie or just make them login?
-            $userRec->userMessage = 'Registration successful - contact Administrator to set user level';
+            if ($user) {
+                $userRec->userMessage = 'Username already exists';
+                // check if email exists as well - you can only create 1 user for username and email
+            } else {
+                $registrationCode = uniqid();
+                $tempPassword = "Temp" . uniqid();
+                $password = password_hash($tempPassword, PASSWORD_DEFAULT);
+                // sanitizing email(Remove unexpected symbol like <,>,?,#,!, etc.)
+                $email = filter_var($param->emailAddrReg, FILTER_SANITIZE_EMAIL); 
+
+                $sql = 'INSERT INTO users (UserEmailAddr,UserPassword,UserName,UserLevel,RegistrationCode) VALUES(?,?,?,?,?); ';
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("sssis", 
+                    $email,
+                    $password,
+                    $username,
+                    $param->userLevelReg,
+                    $registrationCode);
+                $stmt->execute();
+                $stmt->close();
+
+                // Send email
+                $subject = "GRHA HOADB new user registration";
+                $messageStr = 'A new user account has been created for you.  Click the following to enter a new password for username [' . $username . ']:  ' . $passwordResetUrl . $registrationCode;
+        
+                error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", messageStr = $messageStr " . PHP_EOL, 3, LOG_FILE);
+
+                //sendHtmlEMail($user['UserEmailAddr'],$subject,$messageStr,$fromEmailAddress);
+
+
+                // set a token and a cookie or just make them login?
+                $userRec->userMessage = 'User created successfully (and email sent)';
+            }
+        }
+        catch(Exception $e) {
+            //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
         }
 
         return $userRec;

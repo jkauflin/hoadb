@@ -26,6 +26,8 @@ try {
     $json_str = file_get_contents('php://input');
     $param = json_decode($json_str);
 
+    $passwordStrengthMsg = "Password must be at least 8 characters, and include at least one number, letter, symbol, and CAPS";
+
     $userRec = LoginAuth::initUserRec();
     if (empty($param->password_1)) {
         $userRec->userMessage = 'Password is required';
@@ -35,6 +37,16 @@ try {
         $userRec->userMessage = 'Confirmation Password is required';
     } else if ($param->password_2 != $param->password_1) {
         $userRec->userMessage = 'Confirmation Password does not match Password';
+    } else if( strlen($param->password_1) < 8 ) {
+        $userRec->userMessage = $passwordStrengthMsg;
+    } else if( !preg_match("#[0-9]+#", $param->password_1) ) {
+        $userRec->userMessage = $passwordStrengthMsg;
+    } else if( !preg_match("#[a-z]+#", $param->password_1) ) {
+        $userRec->userMessage = $passwordStrengthMsg;
+    } else if( !preg_match("#[A-Z]+#", $param->password_1) ) {
+        $userRec->userMessage = $passwordStrengthMsg;
+    } else if( !preg_match("#\W+#", $param->password_1) ) {
+        $userRec->userMessage = $passwordStrengthMsg;
     } else {
         $conn = getConn($host, $dbadmin, $password, $dbname);
         $userRec = LoginAuth::setPassword($conn,$cookieName,$cookiePath,$serverKey,$param);

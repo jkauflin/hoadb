@@ -77,7 +77,8 @@
 	                    		<input type="text" class="form-control resetval" name="ownerName"   id="ownerName" 	placeholder="Owner Name (Last First)" >
 	                    		<input type="text" class="form-control resetval" name="phoneNo"     id="phoneNo"   	placeholder="Phone Number" >
 	                    		<input type="text" class="form-control resetval" name="altAddress"	id="altAddress"	placeholder="Alternate Address">
-	                    	</div>
+                            </div>
+                            <button id="NewUserButton" type="button" class="btn btn-success">User Registration</button>
                         </div>
                         
 				  	</div>
@@ -435,12 +436,12 @@
             </div>
 
             <div class="modal-footer">
+                Password must be at least 8 characters, and include at least one number, letter, symbol, and CAPS
             </div>
         </div>
     </div>
 </div>
 
-<!--
 <div id="RegisterModal" class="modal fade" role="dialog">
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
@@ -449,17 +450,16 @@
                 <h4 class="modal-title">
                     <img style="margin-top: -10px; margin-right: 5px;" alt="Brand logo photo"
                         src="images/logo-photo.jpg">
-                    HOA DB Registration</h4>
+                    HOA DB User Registration</h4>
             </div>
 
             <div id="RegisterInput" class="modal-body">
                 <div class="form-group">
                     <input type="text" class="form-control resetval" name="usernameReg" id="usernameReg" placeholder="Username">
                     <input type="text" class="form-control resetval" name="emailAddrReg" id="emailAddrReg" placeholder="Email address">
-                    <input type="password" class="form-control resetval" name="password_1" id="password_1" placeholder="Password">
-                    <input type="password" class="form-control resetval" name="password_2" id="password_2" placeholder="Confirm Password">
+                    <input type="text" class="form-control resetval" name="userLevelReg" id="userLevelReg" placeholder="User Level">
                 </div>
-                <button id="RegisterButton" type="button" class="btn btn-success">Register</button>
+                <button id="RegisterButton" type="button" class="btn btn-success">Create User</button>
 
                 <div class="ajaxError"></div>
                 <div id="RegisterDisplay" style="margin-top: 10px;">
@@ -471,7 +471,6 @@
         </div>
     </div>
 </div>
--->
 
 <div id="DuesStatementPage" class="modal fade" role="dialog">
 	    <div class="modal-dialog modal-lg">
@@ -545,7 +544,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.min.js"></script>
 
     <script src="js/util.js?ver=1.318"></script>
-    <script src="js/jjklogin.js?ver=1.063"></script>
+    <script src="js/jjklogin.js?ver=1.064"></script>
 	<script src="js/config.js?ver=1.318"></script>
 	<script src="js/search.js?ver=1.325"></script>
     <script src="js/detail.js?ver=1.318"></script>

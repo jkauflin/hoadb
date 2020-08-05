@@ -20,7 +20,7 @@
  * 2020-07-28 JJK   Added Registration handling
  * 2020-08-01 JJK   Re-factored to be in the same path as project
  * 2020-08-03 JJK   Re-factored for new error handling
- * 2020-08-04 JJK   Added password set logic
+ * 2020-08-04 JJK   Added password set logic, and NewUser function
  *============================================================================*/
 var jjklogin = (function () {
     'use strict'
@@ -58,12 +58,11 @@ var jjklogin = (function () {
     var $PasswordButton = $PasswordModal.find('#PasswordButton')
     var $PasswordDisplay = $PasswordModal.find('#PasswordDisplay')
 
-    /*
+    var $NewUserButton = $document.find('#NewUserButton')
     var $RegisterModal = $document.find('#RegisterModal')
     var $RegisterInput = $RegisterModal.find('#RegisterInput')
     var $RegisterButton = $RegisterModal.find('#RegisterButton')
     var $RegisterDisplay = $RegisterModal.find('#RegisterDisplay')
-    */
 
     //var isTouchDevice = 'ontouchstart' in document.documentElement;
 
@@ -79,11 +78,13 @@ var jjklogin = (function () {
     $ForgotPassword.on('click', forgotPassword)
     $ResetPasswordButton.on('click', resetPassword)
     $PasswordButton.on('click', setPassword)
-    //$RegisterButton.on('click', registerUser)
+    $NewUserButton.on('click', displayRegistration)
+    $RegisterButton.on('click', registerUser)
 
     //=================================================================================================================
     // Checks on initial load
     $ajaxError.html("");
+    $NewUserButton.hide();
 
     // Check for password reset in the request url
     var urlParam = 'resetPass';
@@ -120,6 +121,9 @@ var jjklogin = (function () {
                     $LoginModal.modal()
                 } else {
                     $LoggedIn.html('Logged in as ' + userRec.userName)
+                    if (userRec.userLevel > 4) {
+                        $NewUserButton.show();
+                    }
                 }
             }
         }).fail(function (xhr, status, error) {
@@ -163,6 +167,9 @@ var jjklogin = (function () {
                     $LoginModal.modal('hide')
                     $LoggedIn.html('Logged in as ' + userRec.userName)
                     //console.log("After authentication, userName = " + userRec.userName + ", level = " + userRec.userLevel)
+                    if (userRec.userLevel > 4) {
+                        $NewUserButton.show();
+                    }
                 }
             }
         }).fail(function (xhr, status, error) {
@@ -269,6 +276,12 @@ var jjklogin = (function () {
         })
     }
 
+    function displayRegistration() {
+        $RegisterDisplay.html("")
+        $ajaxError.html("");
+        $RegisterModal.modal()
+    }
+
     function registerUser() {
         $LoginModal.modal('hide')
         $RegisterDisplay.html("")
@@ -278,31 +291,17 @@ var jjklogin = (function () {
             type: 'POST',
             data: getJSONfromInputs($RegisterInput, null),
             contentType: 'application/json',
-            dataType: 'json' // Type of the data that is expected in the return
-            //dataType: "html"                                  // Type of the data that is expected in the return
+            dataType: 'json'
+            //dataType: "html"
         }).done(function (result) {
             //console.log("result = " + result);
             if (result.error) {
                 console.log("error = " + result.error);
                 $ajaxError.html("<b>" + result.error + "</b>");
             } else {
-                userRec = result
-
-                // successful registration???
-
-                if (
-                    userRec == null ||
-                    userRec.userName == null ||
-                    userRec.userName == '' ||
-                    userRec.userLevel < 1
-                ) {
-                    // redirect to Login
-                    $RegisterDisplay.html(userRec.userMessage)
-                    $RegisterModal.modal()
-                } else {
-                    $RegisterModal.modal('hide')
-                    $LoggedIn.html('Logged in as ' + userRec.userName)
-                }
+                var tempUserRec = result
+                $RegisterDisplay.html(tempUserRec.userMessage)
+                $RegisterModal.modal()
             }
         }).fail(function (xhr, status, error) {
             console.log('Error in AJAX request to ' + url + ', status = ' + status + ', error = ' + error)

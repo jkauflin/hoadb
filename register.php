@@ -26,26 +26,16 @@ try {
     $json_str = file_get_contents('php://input');
     $param = json_decode($json_str);
 
-    /*
-            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $this->email = $email;
-            } else {
-                throw new \InvalidArgumentException('Not a valid email!');
-            }
-    */
-
     $userRec = LoginAuth::initUserRec();
-    if (empty($param->usernameReg) || empty($param->password_1)) {
-        $userRec->userMessage = 'Username and Password are required';
+    if (empty($param->usernameReg)) {
+        $userRec->userMessage = 'Username is required';
     } else if (empty($param->emailAddrReg)) {
         $userRec->userMessage = 'Email address is required';
-    } else if (empty($param->password_2)) {
-        $userRec->userMessage = 'Confirmation Password is required';
-    } else if ($param->password_2 != $param->password_1) {
-        $userRec->userMessage = 'Confirmation Password does not match Password';
+    } else if (empty($param->userLevelReg)) {
+        $userRec->userMessage = 'User Level is required';
     } else {
         $conn = getConn($host, $dbadmin, $password, $dbname);
-        $userRec = LoginAuth::registerUser($conn,$cookieName,$cookiePath,$serverKey,$param);
+        $userRec = LoginAuth::registerUser($conn,$cookieName,$cookiePath,$serverKey,$param,$fromEmailAddress,$passwordResetUrl);
         $conn->close();
     }
 
