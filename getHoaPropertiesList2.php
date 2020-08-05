@@ -11,27 +11,16 @@
  * 2016-09-01 JJK   If no records are found on the initial query, just try
  * 					the first word (i.e. house number)
  *============================================================================*/
+require_once 'vendor/autoload.php'; 
 
- // Common functions
+// Common functions
 require_once 'php_secure/commonUtil.php';
 // Common database functions and table record classes
 require_once 'php_secure/hoaDbCommon.php';
-
 // Include database connection credentials from an external includes location
-require_once getCredentialsFilename();
-// This include will have the following variables set
-//$host = 'localhost';
-//$dbadmin = "username";
-//$password = "password";
-//$dbname = "<name of the mysql database>";
-
+require_once getSecretsFilename();
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
-
-
-include 'commonUtil.php';
-// Include table record classes and db connection parameters
-include 'hoaDbCommon.php';
 
 	// If they are set, get input parameters from the REQUEST
 	$parcelId = getParamVal("parcelId");
@@ -60,7 +49,7 @@ include 'hoaDbCommon.php';
 	$sql = $sql . "LIKE UPPER(?) ORDER BY p.Parcel_ID; ";
 	//error_log('$sql = ' . $sql);
 	
-	$conn = getConn();
+	$conn = getConn($host, $dbadmin, $password, $dbname);
 	$stmt = $conn->prepare($sql);
 	$stmt->bind_param("s", $paramStr);
 	$stmt->execute();

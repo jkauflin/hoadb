@@ -1,42 +1,42 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2016 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2016,2020 John J Kauflin, All rights reserved. 
  *----------------------------------------------------------------------------
  * DESCRIPTION: 
  *----------------------------------------------------------------------------
  * Modification History
  * 2016-05-17 JJK 	Initial version to get config list
+ * 2020-08-01 JJK   Re-factored to use jjklogin for authentication
  *============================================================================*/
+//
+require_once 'vendor/autoload.php'; 
+
 // Common functions
 require_once 'php_secure/commonUtil.php';
 // Common database functions and table record classes
 require_once 'php_secure/hoaDbCommon.php';
-
+// Login Authentication class
+require_once 'php_secure/jjklogin.php';
+use \jkauflin\jjklogin\LoginAuth;
 // Include database connection credentials from an external includes location
-require_once getCredentialsFilename();
-// This include will have the following variables set
-//$host = 'localhost';
-//$dbadmin = "username";
-//$password = "password";
-//$dbname = "<name of the mysql database>";
-
+require_once getSecretsFilename();
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
 
-
- include 'commonUtil.php';
-	// Include table record classes and db connection parameters
-	include 'hoaDbCommon.php';
-
-	//http://example.com/?action=getConfigList
-	//$_GET['action'] == 'getConfigList'
-	//if($_POST['action'] == "follow") {
+try {
+    $userRec = LoginAuth::getUserRec($cookieName,$cookiePath,$serverKey);
+    if ($userRec->userName == null || $userRec->userName == '') {
+        throw new Exception('User is NOT logged in', 500);
+    }
+    if ($userRec->userLevel < 1) {
+        throw new Exception('User is NOT authorized (contact Administrator)', 500);
+    }
 
 	// If they are set, get input parameters from the REQUEST
 	$configName = getParamVal("ConfigName");
 
 	// Get a connection to the database
-	$conn = getConn();
+	$conn = getConn($host, $dbadmin, $password, $dbname);
 
 	if (!empty($configName)) {
 		$sql = "SELECT * FROM hoa_config WHERE ConfigName = ? ";
@@ -59,4 +59,16 @@ define("LOG_FILE", "./php.log");
 	$conn->close();
 	
 	echo json_encode($outputArray);
+
+} catch(Exception $e) {
+    //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
+    echo json_encode(
+        array(
+            'error' => $e->getMessage(),
+            'error_code' => $e->getCode()
+        )
+    );
+    exit;
+}
+
 ?>

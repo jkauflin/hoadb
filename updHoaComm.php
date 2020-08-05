@@ -1,33 +1,36 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2015,2016 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2016,2020 John J Kauflin, All rights reserved. 
  *----------------------------------------------------------------------------
  * DESCRIPTION: 
  *----------------------------------------------------------------------------
  * Modification History
  * 2016-10-25 JJK 	Initial version 
  * 2018-11-12 JJK	Modified to handle POST and return queried list
+ * 2020-08-01 JJK   Re-factored to use jjklogin for authentication
  *============================================================================*/
+require_once 'vendor/autoload.php'; 
+
 // Common functions
 require_once 'php_secure/commonUtil.php';
 // Common database functions and table record classes
 require_once 'php_secure/hoaDbCommon.php';
-
+// Login Authentication class
+require_once 'php_secure/jjklogin.php';
+use \jkauflin\jjklogin\LoginAuth;
 // Include database connection credentials from an external includes location
-require_once getCredentialsFilename();
-// This include will have the following variables set
-//$host = 'localhost';
-//$dbadmin = "username";
-//$password = "password";
-//$dbname = "<name of the mysql database>";
-
+require_once getSecretsFilename();
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
 
-
- include 'commonUtil.php';
-	// Include table record classes and db connection parameters
-	include 'hoaDbCommon.php';
+try {
+    $userRec = LoginAuth::getUserRec($cookieName,$cookiePath,$serverKey);
+    if ($userRec->userName == null || $userRec->userName == '') {
+        throw new Exception('User is NOT logged in', 500);
+    }
+    if ($userRec->userLevel < 1) {
+        throw new Exception('User is NOT authorized (contact Administrator)', 500);
+    }
 
 	header("Content-Type: application/json; charset=UTF-8");
 	# Get JSON as a string
@@ -47,7 +50,7 @@ define("LOG_FILE", "./php.log");
 	//--------------------------------------------------------------------------------------------------------
 	// Create connection to the database
 	//--------------------------------------------------------------------------------------------------------
-	$conn = getConn();
+	$conn = getConn($host, $dbadmin, $password, $dbname);
 
 	$sqlStr = 'INSERT INTO hoa_communications (Parcel_ID,CommID,CreateTs,OwnerID,CommType,CommDesc) VALUES(?,null,CURRENT_TIMESTAMP,?,?,?); ';
 	$stmt = $conn->prepare($sqlStr);
@@ -71,4 +74,16 @@ define("LOG_FILE", "./php.log");
 	$stmt->close();
 	$conn->close();
 	echo json_encode($outputArray);
+
+} catch(Exception $e) {
+    //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
+    echo json_encode(
+        array(
+            'error' => $e->getMessage(),
+            'error_code' => $e->getCode()
+        )
+    );
+    exit;
+}
+
 ?>

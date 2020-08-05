@@ -1,6 +1,6 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2016 John J Kauflin, All rights reserved.
+ * (C) Copyright 2016,2020 John J Kauflin, All rights reserved.
  *----------------------------------------------------------------------------
  * DESCRIPTION: Handle notification from payment merchant - insert a payment
  * 				transaction record, update paid flags, and send an email to
@@ -12,10 +12,18 @@
  * 2016-05-11 JJK	Modified to insert payment transaction record
  * 2016-05-14 JJK   Moved updates to updHoaPayment
  * 2016-08-26 JJK   Changed from sandbox to live production
+ * 2020-08-05 JJK   Modified to include hoaDbCommon and call function there
+ *                  to do the update the HOA database
  *============================================================================*/
+// Common functions
+require_once 'php_secure/commonUtil.php';
+// Common database functions and table record classes
+require_once 'php_secure/hoaDbCommon.php';
+// Include database connection credentials from an external includes location
+require_once getSecretsFilename();
+// Define a super global constant for the log file (this will be in scope for all functions)
+define("LOG_FILE", "./paypal-ipn.log");
 
-// Include functions to update payments and assessments tables
-include 'updHoaPayment.php';
 
 // CONFIG: Enable debug mode. This means we'll log requests into 'ipn.log' in the same directory.
 // Especially useful if you encounter network errors or other intermittent problems with IPN (validation).
@@ -25,9 +33,6 @@ define("DEBUG", 1);
 // Set to 0 once you're ready to go live
 //define("USE_SANDBOX", 1);
 define("USE_SANDBOX", 0);
-
-define("LOG_FILE", "./paypal-ipn.log");
-
 
 // Read POST data
 // reading posted data directly from $_POST causes serialization
@@ -175,7 +180,8 @@ if (strcmp ($res, "VERIFIED") == 0) {
 		// compare payment to total due
 		// if paid off, update paid flags on assessment(s)
 
-		updAssessmentPaid($parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_email,$payment_amt,$payment_fee);
+        $conn = getConn($host, $dbadmin, $password, $dbname);
+		updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_email,$payment_amt,$payment_fee);
 		
 	} // End of if ($payment_status == "Completed") {
 

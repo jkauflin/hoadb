@@ -78,7 +78,7 @@ if (is_file($zipFileName)) {
 		//--------------------------------------------------------------------------------------------------------
 		// Create connection to the database
 		//--------------------------------------------------------------------------------------------------------
-		$conn = getConn();
+		$conn = getConn($host, $dbadmin, $password, $dbname);
 		
 		// Loop through all the records in the downloaded sales file and compare with HOA database parcels
 		$recCnt = 0;

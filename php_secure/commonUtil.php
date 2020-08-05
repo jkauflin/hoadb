@@ -17,23 +17,9 @@
  * 2016-09-11 JJK   Modified the truncDate routine to take the 1st token
  * 					before truncating to 10 characters (to handle bad dates
  * 					like "4/7/2007 0"
+ * 2020-08-05 JJK   Removed getAdminLevel and getUsername (in favor of new
+ *                  Login/Authentication logic)
  *============================================================================*/
-
-//$currTimestampStr = date("Y-m-d H:i:s");
-//JJK test, date = 2015-04-22 19:45:09
-
-// common method to return admin level based on authenticated user name from the server
-function getAdminLevel() {
-    $adminLevel = 0;
-    $servername = "";
-
-	return $adminLevel;
-}
-
-function getUsername() {
-	$username = 'unknown';
-	return $username;
-}
 
 function strToUSD($inStr) {
 	// Replace every ascii character except decimal and digits with a null
@@ -103,7 +89,6 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
 	
 	mail($toStr,$subject,$message,$headers);
 }
-
 
 function truncDate($inStr) {
 	$outStr = "";
@@ -193,18 +178,5 @@ function calcCompoundInterest($principal,$startDate) {
 	return $interestAmount;
 
 } // End of function calcCompoundInterest($principal,$startDate) {
-
-/*
- $serializedArray = serialize($outputArray);
- if (function_exists('mb_strlen')) {
- $size = mb_strlen($serializedArray, '8bit');
- } else {
- $size = strlen($serializedArray);
- }
- 	
- error_log("END Array cnt = " . count($outputArray) . ', size = ' . round($size/1000,0) . 'K bytes');
- [09-Apr-2016 22:26:04 Europe/Paris] BEG Array
- [09-Apr-2016 22:26:12 Europe/Paris] END Array cnt = 542, size = 5209K bytes
- */
 
 ?>
