@@ -117,7 +117,7 @@ try {
 	$stmt->close();
 	
 	// Re-query the record from the database and return as a JSON structure
-	$hoaRec = getHoaRec($conn,$param->parcelId,"","","");
+	$hoaRec = getHoaRec($conn,$param->parcelId,"","","",$paypalFixedAmtButtonForm,$paypalFixedAmtButtonInput);
 	$hoaRec->adminLevel = $userRec->userLevel;
 	$conn->close();
 	echo json_encode($hoaRec);

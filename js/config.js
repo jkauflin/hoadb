@@ -10,21 +10,21 @@
  * 2018-10-20 JJK   Re-factor for module design
  * 2018-10-21 JJK   Re-factor for JSON based POST for updates
  * 2020-08-03 JJK   Re-factored for new error handling
+ * 2020-08-05 JJK   Re-did the map loading and rendering to not load on
+ *                  page load - have the load called after login
  *============================================================================*/
 var config = (function(){
     'use strict';
 
     //=================================================================================================================
     // Private variables for the Module
-    var hoaConfigRecList;
+    //var hoaConfigRecList;
     var configVal = new Map();
 
     //=================================================================================================================
     // Variables cached from the DOM
-    var $document = $(document);
     var $moduleDiv = $('#ConfigPage');
     var $ajaxError = $moduleDiv.find(".ajaxError");
-    var $displayPage = $document.find('#navbar a[href="#ConfigPage"]');
     var $ConfigListDisplay = $moduleDiv.find("tbody");
     var $EditPage = $("#EditPage");
     var $EditTable = $("#EditTable");
@@ -35,7 +35,6 @@ var config = (function(){
 
     //=================================================================================================================
     // Bind events
-    $document.on('shown.bs.tab', 'a[data-toggle="tab"]', getHoaConfigList);
     $moduleDiv.on("click", ".NewConfig", editConfig);
     $EditPage.on("click", ".SaveConfigEdit", _saveConfigEdit);
 
@@ -46,35 +45,21 @@ var config = (function(){
     });
     */
 
-    // Load the configuration list when the page is loaded
-    $.getJSON("getHoaConfigList.php", "", function (outHoaConfigRecList) {
-        hoaConfigRecList = outHoaConfigRecList;
-        // Clear the map for the data load
-        configVal.clear();
-        // Loop throught the data list and load into a Map
-        $.each(hoaConfigRecList, function (index, hoaConfigRec) {
-            // Load into Map for lookup
-            configVal.set(hoaConfigRec.ConfigName, hoaConfigRec.ConfigValue);
-        });
-        //console.log("in config, configVal.size = "+configVal.size);
-    });
-    
-
     //=================================================================================================================
     // Module methods
-    // When the page tab is clicked, display the current list of values
-    function getHoaConfigList(event) {
-        var activatedTab = event.target;
-        //console.log("tab = "+activatedTab);
-        //http://127.0.0.1:8080/hoadb/#ConfigPage
-        var configPage = activatedTab.toString().indexOf("ConfigPage");
-        if (configPage) {
-            _render();
-        }
+
+    function loadConfigValues() {
+        $.getJSON("getHoaConfigList.php", "", function (result) {
+            if (result.error) {
+                console.log("error = " + result.error);
+                $ajaxError.html("<b>" + result.error + "</b>");
+            } else {
+                _render(result);
+            }
+        });
     }
 
-    _render();
-    function _render() {
+    function _render(hoaConfigRecList) {
         var tr = '';
         // Clear out the Map before loading with data
         configVal.clear();
@@ -108,10 +93,8 @@ var config = (function(){
     function editConfig(value) {
         // If a string was passed in then use value as the name, else get it from the attribute of the click event object
         var configName = (typeof value === "string") ? value : value.target.getAttribute("data-ConfigName");
-        util.waitCursor();
         $.getJSON("getHoaConfigList.php", "ConfigName=" + configName, function (hoaConfigRec) {
             formatConfigEdit(hoaConfigRec[0]);
-            util.defaultCursor();
             $EditPage.modal();
         });
     };
@@ -146,25 +129,29 @@ var config = (function(){
     } // End of function formatConfigEdit(hoaConfigRec){
 
     function _saveConfigEdit(event) {
-        util.waitCursor();
         //console.log("in saveConfigEdit, data-ConfigAction = " + event.target.getAttribute("data-ConfigAction"));
         var paramMap = new Map();
         paramMap.set('action', event.target.getAttribute("data-ConfigAction"));
         //console.log("util.getJSONfromInputs($EditTable,paramMap) = " + util.getJSONfromInputs($EditTable, paramMap));
+        var url = 'updHoaConfig.php';
         $.ajax("updHoaConfig.php", {
             type: "POST",
             contentType: "application/json",
             data: util.getJSONfromInputs($EditTable, paramMap),
             dataType: "json",
-            success: function (list) {
-                util.defaultCursor();
-                // Set the newest list from the update into the module variable (for render)
-                hoaConfigRecList = list;
-                _render();
-                $EditPage.modal("hide");
-                $displayPage.tab('show');
+            //dataType: "html",
+            success: function (result) {
+                //console.log("result = " + result);
+                if (result.error) {
+                    console.log("error = " + result.error);
+                    $ajaxError.html("<b>" + result.error + "</b>");
+                } else {
+                    _render(result);
+                    $EditPage.modal("hide");
+                }
             },
-            error: function () {
+            error: function (xhr, status, error) {
+                //console.log('Error in AJAX request to ' + url + ', status = ' + status + ', error = ' + error)
                 $editValidationError.html("An error occurred in the update - see log");
             }
         });
@@ -173,8 +160,9 @@ var config = (function(){
     //=================================================================================================================
     // This is what is exposed from this Module
     return {
-        getVal: getVal,
-        editConfig: editConfig
+        loadConfigValues,
+        getVal,
+        editConfig
     };
         
 })(); // var util = (function(){

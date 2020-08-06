@@ -16,7 +16,9 @@
  * 2016-04-13 JJK   Checked function and added getConfigVal calss
  * 2019-06-09 JJK	Added some logging, updated the URL for the website
  * 					and got this working again
+ * 
  * 2020-08-03 JJK   Modified to check API key to verify execution
+ * 
  *============================================================================*/
 require_once 'vendor/autoload.php'; 
 
@@ -29,29 +31,6 @@ require_once getSecretsFilename();
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
 
-/*
-try {
-    $userRec = LoginAuth::getUserRec($cookieName,$cookiePath,$serverKey);
-    if ($userRec->userName == null || $userRec->userName == '') {
-        throw new Exception('User is NOT logged in', 500);
-    }
-    if ($userRec->userLevel < 1) {
-        throw new Exception('User is NOT authorized (contact Administrator)', 500);
-    }
-
-
-} catch(Exception $e) {
-    //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
-    echo json_encode(
-        array(
-            'error' => $e->getMessage(),
-            'error_code' => $e->getCode()
-        )
-    );
-    exit;
-}
-*/
-
 
 $errorStr = '';
 $currTimestampStr = date("Y-m-d H:i:s");
@@ -59,7 +38,7 @@ $currTimestampStr = date("Y-m-d H:i:s");
 // Get the year from the current system time
 $salesYear = substr($currTimestampStr,0,4);
 
-$url = getConfigVal("countySalesDataUrl") . $salesYear . '.zip';
+$url = $countySalesDataUrl . $salesYear . '.zip';
 $zipFileName = 'SALES_' . $salesYear . '.zip';
 downloadUrlToFile($url, $zipFileName);
 
@@ -99,8 +78,8 @@ if (is_file($zipFileName)) {
 			//error_log(date('[Y-m-d H:i] '). "Parcel Id = $parcelId" . PHP_EOL, 3, LOG_FILE);
 
 			// Check if the Parcel Id from the sales record matches any in our HOA database
-			//function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
-			$hoaRec = getHoaRec($conn,$parcelId,"","",$salesRecArray[2]);
+			//function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate,$paypalFixedAmtButtonForm,$paypalFixedAmtButtonInput) {
+			$hoaRec = getHoaRec($conn,$parcelId,"","",$salesRecArray[2],$paypalFixedAmtButtonForm,$paypalFixedAmtButtonInput);
 			if (empty($hoaRec->Parcel_ID)) {
 				// If the parcel id is not found in the HOA db, then just skip to the next one
 				continue;
@@ -117,7 +96,6 @@ if (is_file($zipFileName)) {
 			if (empty($hoaSalesRec->PARID)) {
 				if (!( $stmt = $conn->prepare("INSERT INTO hoa_sales VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ") )) {
 					$errorStr = 'FILE: ' . __FILE__  . ', LINE: ' . __LINE__ . ', ERROR: ' . $conn->error ;
-					error_log($errorStr, 1, getConfigVal("adminEmailList"));
 					die($errorStr);
 				}
 				
@@ -145,13 +123,11 @@ if (is_file($zipFileName)) {
 						//LastChangedTs
 				)) {
 					$errorStr = 'FILE: ' . __FILE__  . ', LINE: ' . __LINE__ . ', ERROR: ' . $conn->error ;
-					error_log($errorStr, 1, getConfigVal("adminEmailList"));
 					die($errorStr);
 				}
 					
 				if (!( $stmt->execute() )) {
 					$errorStr = 'FILE: ' . __FILE__  . ', LINE: ' . __LINE__ . ', ERROR: ' . $conn->error ;
-					error_log($errorStr, 1, getConfigVal("adminEmailList"));
 					die($errorStr);
 				}
 					
@@ -207,7 +183,7 @@ if (is_file($zipFileName)) {
 		if ($sendMessage) {
 			$subject = 'HOA Residential Sales in ' . $salesYear;
 			$messageStr = '<h2>HOA Residential Sales in ' . $salesYear . '</h2>' . $outputStr;
-			sendHtmlEMail(getConfigVal("salesReportEmailList"),$subject,$messageStr,getConfigVal("fromEmailAddress"));
+			sendHtmlEMail($salesReportEmailList,$subject,$messageStr,$fromEmailAddress);
 		}
 		
 		// maybe update the flags after the email is send successfully

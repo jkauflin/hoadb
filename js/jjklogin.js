@@ -124,6 +124,7 @@ var jjklogin = (function () {
                     if (userRec.userLevel > 4) {
                         $NewUserButton.show();
                     }
+                    config.loadConfigValues();
                 }
             }
         }).fail(function (xhr, status, error) {
@@ -170,6 +171,7 @@ var jjklogin = (function () {
                     if (userRec.userLevel > 4) {
                         $NewUserButton.show();
                     }
+                    config.loadConfigValues();
                 }
             }
         }).fail(function (xhr, status, error) {

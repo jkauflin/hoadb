@@ -48,14 +48,17 @@ try {
 	}
 	
 	$stmt->execute();
-	$result = $stmt->get_result();
-	$outputArray = array();
+    $result = $stmt->get_result();
+	$stmt->close();
+    $outputArray = array();
 	if ($result->num_rows > 0) {
 		while($row = $result->fetch_assoc()) {
-			array_push($outputArray,$row);
+            if (!empty($row['ConfigName'])) {
+    //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", $i = " . $row['ConfigName'] . PHP_EOL, 3, LOG_FILE);
+			    array_push($outputArray,$row);
+            }
 		}
-	}
-	$stmt->close();
+    }
 	$conn->close();
 	
 	echo json_encode($outputArray);

@@ -49,6 +49,8 @@ try {
 	//--------------------------------------------------------------------------------------------------------
 	$conn = getConn($host, $dbadmin, $password, $dbname);
 
+    $configValue = mysqli_real_escape_string($conn, $param->ConfigValue);
+
 	$sql = "SELECT * FROM hoa_config WHERE ConfigName = ? ";
 	$stmt = $conn->prepare($sql);
 	$stmt->bind_param("s", $param->ConfigName);
@@ -65,13 +67,13 @@ try {
 			$stmt->bind_param("s",$param->ConfigName);
 		} else {
 			$stmt = $conn->prepare("UPDATE hoa_config SET ConfigDesc=?,ConfigValue=? WHERE ConfigName = ? ; ");
-			$stmt->bind_param("sss",$param->ConfigDesc,$param->ConfigValue,$param->ConfigName);
+			$stmt->bind_param("sss",$param->ConfigDesc,$param->ConfigValue,$configValue);
 		}
 	} else {
 		$result->close();
 		$sqlStr = 'INSERT INTO hoa_config (ConfigName,ConfigDesc,ConfigValue) VALUES(?,?,?); ';
 		$stmt = $conn->prepare($sqlStr);
-		$stmt->bind_param("sss",$param->ConfigName,$param->ConfigDesc,$param->ConfigValue);
+		$stmt->bind_param("sss",$param->ConfigName,$param->ConfigDesc,$configValue);
 	}
 	$stmt->execute();
 	$stmt->close();

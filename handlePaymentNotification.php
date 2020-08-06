@@ -181,7 +181,17 @@ if (strcmp ($res, "VERIFIED") == 0) {
 		// if paid off, update paid flags on assessment(s)
 
         $conn = getConn($host, $dbadmin, $password, $dbname);
-		updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_email,$payment_amt,$payment_fee);
+		updAssessmentPaid(
+            $conn,
+            $parcelId,
+            $ownerId,
+            $fy,
+            $txn_id,
+            $payment_date,
+            $payer_email,
+            $payment_amt,
+            $payment_fee,
+            $fromEmailAddress);
 		
 	} // End of if ($payment_status == "Completed") {
 

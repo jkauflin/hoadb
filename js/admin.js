@@ -93,7 +93,7 @@ var admin = (function () {
         // get confirmation message back
         var fy = util.cleanStr($FiscalYear.val());
         var duesAmt = util.cleanStr($DuesAmt.val());
-        util.waitCursor();
+         
         $.getJSON("adminValidate.php", "action=" + event.target.getAttribute('id') +
             "&fy=" + fy +
             "&duesAmt=" + duesAmt, function (adminRec) {
@@ -107,7 +107,7 @@ var admin = (function () {
             }
             buttonForm.append($('<button>').prop('class', "btn btn-default").attr('type', "button").attr('data-dismiss', "modal").html('Close'));
             $ConfirmationButton.append(buttonForm);
-            util.defaultCursor();
+             
             $ConfirmationModal.modal();
         });
     }
@@ -115,7 +115,7 @@ var admin = (function () {
     // Respond to the Continue click for an Admin Execute function 
     function _adminExecute(event) {
         $ResultMessage.html("Executing Admin request...(please wait)");
-        util.waitCursor();
+         
         var action = event.target.getAttribute("data-action");
         var firstNotice = true;
         // 2/15/2020 JJK - fixed the bug that was getting string 'false' value instead of boolean false
@@ -131,7 +131,7 @@ var admin = (function () {
             "&fy=" + event.target.getAttribute("data-fy") +
             "&duesAmt=" + event.target.getAttribute("data-duesAmt") + 
             "&duesEmailTestParcel=" + config.getVal('duesEmailTestParcel'), function (adminRec) {
-            util.defaultCursor();
+             
             $ResultMessage.html(adminRec.message);
 
             if (action == 'DuesNotices') {

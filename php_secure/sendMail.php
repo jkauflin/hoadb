@@ -65,7 +65,7 @@ try {
 
 	// Create a message
 	$message = (new Swift_Message($subject))
-		->setFrom([getConfigVal("fromTreasurerEmailAddress")])
+		->setFrom([$fromTreasurerEmailAddress])
 		->setTo([$toEmail])
 		->setBody($messageStr);
 

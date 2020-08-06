@@ -49,6 +49,7 @@
  *                  pass them whatever they need.  (enforce thread isolation)
  * 2020-07-23 JJK   Added a function to return the name/location of the
  *                  credentials/secrets file (in the external includes)
+ * 2020-08-05 JJK   Removed getConfigVal (get values from DB config table)
  *============================================================================*/
 
 function externalIncludesDir() {
@@ -76,33 +77,6 @@ function mysqldumpHoaDb($host, $dbadmin, $password, $dbname, $backupfile) {
 	system("mysqldump -h $host -u $dbadmin -p$password $dbname > $backupfile");
 }
 
-function getConfigVal($configName) {
-	$configVal = "";
-	
-	if ($configName == "countySalesDataUrl") {
-		$configVal = $countySalesDataUrl;	
-	} elseif ($configName == "fromEmailAddress") {
-		$configVal = $fromEmailAddress;
-	} elseif ($configName == "fromTreasurerEmailAddress") {
-		$configVal = $fromTreasurerEmailAddress;
-	} elseif ($configName == "salesReportEmailList") {
-		$configVal = $salesReportEmailList;
-	} elseif ($configName == "adminEmailList") {
-		$configVal = $adminEmailList;
-		
-	} elseif ($configName == "paypalFixedAmtButtonForm") {
-		$configVal = $paypalFixedAmtButtonForm;
-	} elseif ($configName == "paypalFixedAmtButtonInput") {
-		$configVal = $paypalFixedAmtButtonInput;
-	} elseif ($configName == "paypalVariableAmtButtonForm") {
-		$configVal = $paypalVariableAmtButtonForm;
-	} elseif ($configName == "paypalVariableAmtButtonInput") {
-		$configVal = $paypalVariableAmtButtonInput;
-	}
-	
-	return $configVal;
-}
-
 // Lookup config values by name from the config database table
 function getConfigValDB($conn,$configName) {
 	$configVal = "";
@@ -121,10 +95,6 @@ function getConfigValDB($conn,$configName) {
 		$stmt->close();
 	}
 
-	if (!$connPassed) {
-		$conn->close();
-	}
-	
 	return $configVal;
 }
 
@@ -398,10 +368,7 @@ function getHoaPaymentRec($conn,$parcelId,$transId) {
 //--------------------------------------------------------------------------------------------------------------
 // Primary function to get all the data for a particular value
 //--------------------------------------------------------------------------------------------------------------
-function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
-	// Include to get paypal button scripts
-	//include "../../external_includes/hoaDbCred.php";
-	
+function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate,$paypalFixedAmtButtonForm='',$paypalFixedAmtButtonInput='') {
 	$hoaRec = new HoaRec();
 
 	// Total Due is calculated below
@@ -412,15 +379,6 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 	$hoaRec->DuesEmailAddr = '';
 	$CurrentOwnerID = 0;
 	
-    // Check if a database connection was passed or if it needs to be started
-    /*
-	$connPassed = true;
-	if ($conn == NULL) {
-		$connPassed = false;
-		$conn = getConn($host, $dbadmin, $password, $dbname);
-    }
-    */
-
 	// Get values from database and load into structure that will be returned as JSON
 	$stmt = $conn->prepare("SELECT * FROM hoa_properties WHERE Parcel_ID = ? ; ");
 	$stmt->bind_param("s", $parcelId);
@@ -772,9 +730,9 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 		// For now, only set payment button if just the current year dues are owed (no other years or open liens)
 		if ($hoaRec->TotalDue > 0) {
 			if ($onlyCurrYearDue) {
-				// Get the payment button form from the hoaDbCred.php file (site specific)
 				$hoaRec->paymentButton = $paypalFixedAmtButtonForm;
-				$hoaRec->paymentButton .= $paypalFixedAmtButtonInput;
+                $hoaRec->paymentButton .= $paypalFixedAmtButtonInput;
+                
 				$customValues = $parcelId . ',' . $ownerId . ',' . $fyPayment . ',' .$hoaRec->TotalDue;
 				$hoaRec->paymentButton .= '<input type="hidden" name="custom" value="' . $customValues . '">';
 				$hoaRec->paymentButton .= '</form>';
@@ -831,19 +789,11 @@ function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate) {
 		$stmt->close();
 	} // End of Properties
 
-	// Close the database connection if started in this function
-	if (!$connPassed) {
-		$conn->close();
-	}
-	
 	return $hoaRec;
 } // End of function getHoaRec($conn,$parcelId,$ownerId,$fy) {
 
 
-function getHoaRec2($conn,$parcelId) {
-	// Include to get paypal button scripts
-	//include "../../external_includes/hoaDbCred.php";
-
+function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmtButtonInput='') {
 	$ownerId = '';
 	$fy = '';
 	$saleDate = '';
@@ -855,15 +805,6 @@ function getHoaRec2($conn,$parcelId) {
 	// Payment button will be set if online payment is enabled and allowed for this parcel
 	$hoaRec->paymentButton = '';
 	$hoaRec->paymentInstructions = '';
-	
-    // Check if a database connection was passed or if it needs to be started
-    /*
-	$connPassed = true;
-	if ($conn == NULL) {
-		$connPassed = false;
-		$conn = getConn($host, $dbadmin, $password, $dbname);
-    }
-    */
 	
 	// Get values from database and load into structure that will be returned as JSON
 	$stmt = $conn->prepare("SELECT * FROM hoa_properties WHERE Parcel_ID = ? ; ");
@@ -1122,9 +1063,9 @@ function getHoaRec2($conn,$parcelId) {
 		// For now, only set payment button if just the current year dues are owed (no other years or open liens)
 		if ($hoaRec->TotalDue > 0) {
 			if ($onlyCurrYearDue) {
-				// Get the payment button form from the hoaDbCred.php file (site specific)
 				$hoaRec->paymentButton = $paypalFixedAmtButtonForm;
-				$hoaRec->paymentButton .= $paypalFixedAmtButtonInput;
+                $hoaRec->paymentButton .= $paypalFixedAmtButtonInput;
+                
 				$customValues = $parcelId . ',' . $ownerId . ',' . $fyPayment . ',' .$hoaRec->TotalDue;
 				$hoaRec->paymentButton .= '<input type="hidden" name="custom" value="' . $customValues . '">';
 				$hoaRec->paymentButton .= '</form>';
@@ -1181,16 +1122,11 @@ function getHoaRec2($conn,$parcelId) {
 		$stmt->close();
 	} // End of Properties
 	
-	// Close the database connection if started in this function
-	if (!$connPassed) {
-		$conn->close();
-	}
-	
 	return $hoaRec;
 } // End of function getHoaRec2($conn,$parcelId) {
 
     
-function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_email,$payment_amt,$payment_fee) {
+function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_email,$payment_amt,$payment_fee,$fromEmailAddress) {
 	// Get the HOA record for this Parcel and Owner
 	$hoaRec = getHoaRec($conn,$parcelId,$ownerId,'','SKIP-SALES');
 	if ($hoaRec == null || $hoaRec->Parcel_ID == null || $hoaRec->Parcel_ID != $parcelId) {
@@ -1264,13 +1200,11 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 			
 			$subject = 'GRHA Payment Notification';
 			$messageStr = '<h3>GRHA Payment Notification</h3>' . $treasurerInfo . $paymentInfoStr;
-			//sendHtmlEMail("johnkauflin@gmail.com",$subject,$messageStr,getConfigVal("fromEmailAddress"));
-			sendHtmlEMail(getConfigValDB($conn,"paymentEmailList"),$subject,$messageStr,getConfigVal("fromEmailAddress"));
+			sendHtmlEMail(getConfigValDB($conn,"paymentEmailList"),$subject,$messageStr,$fromEmailAddress);
 
 			$subject = 'GRHA Payment Confirmation';
 			$messageStr = '<h3>GRHA Payment Confirmation</h3>' . $payerInfo . $paymentInfoStr;
-			//sendHtmlEMail("johnkauflin@gmail.com",$subject,$messageStr,getConfigVal("fromEmailAddress"));
-			sendHtmlEMail($payer_email,$subject,$messageStr,getConfigVal("fromEmailAddress"));
+			sendHtmlEMail($payer_email,$subject,$messageStr,$fromEmailAddress);
 			
 		} // End of if Transaction not found
 		

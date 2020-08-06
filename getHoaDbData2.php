@@ -24,7 +24,7 @@ define("LOG_FILE", "./php.log");
 	// Create connection to the database
 	//--------------------------------------------------------------------------------------------------------
 	$conn = getConn($host, $dbadmin, $password, $dbname);
-	$hoaRec = getHoaRec2($conn,$parcelId);
+	$hoaRec = getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm,$paypalFixedAmtButtonInput);
 	//$hoaRec->adminLevel = getAdminLevel();
 	
 	$conn->close();

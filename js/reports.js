@@ -70,21 +70,21 @@ var reports = (function () {
         $ReportRecCnt.html("");
         $ReportDownloadLinks.html("");
 
-        util.waitCursor();
+         
 
         if (reportName == 'UnpaidDuesRankingReport') {
             $ReportRecCnt.html("Executing request...(please wait)");
-            util.waitCursor();
+             
             // Get all the data needed for processing
             $.getJSON("adminExecute.php", "action=DuesRank", function (adminRec) {
-                util.defaultCursor();
+                 
                 $ReportRecCnt.html(adminRec.message);
                 _duesRank(adminRec.hoaRecList, reportName);
             });
         } else {
             $.getJSON("getHoaReportData.php", "reportName=" + reportName, function (reportList) {
                 _formatReportList(reportName, reportTitle, reportList);
-                util.defaultCursor();
+                 
             });
         }
     }
@@ -140,7 +140,7 @@ var reports = (function () {
     };	
 
     function _salesNewOwnerIgnore() {
-        util.waitCursor();
+         
         var reportName = event.target.getAttribute('id');
         var reportTitle = event.target.getAttribute("data-reportTitle");
         var paramMap = new Map();
@@ -160,10 +160,10 @@ var reports = (function () {
                 $ReportListDisplay.html("");
                 $ReportRecCnt.html("");
                 $ReportDownloadLinks.html("");
-                util.waitCursor();
+                 
                 $.getJSON("getHoaReportData.php", "reportName=" + reportName, function (reportList) {
                     _formatReportList(reportName, reportTitle, reportList);
-                    util.defaultCursor();
+                     
                 });
             },
             error: function () {

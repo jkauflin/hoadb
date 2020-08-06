@@ -1,6 +1,6 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2016 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2016,2020 John J Kauflin, All rights reserved. 
  *----------------------------------------------------------------------------
  * DESCRIPTION: Scheduled job to get sales information from the county
  * 				auditor site, find parcels in the hoa, update the hoa_sales
@@ -9,10 +9,17 @@
  * Modification History
  * 2016-07-01 JJK 	Initial version to export and email MySQL database 
  *============================================================================*/
+require_once 'vendor/autoload.php'; 
 
-include 'commonUtil.php';
-// Include table record classes and db connection parameters
-include 'hoaDbCommon.php';
+// Common functions
+require_once 'php_secure/commonUtil.php';
+// Common database functions and table record classes
+require_once 'php_secure/hoaDbCommon.php';
+// Include database connection credentials from an external includes location
+require_once getSecretsFilename();
+// Define a super global constant for the log file (this will be in scope for all functions)
+define("LOG_FILE", "./php.log");
+
 
 require_once('class.phpmailer.php');
 
@@ -30,11 +37,11 @@ $bodytext = "Attached is an MYSQLDUMP of the HOA MySQL database";
 
 // Mail the file
 $email = new PHPMailer();
-$email->From      = getConfigVal("fromEmailAddress");
-$email->FromName  = getConfigVal("fromEmailAddress");
+$email->From      = $fromEmailAddress;
+$email->FromName  = $fromEmailAddress;
 $email->Subject   = 'HOA database backup';
 $email->Body      = $bodytext;
-$email->AddAddress(getConfigVal("adminEmailList"));
+$email->AddAddress($adminEmailList);
 
 //$email->AddAttachment( $file_to_attach , 'NameOfFile.pdf' );
 $email->AddAttachment($backupzip, $backupzip);

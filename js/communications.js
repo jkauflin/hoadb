@@ -49,11 +49,11 @@ var communications = (function () {
     function _getHoaCommList(event) {
         parcelId = event.target.getAttribute("data-parcelId");
         ownerId = event.target.getAttribute("data-ownerId");
-        util.waitCursor();
+         
         $.getJSON("getHoaCommList.php", "parcelId=" + parcelId + "&ownerId=" + ownerId, function (outHoaCommRecList) {
             hoaCommRecList = outHoaCommRecList;
             _render();
-            util.defaultCursor();
+             
             $displayPage.tab('show');
         });
     }
@@ -87,13 +87,13 @@ var communications = (function () {
     }
 
     function _newComm(event) {
-        util.waitCursor();
+         
         parcelId = event.target.getAttribute("data-parcelId");
         ownerId = event.target.getAttribute("data-ownerId");
         commId = event.target.getAttribute("data-commId");
         $.getJSON("getHoaCommList.php", "parcelId=" + parcelId + "&ownerId=" + ownerId + "&commId=" + commId, function (outHoaCommRecList) {
             _formatCommEdit(outHoaCommRecList[0],parcelId,ownerId,commId);
-            util.defaultCursor();
+             
             $EditPage.modal();
         });
     }
@@ -140,7 +140,7 @@ var communications = (function () {
     } // End of function formatCommEdit(hoaCommRec){
 
     function _saveCommEdit(event) {
-        util.waitCursor();
+         
 
         var paramMap = new Map();
         paramMap.set('parcelId', event.target.getAttribute("data-parcelId"));
@@ -154,7 +154,7 @@ var communications = (function () {
             data: util.getJSONfromInputs($EditTable, paramMap),
             dataType: "json",
             success: function (list) {
-                util.defaultCursor();
+                 
                 // Set the newest list from the update into the module variable (for render)
                 hoaCommRecList = list;
                 _render();
