@@ -67,7 +67,7 @@ try {
 			$stmt->bind_param("s",$param->ConfigName);
 		} else {
 			$stmt = $conn->prepare("UPDATE hoa_config SET ConfigDesc=?,ConfigValue=? WHERE ConfigName = ? ; ");
-			$stmt->bind_param("sss",$param->ConfigDesc,$param->ConfigValue,$configValue);
+			$stmt->bind_param("sss",$param->ConfigDesc,$configValue,$param->ConfigName);
 		}
 	} else {
 		$result->close();

@@ -189,9 +189,6 @@ var reports = (function () {
         var tr = '';
         var rowId = 0;
 
-        console.log("reportName = "+reportName)
-        console.log("reportList = "+reportList)
-
         if (reportName == "SalesReport" || reportName == "SalesNewOwnerReport") {
             reportTitleFull = reportTitle;
 
