@@ -184,7 +184,7 @@ class LoginAuth
                 if ($user['UserLevel'] < 1) {
                     $userRec->userMessage = 'User is not authorized (contact Administrator)';
                 } else {
-                    $subject = "GRHA password reset";
+                    $subject = "GRHA HOADB password reset";
                     $messageStr = 'Click the following to enter a new password for username [' . $user['UserName'] . ']:  ' 
                         . $passwordResetUrl . $user['RegistrationCode'];
 

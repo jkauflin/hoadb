@@ -41,11 +41,6 @@ var reports = (function () {
     var pdfMaxLineChars = 95;
     var pdfFontSizeDefault = 11;
     
-    var pdfLogoImgData;
-    $.get("getLogoImgData.php", function (logoImgDataResults) {
-        pdfLogoImgData = logoImgDataResults;
-    });
-
     //=================================================================================================================
     // Variables cached from the DOM
     var $moduleDiv = $('#ReportsPage');
@@ -70,21 +65,23 @@ var reports = (function () {
         $ReportRecCnt.html("");
         $ReportDownloadLinks.html("");
 
-         
-
         if (reportName == 'UnpaidDuesRankingReport') {
             $ReportRecCnt.html("Executing request...(please wait)");
              
             // Get all the data needed for processing
             $.getJSON("adminExecute.php", "action=DuesRank", function (adminRec) {
-                 
                 $ReportRecCnt.html(adminRec.message);
                 _duesRank(adminRec.hoaRecList, reportName);
             });
         } else {
-            $.getJSON("getHoaReportData.php", "reportName=" + reportName, function (reportList) {
-                _formatReportList(reportName, reportTitle, reportList);
-                 
+            $.getJSON("getHoaReportData.php", "reportName=" + reportName, function (result) {
+                if (result.error) {
+                    console.log("error = " + result.error);
+                    $ajaxError.html("<b>" + result.error + "</b>");
+                } else {
+                    var reportList = result;
+                    _formatReportList(reportName, reportTitle, reportList);
+                }
             });
         }
     }
@@ -191,6 +188,9 @@ var reports = (function () {
 
         var tr = '';
         var rowId = 0;
+
+        console.log("reportName = "+reportName)
+        console.log("reportList = "+reportList)
 
         if (reportName == "SalesReport" || reportName == "SalesNewOwnerReport") {
             reportTitleFull = reportTitle;
@@ -517,7 +517,7 @@ var reports = (function () {
             pdf.text(2.5, 0.75, pdfTitle);
             pdf.setFontSize(10);
             pdf.text(3.8, 1.1, pdfTimestamp);
-            pdf.addImage(pdfLogoImgData, 'JPEG', 0.4, 0.3, 0.9, 0.9);
+            pdf.addImage(config.getLogoImgData(), 'JPEG', 0.4, 0.3, 0.9, 0.9);
             pdf.setFontSize(10);
 
             pdfLineY = pdfLineYStart;

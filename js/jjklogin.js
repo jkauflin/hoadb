@@ -125,6 +125,7 @@ var jjklogin = (function () {
                         $NewUserButton.show();
                     }
                     config.loadConfigValues();
+                    config.loadConfigLogoImg();
                 }
             }
         }).fail(function (xhr, status, error) {
@@ -172,6 +173,7 @@ var jjklogin = (function () {
                         $NewUserButton.show();
                     }
                     config.loadConfigValues();
+                    config.loadConfigLogoImg();
                 }
             }
         }).fail(function (xhr, status, error) {

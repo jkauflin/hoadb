@@ -49,7 +49,7 @@ try {
     	$stmt->execute();
     	$result = $stmt->get_result();
     	$stmt->close();
-    	
+
     	if ($result->num_rows > 0) {
     		while($row = $result->fetch_assoc()) {
     			$hoaSalesRec = new HoaSalesRec();
@@ -71,7 +71,7 @@ try {
     			$hoaSalesRec->LastChangedBy = $row["LastChangedBy"];
     			$hoaSalesRec->LastChangedTs = $row["LastChangedTs"];
     	
-    			$hoaSalesRec->adminLevel = getAdminLevel();
+    			$hoaSalesRec->adminLevel = $userRec->userLevel;
 
     			array_push($outputArray,$hoaSalesRec);
     		}
@@ -244,7 +244,7 @@ try {
     echo json_encode($outputArray);
 
 } catch(Exception $e) {
-    //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
+    error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
     echo json_encode(
         array(
             'error' => $e->getMessage(),

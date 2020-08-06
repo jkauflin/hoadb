@@ -12,14 +12,15 @@
  * 2020-08-03 JJK   Re-factored for new error handling
  * 2020-08-05 JJK   Re-did the map loading and rendering to not load on
  *                  page load - have the load called after login
+ * 2020-08-06 JJK   Added functions to load and return the Logo image data
  *============================================================================*/
 var config = (function(){
     'use strict';
 
     //=================================================================================================================
     // Private variables for the Module
-    //var hoaConfigRecList;
     var configVal = new Map();
+    var pdfLogoImgData;
 
     //=================================================================================================================
     // Variables cached from the DOM
@@ -37,13 +38,6 @@ var config = (function(){
     // Bind events
     $moduleDiv.on("click", ".NewConfig", editConfig);
     $EditPage.on("click", ".SaveConfigEdit", _saveConfigEdit);
-
-    // When the javascript initializes do a one time get of the logo image data (for PDF writes)
-    /*
-    $.get("getLogoImgData.php", function (logoImgDataResults) {
-        configVal.set('pdfLogoImgData', logoImgDataResults);
-    });
-    */
 
     //=================================================================================================================
     // Module methods
@@ -83,6 +77,21 @@ var config = (function(){
         });
 
         $ConfigListDisplay.html(tr);
+    }
+
+    function loadConfigLogoImg() {
+        $.get("getLogoImgData.php", function (result) {
+            if (result.error) {
+                console.log("error = " + result.error);
+                $ajaxError.html("<b>" + result.error + "</b>");
+            } else {
+                pdfLogoImgData = result;
+            }
+        });
+    }
+
+    function getLogoImgData() {
+        return pdfLogoImgData;
     }
 
     // Return the value for a given name
@@ -161,6 +170,8 @@ var config = (function(){
     // This is what is exposed from this Module
     return {
         loadConfigValues,
+        loadConfigLogoImg,
+        getLogoImgData,
         getVal,
         editConfig
     };

@@ -322,7 +322,7 @@ function getHoaSalesRec($conn,$parcelId,$saleDate) {
 			$hoaSalesRec->LastChangedBy = $row["LastChangedBy"];
 			$hoaSalesRec->LastChangedTs = $row["LastChangedTs"];
 			
-			$hoaSalesRec->adminLevel = getAdminLevel();
+			$hoaSalesRec->adminLevel = 1;
 		}
 		$result->close();
 	}

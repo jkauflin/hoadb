@@ -22,11 +22,6 @@ var pdfModule = (function () {
     var defaultFontSize = 11;
     var startLineY = 1.5;
 
-    var pdfLogoImgData;
-    $.get("getLogoImgData.php", function (logoImgDataResults) {
-        pdfLogoImgData = logoImgDataResults;
-    });
-
     //=================================================================================================================
     // Module methods
     function init(inTitle,inOrientation) {
@@ -286,8 +281,7 @@ var pdfModule = (function () {
             // X (horizontal), Y (vertical)
             pdfRec.pdf.setFontSize(9);
             pdfRec.pdf.text(8.05, 0.3, pdfRec.pageCnt.toString());
-
-            pdfRec.pdf.addImage(pdfLogoImgData, 'JPEG', 0.42, 0.9, 0.53, 0.53);
+            pdfRec.pdf.addImage(config.getLogoImgData(), 'JPEG', 0.42, 0.9, 0.53, 0.53);
 
             // Tri-fold lines
             pdfRec.pdf.setLineWidth(0.01);
@@ -429,7 +423,7 @@ var pdfModule = (function () {
             pdfRec.pdf.text(6.5, 0.6, config.getVal('hoaAddress1'));
             pdfRec.pdf.text(6.5, 0.8, config.getVal('hoaAddress2'));
 
-            pdfRec.pdf.addImage(pdfLogoImgData, 'JPEG', 0.4, 0.3, 0.9, 0.9);
+            pdfRec.pdf.addImage(config.getLogoImgData(), 'JPEG', 0.4, 0.3, 0.9, 0.9);
             pdfRec.pdf.setFontSize(10);
 
             pdfRec.lineY = startLineY;
