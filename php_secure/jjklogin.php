@@ -285,10 +285,11 @@ class LoginAuth
 
                 // Send email
                 $subject = "GRHA HOADB new user registration";
-                $messageStr = 'A new user account has been created for you.  Click the following to enter a new password for username [' . $username . ']:  ' . $passwordResetUrl . $registrationCode;
+                $messageStr = 'A new user account has been created for you.  Click the following to enter a new password for username [' . 
+                    $username . ']:  ' . $passwordResetUrl . $registrationCode;
         
                 //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", messageStr = $messageStr " . PHP_EOL, 3, LOG_FILE);
-                sendHtmlEMail($user['UserEmailAddr'],$subject,$messageStr,$fromEmailAddress);
+                sendHtmlEMail($email,$subject,$messageStr,$fromEmailAddress);
 
                 // set a token and a cookie or just make them login?
                 $userRec->userMessage = 'User created successfully (and email sent)';
