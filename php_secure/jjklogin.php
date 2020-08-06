@@ -184,15 +184,12 @@ class LoginAuth
                 if ($user['UserLevel'] < 1) {
                     $userRec->userMessage = 'User is not authorized (contact Administrator)';
                 } else {
-
-    //set email with registration code
-    // reset registration code when updating password
                     $subject = "GRHA password reset";
-                    $messageStr = 'Click the following to enter a new password for username [' . $user['UserName'] . ']:  ' . $passwordResetUrl . $user['RegistrationCode'];
+                    $messageStr = 'Click the following to enter a new password for username [' . $user['UserName'] . ']:  ' 
+                        . $passwordResetUrl . $user['RegistrationCode'];
 
-            //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", messageStr = $messageStr " . PHP_EOL, 3, LOG_FILE);
-
-                    //sendHtmlEMail($user['UserEmailAddr'],$subject,$messageStr,$fromEmailAddress);
+                    //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", messageStr = $messageStr " . PHP_EOL, 3, LOG_FILE);
+                    sendHtmlEMail($user['UserEmailAddr'],$subject,$messageStr,$fromEmailAddress);
 
                     $userRec->userMessage = 'Reset password verification sent to your email address';
                 }
@@ -230,12 +227,7 @@ class LoginAuth
                 //$password = md5($password_1);//encrypt the password before saving in the database
                 $passwordHash = password_hash($password, PASSWORD_DEFAULT);
                 $registrationCode = uniqid();
-                /*
-                7	RegistrationCode varchar(100)	No	None			Change Change	Drop Drop	
-                8	EmailVerified	int(1)			No	0			Change Change	Drop Drop	
-                9	LastChangedBy	varchar(80)	    No	system			Change Change	Drop Drop	
-                10	LastChangedTs	datetime	        current_timestamp()
-                */
+
                 $sql = "UPDATE users SET UserPassword = ?, RegistrationCode = ? WHERE RegistrationCode = ? ";
                 $stmt = $conn->prepare($sql);
                 $stmt->bind_param("sss", $passwordHash,$registrationCode,$regCode);
@@ -295,10 +287,8 @@ class LoginAuth
                 $subject = "GRHA HOADB new user registration";
                 $messageStr = 'A new user account has been created for you.  Click the following to enter a new password for username [' . $username . ']:  ' . $passwordResetUrl . $registrationCode;
         
-                error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", messageStr = $messageStr " . PHP_EOL, 3, LOG_FILE);
-
-                //sendHtmlEMail($user['UserEmailAddr'],$subject,$messageStr,$fromEmailAddress);
-
+                //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", messageStr = $messageStr " . PHP_EOL, 3, LOG_FILE);
+                sendHtmlEMail($user['UserEmailAddr'],$subject,$messageStr,$fromEmailAddress);
 
                 // set a token and a cookie or just make them login?
                 $userRec->userMessage = 'User created successfully (and email sent)';

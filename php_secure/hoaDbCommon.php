@@ -1183,7 +1183,10 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 			}
 		
 			$stmt->close();
-		
+        
+            // get domain from config
+            // get this payer info in config?
+
 			$payerInfo = 'Thank you for your GRHA member dues payment.  Our records have been successfully updated to show that the assessment has been PAID.  ';
 			$payerInfo .= 'You can use the Dues Checker on our website (www.grha-dayton.org) to see the updated record. ';
 			$payerInfo .= 'Your dues will be used to promote the recreation, health, safety, and welfare of the ';
