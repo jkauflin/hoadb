@@ -23,14 +23,21 @@ define("LOG_FILE", "./php.log");
 
 require_once('class.phpmailer.php');
 
+// Check URL param against secret key for scheduled jobs
+if (getParamVal("key") != $scheduledJobKey) {
+    echo "Not authorized to execute request";
+    exit;
+}
+
+
 $errorStr = '';
 $dbname = "hoaDB";
 
 $backupfile = $dbname . '-' . date("Y-m-d") . '.sql';
 $backupzip = $backupfile . '.tar.gz';
 
-//system("mysqldump -h $host -u $dbadmin -p$password $dbname > $backupfile");
-mysqldumpHoaDb($host, $dbadmin, $password, $dbname, $backupfile);
+//mysqldumpHoaDb($host, $dbadmin, $password, $dbname, $backupfile);
+system("mysqldump -h $host -u $dbadmin -p$password $dbname > $backupfile");
 system("tar -czvf $backupzip $backupfile");
 
 $bodytext = "Attached is an MYSQLDUMP of the HOA MySQL database";

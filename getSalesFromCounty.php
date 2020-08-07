@@ -16,9 +16,7 @@
  * 2016-04-13 JJK   Checked function and added getConfigVal calss
  * 2019-06-09 JJK	Added some logging, updated the URL for the website
  * 					and got this working again
- * 
- * 2020-08-03 JJK   Modified to check API key to verify execution
- * 
+ * 2020-08-07 JJK   Modified to check API key to verify execution
  *============================================================================*/
 require_once 'vendor/autoload.php'; 
 
@@ -31,7 +29,7 @@ require_once getSecretsFilename();
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
 
-//
+// Check URL param against secret key for scheduled jobs
 if (getParamVal("key") != $scheduledJobKey) {
     echo "Not authorized to execute request";
     exit;
@@ -45,9 +43,8 @@ $salesYear = substr($currTimestampStr,0,4);
 
 $url = $countySalesDataUrl . $salesYear . '.zip';
 $zipFileName = 'SALES_' . $salesYear . '.zip';
+error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Sales file url = $url " . PHP_EOL, 3, LOG_FILE);
 downloadUrlToFile($url, $zipFileName);
-
-//error_log(date('[Y-m-d H:i] '). "Sales file url = $url" . PHP_EOL, 3, LOG_FILE);
 
 if (is_file($zipFileName)) {
 	$sendMessage = false;
@@ -57,7 +54,7 @@ if (is_file($zipFileName)) {
 	$zipFile = new ZipArchive();
 	if ($zipFile->open($zipFileName)) {
 		$file = $zipFile->getStream($fileName);
-		if(!$file) exit("failed\n");
+		if(!$file) exit("Failed to open downloaded zip file\n");
 
 		//--------------------------------------------------------------------------------------------------------
 		// Create connection to the database
