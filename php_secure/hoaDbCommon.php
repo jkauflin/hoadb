@@ -73,10 +73,6 @@ function getConn($host, $dbadmin, $password, $dbname) {
 	return $conn;
 }
 
-function mysqldumpHoaDb($host, $dbadmin, $password, $dbname, $backupfile) {
-	system("mysqldump -h $host -u $dbadmin -p$password $dbname > $backupfile");
-}
-
 // Lookup config values by name from the config database table
 function getConfigValDB($conn,$configName) {
 	$configVal = "";

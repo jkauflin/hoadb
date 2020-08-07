@@ -56,7 +56,9 @@ if (is_file($zipFileName)) {
 	$zipFile = new ZipArchive();
 	if ($zipFile->open($zipFileName)) {
 		$file = $zipFile->getStream($fileName);
-		if(!$file) exit("Failed to open file in downloaded, file = $fileName\n");
+		if (!$file) {
+            exit("Failed to open file in downloaded, file = $fileName\n");
+        }
 
 		//--------------------------------------------------------------------------------------------------------
 		// Create connection to the database
@@ -83,7 +85,7 @@ if (is_file($zipFileName)) {
 
 			// Check if the Parcel Id from the sales record matches any in our HOA database
 			//function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate,$paypalFixedAmtButtonForm,$paypalFixedAmtButtonInput) {
-			$hoaRec = getHoaRec($conn,$parcelId,"","",$salesRecArray[2],$paypalFixedAmtButtonForm,$paypalFixedAmtButtonInput);
+			$hoaRec = getHoaRec($conn,$parcelId,"","",$salesRecArray[2]);
 			if (empty($hoaRec->Parcel_ID)) {
 				// If the parcel id is not found in the HOA db, then just skip to the next one
 				continue;
