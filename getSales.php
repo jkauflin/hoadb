@@ -31,6 +31,11 @@ require_once getSecretsFilename();
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
 
+//
+if (getParamVal("key") != $scheduledJobKey) {
+    echo "Not authorized to execute request";
+    exit;
+}
 
 $errorStr = '';
 $currTimestampStr = date("Y-m-d H:i:s");
