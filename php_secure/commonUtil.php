@@ -55,12 +55,13 @@ function getParamVal($paramName) {
 
 function downloadUrlToFile($url, $outFileName)
 {
-	if (is_file($url)) {
-		copy($url, $outFileName); // download xml file
-	} else {
+    
+	//if (is_file($url)) {
+	//	copy($url, $outFileName); // download xml file
+	//} else {
 		$options = array(
 				CURLOPT_FILE    => fopen($outFileName, 'w'),
-				CURLOPT_TIMEOUT =>  10, // set this to 10 minutes so we do not timeout on big files
+				CURLOPT_TIMEOUT =>  100, // set this to 10 minutes so we do not timeout on big files
 				CURLOPT_URL     => $url
 		);
 		//CURLOPT_TIMEOUT =>  28800, // set this to 8 hours so we dont timeout on big files
@@ -69,7 +70,45 @@ function downloadUrlToFile($url, $outFileName)
 		curl_setopt_array($ch, $options);
 		curl_exec($ch);
 		curl_close($ch);
+    //}
+    
+/*
+$options = array(
+  CURLOPT_FILE    => '/path/to/download/the/file/to.zip',
+  CURLOPT_TIMEOUT =>  28800, // set this to 8 hours so we dont timeout on big files
+  CURLOPT_URL     => 'http://remoteserver.com/path/to/big/file.zip',
+);
+$ch = curl_init();
+curl_setopt_array($ch, $options);
+curl_exec($ch);
+curl_close($ch);
+
+$options = array(
+          CURLOPT_FILE    => fopen($outFileName, 'w'),
+          CURLOPT_TIMEOUT =>  28800, // set this to 8 hours so we dont timeout on big files
+          CURLOPT_URL     => $url
+        );
+        $ch = curl_init();
+        curl_setopt_array($ch, $options);
+        curl_exec($ch);
+        curl_close($ch);
+
+function download_remote_file_with_curl($file_url, $save_to)
+	{
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_POST, 0); 
+		curl_setopt($ch,CURLOPT_URL,$file_url); 
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+		$file_content = curl_exec($ch);
+		curl_close($ch);
+ 
+		$downloaded_file = fopen($save_to, 'w');
+		fwrite($downloaded_file, $file_content);
+		fclose($downloaded_file);
+ 
 	}
+*/
+
 }
 
 function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {

@@ -17,6 +17,7 @@
  * 2019-06-09 JJK	Added some logging, updated the URL for the website
  * 					and got this working again
  * 2020-08-07 JJK   Modified to check API key to verify execution
+ *                  And updated county url in secrets
  *============================================================================*/
 require_once 'vendor/autoload.php'; 
 
@@ -45,6 +46,7 @@ $url = $countySalesDataUrl . $salesYear . '.zip';
 $zipFileName = 'SALES_' . $salesYear . '.zip';
 error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Sales file url = $url " . PHP_EOL, 3, LOG_FILE);
 downloadUrlToFile($url, $zipFileName);
+
 
 if (is_file($zipFileName)) {
 	$sendMessage = false;
