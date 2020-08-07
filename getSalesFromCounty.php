@@ -54,7 +54,7 @@ if (is_file($zipFileName)) {
 	$zipFile = new ZipArchive();
 	if ($zipFile->open($zipFileName)) {
 		$file = $zipFile->getStream($fileName);
-		if(!$file) exit("Failed to open downloaded zip file\n");
+		if(!$file) exit("Failed to open file in downloaded, file = $fileName\n");
 
 		//--------------------------------------------------------------------------------------------------------
 		// Create connection to the database
