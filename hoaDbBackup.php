@@ -25,7 +25,7 @@ define("LOG_FILE", "./php.log");
 
 // Check URL param against secret key for scheduled jobs
 if (getParamVal("key") != $scheduledJobKey) {
-    echo "Not authorized to execute request";
+    echo "Not authorized to execute request" . PHP_EOL;
     exit;
 }
 
