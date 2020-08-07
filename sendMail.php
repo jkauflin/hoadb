@@ -30,8 +30,6 @@ require_once getSecretsFilename();
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
 
-// Create the record to send back as a result of the POST
-$sendEmailRec = new SendEmailRec();
 
 try {
     $userRec = LoginAuth::getUserRec($cookieName,$cookiePath,$serverKey);
@@ -50,6 +48,9 @@ try {
     $filename = $_POST['filename'];
     // Decode the PDF data stream from character back to binary
     $filedata = base64_decode($_POST['filedata']);
+
+    // Create the record to send back as a result of the POST
+    $sendEmailRec = new SendEmailRec();
 
     $sendEmailRec->result = '';
     $sendEmailRec->message = '';
