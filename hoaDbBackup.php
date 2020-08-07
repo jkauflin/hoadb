@@ -21,7 +21,6 @@ require_once getSecretsFilename();
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
 
-
 //require_once('class.phpmailer.php');
 
 // Check URL param against secret key for scheduled jobs
