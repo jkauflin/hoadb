@@ -67,8 +67,10 @@ try {
 		->setFrom([$fromEmailAddress])
 		->setTo([$adminEmailList])
         ->setBody($messageStr)
-        ->attach(Swift_Attachment::fromPath($backupzip))
+        ->attach(Swift_Attachment::fromPath('./'.$backupzip))
         ;
+
+    //$message->attach(Swift_Attachment::fromPath('full-path-with-attachment-name'));
 
         // The two statements above could be written in one line instead
 //$message->attach(Swift_Attachment::fromPath('/path/to/image.jpg'));
@@ -82,10 +84,14 @@ try {
 	// Read receipts won't work for the majority of recipients since many mail clients auto-disable them. 
 	// Those clients that will send a read receipt will make the user aware that one has been requested.
 
-	// Create the attachment with your data
-    //$attachment = new Swift_Attachment($backupzip,$backupzip,'application/zip');
-    //($filedata, $filename, 'application/pdf');
     
+    // Decode the PDF data stream from character back to binary
+    /*
+    $filedata = base64_decode($_POST['filedata']);
+	$attachment = new Swift_Attachment($filedata, $filename, 'application/pdf');
+	$message->attach($attachment);
+    */
+
 	// Attach it to the message
 	//$message->attach($attachment);
 
@@ -98,8 +104,8 @@ try {
 
 
     // Delete the file from your server
-    unlink($backupzip);
-    unlink($backupfile);
+    //unlink($backupzip);
+    //unlink($backupfile);
 
 } catch(Exception $e) {
     //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
