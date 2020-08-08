@@ -33,16 +33,16 @@ try {
     $errorStr = '';
     $dbname = "hoadb";
 
-    $backupfile = $dbname . '-' . date("Y-m-d") . '.sql';
-    $backupzip = $backupfile . '.tar.gz';
+    //$backupfile = $dbname . '-' . date("Y-m-d") . '.sql';
+    //$backupzip = $backupfile . '.tar.gz';
 
-    system("mysqldump -h $host -u $dbadmin -p$password $dbname > $backupfile");
+    //system("mysqldump -h $host -u $dbadmin -p$password $dbname > $backupfile");
     //system("tar -czvf $backupzip $backupfile");
 
 //gzip -f hoadb.sql
 
 
-    $bodytext = "Attached is an MYSQLDUMP of the HOA MySQL database";
+    $bodytext = "Attached is an MYSQLDUMP of the HOADB database";
 
     /*
     // Mail the file
@@ -70,7 +70,7 @@ try {
 		->setFrom([$fromEmailAddress])
 		->setTo([$adminEmailList])
         ->setBody($messageStr)
- //       ->attach(Swift_Attachment::fromPath('./'.$backupzip))
+        ->attach(Swift_Attachment::fromPath($dbDumpFile))
         ;
 
     //$message->attach(Swift_Attachment::fromPath('full-path-with-attachment-name'));
