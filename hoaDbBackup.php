@@ -75,7 +75,7 @@ try {
 	// Those clients that will send a read receipt will make the user aware that one has been requested.
 
 	// Create the attachment with your data
-    $attachment = new Swift_Attachment(null,$backupzip);
+    $attachment = new Swift_Attachment($backupzip,$backupzip,'application/zip');
     //($filedata, $filename, 'application/pdf');
     
     //$email->AddAttachment( $file_to_attach , 'NameOfFile.pdf' );
