@@ -66,7 +66,15 @@ try {
 	$message = (new Swift_Message('HOA database backup'))
 		->setFrom([$fromEmailAddress])
 		->setTo([$adminEmailList])
-		->setBody($messageStr);
+        ->setBody($messageStr)
+        ->attach(Swift_Attachment::fromPath($backupzip))
+        ;
+
+        // The two statements above could be written in one line instead
+//$message->attach(Swift_Attachment::fromPath('/path/to/image.jpg'));
+
+        // Optionally add any attachments
+
 
 	// swiftmailer PHP read receipt capability
 	// $message -> setReadReceiptTo('your@address.tld');
@@ -75,13 +83,9 @@ try {
 	// Those clients that will send a read receipt will make the user aware that one has been requested.
 
 	// Create the attachment with your data
-    $attachment = new Swift_Attachment($backupzip,$backupzip,'application/zip');
+    //$attachment = new Swift_Attachment($backupzip,$backupzip,'application/zip');
     //($filedata, $filename, 'application/pdf');
     
-    //$email->AddAttachment( $file_to_attach , 'NameOfFile.pdf' );
-    //$email->AddAttachment($backupzip, $backupzip);
-
-
 	// Attach it to the message
 	//$message->attach($attachment);
 
