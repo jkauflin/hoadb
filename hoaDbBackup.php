@@ -37,7 +37,10 @@ try {
     $backupzip = $backupfile . '.tar.gz';
 
     system("mysqldump -h $host -u $dbadmin -p$password $dbname > $backupfile");
-    system("tar -czvf $backupzip $backupfile");
+    //system("tar -czvf $backupzip $backupfile");
+
+//gzip -f hoadb.sql
+
 
     $bodytext = "Attached is an MYSQLDUMP of the HOA MySQL database";
 
@@ -67,7 +70,7 @@ try {
 		->setFrom([$fromEmailAddress])
 		->setTo([$adminEmailList])
         ->setBody($messageStr)
-        ->attach(Swift_Attachment::fromPath('./'.$backupzip))
+ //       ->attach(Swift_Attachment::fromPath('./'.$backupzip))
         ;
 
     //$message->attach(Swift_Attachment::fromPath('full-path-with-attachment-name'));
