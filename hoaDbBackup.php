@@ -21,7 +21,7 @@ require_once getSecretsFilename();
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
 
-require_once('php_secure/class.phpmailer.php');
+//require_once('php_secure/class.phpmailer.php');
 
 // Check URL param against secret key for scheduled jobs
 if (getParamVal("key") != $scheduledJobKey) {
@@ -40,8 +40,8 @@ try {
     system("tar -czvf $backupzip $backupfile");
 
     $bodytext = "Attached is an MYSQLDUMP of the HOA MySQL database";
-    
 
+    /*
     // Mail the file
     $email = new PHPMailer();
     $email->From      = $fromEmailAddress;
@@ -53,8 +53,9 @@ try {
     //$email->AddAttachment( $file_to_attach , 'NameOfFile.pdf' );
     $email->AddAttachment($backupzip, $backupzip);
     $email->Send();
+    */
 
-/*
+
     // Create the Transport (using default linux sendmail)
 	$transport = new Swift_SendmailTransport();
 
@@ -82,7 +83,7 @@ try {
 
 
 	// Attach it to the message
-	$message->attach($attachment);
+	//$message->attach($attachment);
 
 	// Send the message and check for success
 	if ($mailer->send($message)) {
@@ -90,7 +91,7 @@ try {
 	} else {
 		echo 'ERROR';
 	}
-*/
+
 
     // Delete the file from your server
     unlink($backupzip);
