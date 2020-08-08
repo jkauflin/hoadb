@@ -9,6 +9,8 @@
  * Modification History
  * 2016-07-01 JJK 	Initial version to export and email MySQL database
  * 2020-08-07 JJK   Updated for new 2.0 and replaced mail with swiftmailer
+ * 2020-08-08 JJK   Modified to just email the dump file (which is now
+ *                  created with a BASH scrip cron job)
  *============================================================================*/
 require_once 'vendor/autoload.php'; 
 
@@ -21,8 +23,6 @@ require_once getSecretsFilename();
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
 
-//require_once('php_secure/class.phpmailer.php');
-
 // Check URL param against secret key for scheduled jobs
 if (getParamVal("key") != $scheduledJobKey) {
     echo "Not authorized to execute request" . PHP_EOL;
@@ -30,34 +30,8 @@ if (getParamVal("key") != $scheduledJobKey) {
 }
 
 try {
-    $errorStr = '';
     $dbname = "hoadb";
-
-    //$backupfile = $dbname . '-' . date("Y-m-d") . '.sql';
-    //$backupzip = $backupfile . '.tar.gz';
-
-    //system("mysqldump -h $host -u $dbadmin -p$password $dbname > $backupfile");
-    //system("tar -czvf $backupzip $backupfile");
-
-//gzip -f hoadb.sql
-
-
     $bodytext = "Attached is an MYSQLDUMP of the HOADB database";
-
-    /*
-    // Mail the file
-    $email = new PHPMailer();
-    $email->From      = $fromEmailAddress;
-    $email->FromName  = $fromEmailAddress;
-    $email->Subject   = 'HOA database backup';
-    $email->Body      = $bodytext;
-    $email->AddAddress($adminEmailList);
-
-    //$email->AddAttachment( $file_to_attach , 'NameOfFile.pdf' );
-    $email->AddAttachment($backupzip, $backupzip);
-    $email->Send();
-    */
-
 
     // Create the Transport (using default linux sendmail)
 	$transport = new Swift_SendmailTransport();
@@ -73,42 +47,12 @@ try {
         ->attach(Swift_Attachment::fromPath($dbDumpFile))
         ;
 
-    //$message->attach(Swift_Attachment::fromPath('full-path-with-attachment-name'));
-
-        // The two statements above could be written in one line instead
-//$message->attach(Swift_Attachment::fromPath('/path/to/image.jpg'));
-
-        // Optionally add any attachments
-
-
-	// swiftmailer PHP read receipt capability
-	// $message -> setReadReceiptTo('your@address.tld');
-	// When the email is opened, if the mail client supports it a notification will be sent to this address.
-	// Read receipts won't work for the majority of recipients since many mail clients auto-disable them. 
-	// Those clients that will send a read receipt will make the user aware that one has been requested.
-
-    
-    // Decode the PDF data stream from character back to binary
-    /*
-    $filedata = base64_decode($_POST['filedata']);
-	$attachment = new Swift_Attachment($filedata, $filename, 'application/pdf');
-	$message->attach($attachment);
-    */
-
-	// Attach it to the message
-	//$message->attach($attachment);
-
 	// Send the message and check for success
 	if ($mailer->send($message)) {
 		echo 'SUCCESS';
 	} else {
 		echo 'ERROR';
 	}
-
-
-    // Delete the file from your server
-    //unlink($backupzip);
-    //unlink($backupfile);
 
 } catch(Exception $e) {
     //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
