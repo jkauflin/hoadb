@@ -18,6 +18,7 @@
  * 					and got this working again
  * 2020-08-07 JJK   Modified to check API key to verify execution
  *                  And updated county url in secrets
+ * 2020-08-08 JJK   Commented out the download for now
  *============================================================================*/
 require_once 'vendor/autoload.php'; 
 
@@ -44,9 +45,8 @@ $salesYear = substr($currTimestampStr,0,4);
 
 $url = $countySalesDataUrl . $salesYear . '.zip';
 $zipFileName = 'SALES_' . $salesYear . '.zip';
-error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Sales file url = $url " . PHP_EOL, 3, LOG_FILE);
-downloadUrlToFile($url, $zipFileName);
-
+//error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Sales file url = $url " . PHP_EOL, 3, LOG_FILE);
+//downloadUrlToFile($url, $zipFileName);
 
 if (is_file($zipFileName)) {
 	$sendMessage = false;
