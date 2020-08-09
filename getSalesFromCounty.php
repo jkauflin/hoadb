@@ -81,7 +81,7 @@ if (is_file($zipFileName)) {
 					
 			$parcelId = $salesRecArray[0];
 
-			//error_log(date('[Y-m-d H:i] '). "Parcel Id = $parcelId" . PHP_EOL, 3, LOG_FILE);
+			error_log(date('[Y-m-d H:i] '). "Parcel Id = $parcelId" . PHP_EOL, 3, LOG_FILE);
 
 			// Check if the Parcel Id from the sales record matches any in our HOA database
 			//function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate,$paypalFixedAmtButtonForm,$paypalFixedAmtButtonInput) {
