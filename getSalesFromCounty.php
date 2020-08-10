@@ -59,13 +59,14 @@ $addToOutput = false;
 $outputStr = '';
 
 // Residential sales file in the Zip collection
-$fileName = 'SALES_' . $salesYear . '_RES.csv';
+$fileName = 'SALES_' . $salesYear . '_RES.CSV';
 $zipFile = new ZipArchive();
 	if ($zipFile->open($zipFileName)) {
 		$file = $zipFile->getStream($fileName);
 		if (!$file) {
             exit("Failed to open file in downloaded, file = $fileName\n");
         }
+        echo 'Opened ' . $fileName;
 
 		//--------------------------------------------------------------------------------------------------------
 		// Create connection to the database
