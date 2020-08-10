@@ -19,6 +19,7 @@
  * 2020-08-07 JJK   Modified to check API key to verify execution
  *                  And updated county url in secrets
  * 2020-08-10 JJK   Corrected sales array check and tested insert
+ *                  Commented out the download for now
  *============================================================================*/
 require_once 'vendor/autoload.php'; 
 
@@ -30,6 +31,7 @@ require_once 'php_secure/hoaDbCommon.php';
 require_once getSecretsFilename();
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
+
 
 // Check URL param against secret key for scheduled jobs
 if (getParamVal("key") != $scheduledJobKey) {
@@ -45,9 +47,9 @@ $salesYear = substr($currTimestampStr,0,4);
 
 $url = $countySalesDataUrl . $salesYear . '.ZIP';
 $zipFileName = 'SALES_' . $salesYear . '.ZIP';
-error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Sales file url = $url " . PHP_EOL, 3, LOG_FILE);
-downloadUrlToFile($url, $zipFileName);
-error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", After download " . PHP_EOL, 3, LOG_FILE);
+//error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Sales file url = $url " . PHP_EOL, 3, LOG_FILE);
+//downloadUrlToFile($url, $zipFileName);
+//error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", After download " . PHP_EOL, 3, LOG_FILE);
 
 if (!file_exists($zipFileName)) {
     echo "No file found, zipFile = $zipFileName";
@@ -59,7 +61,7 @@ $addToOutput = false;
 $outputStr = '';
 
 // Residential sales file in the Zip collection
-$fileName = 'SALES_' . $salesYear . '_RES.CSV';
+$fileName = 'SALES_' . $salesYear . '_RES.csv';
 $zipFile = new ZipArchive();
 	if ($zipFile->open($zipFileName)) {
 		$file = $zipFile->getStream($fileName);
