@@ -46,7 +46,7 @@ $salesYear = substr($currTimestampStr,0,4);
 $url = $countySalesDataUrl . $salesYear . '.ZIP';
 $zipFileName = 'SALES_' . $salesYear . '.ZIP';
 //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Sales file url = $url " . PHP_EOL, 3, LOG_FILE);
-//downloadUrlToFile($url, $zipFileName);
+downloadUrlToFile($url, $zipFileName);
 
 if (!file_exists($zipFileName)) {
     echo "No file found, zipFile = $zipFileName";
