@@ -100,12 +100,15 @@ var config = (function(){
     }
 
     function editConfig(value) {
-        // If a string was passed in then use value as the name, else get it from the attribute of the click event object
-        var configName = (typeof value === "string") ? value : value.target.getAttribute("data-ConfigName");
-        $.getJSON("getHoaConfigList.php", "ConfigName=" + configName, function (hoaConfigRec) {
-            formatConfigEdit(hoaConfigRec[0]);
-            $EditPage.modal();
-        });
+        // check user logged in
+        if (jjklogin.isUserLoggedIn()) {
+            // If a string was passed in then use value as the name, else get it from the attribute of the click event object
+            var configName = (typeof value === "string") ? value : value.target.getAttribute("data-ConfigName");
+            $.getJSON("getHoaConfigList.php", "ConfigName=" + configName, function (hoaConfigRec) {
+                formatConfigEdit(hoaConfigRec[0]);
+                $EditPage.modal();
+            });
+        }
     };
 
     function formatConfigEdit(hoaConfigRec) {

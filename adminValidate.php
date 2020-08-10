@@ -23,6 +23,7 @@ require_once getSecretsFilename();
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
 
+$adminRec = new AdminRec();
 try {
     $userRec = LoginAuth::getUserRec($cookieName,$cookiePath,$serverKey);
     if ($userRec->userName == null || $userRec->userName == '') {
@@ -35,11 +36,11 @@ try {
 	$currTimestampStr = date("Y-m-d H:i:s");
 	//JJK test, date = 2015-04-22 19:45:09
 
-	$adminRec = new AdminRec();
 	$adminRec->result = "Not Valid";
 	$adminRec->message = "";
     $adminRec->userName = $userRec->userName;
     $adminRec->userLevel = $userRec->userLevel;
+    $adminLevel = $userRec->userLevel;
 
 	$action = getParamVal("action");
 	$fy = getParamVal("fy");
@@ -50,8 +51,13 @@ try {
 			$adminRec->message = "You do not have permissions to Add Assessments.";
 			$adminRec->result = "Not Valid";
 		} else {
-			$adminRec->message = "Are you sure you want to add assessment for Fiscal Year " . $fy . ' with Dues Amount of $' . $duesAmt .'?';
-			$adminRec->result = "Valid";
+            if (empty($duesAmt) || empty($fy)) {
+			    $adminRec->message = "You must enter Dues Amount and Fiscal Year.";
+			    $adminRec->result = "Not Valid";
+            } else {
+			    $adminRec->message = "Are you sure you want to add assessment for Fiscal Year " . $fy . ' with Dues Amount of $' . $duesAmt .'?';
+			    $adminRec->result = "Valid";
+            }
 		}
 	} else if ($action == "DuesNotices") {
 		if ($adminLevel < 2) {
@@ -105,12 +111,17 @@ try {
 
 } catch(Exception $e) {
     //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
+	$adminRec->message = $e->getMessage();
+	$adminRec->result = "Not Valid";
+    echo json_encode($adminRec);
+    /*
     echo json_encode(
         array(
             'error' => $e->getMessage(),
             'error_code' => $e->getCode()
         )
     );
+    */
     exit;
 }
 

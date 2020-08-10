@@ -33,6 +33,7 @@ require_once getSecretsFilename();
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
 
+$adminRec = new AdminRec();
 try {
     $userRec = LoginAuth::getUserRec($cookieName,$cookiePath,$serverKey);
     if ($userRec->userName == null || $userRec->userName == '') {
@@ -42,7 +43,6 @@ try {
         throw new Exception('User is NOT authorized (contact Administrator)', 500);
     }
 
-	$adminRec = new AdminRec();
 	$adminRec->result = "Not Valid";
 	$adminRec->message = "";
     $adminRec->userName = $userRec->userName;
@@ -106,7 +106,7 @@ try {
 				$stmt = $conn->prepare($sqlStr);
 				$stmt->bind_param("isissiississssssssississss",$OwnerID,$Parcel_ID,$FY,$DuesAmt,$DateDue,$Paid,$NonCollectible,$DatePaid,$PaymentMethod,
 						$Lien,$LienRefNo,$DateFiled,$Disposition,$FilingFee,$ReleaseFee,$DateReleased,$LienDatePaid,$AmountPaid,
-						$StopInterestCalc,$FilingFeeInterest,$AssessmentInterest,$InterestNotPaid,$BankFee,$LienComment,$Comments,$username);
+						$StopInterestCalc,$FilingFeeInterest,$AssessmentInterest,$InterestNotPaid,$BankFee,$LienComment,$Comments,$userRec->userName);
 
 				// Loop through all member properties, set the statement with new values and execute to insert the Assessments record
 				while($row = $result->fetch_assoc()) {
@@ -285,12 +285,16 @@ try {
 
 } catch(Exception $e) {
     //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
+	$adminRec->message = $e->getMessage();
+    $adminRec->result = "Not Valid";
+    /*
     echo json_encode(
         array(
             'error' => $e->getMessage(),
             'error_code' => $e->getCode()
         )
     );
+    */
     exit;
 }
     

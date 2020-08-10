@@ -32,6 +32,8 @@
     var $wildcard = $('*');
     var $resetval = $document.find(".resetval");
     var $Date = $document.find(".Date");
+    var $ajaxError = $document.find(".ajaxError");
+
 
     //=================================================================================================================
     // Bind events

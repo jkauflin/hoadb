@@ -65,24 +65,29 @@ var reports = (function () {
         $ReportRecCnt.html("");
         $ReportDownloadLinks.html("");
 
-        if (reportName == 'UnpaidDuesRankingReport') {
-            $ReportRecCnt.html("Executing request...(please wait)");
-             
-            // Get all the data needed for processing
-            $.getJSON("adminExecute.php", "action=DuesRank", function (adminRec) {
-                $ReportRecCnt.html(adminRec.message);
-                _duesRank(adminRec.hoaRecList, reportName);
-            });
+        // check user logged in
+        if (jjklogin.isUserLoggedIn()) {
+            if (reportName == 'UnpaidDuesRankingReport') {
+                $ReportRecCnt.html("Executing request...(please wait)");
+
+                // Get all the data needed for processing
+                $.getJSON("adminExecute.php", "action=DuesRank", function (adminRec) {
+                    $ReportRecCnt.html(adminRec.message);
+                    _duesRank(adminRec.hoaRecList, reportName);
+                });
+            } else {
+                $.getJSON("getHoaReportData.php", "reportName=" + reportName, function (result) {
+                    if (result.error) {
+                        console.log("error = " + result.error);
+                        $ajaxError.html("<b>" + result.error + "</b>");
+                    } else {
+                        var reportList = result;
+                        _formatReportList(reportName, reportTitle, reportList);
+                    }
+                });
+            }
         } else {
-            $.getJSON("getHoaReportData.php", "reportName=" + reportName, function (result) {
-                if (result.error) {
-                    console.log("error = " + result.error);
-                    $ajaxError.html("<b>" + result.error + "</b>");
-                } else {
-                    var reportList = result;
-                    _formatReportList(reportName, reportTitle, reportList);
-                }
-            });
+            $ReportRecCnt.html("User is not logged in");
         }
     }
 

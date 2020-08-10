@@ -53,6 +53,7 @@
  *                  Fixed the bug that was getting string 'false' value 
  *                  instead of boolean false
 * 2020-08-03 JJK   Re-factored for new error handling
+* 2020-08-10 JJK   Added some validation checks (Dad's 80th birthday)
 *============================================================================*/
 var admin = (function () {
     'use strict';  // Force declaration of variables before use (among other things)
@@ -114,35 +115,40 @@ var admin = (function () {
 
     // Respond to the Continue click for an Admin Execute function 
     function _adminExecute(event) {
-        $ResultMessage.html("Executing Admin request...(please wait)");
-         
-        var action = event.target.getAttribute("data-action");
-        var firstNotice = true;
-        // 2/15/2020 JJK - fixed the bug that was getting string 'false' value instead of boolean false
-        if (event.target.getAttribute("data-firstNotice") == "false") {
-            firstNotice = false;
-        }
+        if (jjklogin.isUserLoggedIn()) {
+            $ResultMessage.html("Executing Admin request...(please wait)");
 
-        //console.log("in adminExecute, action = "+action);
-        //console.log("in adminExecute, firstNotice = "+firstNotice);
-
-        // Get all the data needed for processing
-        $.getJSON("adminExecute.php", "action=" + action +
-            "&fy=" + event.target.getAttribute("data-fy") +
-            "&duesAmt=" + event.target.getAttribute("data-duesAmt") + 
-            "&duesEmailTestParcel=" + config.getVal('duesEmailTestParcel'), function (adminRec) {
-             
-            $ResultMessage.html(adminRec.message);
-
-            if (action == 'DuesNotices') {
-                _duesNotices(adminRec.hoaRecList,firstNotice);
-            } else if (action == 'MarkMailed') {
-                _markMailed(adminRec.hoaRecList,firstNotice);
-            } else if (action == 'DuesEmails' || action == 'DuesEmailsTest') {
-                _duesEmails(adminRec.hoaRecList,action,firstNotice);
+            var action = event.target.getAttribute("data-action");
+            var firstNotice = true;
+            // 2/15/2020 JJK - fixed the bug that was getting string 'false' value instead of boolean false
+            if (event.target.getAttribute("data-firstNotice") == "false") {
+                firstNotice = false;
             }
 
-        }); // $.getJSON("adminExecute.php","action="+action+
+            //console.log("in adminExecute, action = "+action);
+            //console.log("in adminExecute, firstNotice = "+firstNotice);
+
+            // Get all the data needed for processing
+            $.getJSON("adminExecute.php", "action=" + action +
+                "&fy=" + event.target.getAttribute("data-fy") +
+                "&duesAmt=" + event.target.getAttribute("data-duesAmt") +
+                "&duesEmailTestParcel=" + config.getVal('duesEmailTestParcel'), function (adminRec) {
+
+                    $ResultMessage.html(adminRec.message);
+
+                    if (action == 'DuesNotices') {
+                        _duesNotices(adminRec.hoaRecList, firstNotice);
+                    } else if (action == 'MarkMailed') {
+                        _markMailed(adminRec.hoaRecList, firstNotice);
+                    } else if (action == 'DuesEmails' || action == 'DuesEmailsTest') {
+                        _duesEmails(adminRec.hoaRecList, action, firstNotice);
+                    }
+
+               }); // $.getJSON("adminExecute.php","action="+action+
+
+        } else {
+            $ResultMessage.html("User is not logged in");
+        }
     }
 
     function _duesNotices(hoaRecList,firstNotice) {

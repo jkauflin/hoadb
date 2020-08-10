@@ -100,6 +100,8 @@ var detail = (function(){
     //$DuesStatementButton.click(createDuesStatement);
     //$DownloadDuesStatement.click(downloadDuesStatement);
 
+
+
     //=================================================================================================================
     // Module methods
     function getHoaRec(value) {

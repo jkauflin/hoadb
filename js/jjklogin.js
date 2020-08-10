@@ -388,10 +388,23 @@ var jjklogin = (function () {
         }
     }
 
+    function isUserLoggedIn() {
+        if (userRec == null ||
+            userRec.userName == null ||
+            userRec.userName == '' ||
+            userRec.userLevel < 1
+        ) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     //=================================================================================================================
     // This is what is exposed from this Module
     return {
         getUserName,
-        getUserLevel
+        getUserLevel,
+        isUserLoggedIn
     }
 })() // var jjklogin = (function(){

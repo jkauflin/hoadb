@@ -140,8 +140,6 @@ var communications = (function () {
     } // End of function formatCommEdit(hoaCommRec){
 
     function _saveCommEdit(event) {
-         
-
         var paramMap = new Map();
         paramMap.set('parcelId', event.target.getAttribute("data-parcelId"));
         paramMap.set('ownerId', event.target.getAttribute("data-ownerId"));
