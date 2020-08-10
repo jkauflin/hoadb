@@ -62,6 +62,9 @@ var jjklogin = (function () {
     var $NewUserButton = $document.find('#NewUserButton')
     var $RegisterModal = $document.find('#RegisterModal')
     var $RegisterInput = $RegisterModal.find('#RegisterInput')
+    var $usernameReg = $RegisterModal.find('#usernameReg')
+    var $emailAddrReg = $RegisterModal.find('#emailAddrReg')
+    var $userLevelReg = $RegisterModal.find('#userLevelReg')
     var $RegisterButton = $RegisterModal.find('#RegisterButton')
     var $RegisterDisplay = $RegisterModal.find('#RegisterDisplay')
 
@@ -283,6 +286,9 @@ var jjklogin = (function () {
 
     function displayRegistration() {
         $RegisterDisplay.html("")
+        $usernameReg.html("")
+        $emailAddrReg.html("")
+        $userLevelReg.html("")
         $ajaxError.html("");
         $RegisterModal.modal()
     }
