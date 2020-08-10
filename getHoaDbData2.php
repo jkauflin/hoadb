@@ -13,7 +13,7 @@ require_once 'php_secure/commonUtil.php';
 // Common database functions and table record classes
 require_once 'php_secure/hoaDbCommon.php';
 // Include database connection credentials from an external includes location
-require_once getSecretsFilename();
+require_once getSecretsFilename2();
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
 

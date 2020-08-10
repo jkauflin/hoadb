@@ -50,6 +50,8 @@
  * 2020-07-23 JJK   Added a function to return the name/location of the
  *                  credentials/secrets file (in the external includes)
  * 2020-08-05 JJK   Removed getConfigVal (get values from DB config table)
+ * 2020-08-10 JJK   Added getSecretsFilename2 for includes from parent web
+ *                  (Dad's 80th birthday)
  *============================================================================*/
 
 function externalIncludesDir() {
@@ -58,6 +60,9 @@ function externalIncludesDir() {
 
 function getSecretsFilename() {
     return "../../external_includes/hoadbSecrets.php";
+}
+function getSecretsFilename2() {
+    return "../external_includes/hoadbSecrets.php";
 }
 
 function getConn($host, $dbadmin, $password, $dbname) {
