@@ -3,3 +3,4 @@
 vendor/
 *.log
 LOG_FILE
+SALES_*.*

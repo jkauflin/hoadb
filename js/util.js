@@ -43,6 +43,11 @@
          }
      });
 
+     // 8/9/2020 Focus on the first non-readonly input field when a modal pops up
+     $document.on('shown.bs.modal', function (e) {
+         $('input:visible:enabled:not([readonly]):first', e.target).focus(); 
+     });
+
      // Using addClear plug-in function to add a clear button on input text fields
      $resetval.addClear();
 

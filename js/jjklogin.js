@@ -43,6 +43,7 @@ var jjklogin = (function () {
     var $LoggedIn = $document.find('.username')
 
     var $LoginInput = $LoginModal.find('#LoginInput')
+    var $password = $LoginModal.find('#password')
     var $LoginButton = $LoginModal.find('#LoginButton')
     var $LoginDisplay = $LoginModal.find('#LoginDisplay')
 
@@ -64,15 +65,15 @@ var jjklogin = (function () {
     var $RegisterButton = $RegisterModal.find('#RegisterButton')
     var $RegisterDisplay = $RegisterModal.find('#RegisterDisplay')
 
-    //var isTouchDevice = 'ontouchstart' in document.documentElement;
+    var isTouchDevice = 'ontouchstart' in document.documentElement;
 
     //=================================================================================================================
     // Bind events
     $LoginButton.on('click', loginUser)
     // Accept input change on Enter (but not on touch devices because it won't turn off the text input)
-    //if (!isTouchDevice) {
-    //    $LoginInput.change(loginUser);
-    //}
+    if (!isTouchDevice) {
+        $password.change(loginUser);
+    }
 
     $logout.on('click', logoutUser)
     $ForgotPassword.on('click', forgotPassword)

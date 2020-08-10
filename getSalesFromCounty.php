@@ -18,7 +18,7 @@
  * 					and got this working again
  * 2020-08-07 JJK   Modified to check API key to verify execution
  *                  And updated county url in secrets
- * 2020-08-08 JJK   Commented out the download for now
+ * 2020-08-10 JJK   Corrected sales array check and tested insert
  *============================================================================*/
 require_once 'vendor/autoload.php'; 
 
@@ -48,12 +48,18 @@ $zipFileName = 'SALES_' . $salesYear . '.zip';
 //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Sales file url = $url " . PHP_EOL, 3, LOG_FILE);
 //downloadUrlToFile($url, $zipFileName);
 
-if (is_file($zipFileName)) {
-	$sendMessage = false;
-	$addToOutput = false;
-	$outputStr = '';
-	$fileName = 'SALES_' . $salesYear . '_RES.csv';
-	$zipFile = new ZipArchive();
+if (!file_exists($zipFileName)) {
+    echo "No file found, zipFile = $zipFileName";
+    exit;
+}
+
+$sendMessage = false;
+$addToOutput = false;
+$outputStr = '';
+
+// Residential sales file in the Zip collection
+$fileName = 'SALES_' . $salesYear . '_RES.csv';
+$zipFile = new ZipArchive();
 	if ($zipFile->open($zipFileName)) {
 		$file = $zipFile->getStream($fileName);
 		if (!$file) {
@@ -78,70 +84,53 @@ if (is_file($zipFileName)) {
 			}
 					
 			$salesRecArray = fgetcsv($file);
-					
 			$parcelId = $salesRecArray[0];
 
-			error_log(date('[Y-m-d H:i] '). "Parcel Id = $parcelId" . PHP_EOL, 3, LOG_FILE);
-
-			// Check if the Parcel Id from the sales record matches any in our HOA database
-			//function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate,$paypalFixedAmtButtonForm,$paypalFixedAmtButtonInput) {
+            // Check if the Parcel Id from the sales record matches any in our HOA database
+            // (and get the Sales record associated with the Sales Date)
+			// sales now included in this query and in hoaRec
 			$hoaRec = getHoaRec($conn,$parcelId,"","",$salesRecArray[2]);
 			if (empty($hoaRec->Parcel_ID)) {
 				// If the parcel id is not found in the HOA db, then just skip to the next one
 				continue;
 			}
 
-			// sales now included in this query and in hoaRec
-			
-			$hoaOwnerRec = $hoaRec->ownersList[0];
-			$hoaSalesRec = $hoaRec->salesList[0]; 
-				//getHoaSalesRec($conn,$hoaRec->Parcel_ID,$salesRecArray[2]);
-			
+            $hoaOwnerRec = $hoaRec->ownersList[0];
 			
 			$addToOutput = false;
-			if (empty($hoaSalesRec->PARID)) {
-				if (!( $stmt = $conn->prepare("INSERT INTO hoa_sales VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ") )) {
-					$errorStr = 'FILE: ' . __FILE__  . ', LINE: ' . __LINE__ . ', ERROR: ' . $conn->error ;
-					die($errorStr);
-				}
-				
+            // If the Sales record was not found, insert one
+			if ( sizeof($hoaRec->salesList) < 1) {
+                $stmt = $conn->prepare("INSERT INTO hoa_sales VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ");
 				$NotificationFlag = 'Y';
-				$ProcessedFlag = 'N';
-				if (!(
-						$stmt->bind_param("ssssssssssssssss",
-								$salesRecArray[0],
-								$salesRecArray[1],
-								$salesRecArray[2],
-								$salesRecArray[3],
-								$salesRecArray[4],
-								$salesRecArray[5],
-								$salesRecArray[6],
-								$salesRecArray[7],
-								$salesRecArray[8],
-								$salesRecArray[9],
-								$salesRecArray[10],
-								$salesRecArray[11],
-								$currTimestampStr,
-								$NotificationFlag,
-								$ProcessedFlag,
-								getUsername())
-						//LastChangedBy
-						//LastChangedTs
-				)) {
-					$errorStr = 'FILE: ' . __FILE__  . ', LINE: ' . __LINE__ . ', ERROR: ' . $conn->error ;
-					die($errorStr);
-				}
-					
-				if (!( $stmt->execute() )) {
-					$errorStr = 'FILE: ' . __FILE__  . ', LINE: ' . __LINE__ . ', ERROR: ' . $conn->error ;
-					die($errorStr);
-				}
-					
+                $ProcessedFlag = 'N';
+                $lastChangedby = 'system';
+				$stmt->bind_param("ssssssssssssssss",
+				    $salesRecArray[0],
+					$salesRecArray[1],
+					$salesRecArray[2],
+					$salesRecArray[3],
+					$salesRecArray[4],
+					$salesRecArray[5],
+					$salesRecArray[6],
+					$salesRecArray[7],
+					$salesRecArray[8],
+					$salesRecArray[9],
+					$salesRecArray[10],
+					$salesRecArray[11],
+					$currTimestampStr,
+					$NotificationFlag,
+					$ProcessedFlag,
+					$lastChangedby
+                );
+                
+                $stmt->execute();
 				$stmt->close();
-				$hoaSalesRec = getHoaSalesRec($conn,$hoaRec->Parcel_ID,$salesRecArray[2]);
+
+                $hoaSalesRec = getHoaSalesRec($conn,$hoaRec->Parcel_ID,$salesRecArray[2]);
 				$addToOutput = true;
 				
 			} else {
+			    $hoaSalesRec = $hoaRec->salesList[0]; 
 				// If the sales record is found but there was no notification, send an email
 				if ($hoaSalesRec->NotificationFlag == 'N') {
 					$addToOutput = true;
@@ -191,14 +180,11 @@ if (is_file($zipFileName)) {
 			$messageStr = '<h2>HOA Residential Sales in ' . $salesYear . '</h2>' . $outputStr;
 			sendHtmlEMail($salesReportEmailList,$subject,$messageStr,$fromEmailAddress);
 		}
-		
+        
 		// maybe update the flags after the email is send successfully
 		
 		
 	} // End of If Zip file was opened
 	
-	//echo $outputStr;
-	
-} // End of If the zip file was downloaded
-
+echo 'SUCCESS';
 ?>
