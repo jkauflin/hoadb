@@ -43,8 +43,8 @@ $currTimestampStr = date("Y-m-d H:i:s");
 // Get the year from the current system time
 $salesYear = substr($currTimestampStr,0,4);
 
-$url = $countySalesDataUrl . $salesYear . '.zip';
-$zipFileName = 'SALES_' . $salesYear . '.zip';
+$url = $countySalesDataUrl . $salesYear . '.ZIP';
+$zipFileName = 'SALES_' . $salesYear . '.ZIP';
 //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Sales file url = $url " . PHP_EOL, 3, LOG_FILE);
 //downloadUrlToFile($url, $zipFileName);
 
