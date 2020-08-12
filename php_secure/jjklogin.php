@@ -10,6 +10,7 @@
  * 2020-07-28 JJK   Added registerUser and expired token check
  * 2020-07-31 JJK   Re-factor as a class
  * 2020-08-04 JJK   Added setPassword, resetPassword, and setUserToken
+ * 2020-08-11 JJK   Corrected the cookie/jwt expiration to be 30 days
  *============================================================================*/
 namespace jkauflin\jjklogin;
 
@@ -40,12 +41,12 @@ class LoginAuth
             $payloadArray['userId'] = $UserId;
             $payloadArray['userName'] = $UserName;
             $payloadArray['userLevel'] = $UserLevel;
-            $payloadArray['exp'] = strtotime("+1 Months");  // Set the token expiration datetime
+            $payloadArray['exp'] = time()+60*60*24*30;  // 30 days
 
             $token = JWT::encode($payloadArray, $serverKey);
 
             setcookie($cookieName, $token, [
-                'expires' => 0,
+                'expires' =>  time()+60*60*24*30,  // 30 days
                 'path' => $cookiePath,
                 'samesite' => 'strict',
                 //'secure' => TRUE,
