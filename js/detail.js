@@ -137,8 +137,8 @@ var detail = (function(){
         tr += '<tr><th class="hidden-xs">Zip Code: </th><td class="hidden-xs">' + hoaRec.Property_Zip + '</td></tr>';
         tr += '<tr><th>Total Due: </th><td>$' + util.formatMoney(hoaRec.TotalDue) + '</td></tr>';
 
-        tr += '<tr><th class="hidden-xs hidden-sm">Member: </th><td class="hidden-xs hidden-sm">' + util.setCheckbox(hoaRec.Member) + '</td></tr>';
-        tr += '<tr><th>Vacant: </th><td>' + util.setCheckbox(hoaRec.Vacant) + '</td></tr>';
+        //tr += '<tr><th class="hidden-xs hidden-sm">Member: </th><td class="hidden-xs hidden-sm">' + util.setCheckbox(hoaRec.Member) + '</td></tr>';
+        //tr += '<tr><th>Vacant: </th><td>' + util.setCheckbox(hoaRec.Vacant) + '</td></tr>';
         tr += '<tr><th>Rental: </th><td>' + util.setCheckbox(hoaRec.Rental) + '</td></tr>';
         tr += '<tr><th>Managed: </th><td>' + util.setCheckbox(hoaRec.Managed) + '</td></tr>';
         tr += '<tr><th>Foreclosure: </th><td>' + util.setCheckbox(hoaRec.Foreclosure) + '</td></tr>';
@@ -146,8 +146,8 @@ var detail = (function(){
         tr += '<tr><th>ToBe Released: </th><td>' + util.setCheckbox(hoaRec.Liens_2B_Released) + '</td></tr>';
         tr += '<tr><th>Use Email: </th><td>' + util.setCheckbox(hoaRec.UseEmail) + '</td></tr>';
         tr += '<tr><th>Comments: </th><td>' + hoaRec.Comments + '</td></tr>';
-        tr += '<tr><th>AdminLevel: </th><td>' + hoaRec.adminLevel + '</td></tr>';
-        tr += '<tr><th>UserName: </th><td>' + hoaRec.userName + '</td></tr>';
+        //tr += '<tr><th>AdminLevel: </th><td>' + hoaRec.adminLevel + '</td></tr>';
+        //tr += '<tr><th>UserName: </th><td>' + hoaRec.userName + '</td></tr>';
 
         $propDetail.html(tr);
 
