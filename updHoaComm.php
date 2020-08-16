@@ -52,10 +52,17 @@ try {
 	//--------------------------------------------------------------------------------------------------------
 	$conn = getConn($host, $dbadmin, $password, $dbname);
 
-	$sqlStr = 'INSERT INTO hoa_communications (Parcel_ID,CommID,CreateTs,OwnerID,CommType,CommDesc) VALUES(?,null,CURRENT_TIMESTAMP,?,?,?); ';
-	$stmt = $conn->prepare($sqlStr);
-	$stmt->bind_param("siss",$param->parcelId,$param->ownerId,$param->commType,$param->commDesc);
-	
+    $sqlStr = '';
+    $stmt = null;
+    if ($param->commId == "NEW") {
+	    $sqlStr = 'INSERT INTO hoa_communications (Parcel_ID,CommID,CreateTs,OwnerID,CommType,CommDesc) VALUES(?,null,CURRENT_TIMESTAMP,?,?,?); ';
+	    $stmt = $conn->prepare($sqlStr);
+	    $stmt->bind_param("siss",$param->parcelId,$param->ownerId,$param->commType,$param->commDesc);
+    } else {
+        $sqlStr = 'UPDATE hoa_communications SET CommDesc=? WHERE CommID =?; ';
+	    $stmt = $conn->prepare($sqlStr);
+	    $stmt->bind_param("si",$param->commDesc,$param->commId);
+    }
 	$stmt->execute();
 	$stmt->close();
 	

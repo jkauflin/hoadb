@@ -165,6 +165,9 @@
     function setTextArea(idName, textVal, rows) {
         return '<textarea id="' + idName + '" class="form-control input-sm" rows="' + rows + '">' + textVal + '</textarea>';
     }
+    function setTextArea2(idName, textVal, rows, cols) {
+        return '<textarea id="' + idName + '" class="form-control input-sm" rows="' + rows + '" cols="' + cols + '">' + textVal + '</textarea>';
+    }
     function setInputDate(idName, textVal, textSize) {
         return '<input id="' + idName + '" type="text" class="form-control input-sm Date" value="' + textVal + '" size="' + textSize + '" maxlength="' + textSize + '" placeholder="YYYY-MM-DD">';
     }
@@ -248,7 +251,8 @@
         setCheckbox:        setCheckbox,
         setCheckboxEdit:    setCheckboxEdit,
         setInputText:       setInputText,
-        setTextArea:        setTextArea,
+        setTextArea: setTextArea,
+        setTextArea2,
         setInputDate:       setInputDate,
         setSelectOption:    setSelectOption,
         getJSONfromInputs:  getJSONfromInputs,

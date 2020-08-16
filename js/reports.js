@@ -18,6 +18,7 @@
  * 2018-11-13 JJK   Re-factored for modules
  * 2019-01-19 JJK   Added Parcel Id to the unpaid dues ranking list
  * 2020-08-03 JJK   Re-factored for new error handling
+ * 2020-08-15 JJK   Added Issues Report
  *============================================================================*/
 var reports = (function () {
     'use strict';
@@ -76,6 +77,9 @@ var reports = (function () {
                     _duesRank(adminRec.hoaRecList, reportName);
                 });
             } else {
+
+                // check for filter criteria to pass to query ???
+
                 $.getJSON("getHoaReportData.php", "reportName=" + reportName, function (result) {
                     if (result.error) {
                         console.log("error = " + result.error);
@@ -142,7 +146,6 @@ var reports = (function () {
     };	
 
     function _salesNewOwnerIgnore() {
-         
         var reportName = event.target.getAttribute('id');
         var reportTitle = event.target.getAttribute("data-reportTitle");
         var paramMap = new Map();
@@ -246,6 +249,30 @@ var reports = (function () {
 
             }); // $.each(reportList, function(index, hoaSalesRec) {
             // End of if (reportName == "SalesReport" || reportName == "SalesNewOwnerReport") {
+
+        } else if (reportName == "IssuesReport") {
+            $.each(reportList, function (index, hoaRec) {
+                rowId = index + 1;
+
+                if (index == 0) {
+                    $('<tr>')
+                        .append($('<th>').html('Rec'))
+                        .append($('<th>').html('Location'))
+                        .append($('<th>').html('CommID'))
+                        .append($('<th>').html('Type'))
+                        .append($('<th>').html('CommDesc'))
+                        .appendTo($ReportListDisplay);
+                }
+
+                tr = $('<tr>');
+                tr.append($('<td>').html(index + 1))
+                    .append($('<td>').html(hoaRec.Parcel_Location))
+                    .append($('<td>').html(hoaRec.commList[0].CommID))
+                    .append($('<td>').html(hoaRec.commList[0].CommType))
+                    .append($('<td>').html(hoaRec.commList[0].CommDesc.substr(0,80)))
+                tr.appendTo($ReportListDisplay);
+
+            }); // $.each(reportList, function(index, hoaRec) {
 
         } else if (reportName == "PaidDuesCountsReport") {
 

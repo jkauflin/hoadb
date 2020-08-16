@@ -41,6 +41,8 @@ try {
 
     if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 
+        // get filter criteria
+
     	if ($reportName == "SalesNewOwnerReport") {
     		$stmt = $conn->prepare("SELECT * FROM hoa_sales WHERE ProcessedFlag != 'Y' ORDER BY CreateTimestamp DESC; ");
     	} else {
@@ -78,6 +80,35 @@ try {
     		$result->close();
     	}
     	// End of if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
+
+    } else if ($reportName == "IssuesReport") {
+
+		$sql = "SELECT * FROM hoa_communications WHERE CommType='Issue' ORDER BY CommID DESC ";
+		$stmt = $conn->prepare($sql);
+    	$stmt->execute();
+    	$result = $stmt->get_result();
+    	$stmt->close();
+    	$cnt = 0;
+
+        if ($result->num_rows > 0) {
+    		// Loop through all the member properties
+    		while($row = $result->fetch_assoc()) {
+                $cnt = $cnt + 1;
+                
+                $hoaCommRec = new HoaCommRec();
+                $hoaCommRec->Parcel_ID = $row["Parcel_ID"];
+                $hoaCommRec->CommID = $row["CommID"];
+                $hoaCommRec->CreateTs = $row["CreateTs"];
+                $hoaCommRec->OwnerID = $row["OwnerID"];
+                $hoaCommRec->CommType = $row["CommType"];
+                $hoaCommRec->CommDesc = $row["CommDesc"];
+
+    			$hoaRec = getHoaRec($conn,$hoaCommRec->Parcel_ID,$hoaCommRec->OwnerID);
+                $hoaRec->commList = array();
+				array_push($hoaRec->commList,$hoaCommRec);
+    			array_push($outputArray,$hoaRec);
+    		}
+        }
 
     } else if ($reportName == "PaidDuesCountsReport") {
     	

@@ -11,7 +11,7 @@
  * 					Dues Notice functions into Communications table
  * 2018-11-07 JJK   Re-factor for JSON based POST for updates
  * 2020-08-03 JJK   Re-factored for new error handling
- * 
+ * 2020-08-16 JJK   Modified to allow edit on issue
  *============================================================================*/
 var communications = (function () {
     'use strict';
@@ -62,7 +62,9 @@ var communications = (function () {
     function _render() {
         var tr = '';
 
-        $CommunicationsNew.html('<a id="CommunicationsNewButton" data-parcelId="' + parcelId + '" data-ownerId="' + ownerId + '" data-commId="NEW" href="#" class="btn btn-primary NewComm" role="button">New Communication</a>');
+        if (jjklogin.getUserLevel() > 1) {
+            $CommunicationsNew.html('<a id="CommunicationsNewButton" data-parcelId="' + parcelId + '" data-ownerId="' + ownerId + '" data-commId="NEW" href="#" class="btn btn-primary NewComm" role="button">New Communication</a>');
+        }
         //$("#CommunicationsParcel").html("<b>Parcel Id:</b> " + parcelId + " <b>Owner Id:</b> " + ownerId);
 
         $.each(hoaCommRecList, function (index, hoaCommRec) {
@@ -76,10 +78,16 @@ var communications = (function () {
                 tr += '</tr>';
             }
             tr += '<tr>';
-            tr += '<td>' + hoaCommRec.CommID + '</td>';
+            // if issue make CommID a hyperlink to edit the issue
+            if (hoaCommRec.CommType == "Issue" && jjklogin.getUserLevel() > 1) {
+                tr += '<td><a data-parcelId="' + parcelId + '" data-ownerId="' + ownerId + '" data-commId="' + hoaCommRec.CommID +
+                      '" href="#" class="NewComm" role="button">' + hoaCommRec.CommID + '</a></td>';
+            } else {
+                tr += '<td>' + hoaCommRec.CommID + '</td>';
+            }
             tr += '<td>' + hoaCommRec.CreateTs + '</td>';
             tr += '<td>' + hoaCommRec.CommType + '</td>';
-            tr += '<td>' + hoaCommRec.CommDesc + '</td>';
+            tr += '<td>' + hoaCommRec.CommDesc.substr(0,70) + '</td>';
             tr += '</tr>';
         });
 
@@ -87,13 +95,11 @@ var communications = (function () {
     }
 
     function _newComm(event) {
-         
         parcelId = event.target.getAttribute("data-parcelId");
         ownerId = event.target.getAttribute("data-ownerId");
         commId = event.target.getAttribute("data-commId");
         $.getJSON("getHoaCommList.php", "parcelId=" + parcelId + "&ownerId=" + ownerId + "&commId=" + commId, function (outHoaCommRecList) {
             _formatCommEdit(outHoaCommRecList[0],parcelId,ownerId,commId);
-             
             $EditPage.modal();
         });
     }
@@ -107,17 +113,16 @@ var communications = (function () {
         tr += '<div class="form-group">';
         tr += '<tr><th>Parcel:</th><td>' + parcelId + '</td></tr>';
         tr += '<tr><th>OwnerID:</th><td>' + ownerId + '</td></tr>';
-        //tr += '<tr><th>CommID:</th><td>'+ commId +'</td></tr>';
         if (hoaCommRec === undefined) {
-            tr += '<tr><th>Datetime:</th><td></td></tr>';
             var selectOption = '<select class="form-control" id="commType">'
                 + util.setSelectOption("Issue", "Issue", 1, "bg-success")
                 + util.setSelectOption("Dues Question", "Dues Question", 0, "bg-danger")
                 + util.setSelectOption("Dues Notice", "Dues Notice", 0, "bg-info")
                 + '</select>';
             tr += '<tr><th>Type: </th><td>' + selectOption + '</td></tr>';
-            tr += '<tr><th>Description:</th><td>' + util.setInputText("commDesc", "", "80") + '</td></tr>';
+            tr += '<tr><th>Description:</th><td>' + util.setTextArea2("commDesc", "", "3","70") + '</td></tr>';
         } else {
+            tr += '<tr><th>CommID:</th><td>' + commId + '</td></tr>';
             tr += '<tr><th>Datetime:</th><td>' + hoaCommRec.CreateTs + '</td></tr>';
             var selectOption = '<select class="form-control" id="commType">'
                 + util.setSelectOption("Issue", "Issue", ("Issue" == hoaCommRec.CommType), "bg-success")
@@ -125,7 +130,7 @@ var communications = (function () {
                 + util.setSelectOption("Dues Notice", "Dues Notice", ("Dues Notice" == hoaCommRec.CommType), "bg-info")
                 + '</select>';
             tr += '<tr><th>Type: </th><td>' + selectOption + '</td></tr>';
-            tr += '<tr><th>Description:</th><td>' + util.setInputText("commDesc", hoaCommRec.CommDesc, "80") + '</td></tr>';
+            tr += '<tr><th>Description:</th><td>' + util.setTextArea2("commDesc", hoaCommRec.CommDesc, "3", "70") + '</td></tr>';
         }
 
         tr += '</div>';
@@ -133,7 +138,6 @@ var communications = (function () {
 
         tr = '<form class="form-inline" role="form">';
         tr += '<a data-commAction="Edit" data-parcelId="' + parcelId + '" data-ownerId="' + ownerId + '" data-commId="' + commId + '" href="#" class="btn btn-primary SaveCommEdit" role="button">Save</a>';
-        //tr += '<a data-commAction="Delete" data-parcelId="'+parcelId+'" data-ownerId="'+ownerId+'" data-commId="'+commId+'" href="#" class="btn btn-primary SaveCommEdit" role="button">Delete</a>';
         tr += '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button></form>';
         $EditPageButton.html(tr);
 
@@ -146,23 +150,31 @@ var communications = (function () {
         paramMap.set('commId', event.target.getAttribute("data-commId"));
         //console.log("util.getJSONfromInputs($EditTable,paramMap) = " + util.getJSONfromInputs($EditTable, paramMap));
 
-        $.ajax("updHoaComm.php", {
+        var url = 'updHoaComm.php';
+        $.ajax(url, {
             type: "POST",
             contentType: "application/json",
             data: util.getJSONfromInputs($EditTable, paramMap),
             dataType: "json",
-            success: function (list) {
-                 
-                // Set the newest list from the update into the module variable (for render)
-                hoaCommRecList = list;
-                _render();
-                $EditPage.modal("hide");
-                $displayPage.tab('show');
+            //dataType: "html",
+            success: function (result) {
+                //console.log("result = " + result);
+                if (result.error) {
+                    console.log("error = " + result.error);
+                    $ajaxError.html("<b>" + result.error + "</b>");
+                } else {
+                    // Set the newest list from the update into the module variable (for render)
+                    hoaCommRecList = result;
+                    _render();
+                    $EditPage.modal("hide");
+                }
             },
-            error: function () {
+            error: function (xhr, status, error) {
+                //console.log('Error in AJAX request to ' + url + ', status = ' + status + ', error = ' + error)
                 $editValidationError.html("An error occurred in the update - see log");
             }
         });
+
     }
 
     function LogCommunication(parcelId,ownerId,commType,commDesc) {
@@ -174,15 +186,24 @@ var communications = (function () {
         paramMap.set('commDesc', commDesc);
         //console.log("util.getJSONfromInputs(null,paramMap) = " + util.getJSONfromInputs(null, paramMap));
 
-        $.ajax("updHoaComm.php", {
+        var url = 'updHoaComm.php';
+        $.ajax(url, {
             type: "POST",
             contentType: "application/json",
             data: util.getJSONfromInputs(null, paramMap),
             dataType: "json",
-            success: function (list) {
-                // success actions
+            //dataType: "html",
+            success: function (result) {
+                //console.log("result = " + result);
+                if (result.error) {
+                    console.log("error = " + result.error);
+                    $ajaxError.html("<b>" + result.error + "</b>");
+                } else {
+                    // Success
+                }
             },
-            error: function () {
+            error: function (xhr, status, error) {
+                //console.log('Error in AJAX request to ' + url + ', status = ' + status + ', error = ' + error)
                 $editValidationError.html("An error occurred in the update - see log");
             }
         });

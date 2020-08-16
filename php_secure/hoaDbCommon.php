@@ -128,7 +128,8 @@ class HoaRec
 	public $assessmentsList;
 	public $totalDuesCalcList;
 	public $salesList;
-	public $emailAddrList;
+    public $emailAddrList;
+    public $commList;
 	
 	public $adminLevel;
 	public $TotalDue;
@@ -369,7 +370,7 @@ function getHoaPaymentRec($conn,$parcelId,$transId) {
 //--------------------------------------------------------------------------------------------------------------
 // Primary function to get all the data for a particular value
 //--------------------------------------------------------------------------------------------------------------
-function getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate,$paypalFixedAmtButtonForm='',$paypalFixedAmtButtonInput='') {
+function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedAmtButtonForm='',$paypalFixedAmtButtonInput='') {
 	$hoaRec = new HoaRec();
 
 	// Total Due is calculated below
