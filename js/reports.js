@@ -259,7 +259,6 @@ var reports = (function () {
                         .append($('<th>').html('Rec'))
                         .append($('<th>').html('Location'))
                         .append($('<th>').html('CommID'))
-                        .append($('<th>').html('Type'))
                         .append($('<th>').html('CommDesc'))
                         .appendTo($ReportListDisplay);
                 }
@@ -268,7 +267,6 @@ var reports = (function () {
                 tr.append($('<td>').html(index + 1))
                     .append($('<td>').html(hoaRec.Parcel_Location))
                     .append($('<td>').html(hoaRec.commList[0].CommID))
-                    .append($('<td>').html(hoaRec.commList[0].CommType))
                     .append($('<td>').html(hoaRec.commList[0].CommDesc.substr(0,80)))
                 tr.appendTo($ReportListDisplay);
 

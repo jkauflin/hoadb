@@ -1,5 +1,5 @@
 /*==============================================================================
- * (C) Copyright 2015,2016,2017,2018 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2016,2017,2018,2020 John J Kauflin, All rights reserved. 
  *----------------------------------------------------------------------------
  * DESCRIPTION: 
  *----------------------------------------------------------------------------
@@ -12,6 +12,7 @@
  * 2018-11-07 JJK   Re-factor for JSON based POST for updates
  * 2020-08-03 JJK   Re-factored for new error handling
  * 2020-08-16 JJK   Modified to allow edit on issue
+ * 2020-08-22 JJK   Increased CommDesc to 600 characters
  *============================================================================*/
 var communications = (function () {
     'use strict';
@@ -120,7 +121,7 @@ var communications = (function () {
                 + util.setSelectOption("Dues Notice", "Dues Notice", 0, "bg-info")
                 + '</select>';
             tr += '<tr><th>Type: </th><td>' + selectOption + '</td></tr>';
-            tr += '<tr><th>Description:</th><td>' + util.setTextArea2("commDesc", "", "3","70") + '</td></tr>';
+            tr += '<tr><th>Description:</th><td>' + util.setTextArea2("commDesc", "", "7","80") + '</td></tr>';
         } else {
             tr += '<tr><th>CommID:</th><td>' + commId + '</td></tr>';
             tr += '<tr><th>Datetime:</th><td>' + hoaCommRec.CreateTs + '</td></tr>';
@@ -130,7 +131,7 @@ var communications = (function () {
                 + util.setSelectOption("Dues Notice", "Dues Notice", ("Dues Notice" == hoaCommRec.CommType), "bg-info")
                 + '</select>';
             tr += '<tr><th>Type: </th><td>' + selectOption + '</td></tr>';
-            tr += '<tr><th>Description:</th><td>' + util.setTextArea2("commDesc", hoaCommRec.CommDesc, "3", "70") + '</td></tr>';
+            tr += '<tr><th>Description:</th><td>' + util.setTextArea2("commDesc", hoaCommRec.CommDesc, "7", "80") + '</td></tr>';
         }
 
         tr += '</div>';
