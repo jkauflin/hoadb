@@ -52,6 +52,7 @@
  * 2020-08-05 JJK   Removed getConfigVal (get values from DB config table)
  * 2020-08-10 JJK   Added getSecretsFilename2 for includes from parent web
  *                  (Dad's 80th birthday)
+ * 2020-08-23 JJK   Added $WelcomeSent to SalesRec
  *============================================================================*/
 
 function externalIncludesDir() {
@@ -227,6 +228,7 @@ class HoaSalesRec
 	public $LastChangedBy;
   	public $LastChangedTs;
 	public $adminLevel;
+	public $WelcomeSent;
 }
 
 class HoaPaymentRec

@@ -72,6 +72,7 @@ try {
     			$hoaSalesRec->ProcessedFlag = $row["ProcessedFlag"];
     			$hoaSalesRec->LastChangedBy = $row["LastChangedBy"];
     			$hoaSalesRec->LastChangedTs = $row["LastChangedTs"];
+    			$hoaSalesRec->WelcomeSent = $row["WelcomeSent"];
     	
     			$hoaSalesRec->adminLevel = $userRec->userLevel;
 

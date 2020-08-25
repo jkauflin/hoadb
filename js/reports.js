@@ -206,17 +206,44 @@ var reports = (function () {
                 if (index == 0) {
                     $('<tr>')
                         .append($('<th>').html('Row'))
+                        .append($('<th>').html('Welcome Sent'))
                         .append($('<th>').html('Sale Date'))
                         .append($('<th>').html('Parcel Location'))
                         .append($('<th>').html('Old Owner Name'))
                         .append($('<th>').html('New Owner Name'))
-                        .append($('<th>').html('Mailing Name1'))
-                        .append($('<th>').html('Mailing Name2'))
+                        .append($('<th>').html('Mailing Name'))
+//                        .append($('<th>').html('Mailing Name2'))
                         .appendTo($ReportListDisplay);
                 }
 
-                tr = $('<tr>');
+                tr = $('<tr class="small">');
                 tr.append($('<td>').html(index + 1))
+
+                if (hoaSalesRec.WelcomeSent == 'Y') {
+                    tr.append($('<td>').html(hoaSalesRec.WelcomeSent));
+                } else {
+                    // offer buttons for Send and Ignore
+                    tr.append($('<td>')
+                        .append($('<a>').prop('id', reportName)
+                            .attr('data-reportTitle', "County Reported Sales of HOA properties (for New Owner maintenance)")
+                            .attr('data-parcelId', hoaSalesRec.PARID)
+                            .attr('data-saleDate', hoaSalesRec.SALEDT)
+                            .attr('data-Action', "Send")
+                            .attr('href', "#")
+                            .attr('class', "btn btn-success btn-xs SalesWelcomeSend")
+                            .attr('role', "button")
+                            .html("Send"))
+                        .append($('<a>').prop('id', reportName)
+                            .attr('data-reportTitle', "County Reported Sales of HOA properties (for New Owner maintenance)")
+                            .attr('data-parcelId', hoaSalesRec.PARID)
+                            .attr('data-saleDate', hoaSalesRec.SALEDT)
+                            .attr('data-Action', "Ignore")
+                            .attr('href', "#")
+                            .attr('class', "btn btn-warning btn-xs SalesWelcomeIgnore")
+                            .attr('role', "button")
+                            .html("Ignore")));
+                }
+
                 if (hoaSalesRec.adminLevel > 1 && reportName == "SalesNewOwnerReport") {
                     tr.append($('<td>')
                         .append($('<a>').attr('href', "#")
@@ -242,8 +269,8 @@ var reports = (function () {
                 tr.append($('<td>').html(hoaSalesRec.PARCELLOCATION))
                     .append($('<td>').html(hoaSalesRec.OLDOWN))
                     .append($('<td>').html(hoaSalesRec.OWNERNAME1))
-                    .append($('<td>').html(hoaSalesRec.MAILINGNAME1))
-                    .append($('<td>').html(hoaSalesRec.MAILINGNAME2));
+                    .append($('<td>').html(hoaSalesRec.MAILINGNAME1 + ' ' + hoaSalesRec.MAILINGNAME2));
+//                    .append($('<td>').html(hoaSalesRec.MAILINGNAME2));
 
                 tr.appendTo($ReportListDisplay);
 
