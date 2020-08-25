@@ -45,8 +45,17 @@ try {
 	//--------------------------------------------------------------------------------------------------------
 	// Create connection to the database
 	//--------------------------------------------------------------------------------------------------------
-	$conn = getConn($host, $dbadmin, $password, $dbname);
-	$stmt = $conn->prepare("UPDATE hoa_sales SET ProcessedFlag='Y',LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE PARID = ? AND SALEDT = ? ; ");
+    $conn = getConn($host, $dbadmin, $password, $dbname);
+    $stmt = null;
+    if ($param->ACTION == "NewOwnerIgnore") {
+	    $stmt = $conn->prepare("UPDATE hoa_sales SET ProcessedFlag='Y',LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE PARID = ? AND SALEDT = ? ; ");
+    } else if ($param->ACTION == "WelcomeSend") {
+	    $stmt = $conn->prepare("UPDATE hoa_sales SET WelcomeSent='S',LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE PARID = ? AND SALEDT = ? ; ");
+    } else if ($param->ACTION == "WelcomeIgnore") {
+	    $stmt = $conn->prepare("UPDATE hoa_sales SET WelcomeSent='N',LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE PARID = ? AND SALEDT = ? ; ");
+    } else {
+        throw new Exception('ACTION is not valid, value = ' . $param->ACTION, 500);
+    }
 	$stmt->bind_param("sss",$username,$param->PARID,$param->SALEDT);	
 	$stmt->execute();
 	$stmt->close();

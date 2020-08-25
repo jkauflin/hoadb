@@ -9,6 +9,7 @@
  * 2016-07-30 JJK   Completed query for Paid Dues Count report
  * 2016-09-20 JJK	Added non-collectibel fields for counts
  * 2020-08-01 JJK   Re-factored to use jjklogin for authentication
+ * 2020-08-25 JJK   Added WelcomeSent
  *============================================================================*/
 require_once 'vendor/autoload.php'; 
 
