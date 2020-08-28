@@ -206,7 +206,8 @@ try {
 			//} else {
 				$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
 						"WHERE p.Parcel_ID = 'R72617322 0017' AND p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
-						"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
+						"AND a.FY = " . $fy . " AND a.Paid = 1 ORDER BY p.Parcel_ID; ";
+//						"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
 				/* Can't just use UseEmail as a flag because we want to send emails to every email address we have, regardless if they say use specifically
 						$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
 						"WHERE p.UseEmail AND p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
