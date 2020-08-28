@@ -125,8 +125,8 @@ var admin = (function () {
                 firstNotice = false;
             }
 
-            console.log("in adminExecute, action = "+action);
-            console.log("in adminExecute, firstNotice = "+firstNotice);
+            //console.log("in adminExecute, action = "+action);
+            //console.log("in adminExecute, firstNotice = "+firstNotice);
 
             // Get all the data needed for processing
             $.getJSON("adminExecute.php", "action=" + action +
@@ -285,12 +285,11 @@ var admin = (function () {
 
                 } else {
                     //  This is NOT a Test
-                    console.log(index + " " + index2 + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", sendEmailAddr = " + sendEmailAddr);
+                    //console.log(index + " " + index2 + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", sendEmailAddr = " + sendEmailAddr);
                     resultDetails = resultDetails + "<br>" + index + " " + index2 + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = "
                         + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + " "
                         + hoaRec.ownersList[0].Owner_Name2 + ", emailAddr = " + emailAddr;
 
-                    /*
                     $.post("sendMail.php", {
                         toEmail: sendEmailAddr,
                         subject: config.getVal('hoaNameShort') + ' Dues Notice',
@@ -300,7 +299,7 @@ var admin = (function () {
                         filename: config.getVal('hoaNameShort') + 'DuesNotice.pdf',
                         filedata: btoa(pdfRec.pdf.output())
                     }, function (response) {
-                        //console.log("result from sendMail = " + response.result + ", ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID + ", response.sendEmailAddr = " + response.sendEmailAddr);
+                        console.log("result from sendMail = " + response.result + ", ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID + ", response.sendEmailAddr = " + response.sendEmailAddr);
                         if (response.result == 'SUCCESS') {
                             commDesc = noticeType + " Dues Notice emailed to " + response.sendEmailAddr;
                         } else {
@@ -311,7 +310,6 @@ var admin = (function () {
                         // log communication for notice created
                         communications.LogCommunication(response.Parcel_ID, response.OwnerID, commType, commDesc);
                     }, 'json'); // End of $.post("sendMail.php"
-                    */
 
                 }
 
