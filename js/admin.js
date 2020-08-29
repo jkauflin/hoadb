@@ -350,7 +350,7 @@ var admin = (function () {
             pdfRec = pdfModule.formatYearlyDuesStatement(pdfRec, hoaRec, firstNotice);
 
             $.post("sendMail.php", {
-                toEmail: testEmailAddr,
+                toEmail: emailAddr,
                 subject: config.getVal('hoaNameShort') + ' Dues Notice',
                 messageStr: 'Attached is the ' + config.getVal('hoaName') + ' Dues Notice.  *** Reply to this email to request unsubscribe ***',
                 parcelId: hoaRec.Parcel_ID,
@@ -361,13 +361,13 @@ var admin = (function () {
                 console.log("result from sendMail = " + response.result + ", ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID + ", response.sendEmailAddr = " + response.sendEmailAddr);
                 if (response.result == 'SUCCESS') {
                     commDesc = noticeType + " Dues Notice emailed to " + response.sendEmailAddr;
+                    // log communication for notice created
+                    communications.LogCommunication(response.Parcel_ID, response.OwnerID, commType, commDesc);
                 } else {
                     commDesc = noticeType + " Dues Notice, ERROR emailing to " + response.sendEmailAddr;
                     //util.displayError(commDesc + ", ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID);
                     console.log("Error sending Email, ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID + ", sendEmailAddr = " + response.sendEmailAddr + ", message = " + response.message);
                 }
-                // log communication for notice created
-                //communications.LogCommunication(response.Parcel_ID, response.OwnerID, commType, commDesc);
             }, 'json'); // End of $.post("sendMail.php"
         });
 
