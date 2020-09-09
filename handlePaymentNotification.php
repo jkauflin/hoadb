@@ -14,6 +14,8 @@
  * 2016-08-26 JJK   Changed from sandbox to live production
  * 2020-08-05 JJK   Modified to include hoaDbCommon and call function there
  *                  to do the update the HOA database
+ * 2020-09-08 JJK   Added email to notify of problems (INVALID) for the 
+ *                  Access Denied issue
  *============================================================================*/
 // Common functions
 require_once 'php_secure/commonUtil.php';
@@ -101,6 +103,9 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, array('Connection: Close'));
 //$cert = __DIR__ . "./cacert.pem";
 //curl_setopt($ch, CURLOPT_CAINFO, $cert);
 
+error_log(date('[Y-m-d H:i] '). "-" . PHP_EOL, 3, LOG_FILE);
+error_log(date('[Y-m-d H:i] '). "======================================================================" . PHP_EOL, 3, LOG_FILE);
+
 $res = curl_exec($ch);
 if (curl_errno($ch) != 0) // cURL error
 	{
@@ -114,6 +119,7 @@ if (curl_errno($ch) != 0) // cURL error
 		// Log the entire HTTP response if debug is switched on.
 		if(DEBUG == true) {
 			error_log(date('[Y-m-d H:i] '). "HTTP request of validation request:". curl_getinfo($ch, CURLINFO_HEADER_OUT) ." for IPN payload: $req" . PHP_EOL, 3, LOG_FILE);
+            error_log(date('[Y-m-d H:i] '). " " . PHP_EOL, 3, LOG_FILE);
 			error_log(date('[Y-m-d H:i] '). "HTTP response of validation request: $res" . PHP_EOL, 3, LOG_FILE);
 		}
 		curl_close($ch);
@@ -204,20 +210,14 @@ if (strcmp ($res, "VERIFIED") == 0) {
 } else if (strcmp ($res, "INVALID") == 0) {
 	// log for manual investigation
 	// Add business logic here which deals with invalid IPN messages
-	// *** JJK - add logic to send an email to admin ???
 	if(DEBUG == true) {
 		error_log(date('[Y-m-d H:i] '). "Invalid IPN: $req" . PHP_EOL, 3, LOG_FILE);
 	}
 	
 	// Send an email announcing the IPN message is INVALID
-	/*
-	$mail_From    = "IPN@example.com";
-	$mail_To      = "<var>Your-eMail-Address</var>";
-	$mail_Subject = "INVALID IPN";
-	$mail_Body    = $req;
-	
-	mail($mail_To, $mail_Subject, $mail_Body, $mail_From);	
-	*/
+    $subject = 'GRHA Payment ERROR';
+	$messageStr = '<h3>GRHA Payment ERROR</h3> Error in updating HOADB from Paypal payment - check paypal log';
+    sendHtmlEMail(getConfigValDB($conn,"paymentEmailList"),$subject,$messageStr,$fromEmailAddress);
 }
 
 ?>

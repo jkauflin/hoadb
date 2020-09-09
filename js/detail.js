@@ -195,7 +195,7 @@ var detail = (function(){
             ButtonType = '';
 
             if (index == 0) {
-                tr = tr + '<tr>';
+                tr = tr + '<tr class="small">';
                 tr = tr + '<th>OwnId</th>';
                 tr = tr + '<th>FY</th>';
                 tr = tr + '<th>Dues Amt</th>';
@@ -210,7 +210,7 @@ var detail = (function(){
                 TaxYear = rec.DateDue.substring(0, 4);
             }
 
-            tr = tr + '<tr>';
+            tr = tr + '<tr class="small">';
             tr = tr + '<td>' + rec.OwnerID + '</td>';
             if (hoaRec.adminLevel > 1) {
                 tr = tr + '<td><a data-parcelId="' + hoaRec.Parcel_ID + '" data-fy="' + rec.FY + '" href="#">' + rec.FY + '</a></td>';
