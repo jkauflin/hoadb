@@ -1148,7 +1148,15 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 		$hoaPaymentRec = getHoaPaymentRec($conn,$parcelId,$txn_id);
 		if ($hoaPaymentRec != null) {
 			// Payment transaction already exists - ignore updates or other logic
-			error_log(date('[Y-m-d H:i] ') . 'Transaction already recorded for Parcel ' . $parcelId . ', txn_id = ' . $txn_id . PHP_EOL, 3, LOG_FILE);
+            error_log(date('[Y-m-d H:i] ') . 'Transaction already recorded for Parcel ' . $parcelId . ', txn_id = ' . $txn_id . PHP_EOL, 3, LOG_FILE);
+            error_log(date('[Y-m-d H:i] ') . '*** adminEmailList = ' . getConfigValDB($conn,"adminEmailList") . PHP_EOL, 3, LOG_FILE);
+
+			$subject = 'GRHA Payment Notification TEST';
+			$messageStr = '<h3>GRHA Payment Notification TEST</h3>' . 'Test email send';
+			sendHtmlEMail(getConfigValDB($conn,"adminEmailList"),$subject,$messageStr,$fromEmailAddress);
+
+            error_log(date('[Y-m-d H:i] ') . '>>> AFTER email send ' . PHP_EOL, 3, LOG_FILE);
+
 		} else {
 			//error_log(date('[Y-m-d H:i] ') . 'Insert payment for Parcel ' . $parcelId . ', txn_id = ' . $txn_id . PHP_EOL, 3, LOG_FILE);
 		
@@ -1170,7 +1178,9 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 			$datePaid = date("Y-m-d");
 			$paymentMethod = 'Paypal';
 			$username = 'ipnHandler';
-		
+        
+            // check if already marked as paid?
+
 			if (!$stmt = $conn->prepare("UPDATE hoa_assessments SET Paid=?,DatePaid=?,PaymentMethod=?," .
 					"Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND FY = ? ; ")) {
 					error_log("Update Assessment Prepare failed: " . $stmt->errno . ", Error = " . $stmt->error . PHP_EOL, 3, LOG_FILE);

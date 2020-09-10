@@ -216,12 +216,12 @@ if (strcmp ($res, "VERIFIED") == 0) {
 	// Send an email announcing the IPN message is INVALID
     $subject = 'GRHA Payment verification INVALID';
 	$messageStr = '<h3>GRHA Payment verification INVALID</h3> Error in updating HOADB from Paypal payment - check paypal log';
-    sendHtmlEMail(getConfigValDB($conn,"paymentEmailList"),$subject,$messageStr,$fromEmailAddress);
+    sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromEmailAddress);
 } else {
 	error_log(date('[Y-m-d H:i] '). "UN-VERIFIED IPN: $req" . PHP_EOL, 3, LOG_FILE);
     $subject = 'GRHA Payment verification ERROR';
 	$messageStr = '<h3>GRHA Payment verification ERROR</h3> Error in verifying IPN, and updating HOADB from Paypal payment - check paypal log';
-    sendHtmlEMail(getConfigValDB($conn,"paymentEmailList"),$subject,$messageStr,$fromEmailAddress);
+    sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromEmailAddress);
 }
 
 ?>
