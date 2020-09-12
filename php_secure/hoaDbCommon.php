@@ -1153,9 +1153,13 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 
 			$subject = 'GRHA Payment Notification TEST';
 			$messageStr = '<h3>GRHA Payment Notification TEST</h3>' . 'Test email send';
-			sendHtmlEMail(getConfigValDB($conn,"adminEmailList"),$subject,$messageStr,$fromEmailAddress);
+			//sendHtmlEMail(getConfigValDB($conn,"adminEmailList"),$subject,$messageStr,$fromEmailAddress);
 
-            error_log(date('[Y-m-d H:i] ') . '>>> AFTER email send ' . PHP_EOL, 3, LOG_FILE);
+	        mail('john',$subject,$message,$headers);
+            
+            mail("johnkauflin@gmail.com","TEST paypal resend","testing the email");
+
+            error_log(date('[Y-m-d H:i] ') . '>>> AFTER email send TEST ' . PHP_EOL, 3, LOG_FILE);
 
 		} else {
 			//error_log(date('[Y-m-d H:i] ') . 'Insert payment for Parcel ' . $parcelId . ', txn_id = ' . $txn_id . PHP_EOL, 3, LOG_FILE);
