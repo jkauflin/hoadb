@@ -112,6 +112,7 @@ function download_remote_file_with_curl($file_url, $save_to)
 }
 
 function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
+    mb_internal_encoding("UTF-8");
 	$message = '<html><head><title>' . $subject .'</title></head><body>' . $messageStr . '</body></html>';
 	
 	// Always set content-type when sending HTML email
@@ -126,7 +127,9 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
 	 'X-Mailer: PHP/' . phpversion();
 	 */
 	
-	mail($toStr,$subject,$message,$headers);
+    //mail($toStr,$subject,$message,$headers);
+    return mb_send_mail($toStr,$subject,$message,$headers);
+    //bool mb_send_mail ( string $recipient , string $subject , string $message [, string $additional_headers [, string $additional_parameter ]] )
 }
 
 function truncDate($inStr) {
