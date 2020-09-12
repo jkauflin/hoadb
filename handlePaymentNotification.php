@@ -103,7 +103,7 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, array('Connection: Close'));
 //$cert = __DIR__ . "./cacert.pem";
 //curl_setopt($ch, CURLOPT_CAINFO, $cert);
 
-error_log(date('[Y-m-d H:i] '). "-" . PHP_EOL, 3, LOG_FILE);
+error_log(date(' ' . PHP_EOL, 3, LOG_FILE));
 error_log(date('[Y-m-d H:i] '). "======================================================================" . PHP_EOL, 3, LOG_FILE);
 
 $res = curl_exec($ch);
@@ -173,7 +173,12 @@ if (strcmp ($res, "VERIFIED") == 0) {
 	
 	$payment_status = $_POST['payment_status'];
 	
-	error_log(date('[Y-m-d H:i] ') . '$payment_status = ' . $payment_status . PHP_EOL, 3, LOG_FILE);
+    error_log(date('[Y-m-d H:i] ') . '$payment_status = ' . $payment_status . PHP_EOL, 3, LOG_FILE);
+    
+    $subject = 'GRHA Payment verification TEST';
+	$messageStr = '<h3>GRHA Payment verification INVALID</h3> payment_status = ' . $payment_status;
+    sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromEmailAddress);
+
 	
 	if ($payment_status == "Completed") {
 		//			$customValues = $parcelId . ',' . $ownerId . ',' . $fyPayment . ',' .$hoaRec->TotalDue;
