@@ -1149,13 +1149,12 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 		if ($hoaPaymentRec != null) {
 			// Payment transaction already exists - ignore updates or other logic
             error_log(date('[Y-m-d H:i] ') . 'Transaction already recorded for Parcel ' . $parcelId . ', txn_id = ' . $txn_id . PHP_EOL, 3, LOG_FILE);
-            error_log(date('[Y-m-d H:i] ') . '*** adminEmailList = ' . getConfigValDB($conn,"adminEmailList") . PHP_EOL, 3, LOG_FILE);
-
-			$subject = 'GRHA Payment Notification TEST';
-			$messageStr = '<h3>GRHA Payment Notification TEST</h3>' . 'Test email send';
-			sendHtmlEMail(getConfigValDB($conn,"adminEmailList"),$subject,$messageStr,$fromEmailAddress);
-
-            error_log(date('[Y-m-d H:i] ') . '>>> AFTER email send TEST ' . PHP_EOL, 3, LOG_FILE);
+            
+            //error_log(date('[Y-m-d H:i] ') . '*** adminEmailList = ' . getConfigValDB($conn,"adminEmailList") . PHP_EOL, 3, LOG_FILE);
+			//$subject = 'GRHA Payment Notification TEST';
+			//$messageStr = '<h3>GRHA Payment Notification TEST</h3>' . 'Test email send';
+			//sendHtmlEMail(getConfigValDB($conn,"adminEmailList"),$subject,$messageStr,$fromEmailAddress);
+            //error_log(date('[Y-m-d H:i] ') . '>>> AFTER email send TEST ' . PHP_EOL, 3, LOG_FILE);
 
 		} else {
 			//error_log(date('[Y-m-d H:i] ') . 'Insert payment for Parcel ' . $parcelId . ', txn_id = ' . $txn_id . PHP_EOL, 3, LOG_FILE);

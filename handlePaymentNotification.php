@@ -175,10 +175,6 @@ if (strcmp ($res, "VERIFIED") == 0) {
 	
     error_log(date('[Y-m-d H:i] ') . '$payment_status = ' . $payment_status . PHP_EOL, 3, LOG_FILE);
     
-    $subject = 'GRHA Payment verification TEST';
-	$messageStr = '<h3>GRHA Payment verification INVALID</h3> payment_status = ' . $payment_status;
-    sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromEmailAddress);
-
 	
 	if ($payment_status == "Completed") {
 		//			$customValues = $parcelId . ',' . $ownerId . ',' . $fyPayment . ',' .$hoaRec->TotalDue;
@@ -219,14 +215,14 @@ if (strcmp ($res, "VERIFIED") == 0) {
 		error_log(date('[Y-m-d H:i] '). "Invalid IPN: $req" . PHP_EOL, 3, LOG_FILE);
 	}
 	// Send an email announcing the IPN message is INVALID
-    $subject = 'GRHA Payment verification INVALID';
-	$messageStr = '<h3>GRHA Payment verification INVALID</h3> Error in updating HOADB from Paypal payment - check paypal log';
-    sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromEmailAddress);
+    //$subject = 'GRHA Payment verification INVALID';
+	//$messageStr = '<h3>GRHA Payment verification INVALID</h3> Error in updating HOADB from Paypal payment - check paypal log';
+    //sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromEmailAddress);
 } else {
 	error_log(date('[Y-m-d H:i] '). "UN-VERIFIED IPN: $req" . PHP_EOL, 3, LOG_FILE);
-    $subject = 'GRHA Payment verification ERROR';
-	$messageStr = '<h3>GRHA Payment verification ERROR</h3> Error in verifying IPN, and updating HOADB from Paypal payment - check paypal log';
-    sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromEmailAddress);
+    //$subject = 'GRHA Payment verification ERROR';
+	//$messageStr = '<h3>GRHA Payment verification ERROR</h3> Error in verifying IPN, and updating HOADB from Paypal payment - check paypal log';
+    //sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromEmailAddress);
 }
 
 ?>
