@@ -158,7 +158,7 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
          
     	// Send the message and check for success
     	if ($mailer->send($message)) {
-            error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", swiftmail SUCCESS " . PHP_EOL, 3, LOG_FILE);
+            //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", swiftmail SUCCESS " . PHP_EOL, 3, LOG_FILE);
     	} else {
             error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", swiftmail ERROR " . PHP_EOL, 3, LOG_FILE);
     	}
@@ -166,9 +166,7 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
     } catch(Exception $e) {
         error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
     }
-
 }
-
 
 function truncDate($inStr) {
 	$outStr = "";

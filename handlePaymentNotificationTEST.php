@@ -16,6 +16,6 @@ $recipient = 'president@grha-dayton.org';
 $subject = 'GRHA Payment Notification TEST2';
 $messageStr = '<h3>GRHA Payment Notification TEST</h3>' . 'Test email send';
 
-sendHtmlEMail($recipient,$subject,$messageStr,$sender);
+//sendHtmlEMail($recipient,$subject,$messageStr,$sender);
 
 ?>

@@ -103,7 +103,7 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, array('Connection: Close'));
 //$cert = __DIR__ . "./cacert.pem";
 //curl_setopt($ch, CURLOPT_CAINFO, $cert);
 
-error_log(date(' ' . PHP_EOL, 3, LOG_FILE));
+error_log(date('-' . PHP_EOL . PHP_EOL, 3, LOG_FILE));
 error_log(date('[Y-m-d H:i] '). "======================================================================" . PHP_EOL, 3, LOG_FILE);
 
 $res = curl_exec($ch);
@@ -215,14 +215,14 @@ if (strcmp ($res, "VERIFIED") == 0) {
 		error_log(date('[Y-m-d H:i] '). "Invalid IPN: $req" . PHP_EOL, 3, LOG_FILE);
 	}
 	// Send an email announcing the IPN message is INVALID
-    //$subject = 'GRHA Payment verification INVALID';
-	//$messageStr = '<h3>GRHA Payment verification INVALID</h3> Error in updating HOADB from Paypal payment - check paypal log';
-    //sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromEmailAddress);
+    $subject = 'GRHA Payment verification INVALID';
+	$messageStr = '<h3>GRHA Payment verification INVALID</h3> Error in updating HOADB from Paypal payment - check paypal log';
+    sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromEmailAddress);
 } else {
 	error_log(date('[Y-m-d H:i] '). "UN-VERIFIED IPN: $req" . PHP_EOL, 3, LOG_FILE);
-    //$subject = 'GRHA Payment verification ERROR';
-	//$messageStr = '<h3>GRHA Payment verification ERROR</h3> Error in verifying IPN, and updating HOADB from Paypal payment - check paypal log';
-    //sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromEmailAddress);
+    $subject = 'GRHA Payment verification ERROR';
+	$messageStr = '<h3>GRHA Payment verification ERROR</h3> Error in verifying IPN, and updating HOADB from Paypal payment - check paypal log';
+    sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromEmailAddress);
 }
 
 ?>
