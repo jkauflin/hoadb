@@ -116,11 +116,11 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
 	$message = '<html><head><title>' . $subject .'</title></head><body>' . $messageStr . '</body></html>';
 	
 	// Always set content-type when sending HTML email
-	$headers = "MIME-Version: 1.0" . "\r\n";
-	$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+	//$headers = "MIME-Version: 1.0" . "\r\n";
+	//$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
 	
 	// More headers
-	$headers .= 'From: ' . $fromEmailAddress . "\r\n";
+	//$headers .= 'From: ' . $fromEmailAddress . "\r\n";
 	/*
 	 $headers = 'From: webmaster@example.com' . "\r\n" .
 	 'Reply-To: webmaster@example.com' . "\r\n" .
@@ -128,8 +128,9 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
 	 */
 	
     //mail($toStr,$subject,$message,$headers);
-    //return mb_send_mail($toStr,$subject,$message,$headers);
-    //bool mb_send_mail ( string $recipient , string $subject , string $message [, string $additional_headers [, string $additional_parameter ]] )
+
+    //$mimeType = 'text/plain';
+    $mimeType = 'text/html';
 
     try {
     	// Create the Transport (using default linux sendmail)
@@ -142,7 +143,7 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
     	$message = (new Swift_Message($subject))
     		->setFrom([$fromEmailAddress])
     		->setTo([$toStr])
-    		->setBody($messageStr);
+    		->setBody($messageStr,$mimeType);
 
     	// swiftmailer PHP read receipt capability
     	// $message -> setReadReceiptTo('your@address.tld');
