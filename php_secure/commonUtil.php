@@ -127,10 +127,47 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
 	 'X-Mailer: PHP/' . phpversion();
 	 */
 	
-    mail($toStr,$subject,$message,$headers);
+    //mail($toStr,$subject,$message,$headers);
     //return mb_send_mail($toStr,$subject,$message,$headers);
     //bool mb_send_mail ( string $recipient , string $subject , string $message [, string $additional_headers [, string $additional_parameter ]] )
+
+    try {
+    	// Create the Transport (using default linux sendmail)
+    	$transport = new Swift_SendmailTransport();
+
+    	// Create the Mailer using your created Transport
+    	$mailer = new Swift_Mailer($transport);
+
+    	// Create a message
+    	$message = (new Swift_Message($subject))
+    		->setFrom([$fromEmailAddress])
+    		->setTo([$toStr])
+    		->setBody($messageStr);
+
+    	// swiftmailer PHP read receipt capability
+    	// $message -> setReadReceiptTo('your@address.tld');
+    	// When the email is opened, if the mail client supports it a notification will be sent to this address.
+    	// Read receipts won't work for the majority of recipients since many mail clients auto-disable them. 
+    	// Those clients that will send a read receipt will make the user aware that one has been requested.
+
+        // Create the attachment with your data
+    	//$attachment = new Swift_Attachment($filedata, $filename, 'application/pdf');
+    	// Attach it to the message
+    	//$message->attach($attachment);
+         
+    	// Send the message and check for success
+    	if ($mailer->send($message)) {
+            error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", swiftmail SUCCESS " . PHP_EOL, 3, LOG_FILE);
+    	} else {
+            error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", swiftmail ERROR " . PHP_EOL, 3, LOG_FILE);
+    	}
+
+    } catch(Exception $e) {
+        error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
+    }
+
 }
+
 
 function truncDate($inStr) {
 	$outStr = "";
