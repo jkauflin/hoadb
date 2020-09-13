@@ -172,9 +172,7 @@ if (strcmp ($res, "VERIFIED") == 0) {
 	}
 	
 	$payment_status = $_POST['payment_status'];
-	
     error_log(date('[Y-m-d H:i] ') . '$payment_status = ' . $payment_status . PHP_EOL, 3, LOG_FILE);
-    
 	
 	if ($payment_status == "Completed") {
 		//			$customValues = $parcelId . ',' . $ownerId . ',' . $fyPayment . ',' .$hoaRec->TotalDue;

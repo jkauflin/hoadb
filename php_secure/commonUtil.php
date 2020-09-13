@@ -145,12 +145,6 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
     		->setTo([$toStr])
     		->setBody($messageStr,$mimeType);
 
-    	// swiftmailer PHP read receipt capability
-    	// $message -> setReadReceiptTo('your@address.tld');
-    	// When the email is opened, if the mail client supports it a notification will be sent to this address.
-    	// Read receipts won't work for the majority of recipients since many mail clients auto-disable them. 
-    	// Those clients that will send a read receipt will make the user aware that one has been requested.
-
         // Create the attachment with your data
     	//$attachment = new Swift_Attachment($filedata, $filename, 'application/pdf');
     	// Attach it to the message
