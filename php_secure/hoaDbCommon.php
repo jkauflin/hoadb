@@ -1269,12 +1269,14 @@ function sendHtmlEMail2($toStr,$subject,$messageStr,$fromEmailAddress) {
 
     	// Create the Mailer using your created Transport
     	$mailer = new Swift_Mailer($transport);
+    error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ",  after mailer create " . PHP_EOL, 3, LOG_FILE);
 
     	// Create a message
     	$message = (new Swift_Message($subject))
     		->setFrom([$fromEmailAddress])
     		->setTo([$toStr])
     		->setBody($messageStr,$mimeType);
+    error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ",  after message create " . PHP_EOL, 3, LOG_FILE);
 
         // Create the attachment with your data
     	//$attachment = new Swift_Attachment($filedata, $filename, 'application/pdf');
