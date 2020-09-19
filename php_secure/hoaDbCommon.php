@@ -1159,6 +1159,7 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
             
 			$subject = 'GRHA Payment Notification TEST';
 			$messageStr = '<h3>GRHA Payment Notification TEST</h3>' . 'Testing email from the payment notification';
+            error_log(date('[Y-m-d H:i:s] ') . '>>> BEFORE email send TEST ' . PHP_EOL, 3, LOG_FILE);
 			sendHtmlEMail2(getConfigValDB($conn,"paymentEmailList"),$subject,$messageStr,$fromEmailAddress);
             error_log(date('[Y-m-d H:i:s] ') . '>>> AFTER email send TEST ' . PHP_EOL, 3, LOG_FILE);
 
@@ -1240,6 +1241,9 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 
 function sendHtmlEMail2($toStr,$subject,$messageStr,$fromEmailAddress) {
     //mb_internal_encoding("UTF-8");
+
+    error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ",  sendHtmlEMail2 " . PHP_EOL, 3, LOG_FILE);
+
 	$message = '<html><head><title>' . $subject .'</title></head><body>' . $messageStr . '</body></html>';
 	
 	// Always set content-type when sending HTML email
@@ -1279,7 +1283,7 @@ function sendHtmlEMail2($toStr,$subject,$messageStr,$fromEmailAddress) {
          
     	// Send the message and check for success
     	if ($mailer->send($message)) {
-            //error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", swiftmail SUCCESS " . PHP_EOL, 3, LOG_FILE);
+            error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", swiftmail SUCCESS " . PHP_EOL, 3, LOG_FILE);
     	} else {
             error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", swiftmail ERROR " . PHP_EOL, 3, LOG_FILE);
     	}

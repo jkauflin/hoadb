@@ -103,7 +103,7 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, array('Connection: Close'));
 //$cert = __DIR__ . "./cacert.pem";
 //curl_setopt($ch, CURLOPT_CAINFO, $cert);
 
-error_log(date('-' . PHP_EOL . PHP_EOL, 3, LOG_FILE));
+error_log(date('[Y-m-d H:i:s] '). "======================================================================" . PHP_EOL, 3, LOG_FILE);
 error_log(date('[Y-m-d H:i:s] '). "======================================================================" . PHP_EOL, 3, LOG_FILE);
 
 $res = curl_exec($ch);
