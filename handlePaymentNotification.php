@@ -17,7 +17,9 @@
  * 2020-09-08 JJK   Added email to notify of problems (INVALID) for the 
  *                  Access Denied issue
  * 2020-09-18 JJK   Adding some logging to see why email is not working
+ * 2020-09-19 JJK   Corrected email issue by including autoload.php
  *============================================================================*/
+require_once 'vendor/autoload.php'; 
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./paypal-ipn.log");
 // Common functions
@@ -211,18 +213,14 @@ if (strcmp ($res, "VERIFIED") == 0) {
 	// Add business logic here which deals with invalid IPN messages
     error_log(date('[Y-m-d H:i:s] '). "Invalid IPN: $req" . PHP_EOL, 3, LOG_FILE);
     // Send an email announcing the IPN message is INVALID
-    /*
     $subject = 'GRHA Payment verification INVALID';
 	$messageStr = '<h3>GRHA Payment verification INVALID</h3> Error in updating HOADB from Paypal payment - check paypal log';
     sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromEmailAddress);
-    */
 } else {
     error_log(date('[Y-m-d H:i:s] '). "UN-VERIFIED IPN: $req" . PHP_EOL, 3, LOG_FILE);
-    /*
     $subject = 'GRHA Payment verification ERROR';
 	$messageStr = '<h3>GRHA Payment verification ERROR</h3> Error in verifying IPN, and updating HOADB from Paypal payment - check paypal log';
     sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromEmailAddress);
-    */
 }
 
 ?>

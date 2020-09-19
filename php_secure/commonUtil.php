@@ -19,6 +19,7 @@
  * 					like "4/7/2007 0"
  * 2020-08-05 JJK   Removed getAdminLevel and getUsername (in favor of new
  *                  Login/Authentication logic)
+ * 2020-09-19 JJK   If using SwiftMailer don't forget to include autoload.php
  *============================================================================*/
 
 function strToUSD($inStr) {
@@ -152,7 +153,7 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
          
     	// Send the message and check for success
     	if ($mailer->send($message)) {
-            //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", swiftmail SUCCESS " . PHP_EOL, 3, LOG_FILE);
+            error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", swiftmail SUCCESS " . PHP_EOL, 3, LOG_FILE);
     	} else {
             error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", swiftmail ERROR " . PHP_EOL, 3, LOG_FILE);
     	}
