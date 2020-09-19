@@ -16,16 +16,16 @@
  *                  to do the update the HOA database
  * 2020-09-08 JJK   Added email to notify of problems (INVALID) for the 
  *                  Access Denied issue
+ * 2020-09-18 JJK   Adding some logging to see why email is not working
  *============================================================================*/
+// Define a super global constant for the log file (this will be in scope for all functions)
+define("LOG_FILE", "./paypal-ipn.log");
 // Common functions
 require_once 'php_secure/commonUtil.php';
 // Common database functions and table record classes
 require_once 'php_secure/hoaDbCommon.php';
 // Include database connection credentials from an external includes location
 require_once getSecretsFilename2();
-// Define a super global constant for the log file (this will be in scope for all functions)
-define("LOG_FILE", "./paypal-ipn.log");
-
 
 // CONFIG: Enable debug mode. This means we'll log requests into 'ipn.log' in the same directory.
 // Especially useful if you encounter network errors or other intermittent problems with IPN (validation).
@@ -209,18 +209,20 @@ if (strcmp ($res, "VERIFIED") == 0) {
 } else if (strcmp ($res, "INVALID") == 0) {
 	// log for manual investigation
 	// Add business logic here which deals with invalid IPN messages
-	if(DEBUG == true) {
-		error_log(date('[Y-m-d H:i] '). "Invalid IPN: $req" . PHP_EOL, 3, LOG_FILE);
-	}
-	// Send an email announcing the IPN message is INVALID
+    error_log(date('[Y-m-d H:i] '). "Invalid IPN: $req" . PHP_EOL, 3, LOG_FILE);
+    // Send an email announcing the IPN message is INVALID
+    /*
     $subject = 'GRHA Payment verification INVALID';
 	$messageStr = '<h3>GRHA Payment verification INVALID</h3> Error in updating HOADB from Paypal payment - check paypal log';
     sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromEmailAddress);
+    */
 } else {
-	error_log(date('[Y-m-d H:i] '). "UN-VERIFIED IPN: $req" . PHP_EOL, 3, LOG_FILE);
+    error_log(date('[Y-m-d H:i] '). "UN-VERIFIED IPN: $req" . PHP_EOL, 3, LOG_FILE);
+    /*
     $subject = 'GRHA Payment verification ERROR';
 	$messageStr = '<h3>GRHA Payment verification ERROR</h3> Error in verifying IPN, and updating HOADB from Paypal payment - check paypal log';
     sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromEmailAddress);
+    */
 }
 
 ?>

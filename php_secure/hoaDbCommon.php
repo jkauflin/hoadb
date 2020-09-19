@@ -53,6 +53,7 @@
  * 2020-08-10 JJK   Added getSecretsFilename2 for includes from parent web
  *                  (Dad's 80th birthday)
  * 2020-08-23 JJK   Added $WelcomeSent to SalesRec
+ * 2020-09-18 JJK   Added sendHtmlEMail2
  *============================================================================*/
 
 function externalIncludesDir() {
@@ -1216,11 +1217,11 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 			
 			$subject = 'GRHA Payment Notification';
 			$messageStr = '<h3>GRHA Payment Notification</h3>' . $treasurerInfo . $paymentInfoStr;
-			sendHtmlEMail(getConfigValDB($conn,"paymentEmailList"),$subject,$messageStr,$fromEmailAddress);
+			sendHtmlEMail2(getConfigValDB($conn,"paymentEmailList"),$subject,$messageStr,$fromEmailAddress);
 
 			$subject = 'GRHA Payment Confirmation';
 			$messageStr = '<h3>GRHA Payment Confirmation</h3>' . $payerInfo . $paymentInfoStr;
-			sendHtmlEMail($payer_email,$subject,$messageStr,$fromEmailAddress);
+			sendHtmlEMail2($payer_email,$subject,$messageStr,$fromEmailAddress);
 			
 		} // End of if Transaction not found
 		
@@ -1231,5 +1232,56 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 	
 	return $hoaRec;
 } // End of function updAssessmentPaid($parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_email,$payment_amt,$payment_fee) {
+
+function sendHtmlEMail2($toStr,$subject,$messageStr,$fromEmailAddress) {
+    //mb_internal_encoding("UTF-8");
+	$message = '<html><head><title>' . $subject .'</title></head><body>' . $messageStr . '</body></html>';
+	
+	// Always set content-type when sending HTML email
+	//$headers = "MIME-Version: 1.0" . "\r\n";
+	//$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+	
+	// More headers
+	//$headers .= 'From: ' . $fromEmailAddress . "\r\n";
+	/*
+	 $headers = 'From: webmaster@example.com' . "\r\n" .
+	 'Reply-To: webmaster@example.com' . "\r\n" .
+	 'X-Mailer: PHP/' . phpversion();
+	 */
+	
+    //mail($toStr,$subject,$message,$headers);
+
+    //$mimeType = 'text/plain';
+    $mimeType = 'text/html';
+
+    try {
+    	// Create the Transport (using default linux sendmail)
+    	$transport = new Swift_SendmailTransport();
+
+    	// Create the Mailer using your created Transport
+    	$mailer = new Swift_Mailer($transport);
+
+    	// Create a message
+    	$message = (new Swift_Message($subject))
+    		->setFrom([$fromEmailAddress])
+    		->setTo([$toStr])
+    		->setBody($messageStr,$mimeType);
+
+        // Create the attachment with your data
+    	//$attachment = new Swift_Attachment($filedata, $filename, 'application/pdf');
+    	// Attach it to the message
+    	//$message->attach($attachment);
+         
+    	// Send the message and check for success
+    	if ($mailer->send($message)) {
+            //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", swiftmail SUCCESS " . PHP_EOL, 3, LOG_FILE);
+    	} else {
+            error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", swiftmail ERROR " . PHP_EOL, 3, LOG_FILE);
+    	}
+
+    } catch(Exception $e) {
+        error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
+    }
+}
 
 ?>
