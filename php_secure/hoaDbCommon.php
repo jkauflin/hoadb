@@ -1242,7 +1242,7 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 function sendHtmlEMail2($toStr,$subject,$messageStr,$fromEmailAddress) {
     //mb_internal_encoding("UTF-8");
 
-    error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ",  sendHtmlEMail2 " . PHP_EOL, 3, LOG_FILE);
+    error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ",  sendHtmlEMail2 (new) " . PHP_EOL, 3, LOG_FILE);
 
 	$message = '<html><head><title>' . $subject .'</title></head><body>' . $messageStr . '</body></html>';
 	
@@ -1265,7 +1265,9 @@ function sendHtmlEMail2($toStr,$subject,$messageStr,$fromEmailAddress) {
 
     try {
     	// Create the Transport (using default linux sendmail)
+    error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ",  BEFORE transport create " . PHP_EOL, 3, LOG_FILE);
     	$transport = new Swift_SendmailTransport();
+    error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ",  after transport create " . PHP_EOL, 3, LOG_FILE);
 
     	// Create the Mailer using your created Transport
     	$mailer = new Swift_Mailer($transport);
