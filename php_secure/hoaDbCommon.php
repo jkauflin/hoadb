@@ -68,13 +68,13 @@ function getSecretsFilename2() {
 }
 
 function getConn($host, $dbadmin, $password, $dbname) {
-    //error_log(date('[Y-m-d H:i] '). "in getConn, dbadmin = $dbadmin" . PHP_EOL, 3, LOG_FILE);
+    //error_log(date('[Y-m-d H:i:s] '). "in getConn, dbadmin = $dbadmin" . PHP_EOL, 3, LOG_FILE);
 
 	// User variables set in the db connection credentials include and open a connection
 	$conn = new mysqli($host, $dbadmin, $password, $dbname);
 	// Check connection
 	if ($conn->connect_error) {
-		error_log(date('[Y-m-d H:i] '). "Connection failed: " . $conn->connect_error . PHP_EOL, 3, LOG_FILE);
+		error_log(date('[Y-m-d H:i:s] '). "Connection failed: " . $conn->connect_error . PHP_EOL, 3, LOG_FILE);
 		die("Connection failed: " . $conn->connect_error);
 	}
 	return $conn;
@@ -490,7 +490,7 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 		if ($result->num_rows > 0) {
 			if ($row = $result->fetch_assoc()) {
 				$tempEmail = $row["payer_email"];
-				//error_log(date('[Y-m-d H:i] '). " tempEmail = " . $tempEmail . PHP_EOL, 3, "hoadb.log");
+				//error_log(date('[Y-m-d H:i:s] '). " tempEmail = " . $tempEmail . PHP_EOL, 3, "hoadb.log");
 
 				// If there is an email from the last electronic payment, for the current Owner, only use it 
 				// if they are not going paperless or the paperless email is blank
@@ -501,7 +501,7 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 				// If there is an email from the last electronic payment, for the current Owner, 
 				// add it to the email list (if not already in the array)
 				if (!in_array($tempEmail, $hoaRec->emailAddrList)) {
-					//error_log(date('[Y-m-d H:i] '). " push tempEmail = " . $tempEmail . PHP_EOL, 3, "hoadb.log");
+					//error_log(date('[Y-m-d H:i:s] '). " push tempEmail = " . $tempEmail . PHP_EOL, 3, "hoadb.log");
 					array_push($hoaRec->emailAddrList,$tempEmail);
 				}
 			}
@@ -616,7 +616,7 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 					$totalDuesCalcRec->calcValue = $duesAmt;
 					array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 
-					//error_log(date('[Y-m-d H:i] '). "DateDue = " . $hoaAssessmentRec->DateDue . PHP_EOL, 3, "jjk-hoaDbCommon.log");
+					//error_log(date('[Y-m-d H:i:s] '). "DateDue = " . $hoaAssessmentRec->DateDue . PHP_EOL, 3, "jjk-hoaDbCommon.log");
 						
 					// Calculate interest on the assessment (if a Lien has been created and is Open)
 					if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open') {
@@ -1136,12 +1136,12 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 	$hoaRec = getHoaRec($conn,$parcelId,$ownerId,'','SKIP-SALES');
 	if ($hoaRec == null || $hoaRec->Parcel_ID == null || $hoaRec->Parcel_ID != $parcelId) {
 		// ERROR - hoa record not found
-		error_log(date('[Y-m-d H:i] ') . 'No HOA rec found for Parcel ' . $parcelId . PHP_EOL, 3, LOG_FILE);
+		error_log(date('[Y-m-d H:i:s] ') . 'No HOA rec found for Parcel ' . $parcelId . PHP_EOL, 3, LOG_FILE);
 	} else {
 		
 		// double check total due ???
 
-		//error_log(date('[Y-m-d H:i] ') . '$hoaRec->Parcel_ID = ' . $hoaRec->Parcel_ID . ', $hoaRec->ownersList[0]->OwnerID = ' . $hoaRec->ownersList[0]->OwnerID . PHP_EOL, 3, LOG_FILE);
+		//error_log(date('[Y-m-d H:i:s] ') . '$hoaRec->Parcel_ID = ' . $hoaRec->Parcel_ID . ', $hoaRec->ownersList[0]->OwnerID = ' . $hoaRec->ownersList[0]->OwnerID . PHP_EOL, 3, LOG_FILE);
 		// Use the Owner Id of the current owner when recording the payment
 		$ownerId = $hoaRec->ownersList[0]->OwnerID;
 		
@@ -1149,16 +1149,16 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 		$hoaPaymentRec = getHoaPaymentRec($conn,$parcelId,$txn_id);
 		if ($hoaPaymentRec != null) {
 			// Payment transaction already exists - ignore updates or other logic
-            error_log(date('[Y-m-d H:i] ') . 'Transaction already recorded for Parcel ' . $parcelId . ', txn_id = ' . $txn_id . PHP_EOL, 3, LOG_FILE);
+            error_log(date('[Y-m-d H:i:s] ') . 'Transaction already recorded for Parcel ' . $parcelId . ', txn_id = ' . $txn_id . PHP_EOL, 3, LOG_FILE);
             
-            //error_log(date('[Y-m-d H:i] ') . '*** adminEmailList = ' . getConfigValDB($conn,"adminEmailList") . PHP_EOL, 3, LOG_FILE);
+            //error_log(date('[Y-m-d H:i:s] ') . '*** adminEmailList = ' . getConfigValDB($conn,"adminEmailList") . PHP_EOL, 3, LOG_FILE);
 			//$subject = 'GRHA Payment Notification TEST';
 			//$messageStr = '<h3>GRHA Payment Notification TEST</h3>' . 'Test email send';
 			//sendHtmlEMail(getConfigValDB($conn,"adminEmailList"),$subject,$messageStr,$fromEmailAddress);
-            //error_log(date('[Y-m-d H:i] ') . '>>> AFTER email send TEST ' . PHP_EOL, 3, LOG_FILE);
+            //error_log(date('[Y-m-d H:i:s] ') . '>>> AFTER email send TEST ' . PHP_EOL, 3, LOG_FILE);
 
 		} else {
-			//error_log(date('[Y-m-d H:i] ') . 'Insert payment for Parcel ' . $parcelId . ', txn_id = ' . $txn_id . PHP_EOL, 3, LOG_FILE);
+			//error_log(date('[Y-m-d H:i:s] ') . 'Insert payment for Parcel ' . $parcelId . ', txn_id = ' . $txn_id . PHP_EOL, 3, LOG_FILE);
 		
 			$sqlStr = 'INSERT INTO hoa_payments (Parcel_ID,OwnerID,FY,txn_id,payment_date,payer_email,payment_amt,payment_fee,LastChangedTs) ';
 			$sqlStr = $sqlStr . ' VALUES(?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ';
@@ -1166,7 +1166,7 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 			$stmt->bind_param("siisssdd",$parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_email,$payment_amt,$payment_fee);
 		
 			if (!$stmt->execute()) {
-				error_log(date('[Y-m-d H:i] ') . "Add Payment Execute failed: " . $stmt->errno . ", Error = " . $stmt->error . PHP_EOL, 3, LOG_FILE);
+				error_log(date('[Y-m-d H:i:s] ') . "Add Payment Execute failed: " . $stmt->errno . ", Error = " . $stmt->error . PHP_EOL, 3, LOG_FILE);
 			}
 		
 			$stmt->close();
@@ -1274,13 +1274,13 @@ function sendHtmlEMail2($toStr,$subject,$messageStr,$fromEmailAddress) {
          
     	// Send the message and check for success
     	if ($mailer->send($message)) {
-            //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", swiftmail SUCCESS " . PHP_EOL, 3, LOG_FILE);
+            //error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", swiftmail SUCCESS " . PHP_EOL, 3, LOG_FILE);
     	} else {
-            error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", swiftmail ERROR " . PHP_EOL, 3, LOG_FILE);
+            error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", swiftmail ERROR " . PHP_EOL, 3, LOG_FILE);
     	}
 
     } catch(Exception $e) {
-        error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
+        error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
     }
 }
 

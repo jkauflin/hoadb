@@ -104,13 +104,13 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, array('Connection: Close'));
 //curl_setopt($ch, CURLOPT_CAINFO, $cert);
 
 error_log(date('-' . PHP_EOL . PHP_EOL, 3, LOG_FILE));
-error_log(date('[Y-m-d H:i] '). "======================================================================" . PHP_EOL, 3, LOG_FILE);
+error_log(date('[Y-m-d H:i:s] '). "======================================================================" . PHP_EOL, 3, LOG_FILE);
 
 $res = curl_exec($ch);
 if (curl_errno($ch) != 0) // cURL error
 	{
 	if(DEBUG == true) {	
-		error_log(date('[Y-m-d H:i] '). "Can't connect to PayPal to validate IPN message: " . curl_error($ch) . PHP_EOL, 3, LOG_FILE);
+		error_log(date('[Y-m-d H:i:s] '). "Can't connect to PayPal to validate IPN message: " . curl_error($ch) . PHP_EOL, 3, LOG_FILE);
 	}
 	curl_close($ch);
 	exit;
@@ -118,9 +118,9 @@ if (curl_errno($ch) != 0) // cURL error
 } else {
 		// Log the entire HTTP response if debug is switched on.
 		if(DEBUG == true) {
-			error_log(date('[Y-m-d H:i] '). "HTTP request of validation request:". curl_getinfo($ch, CURLINFO_HEADER_OUT) ." for IPN payload: $req" . PHP_EOL, 3, LOG_FILE);
-            error_log(date('[Y-m-d H:i] '). " " . PHP_EOL, 3, LOG_FILE);
-			error_log(date('[Y-m-d H:i] '). "HTTP response of validation request: $res" . PHP_EOL, 3, LOG_FILE);
+			error_log(date('[Y-m-d H:i:s] '). "HTTP request of validation request:". curl_getinfo($ch, CURLINFO_HEADER_OUT) ." for IPN payload: $req" . PHP_EOL, 3, LOG_FILE);
+            error_log(date('[Y-m-d H:i:s] '). " " . PHP_EOL, 3, LOG_FILE);
+			error_log(date('[Y-m-d H:i:s] '). "HTTP response of validation request: $res" . PHP_EOL, 3, LOG_FILE);
 		}
 		curl_close($ch);
 }
@@ -140,14 +140,14 @@ if (strcmp ($res, "VERIFIED") == 0) {
 
 	// assign posted variables to local variables
 	$item_name = $_POST['item_name1'];
-	error_log(date('[Y-m-d H:i] '). '$item_name = ' . $item_name . PHP_EOL, 3, LOG_FILE);
+	error_log(date('[Y-m-d H:i:s] '). '$item_name = ' . $item_name . PHP_EOL, 3, LOG_FILE);
 	$item_number = $_POST['item_number1'];
-	error_log(date('[Y-m-d H:i] '). '$item_number = ' . $item_number . PHP_EOL, 3, LOG_FILE);
+	error_log(date('[Y-m-d H:i:s] '). '$item_number = ' . $item_number . PHP_EOL, 3, LOG_FILE);
 	//$payment_status = $_POST['payment_status'];
 	$payment_amt = $_POST['mc_gross'];
-	error_log(date('[Y-m-d H:i] '). '$payment_amt = ' . $payment_amt . PHP_EOL, 3, LOG_FILE);
+	error_log(date('[Y-m-d H:i:s] '). '$payment_amt = ' . $payment_amt . PHP_EOL, 3, LOG_FILE);
 	$payment_fee = $_POST['mc_fee'];
-	error_log(date('[Y-m-d H:i] '). '$payment_fee = ' . $payment_fee . PHP_EOL, 3, LOG_FILE);
+	error_log(date('[Y-m-d H:i:s] '). '$payment_fee = ' . $payment_fee . PHP_EOL, 3, LOG_FILE);
 	$payment_currency = $_POST['mc_currency'];  // make sure it is USD?
 	$txn_id = $_POST['txn_id'];
 	$receiver_email = $_POST['receiver_email']; // double check to make sure this is GRHA email address
@@ -155,24 +155,24 @@ if (strcmp ($res, "VERIFIED") == 0) {
 	$custom = $_POST['custom'];
 	
 	$payment_date = $_POST['payment_date'];
-	error_log(date('[Y-m-d H:i] '). '$payment_date = ' . $payment_date . PHP_EOL, 3, LOG_FILE);
+	error_log(date('[Y-m-d H:i:s] '). '$payment_date = ' . $payment_date . PHP_EOL, 3, LOG_FILE);
 	//$payment_date = Tue Apr 26 2016 14:04:17 GMT-0400 (Eastern Daylight Time)
 	
-	error_log(date('[Y-m-d H:i] '). '$custom = ' . $custom . PHP_EOL, 3, LOG_FILE);
+	error_log(date('[Y-m-d H:i:s] '). '$custom = ' . $custom . PHP_EOL, 3, LOG_FILE);
 	$customFieldArray = explode(',',$custom);
-	//error_log(date('[Y-m-d H:i] '). '$custom 0 = ' . $customFieldArray[0] . PHP_EOL, 3, LOG_FILE);
-	//error_log(date('[Y-m-d H:i] '). '$custom 1 = ' . $customFieldArray[1] . PHP_EOL, 3, LOG_FILE);
+	//error_log(date('[Y-m-d H:i:s] '). '$custom 0 = ' . $customFieldArray[0] . PHP_EOL, 3, LOG_FILE);
+	//error_log(date('[Y-m-d H:i:s] '). '$custom 1 = ' . $customFieldArray[1] . PHP_EOL, 3, LOG_FILE);
 
 	$test_ipn = $_POST['test_ipn'];
 	if (!USE_SANDBOX && $test_ipn) {
 		// ERROR
 		if(DEBUG == true) {
-			error_log(date('[Y-m-d H:i] '). "Non-SANDBOX payment should not have test_ipn set ". PHP_EOL, 3, LOG_FILE);
+			error_log(date('[Y-m-d H:i:s] '). "Non-SANDBOX payment should not have test_ipn set ". PHP_EOL, 3, LOG_FILE);
 		}
 	}
 	
 	$payment_status = $_POST['payment_status'];
-    error_log(date('[Y-m-d H:i] ') . '$payment_status = ' . $payment_status . PHP_EOL, 3, LOG_FILE);
+    error_log(date('[Y-m-d H:i:s] ') . '$payment_status = ' . $payment_status . PHP_EOL, 3, LOG_FILE);
 	
 	if ($payment_status == "Completed") {
 		//			$customValues = $parcelId . ',' . $ownerId . ',' . $fyPayment . ',' .$hoaRec->TotalDue;
@@ -201,7 +201,7 @@ if (strcmp ($res, "VERIFIED") == 0) {
 	} // End of if ($payment_status == "Completed") {
 
 	if(DEBUG == true) {
-		error_log(date('[Y-m-d H:i] '). "Verified IPN: $req ". PHP_EOL, 3, LOG_FILE);
+		error_log(date('[Y-m-d H:i:s] '). "Verified IPN: $req ". PHP_EOL, 3, LOG_FILE);
 	}
 	
 	// End of if VALID
@@ -209,7 +209,7 @@ if (strcmp ($res, "VERIFIED") == 0) {
 } else if (strcmp ($res, "INVALID") == 0) {
 	// log for manual investigation
 	// Add business logic here which deals with invalid IPN messages
-    error_log(date('[Y-m-d H:i] '). "Invalid IPN: $req" . PHP_EOL, 3, LOG_FILE);
+    error_log(date('[Y-m-d H:i:s] '). "Invalid IPN: $req" . PHP_EOL, 3, LOG_FILE);
     // Send an email announcing the IPN message is INVALID
     /*
     $subject = 'GRHA Payment verification INVALID';
@@ -217,7 +217,7 @@ if (strcmp ($res, "VERIFIED") == 0) {
     sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromEmailAddress);
     */
 } else {
-    error_log(date('[Y-m-d H:i] '). "UN-VERIFIED IPN: $req" . PHP_EOL, 3, LOG_FILE);
+    error_log(date('[Y-m-d H:i:s] '). "UN-VERIFIED IPN: $req" . PHP_EOL, 3, LOG_FILE);
     /*
     $subject = 'GRHA Payment verification ERROR';
 	$messageStr = '<h3>GRHA Payment verification ERROR</h3> Error in verifying IPN, and updating HOADB from Paypal payment - check paypal log';
