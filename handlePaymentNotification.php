@@ -16,7 +16,6 @@
  *                  to do the update the HOA database
  * 2020-09-08 JJK   Added email to notify of problems (INVALID) for the 
  *                  Access Denied issue
- * 2020-09-18 JJK   Adding some logging to see why email is not working
  * 2020-09-19 JJK   Corrected email issue by including autoload.php
  *============================================================================*/
 require_once 'vendor/autoload.php'; 

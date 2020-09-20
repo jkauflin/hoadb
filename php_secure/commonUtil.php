@@ -153,13 +153,15 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
          
     	// Send the message and check for success
     	if ($mailer->send($message)) {
-            error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", swiftmail SUCCESS " . PHP_EOL, 3, LOG_FILE);
+            //error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", sendHtmlEMail SUCCESS " . PHP_EOL, 3, LOG_FILE);
+            return true;
     	} else {
-            error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", swiftmail ERROR " . PHP_EOL, 3, LOG_FILE);
+            error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", sendHtmlEMail ERROR " . PHP_EOL, 3, LOG_FILE);
+            return false;
     	}
 
     } catch(Exception $e) {
-        error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
+        error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", sendHtmlEMail Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
     }
 }
 
@@ -211,7 +213,7 @@ function calcCompoundInterest($principal,$startDate) {
 	// Frequency of compounding (1 = yearly, 12 = monthly)
 	$annualFrequency = 12.0;
 
-	//error_log(date('[Y-m-d H:i] '). "StartDate = " . $startDate . PHP_EOL, 3, "jjk-commonUtil.log");
+	//error_log(date('[Y-m-d H:i:s] '). "StartDate = " . $startDate . PHP_EOL, 3, "jjk-commonUtil.log");
 	if ($startDate != null && $startDate != '' && $startDate != '0000-00-00') {
 		
 		// Convert the 1st start date string token (i.e. till space) into a DateTime object (to check the date)
@@ -228,7 +230,7 @@ function calcCompoundInterest($principal,$startDate) {
 			
 		} else {
 			// Error in date_create
-			error_log(date('[Y-m-d H:i] '). "Problem with StartDate = " . $startDate . PHP_EOL, 3, "jjk-commonUtil.log");
+			error_log(date('[Y-m-d H:i:s] '). "Problem with StartDate = " . $startDate . PHP_EOL, 3, "jjk-commonUtil.log");
 		}
 	}
 	//error_log("diff days = " . $diff->days . ", time = " . $time . ", A = " . $A . ", interest = " . $interestAmount);

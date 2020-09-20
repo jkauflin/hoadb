@@ -54,6 +54,8 @@
  *                  (Dad's 80th birthday)
  * 2020-08-23 JJK   Added $WelcomeSent to SalesRec
  * 2020-09-19 JJK   Corrected paypal IPN emails
+ *                  Modified updAssessmentPaid to handle transaction
+ *                  re-sends, update PAID flag and send email if not set
  *============================================================================*/
 
 function externalIncludesDir() {
@@ -243,6 +245,7 @@ class HoaPaymentRec
 	public $payment_amt;
 	public $payment_fee;
 	public $LastChangedTs;
+	public $paidEmailSent;
 }
 
 class AdminRec
@@ -360,7 +363,8 @@ function getHoaPaymentRec($conn,$parcelId,$transId) {
 			$hoaPaymentRec->payer_email = $row["payer_email"];
 			$hoaPaymentRec->payment_amt = $row["payment_amt"];
 			$hoaPaymentRec->payment_fee = $row["payment_fee"];
-			$hoaPaymentRec->LastChangedTs = $row["LastChangedTs"];
+            $hoaPaymentRec->LastChangedTs = $row["LastChangedTs"];
+            $hoaPaymentRec->paidEmailSent = $row["paidEmailSent"];
 		}
 		$result->close();
 	}
@@ -1138,9 +1142,6 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 		// ERROR - hoa record not found
 		error_log(date('[Y-m-d H:i:s] ') . 'No HOA rec found for Parcel ' . $parcelId . PHP_EOL, 3, LOG_FILE);
 	} else {
-		
-		// double check total due ???
-
 		//error_log(date('[Y-m-d H:i:s] ') . '$hoaRec->Parcel_ID = ' . $hoaRec->Parcel_ID . ', $hoaRec->ownersList[0]->OwnerID = ' . $hoaRec->ownersList[0]->OwnerID . PHP_EOL, 3, LOG_FILE);
 		// Use the Owner Id of the current owner when recording the payment
 		$ownerId = $hoaRec->ownersList[0]->OwnerID;
@@ -1150,32 +1151,33 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 		if ($hoaPaymentRec != null) {
 			// Payment transaction already exists - ignore updates or other logic
             error_log(date('[Y-m-d H:i:s] ') . 'Transaction already recorded for Parcel ' . $parcelId . ', txn_id = ' . $txn_id . PHP_EOL, 3, LOG_FILE);
-            
-            error_log(date('[Y-m-d H:i:s] ') . '*** paymentEmailList = ' . getConfigValDB($conn,"paymentEmailList") . PHP_EOL, 3, LOG_FILE);
-            //error_log(date('[Y-m-d H:i:s] ') . '*** adminEmailList = ' . getConfigValDB($conn,"adminEmailList") . PHP_EOL, 3, LOG_FILE);
-			//$subject = 'GRHA Payment Notification TEST';
-			//$messageStr = '<h3>GRHA Payment Notification TEST</h3>' . 'Test email send';
-            //sendHtmlEMail(getConfigValDB($conn,"adminEmailList"),$subject,$messageStr,$fromEmailAddress);
-            
-			$subject = 'GRHA Payment Notification TEST';
-			$messageStr = '<h3>GRHA Payment Notification TEST</h3>' . 'Testing email from the payment notification';
-			sendHtmlEMail(getConfigValDB($conn,"paymentEmailList"),$subject,$messageStr,$fromEmailAddress);
-            error_log(date('[Y-m-d H:i:s] ') . '>>> AFTER email send TEST ' . PHP_EOL, 3, LOG_FILE);
-
 		} else {
 			//error_log(date('[Y-m-d H:i:s] ') . 'Insert payment for Parcel ' . $parcelId . ', txn_id = ' . $txn_id . PHP_EOL, 3, LOG_FILE);
-		
 			$sqlStr = 'INSERT INTO hoa_payments (Parcel_ID,OwnerID,FY,txn_id,payment_date,payer_email,payment_amt,payment_fee,LastChangedTs) ';
 			$sqlStr = $sqlStr . ' VALUES(?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ';
 			$stmt = $conn->prepare($sqlStr);
 			$stmt->bind_param("siisssdd",$parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_email,$payment_amt,$payment_fee);
-		
 			if (!$stmt->execute()) {
 				error_log(date('[Y-m-d H:i:s] ') . "Add Payment Execute failed: " . $stmt->errno . ", Error = " . $stmt->error . PHP_EOL, 3, LOG_FILE);
 			}
-		
 			$stmt->close();
-		
+        }
+
+        // get assessment record first and check PAID (and mail flags?)
+        $assessmentPaid = 0;
+		$stmt = $conn->prepare("SELECT * FROM hoa_assessments WHERE Parcel_ID = ? AND FY = ? ; ");
+		$stmt->bind_param("ss", $parcelId,$fy);
+		$stmt->execute();
+        $result = $stmt->get_result();
+		while($row = $result->fetch_assoc()) {
+            $assessmentPaid = $row["Paid"];
+		}
+		$result->close();
+		$stmt->close();
+
+        // If the Assessment has not been marked as PAID, mark it and check to send emails
+        // (this will handle the transaction re-send case in an Idempotent manner)
+        if (!$assessmentPaid) {
 			// Update Assessment record for payment		
 			$assessmentsComments = $txn_id;
 		
@@ -1184,8 +1186,6 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 			$paymentMethod = 'Paypal';
 			$username = 'ipnHandler';
         
-            // check if already marked as paid?
-
 			if (!$stmt = $conn->prepare("UPDATE hoa_assessments SET Paid=?,DatePaid=?,PaymentMethod=?," .
 					"Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND FY = ? ; ")) {
 					error_log("Update Assessment Prepare failed: " . $stmt->errno . ", Error = " . $stmt->error . PHP_EOL, 3, LOG_FILE);
@@ -1195,17 +1195,16 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 				error_log("Update Assessment Bind failed: " . $stmt->errno . ", Error = " . $stmt->error . PHP_EOL, 3, LOG_FILE);
 				//echo "Bind failed: (" . $stmt->errno . ") " . $stmt->error;
 			}
-		
 			if (!$stmt->execute()) {
 				error_log("Update Assessment Execute failed: " . $stmt->errno . ", Error = " . $stmt->error . PHP_EOL, 3, LOG_FILE);
 				//echo "Add Assessment Execute failed: (" . $stmt->errno . ") " . $stmt->error;
 			}
-		
 			$stmt->close();
-        
-            // get domain from config
-            // get this payer info in config?
+        }
 
+        // Send email notifications (if they have not been sent)
+        if ($hoaPaymentRec->paidEmailSent != 'Y') {
+        // Set notification emails
 			$payerInfo = 'Thank you for your GRHA member dues payment.  Our records have been successfully updated to show that the assessment has been PAID.  ';
 			$payerInfo .= 'You can use the Dues Checker on our website (www.grha-dayton.org) to see the updated record. ';
 			$payerInfo .= 'Your dues will be used to promote the recreation, health, safety, and welfare of the ';
@@ -1220,16 +1219,34 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 			$paymentInfoStr .= '<br>Payer Email: ' . $payer_email;
 			$paymentInfoStr .= '<br>Payment Amount: ' . $payment_amt . ' (this includes the $4.00 PayPal processing fee) <br>';
 			
-			$subject = 'GRHA Payment Notification';
+            $sendMailSuccess = false;
+            $subject = 'GRHA Payment Notification';
 			$messageStr = '<h3>GRHA Payment Notification</h3>' . $treasurerInfo . $paymentInfoStr;
-			sendHtmlEMail(getConfigValDB($conn,"paymentEmailList"),$subject,$messageStr,$fromEmailAddress);
+			$sendMailSuccess = sendHtmlEMail(getConfigValDB($conn,"paymentEmailList"),$subject,$messageStr,$fromEmailAddress);
 
 			$subject = 'GRHA Payment Confirmation';
 			$messageStr = '<h3>GRHA Payment Confirmation</h3>' . $payerInfo . $paymentInfoStr;
-			sendHtmlEMail($payer_email,$subject,$messageStr,$fromEmailAddress);
-			
-		} // End of if Transaction not found
-		
+			$sendMailSuccess = sendHtmlEMail($payer_email,$subject,$messageStr,$fromEmailAddress);
+
+            // Update the paidEmailSent flag on the Payment record
+            if ($sendMailSuccess) {
+                $hoaPaymentRec->paidEmailSent = 'Y';
+    			if (!$stmt = $conn->prepare("UPDATE hoa_payments SET paidEmailSent=? WHERE Parcel_ID = ? AND FY = ? AND txn_id = ? ; ")) {
+    					error_log("Update Payments Prepare failed: " . $stmt->errno . ", Error = " . $stmt->error . PHP_EOL, 3, LOG_FILE);
+    					//echo "Prepare failed: (" . $stmt->errno . ") " . $stmt->error;
+    			}
+    			if (!$stmt->bind_param("ssis",$hoaPaymentRec->paidEmailSent,$parcelId,$fy,$txn_id)) {
+    				error_log("Update Assessment Bind failed: " . $stmt->errno . ", Error = " . $stmt->error . PHP_EOL, 3, LOG_FILE);
+    				//echo "Bind failed: (" . $stmt->errno . ") " . $stmt->error;
+    			}
+    			if (!$stmt->execute()) {
+    				error_log("Update Assessment Execute failed: " . $stmt->errno . ", Error = " . $stmt->error . PHP_EOL, 3, LOG_FILE);
+    				//echo "Add Assessment Execute failed: (" . $stmt->errno . ") " . $stmt->error;
+    			}
+    			$stmt->close();
+            }
+        }
+
 	} // End of if Parcel found
 	
 	// Close db connection
