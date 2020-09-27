@@ -86,6 +86,8 @@ var detail = (function(){
     //=================================================================================================================
     // Bind events
     $document.on("click", "#PropertyListDisplay tr td a", getHoaRec);
+    $document.on("click", ".DetailDisplay", getHoaRec);
+
     $moduleDiv.on("click", "#PropertyDetail tr td a", _editProperty);
     $EditPage.on("click", "#SavePropertyEdit", _savePropertyEdit);
     $moduleDiv.on("click", "#PropertyOwners tr td a", _editOwner);

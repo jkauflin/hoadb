@@ -224,9 +224,11 @@
 	                    <button id="DuesEmailsTest" type="button" class="btn btn-primary form-control AdminButton">TEST Dues Notice emails</button>
 						<button id="DuesEmails" type="button" class="btn btn-primary form-control AdminButton">Send Dues Notice emails</button>
 						1st Notice: <input id="FirstNoticeCheckbox" type="checkbox" checked=true>
-											<!--
-											<button id="AdminFix" type="button" class="btn btn-primary form-control AdminButton">Fix Payment Owner Id</button>
-											-->
+                        <button id="PaymentReconcile" type="button" class="btn btn-primary form-control AdminButton">Payment
+                            reconciliation</button>
+						<!--
+						<button id="AdminFix" type="button" class="btn btn-primary form-control AdminButton">Fix Payment Owner Id</button>
+						-->
 	                </div>
 				  </div>
 				  <div class="col-sm-8 col-md-9">
@@ -348,16 +350,35 @@
 	          <button type="button" class="close" data-dismiss="modal">&times;</button>
 	          <h3 class="modal-title">Confirmation</h3>
 	        </div>
-	        <div id="ConfirmationMessage" class="modal-body">
-	        </div>
+            <div id="ConfirmationMessage" class="modal-body">
+            </div>
 	        <div class="modal-footer">
 	        	<div id="ConfirmationButton">
 	        	</div>
 	        </div>
 	      </div>
 	    </div>
-</div><!-- /EditPage -->
+</div>
 
+<div id="PaymentUploadModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h3 class="modal-title">Payments Upload</h3>
+            </div>
+            <div id="PaymentUploadMessage" class="modal-body">
+                <form id="PaymentUploadForm" action="" method="post" enctype="multipart/form-data">
+                    <input id="uploadFilename" type="file" accept=".csv" name="uploadFilename" />
+                    <br/>
+                    <input class="btn btn-success" type="submit" value="Upload payments file">
+                </form>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
 
 <div id="LoginModal" class="modal fade" role="dialog">
     <div class="modal-dialog modal-sm">
@@ -549,15 +570,15 @@
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap-add-clear@1.0.7/bootstrap-add-clear.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.min.js"></script>
 
-    <script src="js/util.js?ver=2.003"></script>
-    <script src="js/jjklogin.js?ver=2.004"></script>
-	<script src="js/config.js?ver=2.003"></script>
-	<script src="js/search.js?ver=2.003"></script>
-    <script src="js/detail.js?ver=2.003"></script>
-	<script src="js/communications.js?ver=2.005"></script>
-	<script src="js/pdfModule.js?ver=2.003"></script>
-	<script src="js/reports.js?ver=2.005"></script>
-	<script src="js/admin.js?ver=2.006"></script>
+    <script src="js/util.js?ver=2.007"></script>
+    <script src="js/jjklogin.js?ver=2.007"></script>
+	<script src="js/config.js?ver=2.007"></script>
+	<script src="js/search.js?ver=2.007"></script>
+    <script src="js/detail.js?ver=2.007"></script>
+	<script src="js/communications.js?ver=2.007"></script>
+	<script src="js/pdfModule.js?ver=2.007"></script>
+	<script src="js/reports.js?ver=2.007"></script>
+	<script src="js/admin.js?ver=2.007"></script>
 
 </body>
 </html>

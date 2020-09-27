@@ -1,5 +1,5 @@
 /*==============================================================================
- * (C) Copyright 2015,2016,2017,2018 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2020 John J Kauflin, All rights reserved. 
  *----------------------------------------------------------------------------
  * DESCRIPTION: 
  *----------------------------------------------------------------------------
@@ -55,6 +55,7 @@
 * 2020-08-03 JJK   Re-factored for new error handling
 * 2020-08-10 JJK   Added some validation checks (Dad's 80th birthday)
 * 2020-08-29 JJK   Modified the dues email send to be individual request
+* 2020-09-25 JJK   Added Payment Reconciliation function
 *============================================================================*/
 var admin = (function () {
     'use strict';  // Force declaration of variables before use (among other things)
@@ -72,22 +73,27 @@ var admin = (function () {
     var $DuesAmt = $moduleDiv.find("#DuesAmt");
     var $FiscalYear = $moduleDiv.find("#FiscalYear");
     var $ConfirmationModal = $document.find("#ConfirmationModal");
+    var $PaymentUploadModal = $document.find("#PaymentUploadModal");
     var $ConfirmationButton = $ConfirmationModal.find("#ConfirmationButton");
     var $ConfirmationMessage = $ConfirmationModal.find("#ConfirmationMessage");
     var $ResultMessage = $moduleDiv.find("#ResultMessage");
     var $FirstNoticeCheckbox = $moduleDiv.find("#FirstNoticeCheckbox");
-
     var $DuesListDisplay = $moduleDiv.find("#DuesListDisplay tbody");
-    
+
     //=================================================================================================================
     // Bind events
     $moduleDiv.on("click", ".AdminButton", _adminRequest);
     $ConfirmationButton.on("click", "#AdminExecute", _adminExecute);
     $moduleDiv.on("click", ".DuesEmailSend", _duesEmailsSend);
+    $PaymentUploadModal.on("submit", "#PaymentUploadForm", _paymentReconcile);
+    $moduleDiv.on("click", ".LogPayment", _logPayment);
+    //$moduleDiv.on("click", ".MarkPaid", _markPaid);
+    //$moduleDiv.on("click", ".SendPaymentEmail", _sendPaymentEmail);
 
     //=================================================================================================================
     // Module methods
     function _adminRequest(event) {
+        //console.log("in _adminRequest");
         var firstNotice = true;
         if (!$FirstNoticeCheckbox.prop('checked')) {
             //console.log("FirstNoticeCheckbox NOT CHECKED ");
@@ -98,24 +104,62 @@ var admin = (function () {
         // get confirmation message back
         var fy = util.cleanStr($FiscalYear.val());
         var duesAmt = util.cleanStr($DuesAmt.val());
-         
-        $.getJSON("adminValidate.php", "action=" + event.target.getAttribute('id') +
+        var action = event.target.getAttribute('id');
+        $.getJSON("adminValidate.php", "action=" + action +
             "&fy=" + fy +
             "&duesAmt=" + duesAmt, function (adminRec) {
             $ConfirmationMessage.html(adminRec.message);
+
             $ConfirmationButton.empty();
             var buttonForm = $('<form>').prop('class', "form-inline").attr('role', "form");
             // If the action was Valid, append an action button
             if (adminRec.result == "Valid") {
-                buttonForm.append($('<button>').prop('id', "AdminExecute").prop('class', "btn btn-danger").attr('type', "button").attr('data-dismiss', "modal").html('Continue')
-                    .attr('data-action', event.target.getAttribute('id')).attr('data-fy', fy).attr('data-duesAmt', duesAmt).attr('data-firstNotice', firstNotice));
+                if (action == "PaymentReconcile") {
+
+                    $PaymentUploadModal.modal();
+                    /*
+                    $ConfirmationMessage.empty();
+                    var uploadForm = $('<form>').prop('id', "PaymentUploadForm")
+                        .prop('class', "form-inline").attr('role', "form")
+                        .attr('action', "")
+                        .attr('method', "post")
+                        .attr('enctype', "multipart/form-data");
+                    uploadForm.append($('<input>')
+                        .attr('type', "file")
+                        .attr('accept', ".csv")
+                        .attr('name', "uploadFilename"));
+                    uploadForm.append($('<br/>'));
+                    uploadForm.append($('<input>')
+                        .prop('class', "btn btn-success")
+                        .attr('type', "submit")
+                        .attr('data-dismiss', "modal")
+                        .attr('value', "Upload payments file"));
+                    $ConfirmationMessage.append(uploadForm);
+                    */
+                } else {
+                    buttonForm.append($('<button>')
+                        .prop('id', "AdminExecute")
+                        .prop('class', "btn btn-danger")
+                        .attr('type', "button")
+                        .attr('data-dismiss', "modal").html('Continue')
+                        .attr('data-action', action)
+                        .attr('data-fy', fy)
+                        .attr('data-duesAmt', duesAmt)
+                        .attr('data-firstNotice', firstNotice));
+
+                    buttonForm.append($('<button>').prop('class', "btn btn-default").attr('type', "button").attr('data-dismiss', "modal").html('Close'));
+                    $ConfirmationButton.append(buttonForm);
+                    $ConfirmationModal.modal();
+                }
+            } else {
+                buttonForm.append($('<button>').prop('class', "btn btn-default").attr('type', "button").attr('data-dismiss', "modal").html('Close'));
+                $ConfirmationButton.append(buttonForm);
+                $ConfirmationModal.modal();
             }
-            buttonForm.append($('<button>').prop('class', "btn btn-default").attr('type', "button").attr('data-dismiss', "modal").html('Close'));
-            $ConfirmationButton.append(buttonForm);
-             
-            $ConfirmationModal.modal();
+
         });
     }
+
 
     // Respond to the Continue click for an Admin Execute function 
     function _adminExecute(event) {
@@ -129,7 +173,7 @@ var admin = (function () {
                 firstNotice = false;
             }
 
-            //console.log("in adminExecute, action = "+action);
+            //console.log("in adminExecute, action = " + action);
             //console.log("in adminExecute, firstNotice = "+firstNotice);
 
             // Get all the data needed for processing
@@ -329,7 +373,7 @@ var admin = (function () {
                     }
 */
 
-    function _duesEmailsSend() {
+    function _duesEmailsSend(event) {
         var commType = 'Dues Notice Email';
         var commDesc = '';
         var firstNotice = true
@@ -370,6 +414,182 @@ var admin = (function () {
                 }
             }, 'json'); // End of $.post("sendMail.php"
         });
+
+    }
+
+    function _paymentReconcile(event) {
+        // Prevent the event from trying to execute the form action
+        event.preventDefault();
+        //console.log("in paymentReconcile");
+        $PaymentUploadModal.modal('hide');
+        // Call service to upload the payments file and compare with database records
+        var url = 'paymentUpload.php';
+        $.ajax(url, {
+            type: 'POST',
+            data: new FormData(this),
+            contentType: false,
+            cache: false,
+            processData: false,
+            dataType: 'json'
+            //dataType: "html"
+        }).done(function (result) {
+            //console.log("result = " + result);
+            if (result.error) {
+                console.log("error = " + result.error);
+                $ajaxError.html("<b>" + result.error + "</b>");
+            } else {
+                var adminRec = result
+                $ResultMessage.html(adminRec.message);
+                _paymentReconcileDisplay(adminRec.paymentList);
+            }
+        }).fail(function (xhr, status, error) {
+            console.log('Error in AJAX request to ' + url + ', status = ' + status + ', error = ' + error)
+            $ajaxError.html("<b>" + "Error in request" + "</b>");
+        })
+    }
+
+    function _paymentReconcileDisplay(paymentList) {
+        var firstRec = true;
+        var resultDetails = '';
+        $DuesListDisplay.empty();
+        $.each(paymentList, function (index, paymentRec) {
+            //console.log("***** " + index + ", trans = " + paymentRec.txn_id + ", date = " + paymentRec.payment_date);
+            var tr = '';
+            if (index == 0) {
+                $('<tr>')
+                    .append($('<th>').html('Cnt'))
+                    .append($('<th>').html('Transaction Id'))
+                    .append($('<th>').html('Payment Date'))
+                    .append($('<th>').html('Logged'))
+                    .append($('<th>').html('PAID'))
+                    .append($('<th>').html('Email'))
+                    .append($('<th>').html('Parcel Id'))
+                    .append($('<th>').html('Name'))
+                    .append($('<th>').html('From Email'))
+                    .appendTo($DuesListDisplay);
+
+                $("#ResultMessage").html("# of payments = <b>" + paymentList.length + "</b>, Fiscal Year = <b>" + paymentRec.FY 
+                                            + "</b>, Dues Amt = <b>" + paymentRec.DuesAmt+"</b>");
+            }
+
+            tr = $('<tr class="small">');
+            tr.append($('<td>').html(index+1))
+            tr.append($('<td>').html(paymentRec.txn_id))
+            tr.append($('<td>').html(paymentRec.payment_date))
+
+            if (paymentRec.TransLogged) {
+                tr.append($('<td>').html(util.setBoolText(paymentRec.TransLogged)))
+            } else {
+                tr.append($('<td>')
+                    .append($('<a>')
+                        .attr('data-parcelId', paymentRec.Parcel_ID)
+                        .attr('data-ownerId', paymentRec.OwnerID)
+                        .attr('data-fy', paymentRec.FY)
+                        .attr('data-txn_id', paymentRec.txn_id)
+                        .attr('data-payment_date', paymentRec.payment_date)
+                        .attr('data-fromEmail', paymentRec.fromEmail)
+                        .attr('data-gross', paymentRec.gross)
+                        .attr('data-fee', paymentRec.fee)
+                        .attr('href', "#")
+                        .attr('class', "btn btn-success btn-xs LogPayment")
+                        .attr('role', "button")
+                        .html("Log"))
+                );
+            }
+
+            if (paymentRec.MarkedPaid) {
+                tr.append($('<td>').html(util.setBoolText(paymentRec.MarkedPaid)))
+            } else {
+                tr.append($('<td>')
+                    .append($('<a>')
+                        .attr('data-parcelId', paymentRec.Parcel_ID)
+                        .attr('data-ownerId', paymentRec.OwnerID)
+                        .attr('data-fy', paymentRec.FY)
+                        .attr('data-txn_id', paymentRec.txn_id)
+                        .attr('data-payment_date', paymentRec.payment_date)
+                        .attr('data-fromEmail', paymentRec.fromEmail)
+                        .attr('data-gross', paymentRec.gross)
+                        .attr('data-fee', paymentRec.fee)
+                        .attr('href', "#")
+                        .attr('class', "btn btn-primary btn-xs LogPayment")
+                        .attr('role', "button")
+                        .html("Pay"))
+                );
+            }
+
+            if (paymentRec.EmailSent) {
+                tr.append($('<td>').html(util.setBoolText(paymentRec.EmailSent)))
+            } else {
+                tr.append($('<td>')
+                    .append($('<a>')
+                        .attr('data-parcelId', paymentRec.Parcel_ID)
+                        .attr('data-ownerId', paymentRec.OwnerID)
+                        .attr('data-fy', paymentRec.FY)
+                        .attr('data-txn_id', paymentRec.txn_id)
+                        .attr('data-payment_date', paymentRec.payment_date)
+                        .attr('data-fromEmail', paymentRec.fromEmail)
+                        .attr('data-gross', paymentRec.gross)
+                        .attr('data-fee', paymentRec.fee)
+                        .attr('href', "#")
+                        .attr('class', "btn btn-warning btn-xs LogPayment")
+                        .attr('role', "button")
+                        .html("Send"))
+                );
+            }
+
+            tr.append($('<td>')
+                .append($('<a>')
+                    .attr('class', "DetailDisplay")
+                    .attr('data-parcelId', paymentRec.Parcel_ID)
+                    .attr('href', "#")
+                    .html(paymentRec.Parcel_ID))
+            );
+
+            tr.append($('<td>').html(paymentRec.name))
+            tr.append($('<td>').html(paymentRec.fromEmail))
+            tr.appendTo($DuesListDisplay);
+
+        }); // End of loop through Parcels
+
+    }
+
+    function _logPayment(event) {
+        var paramMap = new Map();
+        paramMap.set('parcelId', event.target.getAttribute("data-parcelId"));
+        paramMap.set('ownerId', event.target.getAttribute("data-ownerId"));
+        paramMap.set('fy', event.target.getAttribute("data-fy"));
+        paramMap.set('txn_id', event.target.getAttribute("data-txn_id"));
+        paramMap.set('payment_date', event.target.getAttribute("data-payment_date"));
+        paramMap.set('fromEmail', event.target.getAttribute("data-fromEmail"));
+        paramMap.set('gross', event.target.getAttribute("data-gross"));
+        paramMap.set('fee', event.target.getAttribute("data-fee"));
+
+        //console.log("in _logPayment, util.getJSONfromInputs = " + util.getJSONfromInputs(null, paramMap));
+
+        var url = 'handlePaymentTransaction.php';
+        $.ajax(url, {
+            type: 'POST',
+            contentType: "application/json",
+            data: util.getJSONfromInputs(null, paramMap),
+            //data: new FormData(this),
+            dataType: "json",
+            //dataType: "html"
+        }).done(function (result) {
+            //console.log("result = " + result);
+            if (result.error) {
+                console.log("error = " + result.error);
+                $ajaxError.html("<b>" + result.error + "</b>");
+            } else {
+                var adminRec = result
+                $ResultMessage.html(adminRec.message);
+                //_paymentReconcileDisplay(adminRec.paymentList);
+                // common _render / display?
+            }
+        }).fail(function (xhr, status, error) {
+            console.log('Error in AJAX request to ' + url + ', status = ' + status + ', error = ' + error)
+            $ajaxError.html("<b>" + "Error in request" + "</b>");
+        })
+
 
     }
 

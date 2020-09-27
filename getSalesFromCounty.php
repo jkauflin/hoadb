@@ -87,7 +87,11 @@ $zipFile = new ZipArchive();
 				continue;
 			}
 					
-			$salesRecArray = fgetcsv($file);
+            $salesRecArray = fgetcsv($file);
+            if (!$salesRecArray) {
+                continue;
+            }
+
 			$parcelId = $salesRecArray[0];
 
             // Check if the Parcel Id from the sales record matches any in our HOA database

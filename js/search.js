@@ -86,7 +86,7 @@ var search = (function(){
             }
             tr += '<tr>';
             tr += '<td>' + (index + 1) + '</td>';
-            tr += '<td><a data-parcelId="' + hoaPropertyRec.parcelId + '" href="#">' + hoaPropertyRec.parcelId + '</a></td>';
+            tr += '<td><a class="DetailDisplay" data-parcelId="' + hoaPropertyRec.parcelId + '" href="#">' + hoaPropertyRec.parcelId + '</a></td>';
             tr += '<td class="hidden-xs hidden-sm">' + hoaPropertyRec.lotNo + '</td>';
             tr += '<td>' + hoaPropertyRec.parcelLocation + '</td>';
             tr += '<td class="hidden-xs">' + hoaPropertyRec.ownerName + '</td>';

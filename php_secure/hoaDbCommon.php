@@ -257,6 +257,25 @@ class AdminRec
 	
 	public $hoaPropertyRecList;
 	public $hoaRecList;
+	public $paymentList;
+}
+
+class PaymentRec
+{
+	public $txn_id;
+    public $payment_date;
+    public $name;
+    public $gross;
+    public $fee;
+    public $fromEmail;
+    public $Parcel_ID;
+    public $OwnerID;
+    public $FY;
+    public $DuesAmt;
+    public $ContactPhone;
+    public $TransLogged;
+    public $MarkedPaid;
+    public $EmailSent;
 }
 
 class SendEmailRec
@@ -1161,6 +1180,7 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 				error_log(date('[Y-m-d H:i:s] ') . "Add Payment Execute failed: " . $stmt->errno . ", Error = " . $stmt->error . PHP_EOL, 3, LOG_FILE);
 			}
 			$stmt->close();
+		    $hoaPaymentRec = getHoaPaymentRec($conn,$parcelId,$txn_id);
         }
 
         // get assessment record first and check PAID (and mail flags?)

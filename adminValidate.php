@@ -46,66 +46,36 @@ try {
 	$fy = getParamVal("fy");
 	$duesAmt = strToUSD(getParamVal("duesAmt"));
 
-	if ($action == "AddAssessments") {
-		if ($adminLevel < 2) {
-			$adminRec->message = "You do not have permissions to Add Assessments.";
-			$adminRec->result = "Not Valid";
-		} else {
+	if ($adminLevel < 2) {
+		$adminRec->message = "You do not have permissions for this function";
+		$adminRec->result = "Not Valid";
+    } else {
+        $adminRec->result = "Valid";
+    	$adminRec->message = "Continue with " . $action . "?";
+        
+    	if ($action == "AddAssessments") {
             if (empty($duesAmt) || empty($fy)) {
-			    $adminRec->message = "You must enter Dues Amount and Fiscal Year.";
-			    $adminRec->result = "Not Valid";
+    			$adminRec->message = "You must enter Dues Amount and Fiscal Year.";
+    			$adminRec->result = "Not Valid";
             } else {
-			    $adminRec->message = "Are you sure you want to add assessment for Fiscal Year " . $fy . ' with Dues Amount of $' . $duesAmt .'?';
-			    $adminRec->result = "Valid";
+    		    $adminRec->message = "Are you sure you want to add assessment for Fiscal Year " . $fy . ' with Dues Amount of $' . $duesAmt .'?';
             }
-		}
-	} else if ($action == "DuesNotices") {
-		if ($adminLevel < 2) {
-			$adminRec->message = "You do not have permissions to generate Dues Notices.";
-			$adminRec->result = "Not Valid";
-		} else {
-			$adminRec->message = "Continue with creation of Yearly Dues Notices?";
-			$adminRec->result = "Valid";
-		}	
-	} else if ($action == "DuesRank") {
-			$adminRec->message = "Continue with Unpaid Dues Ranking?";
-			$adminRec->result = "Valid";
-	} else if ($action == "DuesEmails") {
-		if ($adminLevel < 2) {
-			$adminRec->message = "You do not have permissions to email Dues Notices.";
-			$adminRec->result = "Not Valid";
-		} else {
-			$adminRec->message = "Continue with email of Yearly Dues Notices?";
-			$adminRec->result = "Valid";
-		}
-	} else if ($action == "AdminFix") {
-		if ($adminLevel < 2) {
-			$adminRec->message = "You do not have permissions to run this command.";
-			$adminRec->result = "Not Valid";
-		} else {
-			$adminRec->message = "Continue with admin fix?";
-			$adminRec->result = "Valid";
-		}
-	} else if ($action == "MarkMailed") {
-		if ($adminLevel < 2) {
-			$adminRec->message = "You do not have permissions to run this command.";
-			$adminRec->result = "Not Valid";
-		} else {
-			$adminRec->message = "Continue to record Communication to mark paper notices as mailed?";
-			$adminRec->result = "Valid";
-		}
-	} else if ($action == "DuesEmailsTest") {
-			$adminRec->message = "Continue with TEST email of Dues Notices to show the list and send the first one to the test address?";
-			$adminRec->result = "Valid";
-	} else if ($action == "DuesEmails") {
-		if ($adminLevel < 2) {
-			$adminRec->message = "You do not have permissions to email Dues Notices.";
-			$adminRec->result = "Not Valid";
-		} else {
-			$adminRec->message = "Continue with email of Dues Notices?";
-			$adminRec->result = "Valid";
-		}
-	}
+    	} else if ($action == "DuesNotices") {
+    			$adminRec->message = "Continue with creation of Yearly Dues Notices?";
+    	} else if ($action == "DuesRank") {
+    			$adminRec->message = "Continue with Unpaid Dues Ranking?";
+    	} else if ($action == "DuesEmails") {
+    			$adminRec->message = "Continue with email of Yearly Dues Notices?";
+    	} else if ($action == "AdminFix") {
+    			$adminRec->message = "Continue with admin fix?";
+    	} else if ($action == "MarkMailed") {
+    			$adminRec->message = "Continue to record Communication to mark paper notices as mailed?";
+    	} else if ($action == "DuesEmailsTest") {
+    			$adminRec->message = "Continue with TEST email of Dues Notices to show the list and send the first one to the test address?";
+    	} else if ($action == "DuesEmails") {
+    			$adminRec->message = "Continue with email of Dues Notices?";
+    	}
+    }
 
 	echo json_encode($adminRec);
 

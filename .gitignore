@@ -5,3 +5,4 @@ vendor/
 LOG_FILE
 SALES_*.*
 desktop.ini
+*.CSV

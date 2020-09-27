@@ -129,6 +129,13 @@ try {
 			$adminRec->result = "Valid";
 		}
 	// End of if ($action == "AddAssessments") {
+	} else if ($action == "PaymentReconcile") {
+
+
+        $fileName = 'payments.CSV';
+
+
+
 	} else if ($action == "AdminFix") {
 
 		if ($adminLevel < 2) {
