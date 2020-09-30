@@ -56,22 +56,40 @@ function getParamVal($paramName) {
 
 function downloadUrlToFile($url, $outFileName)
 {
-    
-	//if (is_file($url)) {
-	//	copy($url, $outFileName); // download xml file
-	//} else {
-		$options = array(
-				CURLOPT_FILE    => fopen($outFileName, 'w'),
-				CURLOPT_TIMEOUT =>  100, // set this to 10 minutes so we do not timeout on big files
-				CURLOPT_URL     => $url
-		);
-		//CURLOPT_TIMEOUT =>  28800, // set this to 8 hours so we dont timeout on big files
-		
+    try {
+    	//if (is_file($url)) {
+    	//	copy($url, $outFileName); // download xml file
+    	//} else {
+            /*
+    		$options = array(
+    				CURLOPT_FILE    => fopen($outFileName, 'w'),
+    				CURLOPT_TIMEOUT =>  30, // set this to 30 seconds
+    				CURLOPT_URL     => $url
+    		);
+    		
+    		$ch = curl_init();
+    		curl_setopt_array($ch, $options);
+    		curl_exec($ch);
+            curl_close($ch);
+            */
+        //}
+
 		$ch = curl_init();
-		curl_setopt_array($ch, $options);
-		curl_exec($ch);
+		curl_setopt($ch, CURLOPT_POST, 0); 
+		curl_setopt($ch,CURLOPT_URL,$url); 
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+		$file_content = curl_exec($ch);
 		curl_close($ch);
-    //}
+ 
+		$downloaded_file = fopen($outFileName, 'w');
+		fwrite($downloaded_file, $file_content);
+		fclose($downloaded_file);
+
+    } catch(Exception $e) {
+        error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
+        return false;
+    }
+
     
 /*
 $options = array(

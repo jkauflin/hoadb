@@ -6,3 +6,5 @@ LOG_FILE
 SALES_*.*
 desktop.ini
 *.CSV
+*.zip
+

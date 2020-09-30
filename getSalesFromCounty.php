@@ -22,6 +22,8 @@
  *                  Commented out the download for now
  *============================================================================*/
 require_once 'vendor/autoload.php'; 
+// Define a super global constant for the log file (this will be in scope for all functions)
+define("LOG_FILE", "./php.log");
 
 // Common functions
 require_once 'php_secure/commonUtil.php';
@@ -29,9 +31,6 @@ require_once 'php_secure/commonUtil.php';
 require_once 'php_secure/hoaDbCommon.php';
 // Include database connection credentials from an external includes location
 require_once getSecretsFilename();
-// Define a super global constant for the log file (this will be in scope for all functions)
-define("LOG_FILE", "./php.log");
-
 
 // Check URL param against secret key for scheduled jobs
 if (getParamVal("key") != $scheduledJobKey) {
@@ -48,7 +47,7 @@ $salesYear = substr($currTimestampStr,0,4);
 $url = $countySalesDataUrl . $salesYear . '.ZIP';
 $zipFileName = 'SALES_' . $salesYear . '.ZIP';
 //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Sales file url = $url " . PHP_EOL, 3, LOG_FILE);
-//downloadUrlToFile($url, $zipFileName);
+downloadUrlToFile($url, $zipFileName);
 //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", After download " . PHP_EOL, 3, LOG_FILE);
 
 if (!file_exists($zipFileName)) {
