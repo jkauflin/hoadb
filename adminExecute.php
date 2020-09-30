@@ -294,6 +294,7 @@ try {
     //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
 	$adminRec->message = $e->getMessage();
     $adminRec->result = "Not Valid";
+	echo json_encode($adminRec);
     /*
     echo json_encode(
         array(
@@ -302,7 +303,6 @@ try {
         )
     );
     */
-    exit;
 }
     
 ?>

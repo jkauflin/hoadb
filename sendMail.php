@@ -97,6 +97,5 @@ try {
 	$sendEmailRec->result = 'ERROR';
 	$sendEmailRec->message = $e->getMessage();
 	echo json_encode($sendEmailRec);
-    exit;
 }
 ?>

@@ -56,7 +56,6 @@ try {
 
 } catch(Exception $e) {
     //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
-    exit;
 }
 
 ?>

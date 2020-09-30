@@ -56,6 +56,8 @@
  * 2020-09-19 JJK   Corrected paypal IPN emails
  *                  Modified updAssessmentPaid to handle transaction
  *                  re-sends, update PAID flag and send email if not set
+ * 2020-09-30 JJK   Adjusted the email error handling and return from the
+ *                  updAssessmentPaid function
  *============================================================================*/
 
 function externalIncludesDir() {
@@ -1153,7 +1155,7 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 	return $hoaRec;
 } // End of function getHoaRec2($conn,$parcelId) {
 
-    
+// Common function to take the payment transaction information and update the HOA database for PAID, etc.
 function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_email,$payment_amt,$payment_fee,$fromEmailAddress) {
 	// Get the HOA record for this Parcel and Owner
 	$hoaRec = getHoaRec($conn,$parcelId,$ownerId,'','SKIP-SALES');
@@ -1240,13 +1242,16 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 			$paymentInfoStr .= '<br>Payment Amount: ' . $payment_amt . ' (this includes the $4.00 PayPal processing fee) <br>';
 			
             $sendMailSuccess = false;
-            $subject = 'GRHA Payment Notification';
-			$messageStr = '<h3>GRHA Payment Notification</h3>' . $treasurerInfo . $paymentInfoStr;
-			$sendMailSuccess = sendHtmlEMail(getConfigValDB($conn,"paymentEmailList"),$subject,$messageStr,$fromEmailAddress);
 
 			$subject = 'GRHA Payment Confirmation';
 			$messageStr = '<h3>GRHA Payment Confirmation</h3>' . $payerInfo . $paymentInfoStr;
 			$sendMailSuccess = sendHtmlEMail($payer_email,$subject,$messageStr,$fromEmailAddress);
+            // If the Member email was successful, send the Treasurer notification
+            if ($sendMailSuccess) {
+                $subject = 'GRHA Payment Notification';
+			    $messageStr = '<h3>GRHA Payment Notification</h3>' . $treasurerInfo . $paymentInfoStr;
+			    $sendMailSuccess = sendHtmlEMail(getConfigValDB($conn,"paymentEmailList"),$subject,$messageStr,$fromEmailAddress);
+            }
 
             // Update the paidEmailSent flag on the Payment record
             if ($sendMailSuccess) {
@@ -1269,10 +1274,6 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 
 	} // End of if Parcel found
 	
-	// Close db connection
-	$conn->close();
-	
-	return $hoaRec;
 } // End of function updAssessmentPaid($parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_email,$payment_amt,$payment_fee) {
 
 ?>

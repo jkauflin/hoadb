@@ -162,6 +162,7 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
 
     } catch(Exception $e) {
         error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", sendHtmlEMail Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
+        return false;
     }
 }
 

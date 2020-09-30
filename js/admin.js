@@ -56,12 +56,14 @@
 * 2020-08-10 JJK   Added some validation checks (Dad's 80th birthday)
 * 2020-08-29 JJK   Modified the dues email send to be individual request
 * 2020-09-25 JJK   Added Payment Reconciliation function
+* 2020-09-30 JJK   Added logic to save, update, and re-display paymentList
 *============================================================================*/
 var admin = (function () {
     'use strict';  // Force declaration of variables before use (among other things)
 
     //=================================================================================================================
     // Private variables for the Module
+    var paymentList = null;
 
     //=================================================================================================================
     // Variables cached from the DOM
@@ -69,7 +71,6 @@ var admin = (function () {
     var $moduleDiv = $('#AdminPage');
     var $ajaxError = $moduleDiv.find(".ajaxError");
     // Figure out a better way to do this
-    //var $displayPage = $document.find('#navbar a[href="#AdminPage"]');
     var $DuesAmt = $moduleDiv.find("#DuesAmt");
     var $FiscalYear = $moduleDiv.find("#FiscalYear");
     var $ConfirmationModal = $document.find("#ConfirmationModal");
@@ -87,8 +88,6 @@ var admin = (function () {
     $moduleDiv.on("click", ".DuesEmailSend", _duesEmailsSend);
     $PaymentUploadModal.on("submit", "#PaymentUploadForm", _paymentReconcile);
     $moduleDiv.on("click", ".LogPayment", _logPayment);
-    //$moduleDiv.on("click", ".MarkPaid", _markPaid);
-    //$moduleDiv.on("click", ".SendPaymentEmail", _sendPaymentEmail);
 
     //=================================================================================================================
     // Module methods
@@ -115,27 +114,7 @@ var admin = (function () {
             // If the action was Valid, append an action button
             if (adminRec.result == "Valid") {
                 if (action == "PaymentReconcile") {
-
                     $PaymentUploadModal.modal();
-                    /*
-                    $ConfirmationMessage.empty();
-                    var uploadForm = $('<form>').prop('id', "PaymentUploadForm")
-                        .prop('class', "form-inline").attr('role', "form")
-                        .attr('action', "")
-                        .attr('method', "post")
-                        .attr('enctype', "multipart/form-data");
-                    uploadForm.append($('<input>')
-                        .attr('type', "file")
-                        .attr('accept', ".csv")
-                        .attr('name', "uploadFilename"));
-                    uploadForm.append($('<br/>'));
-                    uploadForm.append($('<input>')
-                        .prop('class', "btn btn-success")
-                        .attr('type', "submit")
-                        .attr('data-dismiss', "modal")
-                        .attr('value', "Upload payments file"));
-                    $ConfirmationMessage.append(uploadForm);
-                    */
                 } else {
                     buttonForm.append($('<button>')
                         .prop('id', "AdminExecute")
@@ -439,8 +418,8 @@ var admin = (function () {
                 $ajaxError.html("<b>" + result.error + "</b>");
             } else {
                 var adminRec = result
-                $ResultMessage.html(adminRec.message);
-                _paymentReconcileDisplay(adminRec.paymentList);
+                paymentList = adminRec.paymentList;
+                _paymentReconcileDisplay(adminRec.message);
             }
         }).fail(function (xhr, status, error) {
             console.log('Error in AJAX request to ' + url + ', status = ' + status + ', error = ' + error)
@@ -448,9 +427,8 @@ var admin = (function () {
         })
     }
 
-    function _paymentReconcileDisplay(paymentList) {
-        var firstRec = true;
-        var resultDetails = '';
+    function _paymentReconcileDisplay(message) {
+        $ResultMessage.html(message);
         $DuesListDisplay.empty();
         $.each(paymentList, function (index, paymentRec) {
             //console.log("***** " + index + ", trans = " + paymentRec.txn_id + ", date = " + paymentRec.payment_date);
@@ -469,7 +447,7 @@ var admin = (function () {
                     .appendTo($DuesListDisplay);
 
                 $("#ResultMessage").html("# of payments = <b>" + paymentList.length + "</b>, Fiscal Year = <b>" + paymentRec.FY 
-                                            + "</b>, Dues Amt = <b>" + paymentRec.DuesAmt+"</b>");
+                                            + "</b>, Dues Amt = <b>" + paymentRec.DuesAmt+"</b> "+message);
             }
 
             tr = $('<tr class="small">');
@@ -482,6 +460,7 @@ var admin = (function () {
             } else {
                 tr.append($('<td>')
                     .append($('<a>')
+                        .attr('data-index', index)
                         .attr('data-parcelId', paymentRec.Parcel_ID)
                         .attr('data-ownerId', paymentRec.OwnerID)
                         .attr('data-fy', paymentRec.FY)
@@ -502,6 +481,7 @@ var admin = (function () {
             } else {
                 tr.append($('<td>')
                     .append($('<a>')
+                        .attr('data-index', index)
                         .attr('data-parcelId', paymentRec.Parcel_ID)
                         .attr('data-ownerId', paymentRec.OwnerID)
                         .attr('data-fy', paymentRec.FY)
@@ -522,6 +502,7 @@ var admin = (function () {
             } else {
                 tr.append($('<td>')
                     .append($('<a>')
+                        .attr('data-index', index)
                         .attr('data-parcelId', paymentRec.Parcel_ID)
                         .attr('data-ownerId', paymentRec.OwnerID)
                         .attr('data-fy', paymentRec.FY)
@@ -554,6 +535,7 @@ var admin = (function () {
     }
 
     function _logPayment(event) {
+        var index = event.target.getAttribute("data-index");
         var paramMap = new Map();
         paramMap.set('parcelId', event.target.getAttribute("data-parcelId"));
         paramMap.set('ownerId', event.target.getAttribute("data-ownerId"));
@@ -581,16 +563,17 @@ var admin = (function () {
                 $ajaxError.html("<b>" + result.error + "</b>");
             } else {
                 var adminRec = result
-                $ResultMessage.html(adminRec.message);
-                //_paymentReconcileDisplay(adminRec.paymentList);
-                // common _render / display?
+                // Get the updated flags from the result and update in the existing array
+                paymentList[index].TransLogged = adminRec.paymentList[0].TransLogged;
+                paymentList[index].MarkedPaid = adminRec.paymentList[0].MarkedPaid;
+                paymentList[index].EmailSent = adminRec.paymentList[0].EmailSent;
+                // Re-diplay the payment list
+                _paymentReconcileDisplay(adminRec.message);
             }
         }).fail(function (xhr, status, error) {
             console.log('Error in AJAX request to ' + url + ', status = ' + status + ', error = ' + error)
             $ajaxError.html("<b>" + "Error in request" + "</b>");
         })
-
-
     }
 
     //=================================================================================================================

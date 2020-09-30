@@ -65,11 +65,46 @@ try {
         $param->gross,
         $param->fee,
         $fromEmailAddress);
-    
-	$adminRec->message = "Logged payment transaction, marked PAID, and sent Email";
+
+        // After the update, re-query to get the flag values
+        $paymentRec = new PaymentRec();
+        $paymentRec->TransLogged = false;
+        $paymentRec->MarkedPaid = false;
+        $paymentRec->EmailSent = false;
+
+        // Get the HOADB data by Parcel Id
+    	$hoaRec = getHoaRec($conn,$param->parcelId,'',$param->fy,'SKIP-SALES');
+    	if ($hoaRec != null) {
+    		//error_log(date('[Y-m-d H:i:s] ') . '$hoaRec->Parcel_ID = ' . $hoaRec->Parcel_ID . ', $hoaRec->ownersList[0]->OwnerID = ' . $hoaRec->ownersList[0]->OwnerID . PHP_EOL, 3, LOG_FILE);
+    		// Use the Owner Id of the current owner when recording the payment
+            $paymentRec->OwnerID = $hoaRec->ownersList[0]->OwnerID;
+            // Get Assessment PAID flag for the given fiscal year (FY)
+            $paymentRec->MarkedPaid = $hoaRec->assessmentsList[0]->Paid;
+        }
+
+        // Get payment record by the Transaction Id
+        $hoaPaymentRec = getHoaPaymentRec($conn,$param->parcelId,$param->txn_id);
+        if ($hoaPaymentRec != null) {
+            $paymentRec->TransLogged = true;
+
+            // Check the paidEmailSent flag on the transaction record to check if an email was sent to the payee member
+            // to confirm that the payment was recorded in the HOADB
+            if ($hoaPaymentRec->paidEmailSent == 'Y') {
+                $paymentRec->EmailSent = true;
+            }
+        }
+
+        // Add the payment display record to the list to send back for the display
+        $adminRec->paymentList = array();
+        array_push($adminRec->paymentList,$paymentRec);
+
+	// Close db connection
+	$conn->close();
+
+	$adminRec->message = "(Payment transactions processed successfully)";
 	$adminRec->result = "Valid";
 
-	return(json_encode($adminRec));
+    echo json_encode($adminRec);
 
 } catch(Exception $e) {
     //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
@@ -83,12 +118,6 @@ try {
         )
     );
     */
-    exit(json_encode($adminRec));
+    echo json_encode($adminRec);
 }
-
-
-
-
-		
-
 ?>

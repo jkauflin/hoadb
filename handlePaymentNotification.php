@@ -198,11 +198,13 @@ if (strcmp ($res, "VERIFIED") == 0) {
             $payment_amt,
             $payment_fee,
             $fromEmailAddress);
-		
+		// Close db connection
+        $conn->close();
+        
 	} // End of if ($payment_status == "Completed") {
 
 	if(DEBUG == true) {
-		error_log(date('[Y-m-d H:i:s] '). "Verified IPN: $req ". PHP_EOL, 3, LOG_FILE);
+		error_log(date('[Y-m-d H:i:s] '). "Verified IPN (updAssessmentPaid completed): $req ". PHP_EOL, 3, LOG_FILE);
 	}
 	
 	// End of if VALID

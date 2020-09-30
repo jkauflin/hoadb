@@ -102,7 +102,6 @@ try {
             'error_code' => $e->getCode()
         )
     );
-    exit;
 }
 
 ?>

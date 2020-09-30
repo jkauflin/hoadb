@@ -269,5 +269,5 @@ try {
         )
     );
     */
-    exit(json_encode($adminRec));
+    echo json_encode($adminRec);
 }
