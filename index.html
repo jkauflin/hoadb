@@ -206,7 +206,6 @@
                     	<input type="text" class="form-control resetval" name="DuesAmt"     	id="DuesAmt"		placeholder="Dues Amount">
 						<label for="FiscalYear">Fiscal Year for which to add Assessments:</label>
 						<select class="form-control" id="FiscalYear">
-						        <option>2021</option>
 						        <option>2022</option>
 						        <option>2023</option>
 						        <option>2024</option>
@@ -215,7 +214,8 @@
 						        <option>2027</option>
 						        <option>2028</option>
 						        <option>2029</option>
-						        <option>2030</option>
+                                <option>2030</option>
+                                <option>2031</option>
 						</select>                    		
 
 	                    <button id="AddAssessments" type="button" class="btn btn-primary form-control AdminButton">Add Assessments</button>
@@ -224,8 +224,8 @@
 	                    <button id="DuesEmailsTest" type="button" class="btn btn-primary form-control AdminButton">TEST Dues Notice emails</button>
 						<button id="DuesEmails" type="button" class="btn btn-primary form-control AdminButton">Send Dues Notice emails</button>
 						1st Notice: <input id="FirstNoticeCheckbox" type="checkbox" checked=true>
-                        <button id="PaymentReconcile" type="button" class="btn btn-primary form-control AdminButton">Payment
-                            reconciliation</button>
+                        <button id="PaymentReconcile" type="button" class="btn btn-success form-control AdminButton">Payment reconciliation</button>
+                        <button id="SalesUpload" type="button" class="btn btn-success form-control AdminButton">Sales upload</button>
 						<!--
 						<button id="AdminFix" type="button" class="btn btn-primary form-control AdminButton">Fix Payment Owner Id</button>
 						-->
@@ -363,18 +363,18 @@
 	    </div>
 </div>
 
-<div id="PaymentUploadModal" class="modal fade" role="dialog">
+<div id="FileUploadModal" class="modal fade" role="dialog">
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h3 class="modal-title">Payments Upload</h3>
+                <h4 id="FileUploadTitle" class="modal-title">File Upload</h4>
             </div>
-            <div id="PaymentUploadMessage" class="modal-body">
-                <form id="PaymentUploadForm" action="" method="post" enctype="multipart/form-data">
-                    <input id="uploadFilename" type="file" accept=".csv" name="uploadFilename" />
+            <div id="FileUploadMessage" class="modal-body">
+                <form id="FileUploadForm" action="" method="post" enctype="multipart/form-data">
+                    <input id="uploadFilename" type="file" accept=".csv, .zip" name="uploadFilename" />
                     <br/>
-                    <input class="btn btn-success" type="submit" value="Upload payments file">
+                    <input class="btn btn-success" type="submit" value="Upload file">
                 </form>
             </div>
             <div class="modal-footer">

@@ -48,8 +48,6 @@ try {
         exit(json_encode($adminRec));
     }
 
-	$conn = getConn($host, $dbadmin, $password, $dbname);
-
     $fileName = $_FILES['uploadFilename']['name'];
     if (empty($fileName)) {
 		$adminRec->message = "No file selected.";
@@ -99,6 +97,7 @@ try {
     $AllColsFound = true;
 
     // Loop through all the records in the downloaded sales file and compare with HOA database parcels
+	$conn = getConn($host, $dbadmin, $password, $dbname);
 	$recCnt = 0;
 	while(!feof($file))
 	{

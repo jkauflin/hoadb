@@ -57,6 +57,7 @@
 * 2020-08-29 JJK   Modified the dues email send to be individual request
 * 2020-09-25 JJK   Added Payment Reconciliation function
 * 2020-09-30 JJK   Added logic to save, update, and re-display paymentList
+* 2020-10-01 JJK   Added SalesUpload, and made upload file generic
 *============================================================================*/
 var admin = (function () {
     'use strict';  // Force declaration of variables before use (among other things)
@@ -74,7 +75,9 @@ var admin = (function () {
     var $DuesAmt = $moduleDiv.find("#DuesAmt");
     var $FiscalYear = $moduleDiv.find("#FiscalYear");
     var $ConfirmationModal = $document.find("#ConfirmationModal");
-    var $PaymentUploadModal = $document.find("#PaymentUploadModal");
+    var $FileUploadModal = $document.find("#FileUploadModal");
+    var $FileUploadForm = $document.find("#FileUploadForm");
+    var $FileUploadTitle = $document.find("#FileUploadTitle");
     var $ConfirmationButton = $ConfirmationModal.find("#ConfirmationButton");
     var $ConfirmationMessage = $ConfirmationModal.find("#ConfirmationMessage");
     var $ResultMessage = $moduleDiv.find("#ResultMessage");
@@ -86,7 +89,7 @@ var admin = (function () {
     $moduleDiv.on("click", ".AdminButton", _adminRequest);
     $ConfirmationButton.on("click", "#AdminExecute", _adminExecute);
     $moduleDiv.on("click", ".DuesEmailSend", _duesEmailsSend);
-    $PaymentUploadModal.on("submit", "#PaymentUploadForm", _paymentReconcile);
+    $FileUploadModal.on("submit", "#FileUploadForm", _handleFileUpload);
     $moduleDiv.on("click", ".LogPayment", _logPayment);
 
     //=================================================================================================================
@@ -113,8 +116,15 @@ var admin = (function () {
             var buttonForm = $('<form>').prop('class', "form-inline").attr('role', "form");
             // If the action was Valid, append an action button
             if (adminRec.result == "Valid") {
-                if (action == "PaymentReconcile") {
-                    $PaymentUploadModal.modal();
+                if (action == "PaymentReconcile" || action == "SalesUpload") {
+                    if (action == "PaymentReconcile") {
+                        $FileUploadTitle.html('Payment Reconciliation CSV');
+                    } else if (action == "SalesUpload") {
+                        $FileUploadTitle.html('County Sales ZIP file');
+                    }
+                    // Set the action as a class on the upload form and display the modal
+                    $FileUploadForm.attr("class", action);
+                    $FileUploadModal.modal();
                 } else {
                     buttonForm.append($('<button>')
                         .prop('id', "AdminExecute")
@@ -396,16 +406,56 @@ var admin = (function () {
 
     }
 
-    function _paymentReconcile(event) {
+    function _handleFileUpload(event) {
         // Prevent the event from trying to execute the form action
         event.preventDefault();
+
+        var fileUploadForm = document.getElementById('FileUploadForm');
+        if (fileUploadForm.classList.contains('PaymentReconcile')) {
+            //console.log("in _handleFileUplodad, action = PaymentReconcile");
+            _paymentReconcile(fileUploadForm);
+        } else if (fileUploadForm.classList.contains('SalesUpload')) {
+            //console.log("in _handleFileUplodad, action = SalesUpload");
+            _salesUpload(fileUploadForm);
+        }
+    }
+
+    function _salesUpload(fileUploadForm) {
+        $ResultMessage.html("Processing sales file...");
+        $FileUploadModal.modal('hide');
+        // Call service to upload the payments file and compare with database records
+        var url = 'salesUpload.php';
+        $.ajax(url, {
+            type: 'POST',
+            data: new FormData(fileUploadForm),
+            contentType: false,
+            cache: false,
+            processData: false,
+            dataType: 'json'
+            //dataType: "html"
+        }).done(function (result) {
+            //console.log("result = " + result);
+            if (result.error) {
+                console.log("error = " + result.error);
+                $ajaxError.html("<b>" + result.error + "</b>");
+            } else {
+                var adminRec = result
+                $ResultMessage.html(adminRec.message);
+            }
+        }).fail(function (xhr, status, error) {
+            console.log('Error in AJAX request to ' + url + ', status = ' + status + ', error = ' + error)
+            $ajaxError.html("<b>" + "Error in request" + "</b>");
+        })
+    }
+
+    function _paymentReconcile(fileUploadForm) {
         //console.log("in paymentReconcile");
-        $PaymentUploadModal.modal('hide');
+        $FileUploadModal.modal('hide');
         // Call service to upload the payments file and compare with database records
         var url = 'paymentUpload.php';
         $.ajax(url, {
             type: 'POST',
-            data: new FormData(this),
+            data: new FormData(fileUploadForm),
             contentType: false,
             cache: false,
             processData: false,

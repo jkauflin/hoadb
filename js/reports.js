@@ -146,7 +146,7 @@ var reports = (function () {
         pdf.save(event.target.getAttribute("data-reportName") + ".pdf");
     };	
 
-    function _salesFlagUpdate() {
+    function _salesFlagUpdate(event) {
         var reportName = event.target.getAttribute('id');
         var reportTitle = event.target.getAttribute("data-reportTitle");
         var paramMap = new Map();
@@ -234,7 +234,7 @@ var reports = (function () {
                 if (reportName == "SalesReport") {
                     // If WelcomeSent has not been set, offer the buttons to set the value
                     if (hoaSalesRec.adminLevel > 1 && 
-                        (hoaSalesRec.WelcomeSent == null || hoaSalesRec.WelcomeSent == ' ' || hoaSalesRec.WelcomeSent == '')) {
+                        (hoaSalesRec.WelcomeSent == null || hoaSalesRec.WelcomeSent == 'X' || hoaSalesRec.WelcomeSent == ' ' || hoaSalesRec.WelcomeSent == '')) {
                         // offer buttons for Send and Ignore
                         tr.append($('<td>')
                             .append($('<a>').prop('id', reportName)
