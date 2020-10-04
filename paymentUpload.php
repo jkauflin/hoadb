@@ -222,7 +222,7 @@ try {
         $paymentRec->EmailSent = false;
 
         // Get the HOADB data by Parcel Id
-    	$hoaRec = getHoaRec($conn,$paymentRec->Parcel_ID,'',$paymentRec->FY,'SKIP-SALES');
+    	$hoaRec = getHoaRec($conn,$paymentRec->Parcel_ID,'',$paymentRec->FY);
     	if ($hoaRec != null) {
     		//error_log(date('[Y-m-d H:i:s] ') . '$hoaRec->Parcel_ID = ' . $hoaRec->Parcel_ID . ', $hoaRec->ownersList[0]->OwnerID = ' . $hoaRec->ownersList[0]->OwnerID . PHP_EOL, 3, LOG_FILE);
     		// Use the Owner Id of the current owner when recording the payment

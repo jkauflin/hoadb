@@ -165,28 +165,30 @@
 	                  	
 		                <div class="form-group">
 	                    	<button id="SalesReport" data-reportTitle="County Reported Sales of HOA properties" 
-	                    		type="button" class="btn btn-primary reportRequest form-control">Sales Report</button>
+	                    		type="button" class="btn btn-primary reportRequest form-control"><i class="fa fa-handshake-o fa-lg pull-left"></i>Sales Report</button>
 	                    	<button id="SalesNewOwnerReport" data-reportTitle="County Reported Sales of HOA properties (for New Owner maintenance)" 
-	                    		type="button" class="btn btn-primary reportRequest form-control">New Owners</button>
+	                    		type="button" class="btn btn-primary reportRequest form-control"><i class="fa fa-users fa-lg pull-left"></i>New Owners</button>
 	                    	<button id="UnpaidDuesReport" data-reportTitle="Unpaid Dues Report" 
-	                    		type="button" class="btn btn-primary reportRequest form-control">Unpaid Dues</button>
+	                    		type="button" class="btn btn-primary reportRequest form-control"><i class="fa fa-usd fa-lg pull-left"></i>Unpaid Dues</button>
 	                    	<button id="PaidDuesReport" data-reportTitle="Paid Dues Report" 
-	                    		type="button" class="btn btn-primary reportRequest form-control">Paid Dues</button>
+	                    		type="button" class="btn btn-primary reportRequest form-control"><i class="fa fa-usd fa-lg pull-left"></i>Paid Dues</button>
 	                    	<button id="PaidDuesCountsReport" data-reportTitle="Paid Dues Counts Report" 
-	                    		type="button" class="btn btn-primary reportRequest form-control">Paid Dues Counts</button>
+	                    		type="button" class="btn btn-primary reportRequest form-control"><i class="fa fa-usd fa-lg pull-left"></i>Paid Dues Counts</button>
 	                    	<button id="PropertyOwnerReport" data-reportTitle="Property/Owner Report" 
-								type="button" class="btn btn-primary reportRequest form-control">Property Owner</button>
+								type="button" class="btn btn-primary reportRequest form-control"><i class="fa fa-user fa-lg pull-left"></i>Property Owner</button>
 							<button id="UnpaidDuesRankingReport" data-reportTitle="Unpaid Dues Ranking Report" 
-								type="button" class="btn btn-primary reportRequest form-control">Unpaid Dues Ranking</button>
+								type="button" class="btn btn-primary reportRequest form-control"><i class="fa fa-bank fa-lg pull-left"></i>Unpaid Dues Ranking</button>
                             <button id="IssuesReport" data-reportTitle="Issues Report" type="button"
-                                class="btn btn-primary reportRequest form-control">Issues Report</button>
+                                class="btn btn-primary reportRequest form-control"><i class="fa fa-exclamation-triangle fa-lg pull-left"></i>Issues Report</button>
+                            <button data-reportTitle="Mailing List" type="button"
+                                class="btn btn-primary reportFilter form-control"><i class="fa fa-envelope fa-lg pull-left"></i>Mailing List</button>
 		                </div>
 	       					
 					</div>
 				    <div class="col-sm-10">
 	                	<div id="ReportDownloadLinks" class="pull-right"></div>
-                        <div id="ReportFilter"></div>
                         <h4 id="ReportHeader"></h4>
+                        <div id="ReportFilter"></div>
 	                	<div class="ajaxError"></div>
 	                	<h5 id="ReportRecCnt"></h5>
 			            <table id="ReportListDisplay" class="table table-striped table-condensed">
@@ -224,8 +226,8 @@
 	                    <button id="DuesEmailsTest" type="button" class="btn btn-primary form-control AdminButton">TEST Dues Notice emails</button>
 						<button id="DuesEmails" type="button" class="btn btn-primary form-control AdminButton">Send Dues Notice emails</button>
 						1st Notice: <input id="FirstNoticeCheckbox" type="checkbox" checked=true>
-                        <button id="PaymentReconcile" type="button" class="btn btn-success form-control AdminButton">Payment reconciliation</button>
-                        <button id="SalesUpload" type="button" class="btn btn-success form-control AdminButton">Sales upload</button>
+                        <button id="PaymentReconcile" type="button" class="btn btn-success form-control AdminButton"><i class="fa fa-paypal fa-lg pull-left"></i>Payment reconciliation</button>
+                        <button id="SalesUpload" type="button" class="btn btn-success form-control AdminButton"><i class="fa fa-handshake-o fa-lg pull-left"></i>Sales upload</button>
 						<!--
 						<button id="AdminFix" type="button" class="btn btn-primary form-control AdminButton">Fix Payment Owner Id</button>
 						-->

@@ -10,6 +10,7 @@
  * 2016-09-20 JJK	Added non-collectibel fields for counts
  * 2020-08-01 JJK   Re-factored to use jjklogin for authentication
  * 2020-08-25 JJK   Added WelcomeSent
+ * 2020-10-03 JJK   Added query logic for Mailing List reports
  *============================================================================*/
 require_once 'vendor/autoload.php'; 
 
@@ -36,19 +37,20 @@ try {
 
     $username = $userRec->userName;
     $reportName = getParamVal("reportName");
+    $mailingListName = getParamVal("mailingListName");
+    $logDuesLetterSend = paramBoolVal("logDuesLetterSend");
 
     $outputArray = array();
     $conn = getConn($host, $dbadmin, $password, $dbname);
 
     if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
-
-        // get filter criteria
-
+        $sql = "";
     	if ($reportName == "SalesNewOwnerReport") {
-    		$stmt = $conn->prepare("SELECT * FROM hoa_sales WHERE ProcessedFlag != 'Y' ORDER BY CreateTimestamp DESC; ");
+    		$sql = "SELECT * FROM hoa_sales WHERE ProcessedFlag != 'Y' ORDER BY CreateTimestamp DESC; ";
     	} else {
-    		$stmt = $conn->prepare("SELECT * FROM hoa_sales ORDER BY CreateTimestamp DESC; ");
+    		$sql = "SELECT * FROM hoa_sales ORDER BY CreateTimestamp DESC; ";
     	}
+		$stmt = $conn->prepare($sql);
     	$stmt->execute();
     	$result = $stmt->get_result();
     	$stmt->close();
@@ -77,14 +79,13 @@ try {
     	
     			$hoaSalesRec->adminLevel = $userRec->userLevel;
 
-    			array_push($outputArray,$hoaSalesRec);
+                array_push($outputArray,$hoaSalesRec);
     		}
     		$result->close();
     	}
     	// End of if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 
     } else if ($reportName == "IssuesReport") {
-
 		$sql = "SELECT * FROM hoa_communications WHERE CommType='Issue' ORDER BY CommID DESC ";
 		$stmt = $conn->prepare($sql);
     	$stmt->execute();
@@ -121,7 +122,6 @@ try {
     	$duesAmt = "";
     	$paid = FALSE;
     	$nonCollectible = FALSE;
-    	$saleDate = "SKIP";
     	
     	//$sql = "SELECT * FROM hoa_assessments WHERE FY > 2006 ORDER BY FY DESC; ";
     	$sql = "SELECT * FROM hoa_assessments WHERE FY > 2006 ORDER BY FY,Parcel_ID,OwnerID DESC; ";
@@ -218,11 +218,12 @@ try {
     	}
     	
     } else {
-
+        // The general Reports query - creating a list of HoaRec records (with all data for the Property)
+        // This PHP service is about getting the list of HOA records, then the JS will decide what to use 
+        // and the logic for each particular report
     	$parcelId = "";
     	$ownerId = "";
     	$fy = 0;
-    	$saleDate = "SKIP";
 
     	// *** just use the highest FY - the first assessment record ***
     	$result = $conn->query("SELECT MAX(FY) AS maxFY FROM hoa_assessments; ");
@@ -233,20 +234,50 @@ try {
     		}
     		$result->close();
     	}
-    	
+        
+        /*
+        // get filter criteria
+        //if ($mailingListName == 'WelcomeLetters') {
+    	//	$sql = "SELECT * FROM hoa_sales WHERE WelcomeSent = 'S' ORDER BY CreateTimestamp DESC; ";
+
+        if ($reportName == "") {
+
+        if ($mailingListName = 'Newsletter') {
+            if ($logDuesLetterSend) {
+                // Create Communications record for each record added to the mailing list
+            }
+        }
+        */
+
+
     	// try to get the parameters into the initial select query to limit the records it then tries to get from the getHoaRec
-    	if ($reportName == "UnpaidDuesReport") {
-    		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+    	if ($reportName == "MailingListReport") {
+            if ($mailingListName == 'WelcomeLetters') {
+        		$sql = "SELECT p.Parcel_ID,o.OwnerID FROM hoa_properties p, hoa_owners o, hoa_assessments a, hoa_sales s " .
+        				"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID AND p.Parcel_ID = s.PARID " .
+        				"AND a.FY = " . $fy . " AND s.WelcomeSent = 'S' ORDER BY s.CreateTimestamp DESC; ";
+
+                //} else if ($mailingListName = 'Duesletter') {
+
+                // Update the flag in Sales table from 'S' to 'Y' ???
+
+            } else {
+        		$sql = "SELECT p.Parcel_ID,o.OwnerID FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+        				"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
+        				"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
+            }
+
+        } else if ($reportName == "UnpaidDuesReport") {
+    		$sql = "SELECT p.Parcel_ID,o.OwnerID FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
     				"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
     				"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
     	} else if ($reportName == "PaidDuesReport") {
-    		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+    		$sql = "SELECT p.Parcel_ID,o.OwnerID FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
     				"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
     				"AND a.FY = " . $fy . " AND a.Paid = 1 ORDER BY p.Parcel_ID; ";
     	} else {
-    		$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-    			 	"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
-    			 	"AND a.FY = " . $fy . " ORDER BY p.Parcel_ID; ";
+            // All properties and current owner
+            $sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";
     	}
 
     	$stmt = $conn->prepare($sql);
@@ -263,7 +294,7 @@ try {
     			$parcelId = $row["Parcel_ID"];
     			$ownerId = $row["OwnerID"];
     	
-    			$hoaRec = getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate);
+    			$hoaRec = getHoaRec($conn,$parcelId,$ownerId,$fy);
     	
     			array_push($outputArray,$hoaRec);
     		}

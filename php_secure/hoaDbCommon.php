@@ -1158,7 +1158,7 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 // Common function to take the payment transaction information and update the HOA database for PAID, etc.
 function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_email,$payment_amt,$payment_fee,$fromEmailAddress) {
 	// Get the HOA record for this Parcel and Owner
-	$hoaRec = getHoaRec($conn,$parcelId,$ownerId,'','SKIP-SALES');
+	$hoaRec = getHoaRec($conn,$parcelId,$ownerId,'');
 	if ($hoaRec == null || $hoaRec->Parcel_ID == null || $hoaRec->Parcel_ID != $parcelId) {
 		// ERROR - hoa record not found
 		error_log(date('[Y-m-d H:i:s] ') . 'No HOA rec found for Parcel ' . $parcelId . PHP_EOL, 3, LOG_FILE);
