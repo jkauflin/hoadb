@@ -133,12 +133,18 @@ var reports = (function () {
             } else {
                 var mailingListName = '';
                 var logDuesLetterSend = '';
+                if (reportName == 'MailingListReport') {
+                    mailingListName = $('input:radio:checked').val();
+                }
+
+                /*
                 if (document.getElementById('MailingListName') != null) {
                     mailingListName = document.getElementById('MailingListName').value;
                 }
                 if (document.getElementById('LogDuesLetterSend') != null) {
                     logDuesLetterSend = document.getElementById('LogDuesLetterSend').checked;
                 }
+                */
 
                 $.getJSON("getHoaReportData.php", "reportName=" + reportName + "&mailingListName=" + mailingListName + "&logDuesLetterSend=" + logDuesLetterSend, function (result) {
                     if (result.error) {
@@ -447,15 +453,22 @@ var reports = (function () {
                 rowId = index + 1;
 
                 if (index == 0) {
-                    $('<tr>')
-                        .append($('<th>').html('Row'))
-                        .append($('<th>').html('Parcel Id'))
-                        .append($('<th>').html('Location'))
-                        .append($('<th>').html('Owner and Alt Address'))
-                        .appendTo($ReportListDisplay);
+                    tr = $('<tr>');
+                    tr.append($('<th>').html('Row'))
+                      .append($('<th>').html('Parcel Id'))
+                      .append($('<th>').html('Location'));
+
+                    if (mailingListName.startsWith('Duesletter')) {
+                        tr.append($('<th>').html('Owner and Alt Address'));
+                    } else {
+                        tr.append($('<th>').html('Owner'));
+                    }
+                    
+                    tr.appendTo($ReportListDisplay);
 
                     reportYear = hoaRec.assessmentsList[0].FY;
-                    reportTitleFull = reportTitle + " for Fiscal Year " + reportYear + " (Oct. 1, " + (reportYear - 1) + " to Sept. 30, " + reportYear + ")";
+                    //reportTitleFull = reportTitle + " for Fiscal Year " + reportYear + " (Oct. 1, " + (reportYear - 1) + " to Sept. 30, " + reportYear + ")";
+                    reportTitleFull = reportTitle + " - " + mailingListName;
 
                     // maybe for CSV just 1 set of mailing address fields (with either parcel location or Alt. address)
 
@@ -490,7 +503,7 @@ var reports = (function () {
                     .append($('<td>').html(hoaRec.ownersList[0].Mailing_Name))
                 tr.appendTo($ReportListDisplay);
 
-                if (hoaRec.ownersList[0].AlternateMailing) {
+                if (mailingListName.startsWith('Duesletter') && hoaRec.ownersList[0].AlternateMailing) {
                     var tr3 = $('<tr>');
                     tr3.append($('<td>').html(''))
                         .append($('<td>').html(''))
@@ -536,7 +549,7 @@ var reports = (function () {
                 csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Owner_Phone);
                 csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Mailing_Name);
 
-                if (hoaRec.ownersList[0].AlternateMailing) {
+                if (mailingListName.startsWith('Duesletter') && hoaRec.ownersList[0].AlternateMailing) {
                     csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Alt_Address_Line1);
                     csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Alt_Address_Line2);
                     csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Alt_City);
