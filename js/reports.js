@@ -115,7 +115,7 @@ var reports = (function () {
     function _reportRequest(event) {
         var reportName = event.target.getAttribute("id");
         var reportTitle = event.target.getAttribute("data-reportTitle");
-        $ReportHeader.html("");
+        $ReportHeader.html("Executing report query...");
         $ReportListDisplay.html("");
         $ReportRecCnt.html("");
         $ReportDownloadLinks.html("");
@@ -134,19 +134,11 @@ var reports = (function () {
                 var mailingListName = '';
                 var logDuesLetterSend = '';
                 if (reportName == 'MailingListReport') {
-                    mailingListName = $('#MailingListName input:radio:checked').val();
+                    mailingListName = $('input:radio[name=MailingListName]:checked').val();
                 }
 
-                /*
-                if (document.getElementById('MailingListName') != null) {
-                    mailingListName = document.getElementById('MailingListName').value;
-                }
-                if (document.getElementById('LogDuesLetterSend') != null) {
-                    logDuesLetterSend = document.getElementById('LogDuesLetterSend').checked;
-                }
-                */
-
-                $.getJSON("getHoaReportData.php", "reportName=" + reportName + "&mailingListName=" + mailingListName + "&logDuesLetterSend=" + logDuesLetterSend, function (result) {
+                $.getJSON("getHoaReportData.php", "reportName=" + reportName + "&mailingListName=" 
+                  + mailingListName + "&logDuesLetterSend=" + logDuesLetterSend, function (result) {
                     if (result.error) {
                         console.log("error = " + result.error);
                         $ajaxError.html("<b>" + result.error + "</b>");
@@ -420,19 +412,19 @@ var reports = (function () {
 
                 tr = $('<tr>');
                 tr.append($('<td>').html(cntsRec.fy))
-                    .append($('<td>').html(cntsRec.paidCnt))
-                    .append($('<td>').html(cntsRec.unpaidCnt))
-                    .append($('<td>').html(cntsRec.nonCollCnt))
-                    .append($('<td>').html(parseFloat('' + cntsRec.totalDue).toFixed(2)))
-                    .append($('<td>').html(parseFloat('' + cntsRec.nonCollDue).toFixed(2)));
+                  .append($('<td>').html(cntsRec.paidCnt))
+                  .append($('<td>').html(cntsRec.unpaidCnt))
+                  .append($('<td>').html(cntsRec.nonCollCnt))
+                  .append($('<td>').html( util.formatMoney(cntsRec.totalDue) ))
+                  .append($('<td>').html( util.formatMoney(cntsRec.nonCollDue) ))
                 tr.appendTo($ReportListDisplay);
 
                 csvLine = util.csvFilter(cntsRec.fy);
                 csvLine += ',' + util.csvFilter(cntsRec.paidCnt);
                 csvLine += ',' + util.csvFilter(cntsRec.unpaidCnt);
                 csvLine += ',' + util.csvFilter(cntsRec.nonCollCnt);
-                csvLine += ',' + util.csvFilter(parseFloat('' + cntsRec.totalDue).toFixed(2))
-                csvLine += ',' + util.csvFilter(parseFloat('' + cntsRec.nonCollDue).toFixed(2));
+                csvLine += ',' + util.csvFilter(util.formatMoney(cntsRec.totalDue));
+                csvLine += ',' + util.csvFilter(util.formatMoney(cntsRec.nonCollDue));
                 csvContent += csvLine + '\n';
 
             }); // $.each(reportList, function(index, cntsRec) {
@@ -445,132 +437,107 @@ var reports = (function () {
                     .html('Download CSV'));
 
         } else if (reportName == "MailingListReport") {
-
-            //mailingListName == 'WelcomeLetters'
-
             // Loop through the list of properties / current owner
+            var skipRec = false;
+            var recCnt = 0;
             $.each(reportList, function (index, hoaRec) {
-                rowId = index + 1;
+                skipRec = false;
+                console.log('TotalDue = ' + util.formatMoney(hoaRec.TotalDue));
+                // If creating Dues Letters, skip properties that don't owe anything
+                if (mailingListName.startsWith('Duesletter') && util.formatMoney(hoaRec.TotalDue) < 0.01) {
+                    skipRec = true;
+                }
+                // Skip postal mail for 1st Notices if Member has asked to use Email
+                if (mailingListName == 'Duesletter1' && hoaRec.UseEmail) {
+                    skipRec = true;
+                }
 
-                if (index == 0) {
-                    tr = $('<tr>');
-                    tr.append($('<th>').html('Row'))
-                      .append($('<th>').html('Parcel Id'))
-                      .append($('<th>').html('Location'));
+                if (!skipRec) {
+                    //rowId = index + 1;
+                    recCnt = recCnt + 1;
+                    rowId = recCnt;
 
-                    if (mailingListName.startsWith('Duesletter')) {
-                        tr.append($('<th>').html('Owner and Alt Address'));
-                    } else {
-                        tr.append($('<th>').html('Owner'));
+                    if (recCnt == 1) {
+                        tr = $('<tr>');
+                        tr.append($('<th>').html('Rec'))
+                            .append($('<th>').html('Parcel Id'))
+                            .append($('<th>').html('Name'))
+                            .append($('<th>').html('Address'))
+                            .append($('<th>').html('City'))
+                            .append($('<th>').html('State'))
+                            .append($('<th>').html('Zip'));
+                        tr.appendTo($ReportListDisplay);
+
+                        reportYear = hoaRec.assessmentsList[0].FY;
+                        //reportTitleFull = reportTitle + " for Fiscal Year " + reportYear + " (Oct. 1, " + (reportYear - 1) + " to Sept. 30, " + reportYear + ")";
+                        reportTitleFull = reportTitle + " - " + mailingListName;
+
+                        csvLine = util.csvFilter("RecId");
+                        csvLine += ',' + util.csvFilter("ParcelID");
+                        csvLine += ',' + util.csvFilter("ParcelLocation");
+                        csvLine += ',' + util.csvFilter("MailingName");
+                        csvLine += ',' + util.csvFilter("MailingAddressLine1");
+                        csvLine += ',' + util.csvFilter("MailingAddressLine2");
+                        csvLine += ',' + util.csvFilter("MailingCity");
+                        csvLine += ',' + util.csvFilter("MailingState");
+                        csvLine += ',' + util.csvFilter("MailingZip");
+                        csvLine += ',' + util.csvFilter("OwnerPhone");
+                        csvLine += ',' + util.csvFilter("FiscalYear");
+                        csvLine += ',' + util.csvFilter("DuesAmt");
+                        csvLine += ',' + util.csvFilter("Paid");
+                        csvLine += ',' + util.csvFilter("NonCollectible");
+                        csvLine += ',' + util.csvFilter("DateDue");
+                        csvLine += ',' + util.csvFilter("UseEmail");
+                        csvContent += csvLine + '\n';
                     }
-                    
+
+                    tr = $('<tr>');
+                    tr.append($('<td>').html(recCnt))
+                        .append($('<td>').html(hoaRec.Parcel_ID))
+                        .append($('<td>').html(hoaRec.ownersList[0].Mailing_Name))
+
+                    if (mailingListName.startsWith('Duesletter') && hoaRec.ownersList[0].AlternateMailing) {
+                        tr.append($('<td>').html(hoaRec.ownersList[0].Alt_Address_Line1 + ' ' + hoaRec.ownersList[0].Alt_Address_Line2))
+                            .append($('<td>').html(hoaRec.ownersList[0].Alt_City))
+                            .append($('<td>').html(hoaRec.ownersList[0].Alt_State))
+                            .append($('<td>').html(hoaRec.ownersList[0].Alt_Zip));
+                    } else {
+                        tr.append($('<td>').html(hoaRec.Parcel_Location))
+                            .append($('<td>').html(hoaRec.Property_City))
+                            .append($('<td>').html(hoaRec.Property_State))
+                            .append($('<td>').html(hoaRec.Property_Zip));
+                    }
                     tr.appendTo($ReportListDisplay);
 
-                    reportYear = hoaRec.assessmentsList[0].FY;
-                    //reportTitleFull = reportTitle + " for Fiscal Year " + reportYear + " (Oct. 1, " + (reportYear - 1) + " to Sept. 30, " + reportYear + ")";
-                    reportTitleFull = reportTitle + " - " + mailingListName;
+                    csvLine = util.csvFilter(recCnt);
+                    csvLine += ',' + util.csvFilter(hoaRec.Parcel_ID);
+                    csvLine += ',' + util.csvFilter(hoaRec.Parcel_Location);
+                    csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Mailing_Name);
 
-                    // maybe for CSV just 1 set of mailing address fields (with either parcel location or Alt. address)
+                    if (mailingListName.startsWith('Duesletter') && hoaRec.ownersList[0].AlternateMailing) {
+                        csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Alt_Address_Line1);
+                        csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Alt_Address_Line2);
+                        csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Alt_City);
+                        csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Alt_State);
+                        csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Alt_Zip);
 
-                    csvLine = util.csvFilter("RecId");
-                    csvLine += ',' + util.csvFilter("ParcelID");
-                    csvLine += ',' + util.csvFilter("LotNo");
-                    csvLine += ',' + util.csvFilter("ParcelLocation");
-                    csvLine += ',' + util.csvFilter("OwnerName1");
-                    csvLine += ',' + util.csvFilter("OwnerName2");
-                    csvLine += ',' + util.csvFilter("OwnerPhone");
-                    csvLine += ',' + util.csvFilter("MailingName");
-                    csvLine += ',' + util.csvFilter("MailingAddressLine1");
-                    csvLine += ',' + util.csvFilter("MailingAddressLine2");
-                    csvLine += ',' + util.csvFilter("MailingCity");
-                    csvLine += ',' + util.csvFilter("MailingState");
-                    csvLine += ',' + util.csvFilter("MailingZip");
-                    csvLine += ',' + util.csvFilter("FiscalYear");
-                    csvLine += ',' + util.csvFilter("DuesAmt");
-                    csvLine += ',' + util.csvFilter("Paid");
-                    csvLine += ',' + util.csvFilter("NonCollectible");
-                    csvLine += ',' + util.csvFilter("DateDue");
-                    csvLine += ',' + util.csvFilter("UseEmail");
-                    csvContent += csvLine + '\n';
-                }
-
-                //.append($('<td>').html(hoaRec.ownersList[0].Owner_Name1+" "+hoaRec.ownersList[0].Owner_Name2))
-
-                tr = $('<tr>');
-                tr.append($('<td>').html(index + 1))
-                    .append($('<td>').html(hoaRec.Parcel_ID))
-                    .append($('<td>').html(hoaRec.Parcel_Location))
-                    .append($('<td>').html(hoaRec.ownersList[0].Mailing_Name))
-                tr.appendTo($ReportListDisplay);
-
-                if (mailingListName.startsWith('Duesletter') && hoaRec.ownersList[0].AlternateMailing) {
-                    var tr3 = $('<tr>');
-                    tr3.append($('<td>').html(''))
-                        .append($('<td>').html(''))
-                        .append($('<td>').html(''))
-                        .append($('<td>').html(''))
-                        .append($('<td>').html(hoaRec.ownersList[0].Alt_Address_Line1))
-                        .append($('<td>').html(''))
-                        .append($('<td>').html(''))
-                        .append($('<td>').html(''));
-                    tr3.appendTo($ReportListDisplay);
-
-                    if (hoaRec.ownersList[0].Alt_Address_Line2 != '') {
-                        var tr4 = $('<tr>');
-                        tr4.append($('<td>').html(''))
-                            .append($('<td>').html(''))
-                            .append($('<td>').html(''))
-                            .append($('<td>').html(''))
-                            .append($('<td>').html(hoaRec.ownersList[0].Alt_Address_Line2))
-                            .append($('<td>').html(''))
-                            .append($('<td>').html(''))
-                            .append($('<td>').html(''));
-                        tr4.appendTo($ReportListDisplay);
+                    } else {
+                        csvLine += ',' + util.csvFilter(hoaRec.Parcel_Location);
+                        csvLine += ',' + util.csvFilter("");
+                        csvLine += ',' + util.csvFilter(hoaRec.Property_City);
+                        csvLine += ',' + util.csvFilter(hoaRec.Property_State);
+                        csvLine += ',' + util.csvFilter(hoaRec.Property_Zip);
                     }
 
-                    var tr5 = $('<tr>');
-                    tr5.append($('<td>').html(''))
-                        .append($('<td>').html(''))
-                        .append($('<td>').html(''))
-                        .append($('<td>').html(''))
-                        .append($('<td>').html(hoaRec.ownersList[0].Alt_City + ', ' + hoaRec.ownersList[0].Alt_State + ' ' + hoaRec.ownersList[0].Alt_Zip))
-                        .append($('<td>').html(''))
-                        .append($('<td>').html(''))
-                        .append($('<td>').html(''));
-                    tr5.appendTo($ReportListDisplay);
-                }
-
-                csvLine = util.csvFilter(index + 1);
-                csvLine += ',' + util.csvFilter(hoaRec.Parcel_ID);
-                csvLine += ',' + util.csvFilter(hoaRec.LotNo);
-                csvLine += ',' + util.csvFilter(hoaRec.Parcel_Location);
-                csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Owner_Name1);
-                csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Owner_Name2);
-                csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Owner_Phone);
-                csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Mailing_Name);
-
-                if (mailingListName.startsWith('Duesletter') && hoaRec.ownersList[0].AlternateMailing) {
-                    csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Alt_Address_Line1);
-                    csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Alt_Address_Line2);
-                    csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Alt_City);
-                    csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Alt_State);
-                    csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Alt_Zip);
-
-                } else {
-                    csvLine += ',' + util.csvFilter(hoaRec.Parcel_Location);
-                    csvLine += ',' + util.csvFilter("");
-                    csvLine += ',' + util.csvFilter(hoaRec.Property_City);
-                    csvLine += ',' + util.csvFilter(hoaRec.Property_State);
-                    csvLine += ',' + util.csvFilter(hoaRec.Property_Zip);
-                }
-
-                csvLine += ',' + util.csvFilter(reportYear);
-                csvLine += ',' + util.csvFilter(hoaRec.assessmentsList[0].DuesAmt);
-                csvLine += ',' + util.csvFilter(util.setBoolText(hoaRec.assessmentsList[0].Paid));
-                csvLine += ',' + util.csvFilter(util.setBoolText(hoaRec.assessmentsList[0].NonCollectible));
-                csvLine += ',' + util.csvFilter(hoaRec.assessmentsList[0].DateDue);
-                csvLine += ',' + util.csvFilter(hoaRec.UseEmail);
-                csvContent += csvLine + '\n';
+                    csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Owner_Phone);
+                    csvLine += ',' + util.csvFilter(reportYear);
+                    csvLine += ',' + util.csvFilter(hoaRec.assessmentsList[0].DuesAmt);
+                    csvLine += ',' + util.csvFilter(util.setBoolText(hoaRec.assessmentsList[0].Paid));
+                    csvLine += ',' + util.csvFilter(util.setBoolText(hoaRec.assessmentsList[0].NonCollectible));
+                    csvLine += ',' + util.csvFilter(hoaRec.assessmentsList[0].DateDue);
+                    csvLine += ',' + util.csvFilter(hoaRec.UseEmail);
+                    csvContent += csvLine + '\n';
+                } // end of if (!skipRec) {
 
             }); // $.each(reportList, function(index, hoaRec) {
 
@@ -578,7 +545,7 @@ var reports = (function () {
                 $('<a>').prop('id', 'DownloadReportCSV')
                     .attr('href', '#')
                     .attr('class', "btn btn-warning")
-                    .attr('data-reportName', util.formatDate() + '-' + reportName)
+                    .attr('data-reportName', util.formatDate() + '-' + reportName +'-'+ mailingListName)
                     .html('Download CSV'));
 
         } else {

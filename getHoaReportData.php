@@ -225,15 +225,17 @@ try {
     	$ownerId = "";
     	$fy = 0;
 
-    	// *** just use the highest FY - the first assessment record ***
-    	$result = $conn->query("SELECT MAX(FY) AS maxFY FROM hoa_assessments; ");
-    	
-    	if ($result->num_rows > 0) {
-    		while($row = $result->fetch_assoc()) {
-    			$fy = $row["maxFY"];
-    		}
-    		$result->close();
-    	}
+        if ($reportName == "UnpaidDuesReport" || $reportName == "PaidDuesReport") {
+        	// *** just use the highest FY - the first assessment record ***
+        	$result = $conn->query("SELECT MAX(FY) AS maxFY FROM hoa_assessments; ");
+        	if ($result->num_rows > 0) {
+        		while($row = $result->fetch_assoc()) {
+        			$fy = $row["maxFY"];
+        		}
+        		$result->close();
+        	}
+        }
+
 
     	// try to get the parameters into the initial select query to limit the records it then tries to get from the getHoaRec
         if ($mailingListName == 'WelcomeLetters') {
@@ -252,7 +254,7 @@ try {
                     // current owner?
     	} else {
             // All properties and current owner
-            $sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";
+            $sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ORDER BY p.Parcel_ID; ";
     	}
 
     	$stmt = $conn->prepare($sql);
@@ -269,7 +271,8 @@ try {
     			$parcelId = $row["Parcel_ID"];
     			$ownerId = $row["OwnerID"];
     	
-    			$hoaRec = getHoaRec($conn,$parcelId,$ownerId,$fy);
+    			//$hoaRec = getHoaRec($conn,$parcelId,$ownerId,$fy);
+    			$hoaRec = getHoaRec($conn,$parcelId,$ownerId);
     	
     			array_push($outputArray,$hoaRec);
     		}

@@ -13,6 +13,7 @@
  *
  * top level app must include JWT-PHP library in it's composer
  * and include and call jjklogin PHP functions?
+ * $cookiePath = '/grha/hoadb';
  *
  *----------------------------------------------------------------------------
  * Modification History
