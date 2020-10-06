@@ -134,7 +134,7 @@ var reports = (function () {
                 var mailingListName = '';
                 var logDuesLetterSend = '';
                 if (reportName == 'MailingListReport') {
-                    mailingListName = $('input:radio:checked').val();
+                    mailingListName = $('#MailingListName input:radio:checked').val();
                 }
 
                 /*
