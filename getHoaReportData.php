@@ -236,7 +236,6 @@ try {
         	}
         }
 
-
     	// try to get the parameters into the initial select query to limit the records it then tries to get from the getHoaRec
         if ($mailingListName == 'WelcomeLetters') {
         	$sql = "SELECT p.Parcel_ID,o.OwnerID FROM hoa_properties p, hoa_owners o, hoa_sales s" .
@@ -270,7 +269,8 @@ try {
     	
     			$parcelId = $row["Parcel_ID"];
     			$ownerId = $row["OwnerID"];
-    	
+        
+                // Don't include FY because you want all assessments to calculate Total Due
     			//$hoaRec = getHoaRec($conn,$parcelId,$ownerId,$fy);
     			$hoaRec = getHoaRec($conn,$parcelId,$ownerId);
     	
