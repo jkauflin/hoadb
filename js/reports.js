@@ -21,6 +21,8 @@
  * 2020-08-15 JJK   Added Issues Report
  * 2020-08-25 JJK   Added WelcomeSent flag set (from the Sales report)
  * 2020-10-02 JJK   Started Mailing List development
+ * 2020-10-10 JJK   Added checkboxes to log mailed and moved the filter
+ *                  logic to the PHP query
  *============================================================================*/
 var reports = (function () {
     'use strict';
@@ -82,8 +84,16 @@ var reports = (function () {
                     .attr('name', "MailingListName")
                     .attr('type', "radio")
                     .attr('checked', "checked")
-                    .attr('value', "WelcomeLetters")).append($('<label>').html("&nbsp; Welcome Letters (property addresses, Sales WelcomeSent = S)")).append($('</br>'))
-                .append($('<input>')
+                    .attr('value', "WelcomeLetters")).append($('<label>').html("&nbsp; Welcome Letters (property addresses, Sales WelcomeSent = S) &nbsp;&nbsp;"))
+            if (jjklogin.getUserLevel() > 1) {
+                $ReportFilter.append($('<input>')
+                    .prop('id', "LogWelcomeLetters")
+                    .attr('name', "LogWelcomeLetters")
+                    .attr('type', "checkbox"))
+                    .append($('<label>').html("&nbsp; Mark Welcome Letters as MAILED"))
+            }
+            $ReportFilter.append($('</br>'))
+            $ReportFilter.append($('<input>')
                     .prop('id', "MailingListName")
                     .attr('name', "MailingListName")
                     .attr('type', "radio")
@@ -92,21 +102,28 @@ var reports = (function () {
                     .prop('id', "MailingListName")
                     .attr('name', "MailingListName")
                     .attr('type', "radio")
-                    .attr('value', "Duesletter1")).append($('<label>').html("&nbsp; Dues Letter 1st Notice (ALL owner addresses using ALT if set) &nbsp;")).append($('</br>'))
+                    .attr('value', "Duesletter1")).append($('<label>').html("&nbsp; Dues Letter 1st Notice (ALL owner addresses using ALT if set) &nbsp;&nbsp;"))
+            $ReportFilter.append($('</br>'))
                 .append($('<input>')
                     .prop('id', "MailingListName")
                     .attr('name', "MailingListName")
                     .attr('type', "radio")
-                    .attr('value', "Duesletter2")).append($('<label>').html("&nbsp; Dues Letter 2nd Notice (Unpaid owner addresses using ALT if set) &nbsp;")).append($('</br>'))
-
-                .append($('<a>')
+                    .attr('value', "Duesletter2")).append($('<label>').html("&nbsp; Dues Letter 2nd Notice (Unpaid owner addresses using ALT if set) &nbsp;&nbsp;"))
+            if (jjklogin.getUserLevel() > 1) {
+                $ReportFilter.append($('<input>')
+                    .prop('id', "LogDuesLetterSend")
+                    .attr('name', "LogDuesLetterSend")
+                    .attr('type', "checkbox"))
+                    .append($('<label>').html("&nbsp; Mark Dues Letters (1 or 2) as MAILED"))
+            }
+            $ReportFilter.append($('</br>'))
+            $ReportFilter.append($('<a>')
                     .prop('id', "MailingListReport")
                     .attr('href', "#")
                     .attr('class', "btn btn-primary reportRequest")
                     .attr('data-reportTitle', reportTitle)
                     .attr('role', "button")
                     .html("Create List")).append($('</br>'))
-
         } else {
             $ReportRecCnt.html("User is not logged in");
         }
@@ -123,6 +140,7 @@ var reports = (function () {
         // check user logged in
         if (jjklogin.isUserLoggedIn()) {
             if (reportName == 'UnpaidDuesRankingReport') {
+                $ReportFilter.empty();
                 $ReportRecCnt.html("Executing request...(please wait)");
 
                 // Get all the data needed for processing
@@ -132,13 +150,18 @@ var reports = (function () {
                 });
             } else {
                 var mailingListName = '';
+                var logWelcomeLetters = '';
                 var logDuesLetterSend = '';
                 if (reportName == 'MailingListReport') {
                     mailingListName = $('input:radio[name=MailingListName]:checked').val();
+                    logDuesLetterSend = $('#LogDuesLetterSend').is(":checked");
+                    logWelcomeLetters = $('#LogWelcomeLetters').is(":checked");
+                } else {
+                    $ReportFilter.empty();
                 }
 
                 $.getJSON("getHoaReportData.php", "reportName=" + reportName + "&mailingListName=" 
-                  + mailingListName + "&logDuesLetterSend=" + logDuesLetterSend, function (result) {
+                  + mailingListName + "&logDuesLetterSend=" + logDuesLetterSend+"&logWelcomeLetters="+logWelcomeLetters, function (result) {
                     if (result.error) {
                         console.log("error = " + result.error);
                         $ajaxError.html("<b>" + result.error + "</b>");
@@ -432,6 +455,8 @@ var reports = (function () {
             $.each(reportList, function (index, hoaRec) {
                 totalDue = util.formatMoney(hoaRec.TotalDue);
                 //console.log('TotalDue = ' + util.formatMoney(hoaRec.TotalDue));
+
+                /* >>> moved this logic to the PHP query
                 // If creating Dues Letters, skip properties that don't owe anything
                 if (mailingListName.startsWith('Duesletter') && totalDue < 0.01) {
                     return true;
@@ -440,6 +465,7 @@ var reports = (function () {
                 if (mailingListName == 'Duesletter1' && hoaRec.UseEmail) {
                     return true;
                 }
+                */
 
                 recCnt = recCnt + 1;
                 rowId = recCnt;

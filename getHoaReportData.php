@@ -39,6 +39,7 @@ try {
     $reportName = getParamVal("reportName");
     $mailingListName = getParamVal("mailingListName");
     $logDuesLetterSend = paramBoolVal("logDuesLetterSend");
+    $logWelcomeLetters = paramBoolVal("logWelcomeLetters");
 
     $outputArray = array();
     $conn = getConn($host, $dbadmin, $password, $dbname);
@@ -273,7 +274,54 @@ try {
                 // Don't include FY because you want all assessments to calculate Total Due
     			//$hoaRec = getHoaRec($conn,$parcelId,$ownerId,$fy);
     			$hoaRec = getHoaRec($conn,$parcelId,$ownerId);
-    	
+
+                // If creating Dues Letters, skip properties that don't owe anything
+                if (substr($mailingListName,0,10) == 'Duesletter' && $hoaRec->TotalDue < 0.01) {
+                    continue;
+                }
+                // Skip postal mail for 1st Notices if Member has asked to use Email
+                if ($mailingListName == 'Duesletter1' && $hoaRec->UseEmail) {
+                    continue;
+                }
+
+                
+                if ($userRec->userLevel > 1) {
+                    if ($logDuesLetterSend) {
+                    }
+
+                    // If flag is set, mark the Welcome Letters as MAILED
+                    if ($logWelcomeLetters) {
+                        $stmt = $conn->prepare("UPDATE hoa_sales SET WelcomeSent='Y',LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE PARID = ? AND WelcomeSent = 'S' ; ");
+	                    $stmt->bind_param("ss",$userRec->userName,$parcelId);	
+	                    $stmt->execute();
+	                    $stmt->close();
+                    }
+                }
+
+                /*
+                var commType = 'Dues Notice';
+
+                // Get a displayAddress for the Communication record
+                displayAddress = hoaRec.Parcel_Location;
+                if (hoaRec.ownersList[0].AlternateMailing) {
+                    displayAddress = hoaRec.ownersList[0].Alt_Address_Line1;
+                }
+                commDesc = noticeType + " Notice for postal mail created for " + displayAddress;
+                // log communication for notice created
+                communications.LogCommunication(hoaRec.Parcel_ID, hoaRec.ownersList[0].OwnerID, commType, commDesc);
+
+                // Get a displayAddress for the Communication record
+                displayAddress = hoaRec.Parcel_Location;
+                if (hoaRec.ownersList[0].AlternateMailing) {
+                    displayAddress = hoaRec.ownersList[0].Alt_Address_Line1;
+                }
+
+                commDesc = "Notice for postal mail mailed for " + displayAddress;
+                // log communication for notice created
+                communications.LogCommunication(hoaRec.Parcel_ID, hoaRec.ownersList[0].OwnerID, commType, commDesc);
+
+                */
+
     			array_push($outputArray,$hoaRec);
     		}
     	}
