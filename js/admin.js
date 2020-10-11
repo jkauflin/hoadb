@@ -281,6 +281,8 @@ var admin = (function () {
         var testEmailAddr = config.getVal('duesEmailTestAddress');
         var resultDetails = '';
         $DuesListDisplay.empty();
+
+        /*
         $.each(hoaRecList, function (index, hoaRec) {
             //console.log("***** "+ index + ", len = " + hoaRec.emailAddrList.length + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1);
 
@@ -293,11 +295,9 @@ var admin = (function () {
                     emailRecCnt = emailRecCnt + 1;
                     //console.log(index + " " + index2 + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", sendEmailAddr = " + emailAddr);
 
-                    /*
-                    resultDetails = resultDetails + "<br>" + index + " " + index2 + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = "
-                            + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + " "
-                            + hoaRec.ownersList[0].Owner_Name2 + ", emailAddr = " + emailAddr;
-                    */
+                    //resultDetails = resultDetails + "<br>" + index + " " + index2 + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = "
+                    //        + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + " "
+                    //        + hoaRec.ownersList[0].Owner_Name2 + ", emailAddr = " + emailAddr;
                     //var $DuesListDisplay = $moduleDiv.find("#DuesListDisplay tbody");
 
                     if (index == 0) {
@@ -334,8 +334,72 @@ var admin = (function () {
             }
             
         }); // End of loop through Parcels
+        */
 
-        $("#ResultMessage").html("Yearly dues notices emailed, total = " + emailRecCnt + "<br>" + resultDetails);
+        /*
+        $.post("sendMail.php", {
+            toEmail: emailAddr,
+            subject: config.getVal('hoaNameShort') + ' Dues Notice',
+            messageStr: 'Attached is the ' + config.getVal('hoaName') + ' Dues Notice.  *** Reply to this email to request unsubscribe ***',
+            parcelId: hoaRec.Parcel_ID,
+            ownerId: hoaRec.ownersList[0].OwnerID,
+            filename: config.getVal('hoaNameShort') + 'DuesNotice.pdf',
+            filedata: btoa(pdfRec.pdf.output())
+        }, function (response) {
+            console.log("result from sendMail = " + response.result + ", ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID + ", response.sendEmailAddr = " + response.sendEmailAddr);
+            if (response.result == 'SUCCESS') {
+                commDesc = noticeType + " Dues Notice emailed to " + response.sendEmailAddr;
+                // log communication for notice created
+                communications.LogCommunication(response.Parcel_ID, response.OwnerID, commType, commDesc);
+            } else {
+                commDesc = noticeType + " Dues Notice, ERROR emailing to " + response.sendEmailAddr;
+                //util.displayError(commDesc + ", ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID);
+                console.log("Error sending Email, ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID + ", sendEmailAddr = " + response.sendEmailAddr + ", message = " + response.message);
+            }
+        }, 'json'); // End of $.post("sendMail.php"
+
+
+        var paramMap = new Map();
+        paramMap.set('parcelId', event.target.getAttribute("data-parcelId"));
+        paramMap.set('ownerId', event.target.getAttribute("data-ownerId"));
+        paramMap.set('fy', event.target.getAttribute("data-fy"));
+        paramMap.set('txn_id', event.target.getAttribute("data-txn_id"));
+        paramMap.set('payment_date', event.target.getAttribute("data-payment_date"));
+        paramMap.set('fromEmail', event.target.getAttribute("data-fromEmail"));
+        paramMap.set('gross', event.target.getAttribute("data-gross"));
+        paramMap.set('fee', event.target.getAttribute("data-fee"));
+
+        //console.log("in _logPayment, util.getJSONfromInputs = " + util.getJSONfromInputs(null, paramMap));
+
+        var url = 'handlePaymentTransaction.php';
+        $.ajax(url, {
+            type: 'POST',
+            contentType: "application/json",
+            data: util.getJSONfromInputs(null, paramMap),
+            //data: new FormData(this),
+            dataType: "json",
+            //dataType: "html"
+        }).done(function (result) {
+            //console.log("result = " + result);
+            if (result.error) {
+                console.log("error = " + result.error);
+                $ajaxError.html("<b>" + result.error + "</b>");
+            } else {
+                var adminRec = result
+                // Get the updated flags from the result and update in the existing array
+                paymentList[index].TransLogged = adminRec.paymentList[0].TransLogged;
+                paymentList[index].MarkedPaid = adminRec.paymentList[0].MarkedPaid;
+                paymentList[index].EmailSent = adminRec.paymentList[0].EmailSent;
+                // Re-diplay the payment list
+                _paymentReconcileDisplay(adminRec.message);
+            }
+        }).fail(function (xhr, status, error) {
+            console.log('Error in AJAX request to ' + url + ', status = ' + status + ', error = ' + error)
+            $ajaxError.html("<b>" + "Error in request" + "</b>");
+        })
+        */
+
+        //$("#ResultMessage").html("Yearly dues notices emailed, total = " + emailRecCnt + "<br>" + resultDetails);
     }
 
 /*

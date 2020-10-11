@@ -78,7 +78,7 @@ var search = (function(){
                 tr += '<tr>';
                 tr += '<th>Row</th>';
                 tr += '<th>Parcel Id</th>';
-                tr += '<th class="hidden-xs hidden-sm">Lot No</th>';
+                //tr += '<th class="hidden-xs hidden-sm">Lot No</th>';
                 tr += '<th>Location</th>';
                 tr += '<th class="hidden-xs">Owner Name</th>';
                 tr += '<th class="visible-lg">Owner Phone</th>';
@@ -87,7 +87,7 @@ var search = (function(){
             tr += '<tr>';
             tr += '<td>' + (index + 1) + '</td>';
             tr += '<td><a class="DetailDisplay" data-parcelId="' + hoaPropertyRec.parcelId + '" href="#">' + hoaPropertyRec.parcelId + '</a></td>';
-            tr += '<td class="hidden-xs hidden-sm">' + hoaPropertyRec.lotNo + '</td>';
+            //tr += '<td class="hidden-xs hidden-sm">' + hoaPropertyRec.lotNo + '</td>';
             tr += '<td>' + hoaPropertyRec.parcelLocation + '</td>';
             tr += '<td class="hidden-xs">' + hoaPropertyRec.ownerName + '</td>';
             tr += '<td class="visible-lg">' + hoaPropertyRec.ownerPhone + '</td>';
