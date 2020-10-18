@@ -52,19 +52,18 @@ try {
 	//--------------------------------------------------------------------------------------------------------
 	$conn = getConn($host, $dbadmin, $password, $dbname);
 
-    $sqlStr = '';
+    $sql = '';
     $stmt = null;
     if ($param->commId == "NEW") {
-	    $sqlStr = 'INSERT INTO hoa_communications (Parcel_ID,CommID,CreateTs,OwnerID,CommType,CommDesc) VALUES(?,null,CURRENT_TIMESTAMP,?,?,?); ';
-	    $stmt = $conn->prepare($sqlStr);
-	    $stmt->bind_param("siss",$param->parcelId,$param->ownerId,$param->commType,$param->commDesc);
+        insertCommRec($conn,$param->parcelId,$param->ownerId,$param->commType,$param->commDesc);
+        //$Mailing_Name='',$Email=0,$EmailAddr='',$SentStatus='N',$LastChangedBy='');
     } else {
-        $sqlStr = 'UPDATE hoa_communications SET CommDesc=? WHERE CommID =?; ';
-	    $stmt = $conn->prepare($sqlStr);
+        $sql = 'UPDATE hoa_communications SET CommDesc=? WHERE CommID =?; ';
+	    $stmt = $conn->prepare($sql);
 	    $stmt->bind_param("si",$param->commDesc,$param->commId);
+	    $stmt->execute();
+	    $stmt->close();
     }
-	$stmt->execute();
-	$stmt->close();
 	
 	// Re-query the list and pass it back for display
 	$sql = "SELECT * FROM hoa_communications WHERE Parcel_ID = ? ORDER BY CommID DESC ";

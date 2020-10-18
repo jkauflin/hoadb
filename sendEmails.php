@@ -8,7 +8,7 @@
  * 				Version 6.3 (Depends on PHP 7)
  *----------------------------------------------------------------------------
  * Modification History
- * 2020-10-10 JJK 	Initial version
+ * 2020-10-16 JJK 	Initial version
  *============================================================================*/
 require_once 'vendor/autoload.php'; 
 
@@ -24,72 +24,83 @@ require_once getSecretsFilename();
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
 
-
-try {
-    $userRec = LoginAuth::getUserRec($cookieName,$cookiePath,$serverKey);
-    if ($userRec->userName == null || $userRec->userName == '') {
-        throw new Exception('User is NOT logged in', 500);
-    }
-    if ($userRec->userLevel < 1) {
-        throw new Exception('User is NOT authorized (contact Administrator)', 500);
-    }
-
-    $toEmail = $_POST['toEmail'];
-    $subject = $_POST['subject'];
-    $messageStr = $_POST['messageStr'];
-    $parcelId = $_POST['parcelId'];
-    $ownerId = $_POST['ownerId'];
-    $filename = $_POST['filename'];
-    // Decode the PDF data stream from character back to binary
-    $filedata = base64_decode($_POST['filedata']);
-
-    // Create the record to send back as a result of the POST
-    $sendEmailRec = new SendEmailRec();
-
-    $sendEmailRec->result = '';
-    $sendEmailRec->message = '';
-    $sendEmailRec->sendEmailAddr = $toEmail;
-    $sendEmailRec->Parcel_ID = $parcelId;
-    $sendEmailRec->OwnerID = $ownerId;
-
-	// Create the Transport (using default linux sendmail)
-	$transport = new Swift_SendmailTransport();
-
-	// Create the Mailer using your created Transport
-	$mailer = new Swift_Mailer($transport);
-
-	// Create a message
-	$message = (new Swift_Message($subject))
-		->setFrom([$fromTreasurerEmailAddress])
-		->setTo([$toEmail])
-		->setBody($messageStr);
-
-	// swiftmailer PHP read receipt capability
-	// $message -> setReadReceiptTo('your@address.tld');
-	// When the email is opened, if the mail client supports it a notification will be sent to this address.
-	// Read receipts won't work for the majority of recipients since many mail clients auto-disable them. 
-	// Those clients that will send a read receipt will make the user aware that one has been requested.
-
-	// Create the attachment with your data
-	$attachment = new Swift_Attachment($filedata, $filename, 'application/pdf');
-	// Attach it to the message
-	$message->attach($attachment);
-
-	// Send the message and check for success
-	if ($mailer->send($message)) {
-		$sendEmailRec->result = 'SUCCESS';
-		$sendEmailRec->message = 'Email sent successfully to ' . $toEmail;
-	} else {
-		$sendEmailRec->result = 'ERROR';
-		$sendEmailRec->message = 'Error sending Email to ' . $toEmail;
-	}
-
-	echo json_encode($sendEmailRec);
-
-} catch(Exception $e) {
-    //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
-	$sendEmailRec->result = 'ERROR';
-	$sendEmailRec->message = $e->getMessage();
-	echo json_encode($sendEmailRec);
+// Check URL param against secret key for scheduled jobs
+if (getParamVal("key") != $scheduledJobKey) {
+    echo "Not authorized to execute request";
+    exit;
 }
+
+$conn = getConn($host, $dbadmin, $password, $dbname);
+
+			//$subject = 'HOA Residential Sales in ' . $salesYear;
+            //$messageStr = '<h2>HOA Residential Sales in ' . $salesYear . '</h2>' . $outputStr;
+            
+            /*
+                toEmail: emailAddr,
+                subject: config.getVal('hoaNameShort') + ' Dues Notice',
+                messageStr: 'Attached is the ' + config.getVal('hoaName') + ' Dues Notice.  *** Reply to this email to request unsubscribe ***',
+                parcelId: hoaRec.Parcel_ID,
+                ownerId: hoaRec.ownersList[0].OwnerID,
+                filename: config.getVal('hoaNameShort') + 'DuesNotice.pdf',
+            */
+
+//$sql = "SELECT * FROM hoa_communications WHERE Email = 1 AND SentStatus = 'N' AND Parcel_ID = 'R72617307 0001' ORDER BY Parcel_ID ";
+$sql = "SELECT * FROM hoa_communications WHERE Email = 1 AND SentStatus = 'N' AND Parcel_ID = 'R72617307 0002' ORDER BY Parcel_ID ";
+$stmt = $conn->prepare($sql);	
+$stmt->execute();
+$result = $stmt->get_result();
+$stmt->close();
+
+$firstNotice = false;
+$commType = '';
+
+$sendMailSuccess = false;
+if ($result->num_rows > 0) {
+	while($row = $result->fetch_assoc()) {
+
+        $firstNotice = false;
+        $commType = $row["CommType"];
+        if ($commType == '1st Dues Notice') {
+            $firstNotice = true;
+        }
+
+        $hoaRec = getHoaRec($conn,$row["Parcel_ID"]);
+
+        $messageStr = createDuesMessage($conn,$hoaRec,$firstNotice);
+
+//            
+        /*
+        $sendMailSuccess = sendHtmlEMail($row["EmailAddr"],$subject,$messageStr,$fromEmailAddress);
+        // If the Member email was successful, update the flag on the communication record
+        if ($sendMailSuccess) {
+
+        }
+        */
+
+    }
+}
+
+$conn->close();
+
+
+    //function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
+/*
+
+                set status to 'E' error?
+*/
+
+    // Decode the PDF data stream from character back to binary
+    //$filedata = base64_decode($_POST['filedata']);
+
+    // *** assume called by a scheduled process
+    // config - MaxRecs to process
+    // loop through X (up to maxRecs) from Communication where Email and Send = 'N'
+    
+    // new common function to create the HTML dues email
+    // call common function to send the email
+    // if successful change sent to 'Y' and update Last changed timestamp
+
+
+//echo 'SUCCESS';
+echo $messageStr;
 ?>

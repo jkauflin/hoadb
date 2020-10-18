@@ -13,6 +13,7 @@
  * 2020-08-03 JJK   Re-factored for new error handling
  * 2020-08-16 JJK   Modified to allow edit on issue
  * 2020-08-22 JJK   Increased CommDesc to 600 characters
+ * 2020-10-13 JJK   
  *============================================================================*/
 var communications = (function () {
     'use strict';
@@ -71,14 +72,19 @@ var communications = (function () {
         $.each(hoaCommRecList, function (index, hoaCommRec) {
             if (index == 0) {
                 tr = '';
-                tr += '<tr>';
+                tr += '<tr class="small">';
                 tr += '<th>CommID</th>';
                 tr += '<th>Datetime</th>';
                 tr += '<th>Type</th>';
+                tr += '<th>Email</th>';
+                tr += '<th>Sent</th>';
+                tr += '<th>Address</th>';
+                tr += '<th>Name</th>';
                 tr += '<th>Description</th>';
+                tr += '<th>Last Changed</th>';
                 tr += '</tr>';
             }
-            tr += '<tr>';
+            tr += '<tr class="small">';
             // if issue make CommID a hyperlink to edit the issue
             if (hoaCommRec.CommType == "Issue" && jjklogin.getUserLevel() > 1) {
                 tr += '<td><a data-parcelId="' + parcelId + '" data-ownerId="' + ownerId + '" data-commId="' + hoaCommRec.CommID +
@@ -88,7 +94,12 @@ var communications = (function () {
             }
             tr += '<td>' + hoaCommRec.CreateTs + '</td>';
             tr += '<td>' + hoaCommRec.CommType + '</td>';
+            tr += '<td>' + util.setBoolText(hoaCommRec.Email) + '</td>';
+            tr += '<td>' + hoaCommRec.SentStatus + '</td>';
+            tr += '<td>' + hoaCommRec.EmailAddr + '</td>';
+            tr += '<td>' + hoaCommRec.Mailing_Name + '</td>';
             tr += '<td>' + hoaCommRec.CommDesc.substr(0,70) + '</td>';
+            tr += '<td>' + hoaCommRec.LastChangedTs + '</td>';
             tr += '</tr>';
         });
 
@@ -176,6 +187,29 @@ var communications = (function () {
             }
         });
 
+        /*
+        $.post("sendMail.php", {
+                toEmail: emailAddr,
+                subject: config.getVal('hoaNameShort') + ' Dues Notice',
+                messageStr: 'Attached is the ' + config.getVal('hoaName') + ' Dues Notice.  *** Reply to this email to request unsubscribe ***',
+                parcelId: hoaRec.Parcel_ID,
+                ownerId: hoaRec.ownersList[0].OwnerID,
+                filename: config.getVal('hoaNameShort') + 'DuesNotice.pdf',
+                filedata: btoa(pdfRec.pdf.output())
+        }, function (response) {
+            console.log("result from sendMail = " + response.result + ", ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID + ", response.sendEmailAddr = " + response.sendEmailAddr);
+            if (response.result == 'SUCCESS') {
+                    commDesc = noticeType + " Dues Notice emailed to " + response.sendEmailAddr;
+                    // log communication for notice created
+                    communications.LogCommunication(response.Parcel_ID, response.OwnerID, commType, commDesc);
+            } else {
+                    commDesc = noticeType + " Dues Notice, ERROR emailing to " + response.sendEmailAddr;
+                    //util.displayError(commDesc + ", ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID);
+                    console.log("Error sending Email, ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID + ", sendEmailAddr = " + response.sendEmailAddr + ", message = " + response.message);
+                }
+        }, 'json'); // End of $.post("sendMail.php"
+        */
+
     }
 
     function LogCommunication(parcelId,ownerId,commType,commDesc) {
@@ -186,6 +220,8 @@ var communications = (function () {
         paramMap.set('commType', commType);
         paramMap.set('commDesc', commDesc);
         //console.log("util.getJSONfromInputs(null,paramMap) = " + util.getJSONfromInputs(null, paramMap));
+
+        // RE-DO to use .post and data parameters ???
 
         var url = 'updHoaComm.php';
         $.ajax(url, {

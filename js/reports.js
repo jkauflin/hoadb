@@ -23,6 +23,8 @@
  * 2020-10-02 JJK   Started Mailing List development
  * 2020-10-10 JJK   Added checkboxes to log mailed and moved the filter
  *                  logic to the PHP query
+ * 2020-10-14 JJK   Modified to use common getHoaRecList function and 
+ *                  removed call to AdminExecute for dues rank list
  *============================================================================*/
 var reports = (function () {
     'use strict';
@@ -102,7 +104,7 @@ var reports = (function () {
                     .prop('id', "MailingListName")
                     .attr('name', "MailingListName")
                     .attr('type', "radio")
-                    .attr('value', "Duesletter1")).append($('<label>').html("&nbsp; Dues Letter 1st Notice (ALL owner addresses using ALT if set) &nbsp;&nbsp;"))
+                    .attr('value', "Duesletter1")).append($('<label>').html("&nbsp; Dues Letter 1st Notice (ALL owner addresses using ALT if set, skipping UseEmail) &nbsp;&nbsp;"))
             $ReportFilter.append($('</br>'))
                 .append($('<input>')
                     .prop('id', "MailingListName")
@@ -139,38 +141,32 @@ var reports = (function () {
 
         // check user logged in
         if (jjklogin.isUserLoggedIn()) {
-            if (reportName == 'UnpaidDuesRankingReport') {
-                $ReportFilter.empty();
-                $ReportRecCnt.html("Executing request...(please wait)");
-
-                // Get all the data needed for processing
-                $.getJSON("adminExecute.php", "action=DuesRank", function (adminRec) {
-                    $ReportRecCnt.html(adminRec.message);
-                    _duesRank(adminRec.hoaRecList, reportName);
-                });
+            var mailingListName = '';
+            var logWelcomeLetters = '';
+            var logDuesLetterSend = '';
+            if (reportName == 'MailingListReport') {
+                mailingListName = $('input:radio[name=MailingListName]:checked').val();
+                logDuesLetterSend = $('#LogDuesLetterSend').is(":checked");
+                logWelcomeLetters = $('#LogWelcomeLetters').is(":checked");
             } else {
-                var mailingListName = '';
-                var logWelcomeLetters = '';
-                var logDuesLetterSend = '';
-                if (reportName == 'MailingListReport') {
-                    mailingListName = $('input:radio[name=MailingListName]:checked').val();
-                    logDuesLetterSend = $('#LogDuesLetterSend').is(":checked");
-                    logWelcomeLetters = $('#LogWelcomeLetters').is(":checked");
-                } else {
-                    $ReportFilter.empty();
-                }
+                $ReportFilter.empty();
+            }
 
-                $.getJSON("getHoaReportData.php", "reportName=" + reportName + "&mailingListName=" 
+            $.getJSON("getHoaReportData.php", "reportName=" + reportName + "&mailingListName=" 
                   + mailingListName + "&logDuesLetterSend=" + logDuesLetterSend+"&logWelcomeLetters="+logWelcomeLetters, function (result) {
-                    if (result.error) {
-                        console.log("error = " + result.error);
-                        $ajaxError.html("<b>" + result.error + "</b>");
+                if (result.error) {
+                    console.log("error = " + result.error);
+                    $ajaxError.html("<b>" + result.error + "</b>");
+                } else {
+                    var reportList = result;
+                    if (reportName == 'UnpaidDuesRankingReport') {
+                        _duesRank(reportList, reportName);
                     } else {
-                        var reportList = result;
                         _formatReportList(reportName, reportTitle, reportList, mailingListName);
                     }
-                });
-            }
+                }
+            });
+
         } else {
             $ReportRecCnt.html("User is not logged in");
         }

@@ -58,6 +58,8 @@
  *                  re-sends, update PAID flag and send email if not set
  * 2020-09-30 JJK   Adjusted the email error handling and return from the
  *                  updAssessmentPaid function
+ * 2020-10-13 JJK   Added getHoaRecList to return a list of hoaRec objects
+ *                  for reports and admin functions
  *============================================================================*/
 
 function externalIncludesDir() {
@@ -307,7 +309,13 @@ class HoaCommRec {
 	public $CreateTs;
 	public $OwnerID;
 	public $CommType;
-	public $CommDesc;
+    public $CommDesc;
+    public $Mailing_Name;
+    public $Email;
+    public $EmailAddr;
+    public $SentStatus;
+    public $LastChangedBy;
+    public $LastChangedTs;
 }
 
 class PaidDuesCountsRec
@@ -393,6 +401,61 @@ function getHoaPaymentRec($conn,$parcelId,$transId) {
 
 	return $hoaPaymentRec;
 } // End of function getHoaPaymentRec($conn,$parcelId,$transId) {
+
+
+// Create the dues notice message to be sent in emails
+function createDuesMessage($conn,$hoaRec,$firstNotice) {
+    $htmlMessageStr = '';
+    $title = 'Member Dues Notice';
+    $hoaName = getConfigValDB($conn,'hoaName');
+
+    // Current System datetime
+    $currSysDate = date_create();
+
+    $FY = 1991;
+    // *** just use the highest FY - the first assessment record ***
+    $result = $conn->query("SELECT MAX(FY) AS maxFY FROM hoa_assessments; ");
+    if ($result->num_rows > 0) {
+        while($row = $result->fetch_assoc()) {
+            $FY = $row["maxFY"];
+        }
+    }
+    $result->close();
+
+    $noticeYear = (string) $hoaRec->assessmentsList[0]->FY - 1;
+    $noticeDate = date_format($currSysDate,"Y-m-d");
+
+    $htmlMessageStr .= '<b>' . $hoaName . '</b>' . '</br>';
+    $htmlMessageStr .= $title . " for Fiscal Year " . '<b>' . $FY . '</b>' . '</br>';
+    $htmlMessageStr .= '<b>For the Period:</b> Oct 1st, ' . $noticeYear . ' thru Sept 30th, ' . $FY . '</br></br>';
+
+    $htmlMessageStr .= '<b>Current Dues Amount: </b>$' . stringToMoney($hoaRec->assessmentsList[0]->DuesAmt) . '</br>';
+    $htmlMessageStr .= '<b>Total Due (as of ' . $noticeDate . ') :</b> $' . $hoaRec->TotalDue . '</br>';
+    $htmlMessageStr .= '<b>Due Date: </b>' . 'October 1st, ' . $noticeYear . '</br>';
+    $htmlMessageStr .= '<b>Dues must be paid to avoid a lien and lien fees </b></br></br>';
+
+    $htmlMessageStr .= '<b>Parcel Id: </b>' . $hoaRec->Parcel_ID . '</br>';
+    $htmlMessageStr .= '<b>Lot:</b> ' . $hoaRec->LotNo . '</br>';
+    $htmlMessageStr .= '<b>Owner: </b>' . $hoaRec->ownersList[0]->Mailing_Name . '</br>';
+    $htmlMessageStr .= '<b>Location: </b>' . $hoaRec->Parcel_Location . '</br>';
+    $htmlMessageStr .= '<b>Phone: </b>' . $hoaRec->ownersList[0]->Owner_Phone . '</br>';
+    $htmlMessageStr .= '<b>Email: </b>' . $hoaRec->DuesEmailAddr . '</br>';
+    $htmlMessageStr .= '<b>Email2: </b>' . $hoaRec->ownersList[0]->EmailAddr2 . '</br>';
+
+    $htmlMessageStr .= '<h3><a href="' . getConfigValDB($conn,'duesUrl') . '">Click here to view Dues Statement or PAY online</a></h3>';
+
+    $htmlMessageStr .= 'Send payment checks to:</br>';
+    $htmlMessageStr .= '<b>' . getConfigValDB($conn,'hoaNameShort') . '</b>' . '</br>';
+    $htmlMessageStr .= '<b>' . getConfigValDB($conn,'hoaAddress1') . '</b>' . '</br>';
+    $htmlMessageStr .= '<b>' . getConfigValDB($conn,'hoaAddress2') . '</b>' . '</br>';
+
+    $helpNotes = getConfigValDB($conn,'duesNotes');
+    if (!empty($helpNotes)) {
+        $htmlMessageStr .= '</br>' . $helpNotes . '</br>';
+    }
+
+    return $htmlMessageStr;
+}
 
 
 //--------------------------------------------------------------------------------------------------------------
@@ -1155,7 +1218,96 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 	return $hoaRec;
 } // End of function getHoaRec2($conn,$parcelId) {
 
+//----------------------------------------------------------------------------------------------------------------
+//  Function to return an array of full hoaRec objects (with a couple of parameters to filter list)
+//----------------------------------------------------------------------------------------------------------------
+function getHoaRecList($conn,$duesOwed=false,$skipEmail=false,$salesWelcome=false,$currYearPaid=false,$currYearUnpaid=false) {
+    $outputArray = array();
+
+    $fy = 0;
+    if ($currYearPaid || $currYearUnpaid) {
+        // *** just use the highest FY - the first assessment record ***
+        $result = $conn->query("SELECT MAX(FY) AS maxFY FROM hoa_assessments; ");
+        if ($result->num_rows > 0) {
+        while($row = $result->fetch_assoc()) {
+        	$fy = $row["maxFY"];
+        }
+        $result->close();
+       }
+    }
+
+    // try to get the parameters into the initial select query to limit the records it then tries to get from the getHoaRec
+    if ($salesWelcome) {
+        $sql = "SELECT p.Parcel_ID,o.OwnerID FROM hoa_properties p, hoa_owners o, hoa_sales s" .
+        				" WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 AND p.Parcel_ID = s.PARID" .
+        				" AND s.WelcomeSent = 'S' ORDER BY s.CreateTimestamp DESC; ";
+    } else if ($currYearUnpaid) {
+    	$sql = "SELECT p.Parcel_ID,o.OwnerID FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+    				"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
+                    "AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
+                    // current owner?
+    } else if ($currYearPaid) {
+    	$sql = "SELECT p.Parcel_ID,o.OwnerID FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+    				"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
+                    "AND a.FY = " . $fy . " AND a.Paid = 1 ORDER BY p.Parcel_ID; ";
+                    // current owner?
+    } else {
+        // All properties and current owner
+        $sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ". 
+                        "ORDER BY p.Parcel_ID; ";
+    }
+
+    $stmt = $conn->prepare($sql);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $stmt->close();
+    	
+    $cnt = 0;
+    if ($result->num_rows > 0) {
+    	// Loop through all the member properties
+    	while($row = $result->fetch_assoc()) {
+    		$cnt = $cnt + 1;
+    	
+    		$parcelId = $row["Parcel_ID"];
+    		$ownerId = $row["OwnerID"];
+        
+            // Don't include FY because you want all assessments to calculate Total Due
+    		//$hoaRec = getHoaRec($conn,$parcelId,$ownerId,$fy);
+    		$hoaRec = getHoaRec($conn,$parcelId,$ownerId);
+
+            // If creating Dues Letters, skip properties that don't owe anything
+            if ($duesOwed && $hoaRec->TotalDue < 0.01) {
+                continue;
+            }
+            // Skip postal mail for 1st Notices if Member has asked to use Email
+            if ($skipEmail && $hoaRec->UseEmail) {
+                continue;
+            }
+
+    	    array_push($outputArray,$hoaRec);
+    	}
+    }
+
+    return $outputArray;
+}
+
+function insertCommRec($conn,$Parcel_ID,$OwnerID,$CommType,$CommDesc,
+    $Mailing_Name='',$Email=0,$EmailAddr='',$SentStatus='N',$LastChangedBy='') {
+
+    $sql = 'INSERT INTO hoa_communications (Parcel_ID,CommID,CreateTs,OwnerID,CommType,CommDesc,'
+            .'Mailing_Name,Email,EmailAddr,SentStatus,LastChangedBy,LastChangedTs)'.
+            ' VALUES(?,null,CURRENT_TIMESTAMP,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ';
+	$stmt = $conn->prepare($sql);
+    $stmt->bind_param("sisssisss",$Parcel_ID,$OwnerID,$CommType,$CommDesc,
+                                    $Mailing_Name,$Email,$EmailAddr,$SentStatus,$LastChangedBy);
+    $stmt->execute();
+	$stmt->close();
+}
+
+
+//----------------------------------------------------------------------------------------------------------------
 // Common function to take the payment transaction information and update the HOA database for PAID, etc.
+//----------------------------------------------------------------------------------------------------------------
 function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_email,$payment_amt,$payment_fee,$fromEmailAddress) {
 	// Get the HOA record for this Parcel and Owner
 	$hoaRec = getHoaRec($conn,$parcelId,$ownerId,'');

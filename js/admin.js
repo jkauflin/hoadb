@@ -52,12 +52,14 @@
  *                  (for both test and real) to confirm logic
  *                  Fixed the bug that was getting string 'false' value 
  *                  instead of boolean false
-* 2020-08-03 JJK   Re-factored for new error handling
-* 2020-08-10 JJK   Added some validation checks (Dad's 80th birthday)
-* 2020-08-29 JJK   Modified the dues email send to be individual request
-* 2020-09-25 JJK   Added Payment Reconciliation function
-* 2020-09-30 JJK   Added logic to save, update, and re-display paymentList
-* 2020-10-01 JJK   Added SalesUpload, and made upload file generic
+ * 
+ * 2020-08-03 JJK   Re-factored for new error handling
+ * 2020-08-10 JJK   Added some validation checks (Dad's 80th birthday)
+ * 2020-08-29 JJK   Modified the dues email send to be individual request
+ * 2020-09-25 JJK   Added Payment Reconciliation function
+ * 2020-09-30 JJK   Added logic to save, update, and re-display paymentList
+ * 2020-10-01 JJK   Added SalesUpload, and made upload file generic
+ * 2020-10-13 JJK   Working on Dues Emails (batch email using Communications)
 *============================================================================*/
 var admin = (function () {
     'use strict';  // Force declaration of variables before use (among other things)
@@ -169,17 +171,15 @@ var admin = (function () {
             $.getJSON("adminExecute.php", "action=" + action +
                 "&fy=" + event.target.getAttribute("data-fy") +
                 "&duesAmt=" + event.target.getAttribute("data-duesAmt") +
-                "&duesEmailTestParcel=" + config.getVal('duesEmailTestParcel'), function (adminRec) {
+                "&duesEmailTestParcel=" + config.getVal('duesEmailTestParcel') +
+                "&firstNotice=" +event.target.getAttribute("data-firstNotice"), function (adminRec) {
 
                     $ResultMessage.html(adminRec.message);
 
-                    if (action == 'DuesNotices') {
-                        _duesNotices(adminRec.hoaRecList, firstNotice);
-                    } else if (action == 'MarkMailed') {
-                        _markMailed(adminRec.hoaRecList, firstNotice);
-                    } else if (action == 'DuesEmails' || action == 'DuesEmailsTest') {
+                    if (action == 'DuesEmails' || action == 'DuesEmailsTest') {
                         _duesEmails(adminRec.hoaRecList, action, firstNotice);
                     }
+                    
 
                });
 
@@ -188,6 +188,7 @@ var admin = (function () {
         }
     }
 
+    /*
     function _duesNotices(hoaRecList,firstNotice) {
         var adminEmailSkipCnt = 0;
         var duesNoticeCnt = 0;
@@ -264,6 +265,7 @@ var admin = (function () {
 
         $ResultMessage.html("Postal dues notices marked mailed, total = " + markMailedCnt + ", (Total skipped for UseEmail = " + adminEmailSkipCnt + ")");
     }
+    */
 
     function _duesEmails(hoaRecList,action,firstNotice) {
         var emailRecCnt = 0;
@@ -275,7 +277,7 @@ var admin = (function () {
             noticeType = "Additional";
         }
 
-        $ResultMessage.html("Executing Admin request...(processing list)");
+        //$ResultMessage.html("Executing Admin request...(processing list)");
 
         var firstTestRec = true;
         var testEmailAddr = config.getVal('duesEmailTestAddress');

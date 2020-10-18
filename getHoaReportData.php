@@ -226,44 +226,36 @@ try {
     	$ownerId = "";
     	$fy = 0;
 
-        if ($reportName == "UnpaidDuesReport" || $reportName == "PaidDuesReport") {
-        	// *** just use the highest FY - the first assessment record ***
-        	$result = $conn->query("SELECT MAX(FY) AS maxFY FROM hoa_assessments; ");
-        	if ($result->num_rows > 0) {
-        		while($row = $result->fetch_assoc()) {
-        			$fy = $row["maxFY"];
-        		}
-        		$result->close();
-        	}
+        $duesOwed = false;
+        $skipEmail = false;
+        $salesWelcome = false;
+        $currYearPaid = false;
+        $currYearUnpaid = false;
+
+        if ($reportName == "PaidDuesReport") {
+            $currYearPaid = true;
+        }
+        if ($reportName == "UnpaidDuesReport") {
+            $currYearUnpaid = true;
         }
 
-    	// try to get the parameters into the initial select query to limit the records it then tries to get from the getHoaRec
         if ($mailingListName == 'WelcomeLetters') {
-        	$sql = "SELECT p.Parcel_ID,o.OwnerID FROM hoa_properties p, hoa_owners o, hoa_sales s" .
-        				" WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 AND p.Parcel_ID = s.PARID" .
-        				" AND s.WelcomeSent = 'S' ORDER BY s.CreateTimestamp DESC; ";
-        } else if ($reportName == "UnpaidDuesReport") {
-    		$sql = "SELECT p.Parcel_ID,o.OwnerID FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-    				"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
-                    "AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
-                    // current owner?
-    	} else if ($reportName == "PaidDuesReport") {
-    		$sql = "SELECT p.Parcel_ID,o.OwnerID FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-    				"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
-                    "AND a.FY = " . $fy . " AND a.Paid = 1 ORDER BY p.Parcel_ID; ";
-                    // current owner?
-    	} else {
-            // All properties and current owner
-            $sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ORDER BY p.Parcel_ID; ";
-    	}
+            $salesWelcome = true;
+        }
 
-    	$stmt = $conn->prepare($sql);
-    	$stmt->execute();
-    	$result = $stmt->get_result();
-    	$stmt->close();
-    	
+        // If creating Dues Letters, skip properties that don't owe anything
+        if (substr($mailingListName,0,10) == 'Duesletter') {
+            $duesOwed = true;
+        }
+        // Skip postal mail for 1st Notices if Member has asked to use Email
+        if ($mailingListName == 'Duesletter1') {
+            $skipEmail = true;
+        }
+
+        $outputArray = getHoaRecList($conn,$duesOwed,$skipEmail,$salesWelcome,$currYearPaid,$currYearUnpaid);
+
+                /*
     	$cnt = 0;
-    	if ($result->num_rows > 0) {
     		// Loop through all the member properties
     		while($row = $result->fetch_assoc()) {
     			$cnt = $cnt + 1;
@@ -271,19 +263,6 @@ try {
     			$parcelId = $row["Parcel_ID"];
     			$ownerId = $row["OwnerID"];
         
-                // Don't include FY because you want all assessments to calculate Total Due
-    			//$hoaRec = getHoaRec($conn,$parcelId,$ownerId,$fy);
-    			$hoaRec = getHoaRec($conn,$parcelId,$ownerId);
-
-                // If creating Dues Letters, skip properties that don't owe anything
-                if (substr($mailingListName,0,10) == 'Duesletter' && $hoaRec->TotalDue < 0.01) {
-                    continue;
-                }
-                // Skip postal mail for 1st Notices if Member has asked to use Email
-                if ($mailingListName == 'Duesletter1' && $hoaRec->UseEmail) {
-                    continue;
-                }
-
                 
                 if ($userRec->userLevel > 1) {
                     if ($logDuesLetterSend) {
@@ -298,8 +277,10 @@ try {
                     }
                 }
 
-                /*
                 var commType = 'Dues Notice';
+                $commType = '1st Dues Notice';
+                $commType = '2nd Dues Notice';
+
 
                 // Get a displayAddress for the Communication record
                 displayAddress = hoaRec.Parcel_Location;
@@ -320,11 +301,10 @@ try {
                 // log communication for notice created
                 communications.LogCommunication(hoaRec.Parcel_ID, hoaRec.ownersList[0].OwnerID, commType, commDesc);
 
-                */
 
     			array_push($outputArray,$hoaRec);
     		}
-    	}
+                */
     	
     } // End of } else if ($reportName == "DuesReport") {
     	

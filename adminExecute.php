@@ -18,6 +18,7 @@
  * 2018-11-21 JJK	Modified to accept a Parcel Id for the due email test
  * 2019-09-22 JJK   Checked logic for dues emails and communications
  * 2020-08-01 JJK   Re-factored to use jjklogin for authentication
+ * 2020-10-13 JJK   Re-did dues emails logic
  *============================================================================*/
 require_once 'vendor/autoload.php'; 
 
@@ -51,7 +52,8 @@ try {
     $action = getParamVal("action");
 	$fiscalYear = getParamVal("fy");
 	$duesAmt = strToUSD(getParamVal("duesAmt"));
-	$duesEmailTestParcel = getParamVal("duesEmailTestParcel");
+    $duesEmailTestParcel = getParamVal("duesEmailTestParcel");
+    $firstNotice = paramBoolVal("firstNotice");
 
     $adminLevel = $userRec->userLevel;
 
@@ -131,156 +133,59 @@ try {
 	// End of if ($action == "AddAssessments") {
 	} else if ($action == "PaymentReconcile") {
 
-
         $fileName = 'payments.CSV';
 
+    } else if ($action == "DuesEmails" || $action == "DuesEmailsTest") {
+        $commType = '2nd Dues Notice';
+        $commDesc = "Dues Notice emailed";
+
+        // If creating Dues Letters, skip properties that don't owe anything
+        $duesOwed = true;
+        // Skip postal mail for 1st Notices if Member has asked to use Email
+        $skipEmail = false;
+        if ($firstNotice) {
+            $skipEmail = true;
+            $commType = '1st Dues Notice';
+        }
+
+        $adminRec->hoaRecList = getHoaRecList($conn,$duesOwed,$skipEmail);
+
+        // Loop through the list, find the ones with an email address (maybe add a parameter to the common function)
+        // and create a Communication record to get the email sent
+
+        // get the dues email create into a common function and add a manual Send Dues Email for a particular Property???
+        $testEmailAddr = '';
+        if ($action == "DuesEmailsTest") {
+            //var testEmailAddr = config.getVal('duesEmailTestAddress');
+            $testEmailAddr = getConfigValDB($conn,'duesEmailTestAddress');
+        }
+
+        $cnt = 0;
+        foreach ($adminRec->hoaRecList as $hoaRec)  {
+            //echo $hoaRec->Parcel_ID;
+            $cnt = $cnt + 1;
+
+            // email list
+
+            if ($action == "DuesEmailsTest") {
+
+                // test a direct create & send
+
+                if ($cnt > 0) {
+                    break;
+                }
+            } else {
+                foreach ($hoaRec->emailAddrList as $EmailAddr) {
+                    insertCommRec($conn,$hoaRec->Parcel_ID,$hoaRec->ownersList[0]->OwnerID,$commType,$commDesc,
+                        $hoaRec->ownersList[0]->Mailing_Name,true,$EmailAddr,'N',$userRec->userName);
+                }
+            }
 
 
-	} else if ($action == "AdminFix") {
 
-		if ($adminLevel < 2) {
-			$adminRec->message = "You do not have permissions to run this command.";
-			$adminRec->result = "Not Valid";
-		} else {
-			// Loop through all the member properties
-			$sql = "SELECT * FROM hoa_properties p, hoa_payments y, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = y.Parcel_ID AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";		
-			$stmt = $conn->prepare($sql);
-			$stmt->execute();
-			$result = $stmt->get_result();
-			$stmt->close();
-									
-			$cnt = 0;
-			if ($result->num_rows > 0) {
-				$Parcel_ID = "";
-				$OwnerID = 0;
-										
-				// Loop through all member properties, set the statement with new values and execute to insert the Assessments record
-				while($row = $result->fetch_assoc()) {
-					$cnt = $cnt + 1;
-					$Parcel_ID = $row["Parcel_ID"];
-					$OwnerID = $row["OwnerID"];
+        }
 
-					if (!$stmt = $conn->prepare("UPDATE hoa_payments SET OwnerID=? WHERE Parcel_ID = ? ; ")) {
-						error_log("Update Payment Prepare failed: " . $stmt->errno . ", Error = " . $stmt->error . PHP_EOL, 3, LOG_FILE);
-						//echo "Prepare failed: (" . $stmt->errno . ") " . $stmt->error;
-					}
-					if (!$stmt->bind_param("is", $OwnerID,$Parcel_ID)) {
-						error_log("Update Payment Bind failed: " . $stmt->errno . ", Error = " . $stmt->error . PHP_EOL, 3, LOG_FILE);
-						//echo "Bind failed: (" . $stmt->errno . ") " . $stmt->error;
-					}
-		
-					error_log(date('[Y-m-d H:i] '). "AdminFix Cnt = " . $cnt . ", ParcelId = " . $Parcel_ID . ", OwnerId = " . $OwnerID . ", Email = " . $row["payer_email"] . PHP_EOL, 3, "jjk-AdminFix.log");
-					if (!$stmt->execute()) {
-						error_log("Add Assessment Execute failed: " . $stmt->errno . ", Error = " . $stmt->error);
-						echo "Add Assessment Execute failed: (" . $stmt->errno . ") " . $stmt->error;
-					}
-					$stmt->close();
-											
-				} // End of while($row = $result->fetch_assoc()) {
-			} // End of if ($result->num_rows > 0) {
-									
-			$adminRec->message = 'Successfully updated Payments';
-			$adminRec->result = "Valid";
-		}
-		
-	} else if ($action == "DuesNotices" || $action == "DuesEmails" || $action == "DuesEmailsTest" || $action == "DuesRank" || $action == "MarkMailed") {
-
-		$outputArray = array();
-		$adminRec->hoaRecList = array();
-
-		// Get the current Fiscal Year value
-		$result = $conn->query("SELECT MAX(FY) AS maxFY FROM hoa_assessments; ");
-		if ($result->num_rows > 0) {
-			while($row = $result->fetch_assoc()) {
-				$fy = $row["maxFY"];
-			}
-			$result->close();
-		}
-		
-		// Loop through all the member properties
-			//$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";		
-			
-		//"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
-		// testing dues statements
-
-		$sql = '';
-		if ($action == "DuesEmails" || $action == "DuesEmailsTest") {
-            // 2/15/2020 JJK - Removed the TEST parcel functionality - just query the same list and send a test email for the 1st one
-			//if ($action == "DuesEmailsTest") {
-			//	$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-			//			"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
-			//			"AND a.FY = " . $fy . " AND p.Parcel_ID = '".$duesEmailTestParcel."'; ";
-			//} else {
-				$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-						"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
-						"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
-				/* Can't just use UseEmail as a flag because we want to send emails to every email address we have, regardless if they say use specifically
-						$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-						"WHERE p.UseEmail AND p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
-						"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
-				*/
-			//}
-			$adminRec->message = "Completed data lookup for Dues Emails";
-		} else if ($action == "DuesRank") {
-			$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";
-			$adminRec->message = "Completed data lookup for Unpaid Dues Ranking";
-		} else {
-			$sql = "SELECT * FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-					"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
-					"AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
-			$adminRec->message = "Completed data lookup for Dues Notices";
-		}
-
-		$stmt = $conn->prepare($sql);
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$stmt->close();
-			
-		$cnt = 0;
-		if ($result->num_rows > 0) {
-			while($row = $result->fetch_assoc()) {
-				$cnt = $cnt + 1;
-
-				$Parcel_ID = $row["Parcel_ID"];
-				$OwnerID = $row["OwnerID"];
-				//$FY = $row["Own"];
-
-				//if ($cnt < 101) {
-					//$hoaRec = getHoaRec($conn,$Parcel_ID,$OwnerID,NULL,NULL);
-					//array_push($outputArray,$hoaRec);
-				//}
-					
-				// Get all detail information and calculations for the given Parcel Id
-				$hoaRec = getHoaRec($conn,$Parcel_ID,$OwnerID,NULL,NULL);
-				array_push($adminRec->hoaRecList,$hoaRec);
-				
-				/*
-				$hoaPropertyRec = new HoaPropertyRec();
-					
-				$hoaPropertyRec->parcelId = $row["Parcel_ID"];
-				$hoaPropertyRec->lotNo = $row["LotNo"];
-				$hoaPropertyRec->subDivParcel = $row["SubDivParcel"];
-				$hoaPropertyRec->parcelLocation = $row["Parcel_Location"];
-				$hoaPropertyRec->ownerName = $row["Owner_Name1"] . ' ' . $row["Owner_Name2"];
-				$hoaPropertyRec->ownerPhone = $row["Owner_Phone"];
-					
-				array_push($outputArray,$hoaPropertyRec);
-				*/
-			}
-				
-			//$serializedArray = serialize($outputArray);
-			/* add this as a common utility routine
-			$serializedArray = serialize($adminRec);
-			if (function_exists('mb_strlen')) {
-				$size = mb_strlen($serializedArray, '8bit');
-			} else {
-				$size = strlen($serializedArray);
-			}
-			error_log(date('[Y-m-d H:i] '). "Array cnt = " . count($adminRec->hoaRecList) . ', size = ' . round($size/1000,0) . 'K bytes' . PHP_EOL, 3, "hoadb.log");
-			*/
-				
-			//$adminRec->hoaPropertyRecList = $outputArray;
-		}
+		$adminRec->message = "Completed data lookup for Dues Emails cnt = $cnt";
 
 		$adminRec->result = "Valid";
 	}
