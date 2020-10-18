@@ -161,9 +161,10 @@ try {
                 // If the Member email was successful, update the flag on the communication record
                 if ($sendMailSuccess) {
                     $adminRec->message = "Test dues Email sent";
+                } else {
+                    $adminRec->message = "Test dues Email failed";
                 }
             }
-            $adminRec->message = "Test dues Email sent";
 
         } else {
             $adminRec->hoaRecList = getHoaRecList($conn,$duesOwed,$skipEmail);
