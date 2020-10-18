@@ -164,8 +164,8 @@ var admin = (function () {
                 firstNotice = false;
             }
 
-            //console.log("in adminExecute, action = " + action);
-            //console.log("in adminExecute, firstNotice = "+firstNotice);
+            console.log("in adminExecute, action = " + action);
+            console.log("in adminExecute, firstNotice = "+firstNotice);
 
             // Get all the data needed for processing
             $.getJSON("adminExecute.php", "action=" + action +
@@ -177,7 +177,7 @@ var admin = (function () {
                     $ResultMessage.html(adminRec.message);
 
                     if (action == 'DuesEmails' || action == 'DuesEmailsTest') {
-                        _duesEmails(adminRec.hoaRecList, action, firstNotice);
+                        //_duesEmails(adminRec.hoaRecList, action, firstNotice);
                     }
                     
 

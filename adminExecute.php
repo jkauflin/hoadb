@@ -151,6 +151,7 @@ try {
         // get the dues email create into a common function and add a manual Send Dues Email for a particular Property???
 
         if ($action == "DuesEmailsTest") {
+            $adminRec->message = "No Test dues Email sent - make sure test Parcel has dues owed";
             $adminRec->hoaRecList = getHoaRecList($conn,$duesOwed,false,false,false,false,true);
             $messageStr = '';
             foreach ($adminRec->hoaRecList as $hoaRec)  {
