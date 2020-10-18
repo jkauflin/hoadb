@@ -148,44 +148,40 @@ try {
             $commType = '1st Dues Notice';
         }
 
-        $adminRec->hoaRecList = getHoaRecList($conn,$duesOwed,$skipEmail);
-
-        // Loop through the list, find the ones with an email address (maybe add a parameter to the common function)
-        // and create a Communication record to get the email sent
-
         // get the dues email create into a common function and add a manual Send Dues Email for a particular Property???
-        $testEmailAddr = '';
+
         if ($action == "DuesEmailsTest") {
-            //var testEmailAddr = config.getVal('duesEmailTestAddress');
-            $testEmailAddr = getConfigValDB($conn,'duesEmailTestAddress');
-        }
-
-        $cnt = 0;
-        foreach ($adminRec->hoaRecList as $hoaRec)  {
-            //echo $hoaRec->Parcel_ID;
-            $cnt = $cnt + 1;
-
-            // email list
-
-            if ($action == "DuesEmailsTest") {
-
-                // test a direct create & send
-
-                if ($cnt > 0) {
-                    break;
+            $adminRec->hoaRecList = getHoaRecList($conn,$duesOwed,false,false,false,false,true);
+            $messageStr = '';
+            foreach ($adminRec->hoaRecList as $hoaRec)  {
+                $subject = 'GRHA TEST Dues Email';
+                $messageStr = createDuesMessage($conn,$hoaRec,$firstNotice);
+                $duesEmailTestAddress = getConfigValDB($conn,'duesEmailTestAddress');
+                $sendMailSuccess = sendHtmlEMail($duesEmailTestAddress,$subject,$messageStr,$fromEmailAddress);
+                // If the Member email was successful, update the flag on the communication record
+                if ($sendMailSuccess) {
+                    $adminRec->message = "Test dues Email sent";
                 }
-            } else {
+            }
+            $adminRec->message = "Test dues Email sent";
+
+        } else {
+            $adminRec->hoaRecList = getHoaRecList($conn,$duesOwed,$skipEmail);
+            // Loop through the list, find the ones with an email address (maybe add a parameter to the common function)
+            // and create a Communication record to get the email sent
+            $cnt = 0;
+            foreach ($adminRec->hoaRecList as $hoaRec)  {
+                //echo $hoaRec->Parcel_ID;
+                $cnt = $cnt + 1;
+
+                // email list
                 foreach ($hoaRec->emailAddrList as $EmailAddr) {
                     insertCommRec($conn,$hoaRec->Parcel_ID,$hoaRec->ownersList[0]->OwnerID,$commType,$commDesc,
                         $hoaRec->ownersList[0]->Mailing_Name,true,$EmailAddr,'N',$userRec->userName);
                 }
             }
-
-
-
+            $adminRec->message = "Completed data lookup for Dues Emails cnt = $cnt";
         }
-
-		$adminRec->message = "Completed data lookup for Dues Emails cnt = $cnt";
 
 		$adminRec->result = "Valid";
 	}

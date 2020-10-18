@@ -1221,40 +1221,47 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 //----------------------------------------------------------------------------------------------------------------
 //  Function to return an array of full hoaRec objects (with a couple of parameters to filter list)
 //----------------------------------------------------------------------------------------------------------------
-function getHoaRecList($conn,$duesOwed=false,$skipEmail=false,$salesWelcome=false,$currYearPaid=false,$currYearUnpaid=false) {
+function getHoaRecList($conn,$duesOwed=false,$skipEmail=false,$salesWelcome=false,
+    $currYearPaid=false,$currYearUnpaid=false,$testEmail=false) {
+    
     $outputArray = array();
 
-    $fy = 0;
-    if ($currYearPaid || $currYearUnpaid) {
-        // *** just use the highest FY - the first assessment record ***
-        $result = $conn->query("SELECT MAX(FY) AS maxFY FROM hoa_assessments; ");
-        if ($result->num_rows > 0) {
-        while($row = $result->fetch_assoc()) {
-        	$fy = $row["maxFY"];
-        }
-        $result->close();
-       }
-    }
-
-    // try to get the parameters into the initial select query to limit the records it then tries to get from the getHoaRec
-    if ($salesWelcome) {
-        $sql = "SELECT p.Parcel_ID,o.OwnerID FROM hoa_properties p, hoa_owners o, hoa_sales s" .
-        				" WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 AND p.Parcel_ID = s.PARID" .
-        				" AND s.WelcomeSent = 'S' ORDER BY s.CreateTimestamp DESC; ";
-    } else if ($currYearUnpaid) {
-    	$sql = "SELECT p.Parcel_ID,o.OwnerID FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-    				"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
-                    "AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
-                    // current owner?
-    } else if ($currYearPaid) {
-    	$sql = "SELECT p.Parcel_ID,o.OwnerID FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
-    				"WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
-                    "AND a.FY = " . $fy . " AND a.Paid = 1 ORDER BY p.Parcel_ID; ";
-                    // current owner?
+    if ($testEmail) {
+        $testEmailParcel = getConfigValDB($conn,'duesEmailTestParcel');
+        $sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = '$testEmailParcel' AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";
     } else {
-        // All properties and current owner
-        $sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ". 
-                        "ORDER BY p.Parcel_ID; ";
+        $fy = 0;
+        if ($currYearPaid || $currYearUnpaid) {
+            // *** just use the highest FY - the first assessment record ***
+            $result = $conn->query("SELECT MAX(FY) AS maxFY FROM hoa_assessments; ");
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    $fy = $row["maxFY"];
+                }
+                $result->close();
+            }
+        }
+
+        // try to get the parameters into the initial select query to limit the records it then tries to get from the getHoaRec
+        if ($salesWelcome) {
+            $sql = "SELECT p.Parcel_ID,o.OwnerID FROM hoa_properties p, hoa_owners o, hoa_sales s" .
+                            " WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 AND p.Parcel_ID = s.PARID" .
+                            " AND s.WelcomeSent = 'S' ORDER BY s.CreateTimestamp DESC; ";
+        } else if ($currYearUnpaid) {
+            $sql = "SELECT p.Parcel_ID,o.OwnerID FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+                        "WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
+                        "AND a.FY = " . $fy . " AND a.Paid = 0 ORDER BY p.Parcel_ID; ";
+                        // current owner?
+        } else if ($currYearPaid) {
+            $sql = "SELECT p.Parcel_ID,o.OwnerID FROM hoa_properties p, hoa_owners o, hoa_assessments a " .
+                        "WHERE p.Parcel_ID = o.Parcel_ID AND a.OwnerID = o.OwnerID AND p.Parcel_ID = a.Parcel_ID " .
+                        "AND a.FY = " . $fy . " AND a.Paid = 1 ORDER BY p.Parcel_ID; ";
+                        // current owner?
+        } else {
+            // All properties and current owner
+            $sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ". 
+                            "ORDER BY p.Parcel_ID; ";
+        }
     }
 
     $stmt = $conn->prepare($sql);
