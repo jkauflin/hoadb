@@ -425,33 +425,33 @@ function createDuesMessage($conn,$hoaRec,$firstNotice) {
     $noticeYear = (string) $hoaRec->assessmentsList[0]->FY - 1;
     $noticeDate = date_format($currSysDate,"Y-m-d");
 
-    $htmlMessageStr .= '<b>' . $hoaName . '</b>' . '</br>';
-    $htmlMessageStr .= $title . " for Fiscal Year " . '<b>' . $FY . '</b>' . '</br>';
-    $htmlMessageStr .= '<b>For the Period:</b> Oct 1st, ' . $noticeYear . ' thru Sept 30th, ' . $FY . '</br></br>';
+    $htmlMessageStr .= '<b>' . $hoaName . '</b>' . '<br>';
+    $htmlMessageStr .= $title . " for Fiscal Year " . '<b>' . $FY . '</b>' . '<br>';
+    $htmlMessageStr .= '<b>For the Period:</b> Oct 1st, ' . $noticeYear . ' thru Sept 30th, ' . $FY . '<br><br>';
 
-    $htmlMessageStr .= '<b>Current Dues Amount: </b>$' . stringToMoney($hoaRec->assessmentsList[0]->DuesAmt) . '</br>';
-    $htmlMessageStr .= '<b>Total Due (as of ' . $noticeDate . ') :</b> $' . $hoaRec->TotalDue . '</br>';
-    $htmlMessageStr .= '<b>Due Date: </b>' . 'October 1st, ' . $noticeYear . '</br>';
-    $htmlMessageStr .= '<b>Dues must be paid to avoid a lien and lien fees </b></br></br>';
+    $htmlMessageStr .= '<b>Current Dues Amount: </b>$' . stringToMoney($hoaRec->assessmentsList[0]->DuesAmt) . '<br>';
+    $htmlMessageStr .= '<b>Total Due (as of ' . $noticeDate . ') :</b> $' . $hoaRec->TotalDue . '<br>';
+    $htmlMessageStr .= '<b>Due Date: </b>' . 'October 1st, ' . $noticeYear . '<br>';
+    $htmlMessageStr .= '<b>Dues must be paid to avoid a lien and lien fees </b><br><br>';
 
-    $htmlMessageStr .= '<b>Parcel Id: </b>' . $hoaRec->Parcel_ID . '</br>';
-    $htmlMessageStr .= '<b>Lot:</b> ' . $hoaRec->LotNo . '</br>';
-    $htmlMessageStr .= '<b>Owner: </b>' . $hoaRec->ownersList[0]->Mailing_Name . '</br>';
-    $htmlMessageStr .= '<b>Location: </b>' . $hoaRec->Parcel_Location . '</br>';
-    $htmlMessageStr .= '<b>Phone: </b>' . $hoaRec->ownersList[0]->Owner_Phone . '</br>';
-    $htmlMessageStr .= '<b>Email: </b>' . $hoaRec->DuesEmailAddr . '</br>';
-    $htmlMessageStr .= '<b>Email2: </b>' . $hoaRec->ownersList[0]->EmailAddr2 . '</br>';
+    $htmlMessageStr .= '<b>Parcel Id: </b>' . $hoaRec->Parcel_ID . '<br>';
+    $htmlMessageStr .= '<b>Lot:</b> ' . $hoaRec->LotNo . '<br>';
+    $htmlMessageStr .= '<b>Owner: </b>' . $hoaRec->ownersList[0]->Mailing_Name . '<br>';
+    $htmlMessageStr .= '<b>Location: </b>' . $hoaRec->Parcel_Location . '<br>';
+    $htmlMessageStr .= '<b>Phone: </b>' . $hoaRec->ownersList[0]->Owner_Phone . '<br>';
+    $htmlMessageStr .= '<b>Email: </b>' . $hoaRec->DuesEmailAddr . '<br>';
+    $htmlMessageStr .= '<b>Email2: </b>' . $hoaRec->ownersList[0]->EmailAddr2 . '<br>';
 
     $htmlMessageStr .= '<h3><a href="' . getConfigValDB($conn,'duesUrl') . '">Click here to view Dues Statement or PAY online</a></h3>';
 
-    $htmlMessageStr .= 'Send payment checks to:</br>';
-    $htmlMessageStr .= '<b>' . getConfigValDB($conn,'hoaNameShort') . '</b>' . '</br>';
-    $htmlMessageStr .= '<b>' . getConfigValDB($conn,'hoaAddress1') . '</b>' . '</br>';
-    $htmlMessageStr .= '<b>' . getConfigValDB($conn,'hoaAddress2') . '</b>' . '</br>';
+    $htmlMessageStr .= 'Send payment checks to:<br>';
+    $htmlMessageStr .= '<b>' . getConfigValDB($conn,'hoaNameShort') . '</b>' . '<br>';
+    $htmlMessageStr .= '<b>' . getConfigValDB($conn,'hoaAddress1') . '</b>' . '<br>';
+    $htmlMessageStr .= '<b>' . getConfigValDB($conn,'hoaAddress2') . '</b>' . '<br>';
 
     $helpNotes = getConfigValDB($conn,'duesNotes');
     if (!empty($helpNotes)) {
-        $htmlMessageStr .= '</br>' . $helpNotes . '</br>';
+        $htmlMessageStr .= '<br>' . $helpNotes . '<br>';
     }
 
     return $htmlMessageStr;
