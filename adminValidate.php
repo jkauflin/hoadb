@@ -60,20 +60,12 @@ try {
             } else {
     		    $adminRec->message = "Are you sure you want to add assessment for Fiscal Year " . $fy . ' with Dues Amount of $' . $duesAmt .'?';
             }
-    	} else if ($action == "DuesNotices") {
-    			$adminRec->message = "Continue with creation of Yearly Dues Notices?";
-    	} else if ($action == "DuesRank") {
-    			$adminRec->message = "Continue with Unpaid Dues Ranking?";
-    	} else if ($action == "DuesEmails") {
-    			$adminRec->message = "Continue with email of Yearly Dues Notices?";
-    	} else if ($action == "AdminFix") {
-    			$adminRec->message = "Continue with admin fix?";
     	} else if ($action == "MarkMailed") {
     			$adminRec->message = "Continue to record Communication to mark paper notices as mailed?";
     	} else if ($action == "DuesEmailsTest") {
     			$adminRec->message = "Continue with TEST email of Dues Notices to show the list and send the first one to the test address?";
     	} else if ($action == "DuesEmails") {
-    			$adminRec->message = "Continue with email of Dues Notices?";
+    			$adminRec->message = "Continue with email of Dues Notices?  This will create a Communication record for each email to send";
     	}
     }
 

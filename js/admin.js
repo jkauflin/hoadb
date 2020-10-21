@@ -84,15 +84,18 @@ var admin = (function () {
     var $ConfirmationMessage = $ConfirmationModal.find("#ConfirmationMessage");
     var $ResultMessage = $moduleDiv.find("#ResultMessage");
     var $FirstNoticeCheckbox = $moduleDiv.find("#FirstNoticeCheckbox");
+    var $DuesButtons = $moduleDiv.find("#DuesButtons");
     var $DuesListDisplay = $moduleDiv.find("#DuesListDisplay tbody");
 
     //=================================================================================================================
     // Bind events
     $moduleDiv.on("click", ".AdminButton", _adminRequest);
     $ConfirmationButton.on("click", "#AdminExecute", _adminExecute);
-    $moduleDiv.on("click", ".DuesEmailSend", _duesEmailsSend);
     $FileUploadModal.on("submit", "#FileUploadForm", _handleFileUpload);
     $moduleDiv.on("click", ".LogPayment", _logPayment);
+
+    $moduleDiv.on("click", "#DuesEmails", _duesEmails);
+    $moduleDiv.on("click", ".DuesEmailSend", _duesEmailsSend);
 
     //=================================================================================================================
     // Module methods
@@ -151,7 +154,6 @@ var admin = (function () {
         });
     }
 
-
     // Respond to the Continue click for an Admin Execute function 
     function _adminExecute(event) {
         if (jjklogin.isUserLoggedIn()) {
@@ -188,101 +190,55 @@ var admin = (function () {
         }
     }
 
-    /*
-    function _duesNotices(hoaRecList,firstNotice) {
-        var adminEmailSkipCnt = 0;
-        var duesNoticeCnt = 0;
-        var displayAddress = '';
-        var commType = 'Dues Notice';
-        var commDesc = '';
-        var noticeType = "1st";
-        if (!firstNotice) {
-            noticeType = 'Additional';
-        }
 
-        // Create a pdfRec and initialize the PDF object
-        var pdfRec = pdfModule.init('Member Dues Notice');
-
-        //console.log("_duesNotices, Before adminLoop, hoaRecList.length = " + hoaRecList.length);
-        $ResultMessage.html("Executing Admin request...(processing list)");
-
-        $.each(hoaRecList, function (index, hoaRec) {
-            //console.log(index + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", hoaRec.DuesEmailAddr = " + hoaRec.DuesEmailAddr);
-            // When generating DuesNotices for the 1st notice, skip the ones with Property UseEmail set (if there is a valid email)
-            if (firstNotice && hoaRec.UseEmail && hoaRec.DuesEmailAddr != '') {
-                adminEmailSkipCnt++;
-            } else {
-                duesNoticeCnt++;
-                if (index > 0) {
-                    // If not the first record for DuesNotices, then add a new page for the next parcel
-                    pdfRec = pdfModule.addPage(pdfRec);
-                }
-                // Call function to format the yearly dues statement for an individual property
-                pdfRec = pdfModule.formatYearlyDuesStatement(pdfRec, hoaRec, firstNotice);
-
-                // Get a displayAddress for the Communication record
-                displayAddress = hoaRec.Parcel_Location;
-                if (hoaRec.ownersList[0].AlternateMailing) {
-                    displayAddress = hoaRec.ownersList[0].Alt_Address_Line1;
-                }
-                commDesc = noticeType + " Notice for postal mail created for " + displayAddress;
-                // log communication for notice created
-                communications.LogCommunication(hoaRec.Parcel_ID, hoaRec.ownersList[0].OwnerID, commType, commDesc);
-            }
-        }); // End of loop through Parcels
-
-        $("#ResultMessage").html("Yearly dues notices created, total = " + duesNoticeCnt + ", (Total skipped for UseEmail = " + adminEmailSkipCnt + ")");
-        // Download the PDF file
-        pdfRec.pdf.save(util.formatDate() + "-YearlyDuesNotices.pdf");
-    }
-
-    function _markMailed(hoaRecList,firstNotice) {
-        var adminEmailSkipCnt = 0;
-        var markMailedCnt = 0;
-        var displayAddress = '';
-        var commType = 'Dues Notice';
-        var commDesc = '';
-
-        $ResultMessage.html("Executing Admin request...(processing list)");
-
-        $.each(hoaRecList, function (index, hoaRec) {
-            if (firstNotice && hoaRec.UseEmail && hoaRec.DuesEmailAddr != '') {
-                adminEmailSkipCnt++;
-            } else {
-                markMailedCnt++;
-                // Get a displayAddress for the Communication record
-                displayAddress = hoaRec.Parcel_Location;
-                if (hoaRec.ownersList[0].AlternateMailing) {
-                    displayAddress = hoaRec.ownersList[0].Alt_Address_Line1;
-                }
-
-                commDesc = "Notice for postal mail mailed for " + displayAddress;
-                // log communication for notice created
-                communications.LogCommunication(hoaRec.Parcel_ID, hoaRec.ownersList[0].OwnerID, commType, commDesc);
-            }
-
-        }); // End of loop through Parcels
-
-        $ResultMessage.html("Postal dues notices marked mailed, total = " + markMailedCnt + ", (Total skipped for UseEmail = " + adminEmailSkipCnt + ")");
-    }
-    */
-
-    function _duesEmails(hoaRecList,action,firstNotice) {
+    //function _duesEmails(hoaRecList,action,firstNotice) {
+    function _duesEmails() {
         var emailRecCnt = 0;
         var commType = 'Dues Notice Email';
         var commDesc = '';
         var sendEmailAddr = '';
         var noticeType = "1st";
+        /*
         if (!firstNotice) {
             noticeType = "Additional";
         }
+        */
 
-        //$ResultMessage.html("Executing Admin request...(processing list)");
+        $ResultMessage.html("in Dues Email function ");
 
         var firstTestRec = true;
         var testEmailAddr = config.getVal('duesEmailTestAddress');
         var resultDetails = '';
+        $DuesButtons.empty();
         $DuesListDisplay.empty();
+
+        if (jjklogin.isUserLoggedIn()) {
+                    
+            if (jjklogin.getUserLevel() > 1) {
+            }
+            /*
+            $ReportFilter.append($('</br>'))
+            $ReportFilter.append($('<a>')
+                    .prop('id', "MailingListReport")
+                    .attr('href', "#")
+                    .attr('class', "btn btn-primary reportRequest")
+                    .attr('data-reportTitle', reportTitle)
+                    .attr('role', "button")
+                    .html("Create List")).append($('</br>'))
+
+            //1st Notice: <input id="FirstNoticeCheckbox" type="checkbox" checked=true>
+                .append($('<input>')
+                    .prop('id', "MailingListName")
+                    .attr('name', "MailingListName")
+                    .attr('type', "radio")
+                    .attr('checked', "checked")
+                    .attr('value', "WelcomeLetters")).append($('<label>').html("&nbsp; Welcome Letters (property addresses, Sales WelcomeSent = S) &nbsp;&nbsp;"))
+            */
+        } else {
+            $ReportRecCnt.html("User is not logged in");
+        }
+
+
 
         /*
         $.each(hoaRecList, function (index, hoaRec) {
@@ -403,6 +359,85 @@ var admin = (function () {
 
         //$("#ResultMessage").html("Yearly dues notices emailed, total = " + emailRecCnt + "<br>" + resultDetails);
     }
+
+        /*
+    function _duesNotices(hoaRecList,firstNotice) {
+        var adminEmailSkipCnt = 0;
+        var duesNoticeCnt = 0;
+        var displayAddress = '';
+        var commType = 'Dues Notice';
+        var commDesc = '';
+        var noticeType = "1st";
+        if (!firstNotice) {
+            noticeType = 'Additional';
+        }
+
+        // Create a pdfRec and initialize the PDF object
+        var pdfRec = pdfModule.init('Member Dues Notice');
+
+        //console.log("_duesNotices, Before adminLoop, hoaRecList.length = " + hoaRecList.length);
+        $ResultMessage.html("Executing Admin request...(processing list)");
+
+        $.each(hoaRecList, function (index, hoaRec) {
+            //console.log(index + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", hoaRec.DuesEmailAddr = " + hoaRec.DuesEmailAddr);
+            // When generating DuesNotices for the 1st notice, skip the ones with Property UseEmail set (if there is a valid email)
+            if (firstNotice && hoaRec.UseEmail && hoaRec.DuesEmailAddr != '') {
+                adminEmailSkipCnt++;
+            } else {
+                duesNoticeCnt++;
+                if (index > 0) {
+                    // If not the first record for DuesNotices, then add a new page for the next parcel
+                    pdfRec = pdfModule.addPage(pdfRec);
+                }
+                // Call function to format the yearly dues statement for an individual property
+                pdfRec = pdfModule.formatYearlyDuesStatement(pdfRec, hoaRec, firstNotice);
+
+                // Get a displayAddress for the Communication record
+                displayAddress = hoaRec.Parcel_Location;
+                if (hoaRec.ownersList[0].AlternateMailing) {
+                    displayAddress = hoaRec.ownersList[0].Alt_Address_Line1;
+                }
+                commDesc = noticeType + " Notice for postal mail created for " + displayAddress;
+                // log communication for notice created
+                communications.LogCommunication(hoaRec.Parcel_ID, hoaRec.ownersList[0].OwnerID, commType, commDesc);
+            }
+        }); // End of loop through Parcels
+
+        $("#ResultMessage").html("Yearly dues notices created, total = " + duesNoticeCnt + ", (Total skipped for UseEmail = " + adminEmailSkipCnt + ")");
+        // Download the PDF file
+        pdfRec.pdf.save(util.formatDate() + "-YearlyDuesNotices.pdf");
+    }
+
+    function _markMailed(hoaRecList,firstNotice) {
+        var adminEmailSkipCnt = 0;
+        var markMailedCnt = 0;
+        var displayAddress = '';
+        var commType = 'Dues Notice';
+        var commDesc = '';
+
+        $ResultMessage.html("Executing Admin request...(processing list)");
+
+        $.each(hoaRecList, function (index, hoaRec) {
+            if (firstNotice && hoaRec.UseEmail && hoaRec.DuesEmailAddr != '') {
+                adminEmailSkipCnt++;
+            } else {
+                markMailedCnt++;
+                // Get a displayAddress for the Communication record
+                displayAddress = hoaRec.Parcel_Location;
+                if (hoaRec.ownersList[0].AlternateMailing) {
+                    displayAddress = hoaRec.ownersList[0].Alt_Address_Line1;
+                }
+
+                commDesc = "Notice for postal mail mailed for " + displayAddress;
+                // log communication for notice created
+                communications.LogCommunication(hoaRec.Parcel_ID, hoaRec.ownersList[0].OwnerID, commType, commDesc);
+            }
+
+        }); // End of loop through Parcels
+
+        $ResultMessage.html("Postal dues notices marked mailed, total = " + markMailedCnt + ", (Total skipped for UseEmail = " + adminEmailSkipCnt + ")");
+    }
+    */
 
 /*
                 if (action == 'DuesEmailsTest') {
