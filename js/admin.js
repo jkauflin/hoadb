@@ -82,6 +82,7 @@ var admin = (function () {
     var $FileUploadTitle = $document.find("#FileUploadTitle");
     var $ConfirmationButton = $ConfirmationModal.find("#ConfirmationButton");
     var $ConfirmationMessage = $ConfirmationModal.find("#ConfirmationMessage");
+    var $AdminResults = $moduleDiv.find("#AdminResults");
     var $ResultMessage = $moduleDiv.find("#ResultMessage");
     var $FirstNoticeCheckbox = $moduleDiv.find("#FirstNoticeCheckbox");
     var $DuesButtons = $moduleDiv.find("#DuesButtons");
@@ -102,10 +103,12 @@ var admin = (function () {
     function _adminRequest(event) {
         //console.log("in _adminRequest");
         var firstNotice = true;
+        /*
         if (!$FirstNoticeCheckbox.prop('checked')) {
             //console.log("FirstNoticeCheckbox NOT CHECKED ");
             firstNotice = false;
         }
+        */
 
         // Validate add assessments (check access permissions, timing, year, and amount)
         // get confirmation message back
@@ -166,8 +169,8 @@ var admin = (function () {
                 firstNotice = false;
             }
 
-            console.log("in adminExecute, action = " + action);
-            console.log("in adminExecute, firstNotice = "+firstNotice);
+            //console.log("in adminExecute, action = " + action);
+            //console.log("in adminExecute, firstNotice = "+firstNotice);
 
             // Get all the data needed for processing
             $.getJSON("adminExecute.php", "action=" + action +
@@ -204,7 +207,8 @@ var admin = (function () {
         }
         */
 
-        $ResultMessage.html("in Dues Email function ");
+        $AdminResults.html("Dues Notice Emails");
+        $ResultMessage.html("");
 
         var firstTestRec = true;
         var testEmailAddr = config.getVal('duesEmailTestAddress');
@@ -213,32 +217,45 @@ var admin = (function () {
         $DuesListDisplay.empty();
 
         if (jjklogin.isUserLoggedIn()) {
-                    
             if (jjklogin.getUserLevel() > 1) {
-            }
-            /*
-            $ReportFilter.append($('</br>'))
-            $ReportFilter.append($('<a>')
+                $DuesButtons.append($('<a>')
                     .prop('id', "MailingListReport")
                     .attr('href', "#")
-                    .attr('class', "btn btn-primary reportRequest")
-                    .attr('data-reportTitle', reportTitle)
+                    .attr('class', "btn btn-primary ")
+//                    .attr('data-reportTitle', reportTitle)
                     .attr('role', "button")
-                    .html("Create List")).append($('</br>'))
+                    .html("Create New List"))
+                    .append($('<label>').html("&nbsp;&nbsp; "))
 
-            //1st Notice: <input id="FirstNoticeCheckbox" type="checkbox" checked=true>
-                .append($('<input>')
-                    .prop('id', "MailingListName")
-                    .attr('name', "MailingListName")
-                    .attr('type', "radio")
-                    .attr('checked', "checked")
-                    .attr('value', "WelcomeLetters")).append($('<label>').html("&nbsp; Welcome Letters (property addresses, Sales WelcomeSent = S) &nbsp;&nbsp;"))
-            */
+                    /*
+                    .append($('<a>')
+                    .prop('id', "MailingListReport2")
+                    .attr('href', "#")
+                    .attr('class', "btn btn-primary ")
+                    //                    .attr('data-reportTitle', reportTitle)
+                    .attr('role', "button")
+                    .html("Submit List to Send"))
+                    */
+
+                    .append($('<a>')
+                        .prop('id', "MailingListReport3")
+                        .attr('href', "#")
+                        .attr('class', "btn btn-primary ")
+                        //                    .attr('data-reportTitle', reportTitle)
+                        .attr('role', "button")
+                        .html("Check Submitted List"))
+
+                    .append($('</br>'))
+                    .append($('<input>')
+                        .prop('id', "FirstNoticeCheckbox")
+                        .attr('name', 'FirstNoticeCheckbox')
+                        .attr('type', "checkbox")
+                        .attr('checked', "checked"))
+                    .append($('<label>').html("&nbsp; 1st Notice"));
+            }
         } else {
-            $ReportRecCnt.html("User is not logged in");
+            $ResultMessage.html("User is not logged in");
         }
-
-
 
         /*
         $.each(hoaRecList, function (index, hoaRec) {
