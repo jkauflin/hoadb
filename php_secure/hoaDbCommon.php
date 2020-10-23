@@ -262,6 +262,7 @@ class AdminRec
 	public $hoaPropertyRecList;
 	public $hoaRecList;
 	public $paymentList;
+	public $commList;
 }
 
 class PaymentRec

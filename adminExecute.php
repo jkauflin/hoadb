@@ -52,7 +52,6 @@ try {
     $action = getParamVal("action");
 	$fiscalYear = getParamVal("fy");
 	$duesAmt = strToUSD(getParamVal("duesAmt"));
-    $duesEmailTestParcel = getParamVal("duesEmailTestParcel");
     $firstNotice = paramBoolVal("firstNotice");
 
     $adminLevel = $userRec->userLevel;
@@ -135,7 +134,7 @@ try {
 
         $fileName = 'payments.CSV';
 
-    } else if ($action == "DuesEmails" || $action == "DuesEmailsTest") {
+    } else if ($action == "DuesEmailsCreateList" || $action == "DuesEmailsCheckList") {
         $commType = '2nd Dues Notice';
         $commDesc = "Dues Notice emailed";
 
@@ -150,24 +149,7 @@ try {
 
         // get the dues email create into a common function and add a manual Send Dues Email for a particular Property???
 
-        if ($action == "DuesEmailsTest") {
-            $adminRec->message = "No Test dues Email sent - make sure test Parcel has dues owed";
-            $adminRec->hoaRecList = getHoaRecList($conn,$duesOwed,false,false,false,false,true);
-            $messageStr = '';
-            foreach ($adminRec->hoaRecList as $hoaRec)  {
-                $subject = 'GRHA TEST Dues Email';
-                $messageStr = createDuesMessage($conn,$hoaRec,$firstNotice);
-                $duesEmailTestAddress = getConfigValDB($conn,'duesEmailTestAddress');
-                $sendMailSuccess = sendHtmlEMail($duesEmailTestAddress,$subject,$messageStr,$fromEmailAddress);
-                // If the Member email was successful, update the flag on the communication record
-                if ($sendMailSuccess) {
-                    $adminRec->message = "Test dues Email sent";
-                } else {
-                    $adminRec->message = "Test dues Email failed";
-                }
-            }
-
-        } else {
+        if ($action == "DuesEmailsCreateList") {
             $adminRec->hoaRecList = getHoaRecList($conn,$duesOwed,$skipEmail);
             // Loop through the list, find the ones with an email address (maybe add a parameter to the common function)
             // and create a Communication record to get the email sent
@@ -183,6 +165,42 @@ try {
                 }
             }
             $adminRec->message = "Completed data lookup for Dues Emails cnt = $cnt";
+
+            /*
+            $adminRec->message = "No Test dues Email sent - make sure test Parcel has dues owed";
+            $adminRec->hoaRecList = getHoaRecList($conn,$duesOwed,false,false,false,false,true);
+            $messageStr = '';
+            foreach ($adminRec->hoaRecList as $hoaRec)  {
+                $subject = 'GRHA TEST Dues Email';
+                $messageStr = createDuesMessage($conn,$hoaRec,$firstNotice);
+                $duesEmailTestAddress = getConfigValDB($conn,'duesEmailTestAddress');
+                $sendMailSuccess = sendHtmlEMail($duesEmailTestAddress,$subject,$messageStr,$fromEmailAddress);
+                // If the Member email was successful, update the flag on the communication record
+                if ($sendMailSuccess) {
+                    $adminRec->message = "Test dues Email sent";
+                } else {
+                    $adminRec->message = "Test dues Email failed";
+                }
+            }
+            */
+
+        } else if ($action == "DuesEmailsCheckList") {
+
+            // get list from Communications (Email = true, and Sent = 'N')
+
+            $sql = "SELECT * FROM hoa_communications WHERE Email = 1 AND SentStatus = 'N' ORDER BY Parcel_ID ";
+		    $stmt = $conn->prepare($sql);
+	        $stmt->execute();
+	        $result = $stmt->get_result();
+	        $outputArray = array();
+        	if ($result->num_rows > 0) {
+        		while($row = $result->fetch_assoc()) {
+        			array_push($outputArray,$row);
+        		}
+        	}
+        	$stmt->close();
+            $adminRec->commList = $outputArray;
+
         }
 
 		$adminRec->result = "Valid";

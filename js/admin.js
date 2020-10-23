@@ -91,11 +91,12 @@ var admin = (function () {
     //=================================================================================================================
     // Bind events
     $moduleDiv.on("click", ".AdminButton", _adminRequest);
+    $moduleDiv.on("click", ".AdminExecute", _adminExecute);
     $ConfirmationButton.on("click", "#AdminExecute", _adminExecute);
     $FileUploadModal.on("submit", "#FileUploadForm", _handleFileUpload);
     $moduleDiv.on("click", ".LogPayment", _logPayment);
 
-    $moduleDiv.on("click", "#DuesEmails", _duesEmails);
+    $moduleDiv.on("click", "#DuesEmails", _duesEmailsButtons);
     $moduleDiv.on("click", ".DuesEmailSend", _duesEmailsSend);
 
     //=================================================================================================================
@@ -153,76 +154,41 @@ var admin = (function () {
                 $ConfirmationButton.append(buttonForm);
                 $ConfirmationModal.modal();
             }
-
         });
     }
 
-    // Respond to the Continue click for an Admin Execute function 
-    function _adminExecute(event) {
-        if (jjklogin.isUserLoggedIn()) {
-            $ResultMessage.html("Executing Admin request...(please wait)");
-
-            var action = event.target.getAttribute("data-action");
-            var firstNotice = true;
-            // 2/15/2020 JJK - fixed the bug that was getting string 'false' value instead of boolean false
-            if (event.target.getAttribute("data-firstNotice") == "false") {
-                firstNotice = false;
-            }
-
-            //console.log("in adminExecute, action = " + action);
-            //console.log("in adminExecute, firstNotice = "+firstNotice);
-
-            // Get all the data needed for processing
-            $.getJSON("adminExecute.php", "action=" + action +
-                "&fy=" + event.target.getAttribute("data-fy") +
-                "&duesAmt=" + event.target.getAttribute("data-duesAmt") +
-                "&duesEmailTestParcel=" + config.getVal('duesEmailTestParcel') +
-                "&firstNotice=" +event.target.getAttribute("data-firstNotice"), function (adminRec) {
-
-                    $ResultMessage.html(adminRec.message);
-
-                    if (action == 'DuesEmails' || action == 'DuesEmailsTest') {
-                        //_duesEmails(adminRec.hoaRecList, action, firstNotice);
-                    }
-                    
-
-               });
-
-        } else {
-            $ResultMessage.html("User is not logged in");
-        }
-    }
-
-
-    //function _duesEmails(hoaRecList,action,firstNotice) {
-    function _duesEmails() {
+    function _duesEmailsButtons(event) {
         var emailRecCnt = 0;
         var commType = 'Dues Notice Email';
         var commDesc = '';
         var sendEmailAddr = '';
         var noticeType = "1st";
-        /*
-        if (!firstNotice) {
-            noticeType = "Additional";
+        var firstNotice = true;
+        if (!$FirstNoticeCheckbox.prop('checked')) {
+            //console.log("FirstNoticeCheckbox NOT CHECKED ");
+            firstNotice = false;
         }
-        */
+
+        var fy = util.cleanStr($FiscalYear.val());
+        var duesAmt = util.cleanStr($DuesAmt.val());
+        var action = event.target.getAttribute('id');
 
         $AdminResults.html("Dues Notice Emails");
         $ResultMessage.html("");
 
-        var firstTestRec = true;
-        var testEmailAddr = config.getVal('duesEmailTestAddress');
-        var resultDetails = '';
         $DuesButtons.empty();
         $DuesListDisplay.empty();
 
         if (jjklogin.isUserLoggedIn()) {
             if (jjklogin.getUserLevel() > 1) {
                 $DuesButtons.append($('<a>')
-                    .prop('id', "MailingListReport")
+                    .prop('id', "DuesEmailsCreateList")
                     .attr('href', "#")
-                    .attr('class', "btn btn-primary ")
-//                    .attr('data-reportTitle', reportTitle)
+                    .attr('class', "btn btn-primary AdminExecute")
+                        .attr('data-action', action)
+                        .attr('data-fy', fy)
+                        .attr('data-duesAmt', duesAmt)
+                        .attr('data-firstNotice', firstNotice)
                     .attr('role', "button")
                     .html("Create New List"))
                     .append($('<label>').html("&nbsp;&nbsp; "))
@@ -231,17 +197,20 @@ var admin = (function () {
                     .append($('<a>')
                     .prop('id', "MailingListReport2")
                     .attr('href', "#")
-                    .attr('class', "btn btn-primary ")
+                    .attr('class', "btn btn-primary AdminExecute")
                     //                    .attr('data-reportTitle', reportTitle)
                     .attr('role', "button")
                     .html("Submit List to Send"))
                     */
 
                     .append($('<a>')
-                        .prop('id', "MailingListReport3")
+                        .prop('id', "DuesEmailsCheckList")
                         .attr('href', "#")
-                        .attr('class', "btn btn-primary ")
-                        //                    .attr('data-reportTitle', reportTitle)
+                        .attr('class', "btn btn-primary AdminExecute")
+                        .attr('data-action', action)
+                        .attr('data-fy', fy)
+                        .attr('data-duesAmt', duesAmt)
+                        .attr('data-firstNotice', firstNotice)
                         .attr('role', "button")
                         .html("Check Submitted List"))
 
@@ -256,60 +225,6 @@ var admin = (function () {
         } else {
             $ResultMessage.html("User is not logged in");
         }
-
-        /*
-        $.each(hoaRecList, function (index, hoaRec) {
-            //console.log("***** "+ index + ", len = " + hoaRec.emailAddrList.length + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1);
-
-            // Skip records that don't have an email address
-            if (hoaRec.emailAddrList.length > 0) {
-                var tr = '';
-
-                // loop through email address list and send to each one
-                $.each(hoaRec.emailAddrList, function (index2, emailAddr) {
-                    emailRecCnt = emailRecCnt + 1;
-                    //console.log(index + " " + index2 + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = " + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + ", sendEmailAddr = " + emailAddr);
-
-                    //resultDetails = resultDetails + "<br>" + index + " " + index2 + ", ParcelId = " + hoaRec.Parcel_ID + ", OwnerID = "
-                    //        + hoaRec.ownersList[0].OwnerID + ", Owner = " + hoaRec.ownersList[0].Owner_Name1 + " "
-                    //        + hoaRec.ownersList[0].Owner_Name2 + ", emailAddr = " + emailAddr;
-                    //var $DuesListDisplay = $moduleDiv.find("#DuesListDisplay tbody");
-
-                    if (index == 0) {
-                        $('<tr>')
-                            .append($('<th>').html('Cnt'))
-                            .append($('<th>').html('Send'))
-                            .append($('<th>').html('Parcel Id'))
-                            .append($('<th>').html('Owner Name'))
-                            .append($('<th>').html('Email Addr'))
-                            .appendTo($DuesListDisplay);
-                    }
-
-                    tr = $('<tr class="small">');
-                    tr.append($('<td>').html(emailRecCnt))
-
-                    if (jjklogin.getUserLevel() > 1) {
-                        tr.append($('<td>')
-                            .append($('<a>').prop('id', 'SendDuesEmailButton')
-                                .attr('data-parcelId', hoaRec.Parcel_ID)
-                                .attr('data-emailAddr', emailAddr)
-                                .attr('href', "#")
-                                .attr('class', "btn btn-success btn-xs DuesEmailSend")
-                                .attr('role', "button")
-                                .html("Send"))
-                        );
-                    }
-
-                    tr.append($('<td>').html(hoaRec.Parcel_ID))
-                        .append($('<td>').html(hoaRec.ownersList[0].Owner_Name1 + ' ' + hoaRec.ownersList[0].Owner_Name2))
-                        .append($('<td>').html(emailAddr))
-                    tr.appendTo($DuesListDisplay);
-
-                }); // End of loop through Email addresses
-            }
-            
-        }); // End of loop through Parcels
-        */
 
         /*
         $.post("sendMail.php", {
@@ -376,6 +291,78 @@ var admin = (function () {
 
         //$("#ResultMessage").html("Yearly dues notices emailed, total = " + emailRecCnt + "<br>" + resultDetails);
     }
+
+    // Respond to the Continue click for an Admin Execute function 
+    function _adminExecute(event) {
+        if (jjklogin.isUserLoggedIn()) {
+            $ResultMessage.html("Executing Admin request...(please wait)");
+
+            var action = event.target.getAttribute("data-action");
+            var firstNotice = true;
+            // 2/15/2020 JJK - fixed the bug that was getting string 'false' value instead of boolean false
+            if (event.target.getAttribute("data-firstNotice") == "false") {
+                firstNotice = false;
+            }
+
+            //console.log("in adminExecute, action = " + action);
+            //console.log("in adminExecute, firstNotice = "+firstNotice);
+//                "&duesEmailTestParcel=" + config.getVal('duesEmailTestParcel') +
+
+            // Get all the data needed for processing
+            $.getJSON("adminExecute.php", "action=" + action +
+                "&fy=" + event.target.getAttribute("data-fy") +
+                "&duesAmt=" + event.target.getAttribute("data-duesAmt") +
+                "&firstNotice=" +event.target.getAttribute("data-firstNotice"), function (adminRec) {
+
+                    $ResultMessage.html(adminRec.message);
+
+                    if (action == 'DuesEmailsCheckList') {
+                        //_duesEmails(adminRec.hoaRecList, action, firstNotice);
+                        // display list
+                        _duesEmailCheckListDisplay(adminRec.commList)
+                    }
+                    
+
+               });
+
+        } else {
+            $ResultMessage.html("User is not logged in");
+        }
+    }
+
+    function _duesEmailCheckListDisplay(commList) {
+        //$ResultMessage.html(message);
+        $DuesListDisplay.empty();
+
+        $.each(commList, function (index, commRec) {
+            var tr = '';
+            if (index == 0) {
+                $('<tr class="small">')
+                    .append($('<th>').html('Cnt'))
+                    .append($('<th>').html('Timestamp'))
+                    .append($('<th>').html('Parcel Id'))
+                    .append($('<th>').html('Name'))
+                    .append($('<th>').html('Type'))
+                    .append($('<th>').html('Email'))
+                    .append($('<th>').html('Sent'))
+                    .appendTo($DuesListDisplay);
+            }
+
+            tr = $('<tr class="small">');
+            tr.append($('<td>').html(index+1))
+            tr.append($('<td>').html(commRec.LastChangedTs))
+            tr.append($('<td>').html(commRec.Parcel_ID))
+            tr.append($('<td>').html(commRec.Mailing_Name))
+            tr.append($('<td>').html(commRec.CommType))
+            tr.append($('<td>').html(commRec.EmailAddr))
+            tr.append($('<td>').html(commRec.SentStatus))
+
+            tr.appendTo($DuesListDisplay);
+
+        }); // End of loop through Parcels
+
+    }
+
 
         /*
     function _duesNotices(hoaRecList,firstNotice) {
