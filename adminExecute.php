@@ -52,7 +52,7 @@ try {
     $action = getParamVal("action");
 	$fiscalYear = getParamVal("fy");
 	$duesAmt = strToUSD(getParamVal("duesAmt"));
-    $firstNotice = paramBoolVal("firstNotice");
+    //$firstNotice = paramBoolVal("firstNotice");
 
     $adminLevel = $userRec->userLevel;
 
@@ -134,37 +134,53 @@ try {
 
         $fileName = 'payments.CSV';
 
-    } else if ($action == "DuesEmailsCreateList" || $action == "DuesEmailsCheckList") {
-        $commType = '2nd Dues Notice';
-        $commDesc = "Dues Notice emailed";
+    } else if ($action == "DuesEmailsCheckList") {
+        // Get a list of the unsent Emails from the Communications table
+        $sql = "SELECT * FROM hoa_communications WHERE Email = 1 AND SentStatus = 'N' ORDER BY Parcel_ID ";
+		$stmt = $conn->prepare($sql);
+	    $stmt->execute();
+	    $result = $stmt->get_result();
+	    $outputArray = array();
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+        		array_push($outputArray,$row);
+        	}
+        }
+        $stmt->close();
+        $adminRec->commList = $outputArray;
+
+    } else if ($action == "DuesEmailsCreateList" || $action == "DuesEmailsSubmitList") {
+        $commType = 'Dues Notice';
+        $commDesc = "Sent to Owner email";
 
         // If creating Dues Letters, skip properties that don't owe anything
         $duesOwed = true;
-        // Skip postal mail for 1st Notices if Member has asked to use Email
-        $skipEmail = false;
-        if ($firstNotice) {
-            $skipEmail = true;
-            $commType = '1st Dues Notice';
-        }
+        $hoaRecList = getHoaRecList($conn,$duesOwed);
+        $adminRec->commList = array();
 
-        // get the dues email create into a common function and add a manual Send Dues Email for a particular Property???
+        // Loop through the list, find the ones with an email address
+        $cnt = 0;
+        foreach ($hoaRecList as $hoaRec)  {
+            $cnt = $cnt + 1;
+            foreach ($hoaRec->emailAddrList as $EmailAddr) {
+                $hoaCommRec = new HoaCommRec();
+                $hoaCommRec->Parcel_ID = $hoaRec->Parcel_ID;
+                $hoaCommRec->OwnerID = $hoaRec->ownersList[0]->OwnerID;
+                $hoaCommRec->CommType = $commType;
+                $hoaCommRec->CommDesc = $commDesc;
+                $hoaCommRec->Mailing_Name = $hoaRec->ownersList[0]->Mailing_Name;
+                $hoaCommRec->Email = 1;
+                $hoaCommRec->EmailAddr = $EmailAddr;
+                $hoaCommRec->SentStatus = 'N';
+                array_push($adminRec->commList,$hoaCommRec);
 
-        if ($action == "DuesEmailsCreateList") {
-            $adminRec->hoaRecList = getHoaRecList($conn,$duesOwed,$skipEmail);
-            // Loop through the list, find the ones with an email address (maybe add a parameter to the common function)
-            // and create a Communication record to get the email sent
-            $cnt = 0;
-            foreach ($adminRec->hoaRecList as $hoaRec)  {
-                //echo $hoaRec->Parcel_ID;
-                $cnt = $cnt + 1;
-
-                // email list
-                foreach ($hoaRec->emailAddrList as $EmailAddr) {
+                if ($action == "DuesEmailsSubmitList") {
                     insertCommRec($conn,$hoaRec->Parcel_ID,$hoaRec->ownersList[0]->OwnerID,$commType,$commDesc,
-                        $hoaRec->ownersList[0]->Mailing_Name,true,$EmailAddr,'N',$userRec->userName);
+                        $hoaRec->ownersList[0]->Mailing_Name,1,$EmailAddr,'N',$userRec->userName);
                 }
             }
-            $adminRec->message = "Completed data lookup for Dues Emails cnt = $cnt";
+        }
+        //$adminRec->message = "Completed data lookup for Dues Emails cnt = $cnt";
 
             /*
             $adminRec->message = "No Test dues Email sent - make sure test Parcel has dues owed";
@@ -183,25 +199,6 @@ try {
                 }
             }
             */
-
-        } else if ($action == "DuesEmailsCheckList") {
-
-            // get list from Communications (Email = true, and Sent = 'N')
-
-            $sql = "SELECT * FROM hoa_communications WHERE Email = 1 AND SentStatus = 'N' ORDER BY Parcel_ID ";
-		    $stmt = $conn->prepare($sql);
-	        $stmt->execute();
-	        $result = $stmt->get_result();
-	        $outputArray = array();
-        	if ($result->num_rows > 0) {
-        		while($row = $result->fetch_assoc()) {
-        			array_push($outputArray,$row);
-        		}
-        	}
-        	$stmt->close();
-            $adminRec->commList = $outputArray;
-
-        }
 
 		$adminRec->result = "Valid";
 	}

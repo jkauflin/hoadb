@@ -45,28 +45,37 @@ $conn = getConn($host, $dbadmin, $password, $dbname);
             */
 
 //$sql = "SELECT * FROM hoa_communications WHERE Email = 1 AND SentStatus = 'N' AND Parcel_ID = 'R72617307 0001' ORDER BY Parcel_ID ";
-$sql = "SELECT * FROM hoa_communications WHERE Email = 1 AND SentStatus = 'N' AND Parcel_ID = 'R72617307 0002' ORDER BY Parcel_ID ";
+$sql = "SELECT * FROM hoa_communications WHERE Email = 1 AND SentStatus = 'N' ORDER BY Parcel_ID ";
 $stmt = $conn->prepare($sql);	
 $stmt->execute();
 $result = $stmt->get_result();
 $stmt->close();
 
-$firstNotice = false;
+//$firstNotice = false;
 $commType = '';
+$maxRecs = 10;
 
 $sendMailSuccess = false;
 if ($result->num_rows > 0) {
+    $cnt = 0;
+    $Parcel_ID = '';
 	while($row = $result->fetch_assoc()) {
-
+        $cnt = $cnt + 1;
+        if ($cnt > $maxRecs) {
+            break;
+        }
+        /*
         $firstNotice = false;
         $commType = $row["CommType"];
         if ($commType == '1st Dues Notice') {
             $firstNotice = true;
         }
+        */
+        $Parcel_ID = $row["Parcel_ID"];
+        $hoaRec = getHoaRec($conn,$Parcel_ID);
+        $messageStr = createDuesMessage($conn,$hoaRec);
 
-        $hoaRec = getHoaRec($conn,$row["Parcel_ID"]);
-
-        $messageStr = createDuesMessage($conn,$hoaRec,$firstNotice);
+        echo 'Parcel Id = ' . $Parcel_ID . '</br>';
 
 //            
         /*
@@ -101,6 +110,6 @@ $conn->close();
     // if successful change sent to 'Y' and update Last changed timestamp
 
 
-//echo 'SUCCESS';
-echo $messageStr;
+echo 'SUCCESS';
+//echo $messageStr;
 ?>

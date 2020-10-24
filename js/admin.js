@@ -67,6 +67,7 @@ var admin = (function () {
     //=================================================================================================================
     // Private variables for the Module
     var paymentList = null;
+    var commList = null;
 
     //=================================================================================================================
     // Variables cached from the DOM
@@ -103,13 +104,6 @@ var admin = (function () {
     // Module methods
     function _adminRequest(event) {
         //console.log("in _adminRequest");
-        var firstNotice = true;
-        /*
-        if (!$FirstNoticeCheckbox.prop('checked')) {
-            //console.log("FirstNoticeCheckbox NOT CHECKED ");
-            firstNotice = false;
-        }
-        */
 
         // Validate add assessments (check access permissions, timing, year, and amount)
         // get confirmation message back
@@ -142,8 +136,7 @@ var admin = (function () {
                         .attr('data-dismiss', "modal").html('Continue')
                         .attr('data-action', action)
                         .attr('data-fy', fy)
-                        .attr('data-duesAmt', duesAmt)
-                        .attr('data-firstNotice', firstNotice));
+                        .attr('data-duesAmt', duesAmt));
 
                     buttonForm.append($('<button>').prop('class', "btn btn-default").attr('type', "button").attr('data-dismiss', "modal").html('Close'));
                     $ConfirmationButton.append(buttonForm);
@@ -158,20 +151,8 @@ var admin = (function () {
     }
 
     function _duesEmailsButtons(event) {
-        var emailRecCnt = 0;
-        var commType = 'Dues Notice Email';
-        var commDesc = '';
-        var sendEmailAddr = '';
-        var noticeType = "1st";
-        var firstNotice = true;
-        if (!$FirstNoticeCheckbox.prop('checked')) {
-            //console.log("FirstNoticeCheckbox NOT CHECKED ");
-            firstNotice = false;
-        }
-
         var fy = util.cleanStr($FiscalYear.val());
         var duesAmt = util.cleanStr($DuesAmt.val());
-        var action = event.target.getAttribute('id');
 
         $AdminResults.html("Dues Notice Emails");
         $ResultMessage.html("");
@@ -185,12 +166,11 @@ var admin = (function () {
                     .prop('id', "DuesEmailsCreateList")
                     .attr('href', "#")
                     .attr('class', "btn btn-primary AdminExecute")
-                        .attr('data-action', action)
+                        .attr('data-action', "DuesEmailsCreateList")
                         .attr('data-fy', fy)
                         .attr('data-duesAmt', duesAmt)
-                        .attr('data-firstNotice', firstNotice)
                     .attr('role', "button")
-                    .html("Create New List"))
+                    .html("Create List"))
                     .append($('<label>').html("&nbsp;&nbsp; "))
 
                     /*
@@ -207,13 +187,12 @@ var admin = (function () {
                         .prop('id', "DuesEmailsCheckList")
                         .attr('href', "#")
                         .attr('class', "btn btn-primary AdminExecute")
-                        .attr('data-action', action)
+                        .attr('data-action', "DuesEmailsCheckList")
                         .attr('data-fy', fy)
                         .attr('data-duesAmt', duesAmt)
-                        .attr('data-firstNotice', firstNotice)
                         .attr('role', "button")
-                        .html("Check Submitted List"))
-
+                        .html("Check Submitted List"));
+                    /*
                     .append($('</br>'))
                     .append($('<input>')
                         .prop('id', "FirstNoticeCheckbox")
@@ -221,6 +200,7 @@ var admin = (function () {
                         .attr('type', "checkbox")
                         .attr('checked', "checked"))
                     .append($('<label>').html("&nbsp; 1st Notice"));
+                    */
             }
         } else {
             $ResultMessage.html("User is not logged in");
@@ -295,33 +275,35 @@ var admin = (function () {
     // Respond to the Continue click for an Admin Execute function 
     function _adminExecute(event) {
         if (jjklogin.isUserLoggedIn()) {
+            $DuesListDisplay.empty();
             $ResultMessage.html("Executing Admin request...(please wait)");
-
-            var action = event.target.getAttribute("data-action");
+            /*
             var firstNotice = true;
-            // 2/15/2020 JJK - fixed the bug that was getting string 'false' value instead of boolean false
-            if (event.target.getAttribute("data-firstNotice") == "false") {
-                firstNotice = false;
+            if ($('#FirstNoticeCheckbox') != null) {
+                firstNotice = $('#FirstNoticeCheckbox').is(":checked");
             }
+            */
+            var action = event.target.getAttribute("data-action");
 
             //console.log("in adminExecute, action = " + action);
-            //console.log("in adminExecute, firstNotice = "+firstNotice);
-//                "&duesEmailTestParcel=" + config.getVal('duesEmailTestParcel') +
 
             // Get all the data needed for processing
             $.getJSON("adminExecute.php", "action=" + action +
                 "&fy=" + event.target.getAttribute("data-fy") +
-                "&duesAmt=" + event.target.getAttribute("data-duesAmt") +
-                "&firstNotice=" +event.target.getAttribute("data-firstNotice"), function (adminRec) {
+                "&duesAmt=" + event.target.getAttribute("data-duesAmt")
+                // +
+                //"&firstNotice=" +firstNotice
+                , function (adminRec) {
 
                     $ResultMessage.html(adminRec.message);
 
-                    if (action == 'DuesEmailsCheckList') {
-                        //_duesEmails(adminRec.hoaRecList, action, firstNotice);
-                        // display list
-                        _duesEmailCheckListDisplay(adminRec.commList)
+                    if (action == 'DuesEmailsCheckList' || action == 'DuesEmailsSubmitList') {
+                        commList = adminRec.commList;
+                        _duesEmailCheckListDisplay()
+                    } else if (action == 'DuesEmailsCreateList') {
+                        commList = adminRec.commList;
+                        _duesEmailCreateListDisplay()
                     }
-                    
 
                });
 
@@ -330,8 +312,8 @@ var admin = (function () {
         }
     }
 
-    function _duesEmailCheckListDisplay(commList) {
-        //$ResultMessage.html(message);
+    function _duesEmailCheckListDisplay() {
+        $ResultMessage.html("Number of submitted but unsent Dues Notice Emails = "+commList.length);
         $DuesListDisplay.empty();
 
         $.each(commList, function (index, commRec) {
@@ -351,7 +333,13 @@ var admin = (function () {
             tr = $('<tr class="small">');
             tr.append($('<td>').html(index+1))
             tr.append($('<td>').html(commRec.LastChangedTs))
-            tr.append($('<td>').html(commRec.Parcel_ID))
+            tr.append($('<td>')
+                .append($('<a>')
+                    .attr('class', "DetailDisplay")
+                    .attr('data-parcelId', commRec.Parcel_ID)
+                    .attr('href', "#")
+                    .html(commRec.Parcel_ID))
+            );
             tr.append($('<td>').html(commRec.Mailing_Name))
             tr.append($('<td>').html(commRec.CommType))
             tr.append($('<td>').html(commRec.EmailAddr))
@@ -363,6 +351,47 @@ var admin = (function () {
 
     }
 
+    function _duesEmailCreateListDisplay() {
+
+        $ResultMessage.append($('<a>')
+                    .prop('id', "DuesEmailsSubmitList")
+                    .attr('href', "#")
+                    .attr('class', "btn btn-primary AdminExecute")
+                    .attr('data-action', "DuesEmailsSubmitList")
+                    .attr('role', "button")
+                    .html("Submit List to send emails"))
+                    .append($('<h5>').html("Number of Dues Notice Emails to submit = "+commList.length))
+
+        $DuesListDisplay.empty();
+
+        $.each(commList, function (index, commRec) {
+            var tr = '';
+            if (index == 0) {
+                $('<tr class="small">')
+                    .append($('<th>').html('Cnt'))
+                    .append($('<th>').html('Parcel Id'))
+                    .append($('<th>').html('Name'))
+                    .append($('<th>').html('Email'))
+                    .appendTo($DuesListDisplay);
+            }
+
+            tr = $('<tr class="small">');
+            tr.append($('<td>').html(index+1))
+            tr.append($('<td>')
+                .append($('<a>')
+                    .attr('class', "DetailDisplay")
+                    .attr('data-parcelId', commRec.Parcel_ID)
+                    .attr('href', "#")
+                    .html(commRec.Parcel_ID))
+            );
+            tr.append($('<td>').html(commRec.Mailing_Name))
+            tr.append($('<td>').html(commRec.EmailAddr))
+
+            tr.appendTo($DuesListDisplay);
+
+        }); // End of loop through Parcels
+
+    }
 
         /*
     function _duesNotices(hoaRecList,firstNotice) {

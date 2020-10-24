@@ -405,7 +405,8 @@ function getHoaPaymentRec($conn,$parcelId,$transId) {
 
 
 // Create the dues notice message to be sent in emails
-function createDuesMessage($conn,$hoaRec,$firstNotice) {
+//function createDuesMessage($conn,$hoaRec,$firstNotice) {
+function createDuesMessage($conn,$hoaRec) {
     $htmlMessageStr = '';
     $title = 'Member Dues Notice';
     $hoaName = getConfigValDB($conn,'hoaName');
