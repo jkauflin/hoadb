@@ -32,17 +32,9 @@ if (getParamVal("key") != $scheduledJobKey) {
 
 $conn = getConn($host, $dbadmin, $password, $dbname);
 
-			//$subject = 'HOA Residential Sales in ' . $salesYear;
-            //$messageStr = '<h2>HOA Residential Sales in ' . $salesYear . '</h2>' . $outputStr;
-            
-            /*
-                toEmail: emailAddr,
-                subject: config.getVal('hoaNameShort') + ' Dues Notice',
-                messageStr: 'Attached is the ' + config.getVal('hoaName') + ' Dues Notice.  *** Reply to this email to request unsubscribe ***',
-                parcelId: hoaRec.Parcel_ID,
-                ownerId: hoaRec.ownersList[0].OwnerID,
-                filename: config.getVal('hoaNameShort') + 'DuesNotice.pdf',
-            */
+//getConfigValDB($conn,'duesEmailTestAddress');
+$subject = getConfigValDB($conn,'hoaNameShort') . ' Dues Notice';
+
 
 //$sql = "SELECT * FROM hoa_communications WHERE Email = 1 AND SentStatus = 'N' AND Parcel_ID = 'R72617307 0001' ORDER BY Parcel_ID ";
 $sql = "SELECT * FROM hoa_communications WHERE Email = 1 AND SentStatus = 'N' ORDER BY Parcel_ID ";
@@ -53,7 +45,7 @@ $stmt->close();
 
 //$firstNotice = false;
 $commType = '';
-$maxRecs = 2;
+$maxRecs = 10;
 
 $sendMailSuccess = false;
 if ($result->num_rows > 0) {
