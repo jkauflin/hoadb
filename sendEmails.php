@@ -10,8 +10,9 @@
  * Modification History
  * 2020-10-16 JJK 	Initial version
  *============================================================================*/
-/*
  require_once 'vendor/autoload.php'; 
+
+ echo date('[Y-m-d H:i] '). "TOP argv = $argv[1] " . PHP_EOL;
 
 // Common functions
 require_once 'php_secure/commonUtil.php';
@@ -24,11 +25,9 @@ use \jkauflin\jjklogin\LoginAuth;
 require_once getSecretsFilename();
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
-*/
 
-echo date('[Y-m-d H:i] '). "argv = $argv[1] " . PHP_EOL;
+echo 'after requires' . PHP_EOL;
 
-/*
 // Check for the secret key in the arg list
 if (!empty($argv[1])) {
     if ($argv[1] != $scheduledJobKey) {
@@ -45,7 +44,7 @@ if (!empty($argv[1])) {
 //    echo "Not authorized to execute request";
 //    exit;
 //}
-
+/*
 $conn = getConn($host, $dbadmin, $password, $dbname);
 
 //getConfigValDB($conn,'duesEmailTestAddress');
