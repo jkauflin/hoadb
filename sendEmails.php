@@ -53,7 +53,7 @@ $stmt->close();
 
 //$firstNotice = false;
 $commType = '';
-$maxRecs = 10;
+$maxRecs = 2;
 
 $sendMailSuccess = false;
 if ($result->num_rows > 0) {
@@ -75,8 +75,9 @@ if ($result->num_rows > 0) {
         $hoaRec = getHoaRec($conn,$Parcel_ID);
         $messageStr = createDuesMessage($conn,$hoaRec);
 
-        echo 'Parcel Id = ' . $Parcel_ID . '</br>';
+        $sendMailSuccess = sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromEmailAddress);
 
+        echo 'Parcel Id = ' . $Parcel_ID . '</br>';
 //            
         /*
         $sendMailSuccess = sendHtmlEMail($row["EmailAddr"],$subject,$messageStr,$fromEmailAddress);
