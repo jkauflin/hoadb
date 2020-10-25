@@ -45,7 +45,7 @@ $stmt->close();
 
 //$firstNotice = false;
 $commType = '';
-$maxRecs = 10;
+$maxRecs = 100;
 
 $sendMailSuccess = false;
 if ($result->num_rows > 0) {
@@ -67,7 +67,8 @@ if ($result->num_rows > 0) {
         $hoaRec = getHoaRec($conn,$Parcel_ID);
         $messageStr = createDuesMessage($conn,$hoaRec);
 
-        $sendMailSuccess = sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromEmailAddress);
+        // should the FROM be treasurer?
+        $sendMailSuccess = sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromTreasurerEmailAddress);
 
         echo 'Parcel Id = ' . $Parcel_ID . '</br>';
 //            
