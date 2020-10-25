@@ -321,6 +321,7 @@ var admin = (function () {
             if (index == 0) {
                 $('<tr class="small">')
                     .append($('<th>').html('Cnt'))
+                    .append($('<th>').html('Test'))
                     .append($('<th>').html('Timestamp'))
                     .append($('<th>').html('Parcel Id'))
                     .append($('<th>').html('Name'))
@@ -332,6 +333,17 @@ var admin = (function () {
 
             tr = $('<tr class="small">');
             tr.append($('<td>').html(index+1))
+
+            tr.append($('<td>')
+                .append($('<a>')
+                    .attr('data-index', index)
+                    .attr('data-parcelId', commRec.Parcel_ID)
+                    .attr('href', "#")
+                    .attr('class', "btn btn-danger btn-xs TestEmail")
+                    .attr('role', "button")
+                    .html("Test"))
+            );
+
             tr.append($('<td>').html(commRec.LastChangedTs))
             tr.append($('<td>')
                 .append($('<a>')
