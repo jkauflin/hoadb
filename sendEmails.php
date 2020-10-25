@@ -24,11 +24,24 @@ require_once getSecretsFilename();
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
 
+// Check for the secret key in the arg list
+if (!empty($argv[1])) {
+    if ($argv[1] != $scheduledJobKey) {
+        echo "Not authorized to execute request";
+        exit;
+    }
+} else {
+    echo "Not authorized to execute request";
+    exit;
+}
+
 // Check URL param against secret key for scheduled jobs
+/*
 if (getParamVal("key") != $scheduledJobKey) {
     echo "Not authorized to execute request";
     exit;
 }
+*/
 
 $conn = getConn($host, $dbadmin, $password, $dbname);
 
@@ -45,7 +58,7 @@ $stmt->close();
 
 //$firstNotice = false;
 $commType = '';
-$maxRecs = 100;
+$maxRecs = 1;
 
 $sendMailSuccess = false;
 if ($result->num_rows > 0) {
@@ -68,17 +81,14 @@ if ($result->num_rows > 0) {
         $messageStr = createDuesMessage($conn,$hoaRec);
 
         // should the FROM be treasurer?
+        //$sendMailSuccess = sendHtmlEMail($row["EmailAddr"],$subject,$messageStr,$fromEmailAddress);
         $sendMailSuccess = sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromTreasurerEmailAddress);
-
-        echo 'Parcel Id = ' . $Parcel_ID . '</br>';
-//            
-        /*
-        $sendMailSuccess = sendHtmlEMail($row["EmailAddr"],$subject,$messageStr,$fromEmailAddress);
         // If the Member email was successful, update the flag on the communication record
         if ($sendMailSuccess) {
 
         }
-        */
+
+        echo 'Parcel Id = ' . $Parcel_ID . '</br>';
 
     }
 }
