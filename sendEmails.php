@@ -10,7 +10,8 @@
  * Modification History
  * 2020-10-16 JJK 	Initial version
  *============================================================================*/
-require_once 'vendor/autoload.php'; 
+/*
+ require_once 'vendor/autoload.php'; 
 
 // Common functions
 require_once 'php_secure/commonUtil.php';
@@ -23,7 +24,11 @@ use \jkauflin\jjklogin\LoginAuth;
 require_once getSecretsFilename();
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
+*/
 
+echo date('[Y-m-d H:i] '). "argv = $argv[1] " . PHP_EOL;
+
+/*
 // Check for the secret key in the arg list
 if (!empty($argv[1])) {
     if ($argv[1] != $scheduledJobKey) {
@@ -36,12 +41,10 @@ if (!empty($argv[1])) {
 }
 
 // Check URL param against secret key for scheduled jobs
-/*
-if (getParamVal("key") != $scheduledJobKey) {
-    echo "Not authorized to execute request";
-    exit;
-}
-*/
+//if (getParamVal("key") != $scheduledJobKey) {
+//    echo "Not authorized to execute request";
+//    exit;
+//}
 
 $conn = getConn($host, $dbadmin, $password, $dbname);
 
@@ -69,13 +72,6 @@ if ($result->num_rows > 0) {
         if ($cnt > $maxRecs) {
             break;
         }
-        /*
-        $firstNotice = false;
-        $commType = $row["CommType"];
-        if ($commType == '1st Dues Notice') {
-            $firstNotice = true;
-        }
-        */
         $Parcel_ID = $row["Parcel_ID"];
         $hoaRec = getHoaRec($conn,$Parcel_ID);
         $messageStr = createDuesMessage($conn,$hoaRec);
@@ -97,10 +93,6 @@ $conn->close();
 
 
     //function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
-/*
-
-                set status to 'E' error?
-*/
 
     // Decode the PDF data stream from character back to binary
     //$filedata = base64_decode($_POST['filedata']);
@@ -115,5 +107,6 @@ $conn->close();
 
 
 echo 'SUCCESS';
-//echo $messageStr;
+*/
+
 ?>
