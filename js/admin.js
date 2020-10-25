@@ -98,6 +98,8 @@ var admin = (function () {
     $moduleDiv.on("click", ".LogPayment", _logPayment);
 
     $moduleDiv.on("click", "#DuesEmails", _duesEmailsButtons);
+    
+    $moduleDiv.on("click", "#DuesEmailsSendList", _duesEmailsSendList);
     $moduleDiv.on("click", ".DuesEmailSend", _duesEmailsSend);
 
     //=================================================================================================================
@@ -313,7 +315,16 @@ var admin = (function () {
     }
 
     function _duesEmailCheckListDisplay() {
-        $ResultMessage.html("Number of submitted but unsent Dues Notice Emails = "+commList.length);
+
+        $ResultMessage.append($('<a>')
+            .prop('id', "DuesEmailsSendList")
+            .attr('href', "#")
+            .attr('class', "btn btn-primary AdminExecute")
+            .attr('data-action', "DuesEmailsSendList")
+            .attr('role', "button")
+            .html("Submit List to send emails"))
+            .append($('<h5>').html("Number of submitted but unsent Dues Notice Emails = " + commList.length))
+
         $DuesListDisplay.empty();
 
         $.each(commList, function (index, commRec) {
@@ -507,6 +518,10 @@ var admin = (function () {
                         }, 'json'); // End of $.post("sendMail.php"
                     }
 */
+
+    function _duesEmailsSendList() {
+        console.log("in _duesEmailsSendList")        
+    }
 
     function _duesEmailsSend(event) {
         var commType = 'Dues Notice Email';
