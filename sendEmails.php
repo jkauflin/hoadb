@@ -10,28 +10,21 @@
  * Modification History
  * 2020-10-16 JJK 	Initial version
  *============================================================================*/
- require_once 'vendor/autoload.php'; 
+require_once 'vendor/autoload.php'; 
 
- echo date('[Y-m-d H:i] '). "TOP argv = $argv[1] " . PHP_EOL;
+//echo date('[Y-m-d H:i] '). "TOP argv = $argv[1] " . PHP_EOL;
 
 // Common functions
 require_once 'php_secure/commonUtil.php';
-echo 'after requires commonUtil' . PHP_EOL;
 // Common database functions and table record classes
 require_once 'php_secure/hoaDbCommon.php';
-echo 'after requires hoaDbCommon' . PHP_EOL;
 // Login Authentication class
 require_once 'php_secure/jjklogin.php';
-echo 'after requires jjklogin' . PHP_EOL;
 use \jkauflin\jjklogin\LoginAuth;
-echo 'after requires use loginAuth' . PHP_EOL;
 // Include database connection credentials from an external includes location
 require_once getSecretsFilename();
-echo 'after requires secrets' . PHP_EOL;
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
-
-echo 'after requires' . PHP_EOL;
 
 // Check for the secret key in the arg list
 if (!empty($argv[1])) {
