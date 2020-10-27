@@ -521,6 +521,10 @@ var admin = (function () {
 
     function _duesEmailsSendList() {
         console.log("in _duesEmailsSendList")        
+
+        $.get("sendEmails.php", function (data, status) {
+            //alert("Data: " + data + "\nStatus: " + status);
+        });
     }
 
     function _duesEmailsSend(event) {
