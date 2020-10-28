@@ -52,14 +52,11 @@ try {
         throw new Exception('User is NOT authorized (contact Administrator)', 500);
     }
 
-
     $conn = getConn($host, $dbadmin, $password, $dbname);
 
     //getConfigValDB($conn,'duesEmailTestAddress');
     $subject = getConfigValDB($conn,'hoaNameShort') . ' Dues Notice';
 
-
-    //$sql = "SELECT * FROM hoa_communications WHERE Email = 1 AND SentStatus = 'N' AND Parcel_ID = 'R72617307 0001' ORDER BY Parcel_ID ";
     $sql = "SELECT * FROM hoa_communications WHERE Email = 1 AND SentStatus = 'N' ORDER BY Parcel_ID ";
     $stmt = $conn->prepare($sql);	
     $stmt->execute();
@@ -68,7 +65,7 @@ try {
 
     //$firstNotice = false;
     $commType = '';
-    $maxRecs = 1;
+    $maxRecs = 2;
 
     $sendMailSuccess = false;
     if ($result->num_rows > 0) {
@@ -79,48 +76,51 @@ try {
             if ($cnt > $maxRecs) {
                 break;
             }
+
+            $CommID = $row["CommID"];
             $Parcel_ID = $row["Parcel_ID"];
             $hoaRec = getHoaRec($conn,$Parcel_ID);
             $messageStr = createDuesMessage($conn,$hoaRec);
 
-            // should the FROM be treasurer?
-            //$sendMailSuccess = sendHtmlEMail($row["EmailAddr"],$subject,$messageStr,$fromEmailAddress);
+            /*
             $sendMailSuccess = sendHtmlEMail($adminEmailList,$subject,$messageStr,$fromTreasurerEmailAddress);
             // If the Member email was successful, update the flag on the communication record
             if ($sendMailSuccess) {
-
+    // new common function to create the HTML dues email
+    // call common function to send the email
+    // if successful change sent to 'Y' and update Last changed timestamp
             }
+            */
 
-            echo 'Parcel Id = ' . $Parcel_ID . '</br>';
+            setCommEmailSent($conn,$CommID,$userRec->userName);
 
         }
     }
 
+    // Re-query list of the unsent Emails from the Communications table
+    $sql = "SELECT * FROM hoa_communications WHERE Email = 1 AND SentStatus = 'N' ORDER BY Parcel_ID ";
+    $stmt = $conn->prepare($sql);
+	$stmt->execute();
+	$result = $stmt->get_result();
+	$outputArray = array();
+    if ($result->num_rows > 0) {
+        while($row = $result->fetch_assoc()) {
+            array_push($outputArray,$row);
+        }
+    }
+    $stmt->close();
+
     $conn->close();
 
-
-    //function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
-
-    // Decode the PDF data stream from character back to binary
-    //$filedata = base64_decode($_POST['filedata']);
-
-    // *** assume called by a scheduled process
-    // config - MaxRecs to process
-    // loop through X (up to maxRecs) from Communication where Email and Send = 'N'
-    
-    // new common function to create the HTML dues email
-    // call common function to send the email
-    // if successful change sent to 'Y' and update Last changed timestamp
-    
-
-
-
-//	echo json_encode($sendEmailRec);
+    echo json_encode($outputArray);
 
 } catch(Exception $e) {
     //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
-	$sendEmailRec->result = 'ERROR';
-	$sendEmailRec->message = $e->getMessage();
-	echo json_encode($sendEmailRec);
+    echo json_encode(
+        array(
+            'error' => $e->getMessage(),
+            'error_code' => $e->getCode()
+        )
+    );
 }
 ?>

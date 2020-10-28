@@ -58,9 +58,9 @@ try {
         insertCommRec($conn,$param->parcelId,$param->ownerId,$param->commType,$param->commDesc);
         //$Mailing_Name='',$Email=0,$EmailAddr='',$SentStatus='N',$LastChangedBy='');
     } else {
-        $sql = 'UPDATE hoa_communications SET CommDesc=? WHERE CommID =?; ';
+        $sql = 'UPDATE hoa_communications SET CommDesc=? WHERE Parcel_ID=? AND CommID =?; ';
 	    $stmt = $conn->prepare($sql);
-	    $stmt->bind_param("si",$param->commDesc,$param->commId);
+	    $stmt->bind_param("ssi",$param->commDesc,$param->parcelId,$param->commId);
 	    $stmt->execute();
 	    $stmt->close();
     }

@@ -187,29 +187,6 @@ var communications = (function () {
             }
         });
 
-        /*
-        $.post("sendMail.php", {
-                toEmail: emailAddr,
-                subject: config.getVal('hoaNameShort') + ' Dues Notice',
-                messageStr: 'Attached is the ' + config.getVal('hoaName') + ' Dues Notice.  *** Reply to this email to request unsubscribe ***',
-                parcelId: hoaRec.Parcel_ID,
-                ownerId: hoaRec.ownersList[0].OwnerID,
-                filename: config.getVal('hoaNameShort') + 'DuesNotice.pdf',
-                filedata: btoa(pdfRec.pdf.output())
-        }, function (response) {
-            console.log("result from sendMail = " + response.result + ", ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID + ", response.sendEmailAddr = " + response.sendEmailAddr);
-            if (response.result == 'SUCCESS') {
-                    commDesc = noticeType + " Dues Notice emailed to " + response.sendEmailAddr;
-                    // log communication for notice created
-                    communications.LogCommunication(response.Parcel_ID, response.OwnerID, commType, commDesc);
-            } else {
-                    commDesc = noticeType + " Dues Notice, ERROR emailing to " + response.sendEmailAddr;
-                    //util.displayError(commDesc + ", ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID);
-                    console.log("Error sending Email, ParcelId = " + response.Parcel_ID + ", OwnerId = " + response.OwnerID + ", sendEmailAddr = " + response.sendEmailAddr + ", message = " + response.message);
-                }
-        }, 'json'); // End of $.post("sendMail.php"
-        */
-
     }
 
     function LogCommunication(parcelId,ownerId,commType,commDesc) {

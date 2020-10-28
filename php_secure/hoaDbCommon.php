@@ -406,13 +406,15 @@ function getHoaPaymentRec($conn,$parcelId,$transId) {
 
 // Create the dues notice message to be sent in emails
 //function createDuesMessage($conn,$hoaRec,$firstNotice) {
-function createDuesMessage($conn,$hoaRec) {
+function createDuesMessage($conn,$Parcel_ID) {
     $htmlMessageStr = '';
     $title = 'Member Dues Notice';
     $hoaName = getConfigValDB($conn,'hoaName');
 
     // Current System datetime
     $currSysDate = date_create();
+    // Get the current data for the property
+    $hoaRec = getHoaRec($conn,$Parcel_ID);
 
     $FY = 1991;
     // *** just use the highest FY - the first assessment record ***
@@ -1303,9 +1305,18 @@ function getHoaRecList($conn,$duesOwed=false,$skipEmail=false,$salesWelcome=fals
 function insertCommRec($conn,$Parcel_ID,$OwnerID,$CommType,$CommDesc,
     $Mailing_Name='',$Email=0,$EmailAddr='',$SentStatus='N',$LastChangedBy='') {
 
+        /*
     $sql = 'INSERT INTO hoa_communications (Parcel_ID,CommID,CreateTs,OwnerID,CommType,CommDesc,'
             .'Mailing_Name,Email,EmailAddr,SentStatus,LastChangedBy,LastChangedTs)'.
             ' VALUES(?,null,CURRENT_TIMESTAMP,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ';
+
+    $sql = 'INSERT INTO hoa_communications (Parcel_ID,CreateTs,OwnerID,CommType,CommDesc,'
+            .'Mailing_Name,Email,EmailAddr,SentStatus,LastChangedBy,LastChangedTs)'.
+            ' VALUES(?,CURRENT_TIMESTAMP,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ';
+       */
+    $sql = 'INSERT INTO hoa_communications (Parcel_ID,OwnerID,CommType,CommDesc,'
+            .'Mailing_Name,Email,EmailAddr,SentStatus,LastChangedBy)'.
+            ' VALUES(?,?,?,?,?,?,?,?,?); ';
 	$stmt = $conn->prepare($sql);
     $stmt->bind_param("sisssisss",$Parcel_ID,$OwnerID,$CommType,$CommDesc,
                                     $Mailing_Name,$Email,$EmailAddr,$SentStatus,$LastChangedBy);
@@ -1313,6 +1324,13 @@ function insertCommRec($conn,$Parcel_ID,$OwnerID,$CommType,$CommDesc,
 	$stmt->close();
 }
 
+function setCommEmailSent($conn,$Parcel_ID,$CommID,$LastChangedBy='') {
+    $sql = "UPDATE hoa_communications SET SentStatus='Y',LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID=? AND CommID=?";
+	$stmt = $conn->prepare($sql);
+    $stmt->bind_param("ssi",$LastChangedBy,$Parcel_ID,$CommID);
+    $stmt->execute();
+	$stmt->close();
+}
 
 //----------------------------------------------------------------------------------------------------------------
 // Common function to take the payment transaction information and update the HOA database for PAID, etc.

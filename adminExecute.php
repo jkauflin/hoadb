@@ -40,8 +40,8 @@ try {
     if ($userRec->userName == null || $userRec->userName == '') {
         throw new Exception('User is NOT logged in', 500);
     }
-    if ($userRec->userLevel < 1) {
-        throw new Exception('User is NOT authorized (contact Administrator)', 500);
+    if ($userRec->userLevel < 2) {
+        throw new Exception('User does not have Admin permissions', 500);
     }
 
 	$adminRec->result = "Not Valid";
@@ -52,6 +52,7 @@ try {
     $action = getParamVal("action");
 	$fiscalYear = getParamVal("fy");
 	$duesAmt = strToUSD(getParamVal("duesAmt"));
+	$parcelId = getParamVal("parcelId");
     //$firstNotice = paramBoolVal("firstNotice");
 
     $adminLevel = $userRec->userLevel;
@@ -59,19 +60,15 @@ try {
 	$conn = getConn($host, $dbadmin, $password, $dbname);
 
 	if ($action == "AddAssessments") {
-		if ($adminLevel < 2) {
-			$adminRec->message = "You do not have permissions to Add Assessments.";
-			$adminRec->result = "Not Valid";
-		} else {
-			// Loop through all the member properties
-			$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";		
-			$stmt = $conn->prepare($sql);
-			$stmt->execute();
-			$result = $stmt->get_result();
-			$stmt->close();
+	    // Loop through all the member properties
+		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";		
+		$stmt = $conn->prepare($sql);
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$stmt->close();
 			
-			$cnt = 0;
-			if ($result->num_rows > 0) {
+		$cnt = 0;
+		if ($result->num_rows > 0) {
 				$OwnerID = 0;
 				$Parcel_ID = "";
 				$FY = intval($fiscalYear);
@@ -122,20 +119,89 @@ try {
 					}
 
 				} // End of while($row = $result->fetch_assoc()) {
-			} // End of if ($result->num_rows > 0) {
+		} // End of if ($result->num_rows > 0) {
 			
-			$stmt->close();
+		$stmt->close();
 			
-			$adminRec->message = "Added assessments for Fiscal Year " . $FY . ' and a Dues Amount of $' . $duesAmt . ' for ' . $cnt . ' members';
-			$adminRec->result = "Valid";
-		}
+		$adminRec->message = "Added assessments for Fiscal Year " . $FY . ' and a Dues Amount of $' . $duesAmt . ' for ' . $cnt . ' members';
+        $adminRec->result = "Valid";
+        
 	// End of if ($action == "AddAssessments") {
 	} else if ($action == "PaymentReconcile") {
 
         $fileName = 'payments.CSV';
 
-    } else if ($action == "DuesEmailsCheckList") {
-        // Get a list of the unsent Emails from the Communications table
+    } else if (substr( $action,0,10) == "DuesEmails") {
+        $testMessage = '';
+        if ($action == "DuesEmailsTest") {
+            $subject = getConfigValDB($conn,'hoaNameShort') . ' Dues Notice TEST';
+            $EmailAddr = getConfigValDB($conn,'duesEmailTestAddress');
+            $messageStr = createDuesMessage($conn,$parcelId);
+            $sendMailSuccess = sendHtmlEMail($EmailAddr,$subject,$messageStr,$fromTreasurerEmailAddress);
+            $testMessage = ' (Test email sent for Parcel Id = ' . $parcelId . ')';
+
+        } else if ($action == "DuesEmailsCreateList") {
+            // Delete the previous list of any outstanding dues emails to send
+            $sql = "DELETE FROM hoa_communications WHERE Email = 1 AND SentStatus = 'N' ";
+    		$stmt = $conn->prepare($sql);
+    	    $stmt->execute();
+            $stmt->close();
+
+            // Create new list of dues emails to send
+            $commType = 'Dues Notice';
+            $commDesc = "Sent to Owner email";
+            // If creating Dues Letters, skip properties that don't owe anything
+            $duesOwed = true;
+            $hoaRecList = getHoaRecList($conn,$duesOwed);
+
+            // Loop through the list, find the ones with an email address
+            $cnt = 0;
+            foreach ($hoaRecList as $hoaRec)  {
+                $cnt = $cnt + 1;
+                foreach ($hoaRec->emailAddrList as $EmailAddr) {
+                    insertCommRec($conn,$hoaRec->Parcel_ID,$hoaRec->ownersList[0]->OwnerID,$commType,$commDesc,
+                        $hoaRec->ownersList[0]->Mailing_Name,1,$EmailAddr,'N',$userRec->userName);
+                }
+            }
+
+        } else if ($action == "DuesEmailsSendList") {
+            // Get list of outstanding dues emails to send
+            $sql = "SELECT * FROM hoa_communications WHERE Email = 1 AND SentStatus = 'N' ORDER BY Parcel_ID ";
+            $stmt = $conn->prepare($sql);	
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $stmt->close();
+
+            $subject = getConfigValDB($conn,'hoaNameShort') . ' Dues Notice';
+            //$firstNotice = false;
+            $maxRecs = (int) getConfigValDB($conn,'duesEmailBatchMax');
+
+            $sendMailSuccess = false;
+            if ($result->num_rows > 0) {
+                $cnt = 0;
+                $Parcel_ID = '';
+                while($row = $result->fetch_assoc()) {
+                    $cnt = $cnt + 1;
+                    if ($cnt > $maxRecs) {
+                        break;
+                    }
+
+                    $CommID = $row["CommID"];
+                    $Parcel_ID = $row["Parcel_ID"];
+                    $EmailAddr = $row["EmailAddr"];
+                    $messageStr = createDuesMessage($conn,$Parcel_ID);
+
+                    $sendMailSuccess = sendHtmlEMail($EmailAddr,$subject,$messageStr,$fromTreasurerEmailAddress);
+                    // If the Member email was successful, update the flag on the communication record
+                    if ($sendMailSuccess) {
+                        // if successful change sent to 'Y' and update Last changed timestamp
+                        setCommEmailSent($conn,$Parcel_ID,$CommID,$userRec->userName);
+                    }
+                }
+            }
+        }
+
+        // After all actions, Get a list of the unsent Emails from the Communications table
         $sql = "SELECT * FROM hoa_communications WHERE Email = 1 AND SentStatus = 'N' ORDER BY Parcel_ID ";
 		$stmt = $conn->prepare($sql);
 	    $stmt->execute();
@@ -148,59 +214,8 @@ try {
         }
         $stmt->close();
         $adminRec->commList = $outputArray;
-
-    } else if ($action == "DuesEmailsCreateList" || $action == "DuesEmailsSubmitList") {
-        $commType = 'Dues Notice';
-        $commDesc = "Sent to Owner email";
-
-        // If creating Dues Letters, skip properties that don't owe anything
-        $duesOwed = true;
-        $hoaRecList = getHoaRecList($conn,$duesOwed);
-        $adminRec->commList = array();
-
-        // Loop through the list, find the ones with an email address
-        $cnt = 0;
-        foreach ($hoaRecList as $hoaRec)  {
-            $cnt = $cnt + 1;
-            foreach ($hoaRec->emailAddrList as $EmailAddr) {
-                $hoaCommRec = new HoaCommRec();
-                $hoaCommRec->Parcel_ID = $hoaRec->Parcel_ID;
-                $hoaCommRec->OwnerID = $hoaRec->ownersList[0]->OwnerID;
-                $hoaCommRec->CommType = $commType;
-                $hoaCommRec->CommDesc = $commDesc;
-                $hoaCommRec->Mailing_Name = $hoaRec->ownersList[0]->Mailing_Name;
-                $hoaCommRec->Email = 1;
-                $hoaCommRec->EmailAddr = $EmailAddr;
-                $hoaCommRec->SentStatus = 'N';
-                array_push($adminRec->commList,$hoaCommRec);
-
-                if ($action == "DuesEmailsSubmitList") {
-                    insertCommRec($conn,$hoaRec->Parcel_ID,$hoaRec->ownersList[0]->OwnerID,$commType,$commDesc,
-                        $hoaRec->ownersList[0]->Mailing_Name,1,$EmailAddr,'N',$userRec->userName);
-                }
-            }
-        }
-        //$adminRec->message = "Completed data lookup for Dues Emails cnt = $cnt";
-
-            /*
-            $adminRec->message = "No Test dues Email sent - make sure test Parcel has dues owed";
-            $adminRec->hoaRecList = getHoaRecList($conn,$duesOwed,false,false,false,false,true);
-            $messageStr = '';
-            foreach ($adminRec->hoaRecList as $hoaRec)  {
-                $subject = 'GRHA TEST Dues Email';
-                $messageStr = createDuesMessage($conn,$hoaRec,$firstNotice);
-                $duesEmailTestAddress = getConfigValDB($conn,'duesEmailTestAddress');
-                $sendMailSuccess = sendHtmlEMail($duesEmailTestAddress,$subject,$messageStr,$fromEmailAddress);
-                // If the Member email was successful, update the flag on the communication record
-                if ($sendMailSuccess) {
-                    $adminRec->message = "Test dues Email sent";
-                } else {
-                    $adminRec->message = "Test dues Email failed";
-                }
-            }
-            */
-
-		$adminRec->result = "Valid";
+        $adminRec->message = "Number of unsent Dues Notice Emails = " . count($adminRec->commList) . $testMessage;
+        $adminRec->result = "Valid";
 	}
 
 	// Close db connection
@@ -213,14 +228,6 @@ try {
 	$adminRec->message = $e->getMessage();
     $adminRec->result = "Not Valid";
 	echo json_encode($adminRec);
-    /*
-    echo json_encode(
-        array(
-            'error' => $e->getMessage(),
-            'error_code' => $e->getCode()
-        )
-    );
-    */
 }
     
 ?>
