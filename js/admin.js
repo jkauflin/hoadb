@@ -561,6 +561,26 @@ var admin = (function () {
         //console.log("in _logPayment, util.getJSONfromInputs = " + util.getJSONfromInputs(null, paramMap));
 
         var url = 'handlePaymentTransaction.php';
+
+// leave dataType out so jquery has to guess - see if it returns errors from PHP
+
+ /* Get from elements values */
+ /*
+ var values = $(this).serialize();
+
+ data: $('#frm_message_board').serialize(),
+  data: $('#form_content').serialize(),
+
+$.post('/form.php', serializedData, function(response) {
+    // Log the response to the console
+    console.log("Response: "+response);
+});
+
+ var msg = $.parseJSON(msg);
+                    if(msg.success=='yes')
+                    {
+*/
+
         $.ajax(url, {
             type: 'POST',
             contentType: "application/json",
