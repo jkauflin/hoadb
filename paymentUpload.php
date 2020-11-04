@@ -36,21 +36,6 @@ try {
     $adminRec->userName = $userRec->userName;
     $adminRec->userLevel = $userRec->userLevel;
 
-    /*
-    $action = getParamVal("action");
-	$fiscalYear = getParamVal("fy");
-	$duesAmt = strToUSD(getParamVal("duesAmt"));
-	$duesEmailTestParcel = getParamVal("duesEmailTestParcel");
-    */
-    
-/*
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  // collect value of input field
-  $name = $_POST['fname'];
-  if (empty($name)) {
-*/
-
-
     $adminLevel = $userRec->userLevel;
 	if ($adminLevel < 2) {
 		$adminRec->message = "You do not have permissions to Add Assessments.";
