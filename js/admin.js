@@ -413,8 +413,42 @@ var admin = (function () {
     function _paymentReconcile(fileUploadForm) {
         //console.log("in paymentReconcile");
         $FileUploadModal.modal('hide');
+        var formData = new FormData(fileUploadForm);
+
         // Call service to upload the payments file and compare with database records
         var url = 'paymentUpload.php';
+
+        $.post(url, formData, function (response) {
+            console.log("Response: " + response);
+            /*
+            if (result.error) {
+                console.log("error = " + result.error);
+                $ajaxError.html("<b>" + result.error + "</b>");
+            } else {
+                var adminRec = result
+                paymentList = adminRec.paymentList;
+                _paymentReconcileDisplay(adminRec.message);
+            }
+            */
+
+        });
+
+
+// leave dataType out so jquery has to guess - see if it returns errors from PHP
+
+    /* Get from elements values */
+    /*
+    var values = $(this).serialize();
+   
+    data: $('#frm_message_board').serialize(),
+     data: $('#form_content').serialize(),
+
+     var msg = $.parseJSON(msg);
+                       if(msg.success=='yes')
+                       {
+   */
+
+/*
         $.ajax(url, {
             type: 'POST',
             data: new FormData(fileUploadForm),
@@ -437,6 +471,8 @@ var admin = (function () {
             console.log('Error in AJAX request to ' + url + ', status = ' + status + ', error = ' + error)
             $ajaxError.html("<b>" + "Error in request" + "</b>");
         })
+*/
+
     }
 
     function _paymentReconcileDisplay(message) {
@@ -561,26 +597,6 @@ var admin = (function () {
         //console.log("in _logPayment, util.getJSONfromInputs = " + util.getJSONfromInputs(null, paramMap));
 
         var url = 'handlePaymentTransaction.php';
-
-// leave dataType out so jquery has to guess - see if it returns errors from PHP
-
- /* Get from elements values */
- /*
- var values = $(this).serialize();
-
- data: $('#frm_message_board').serialize(),
-  data: $('#form_content').serialize(),
-
-$.post('/form.php', serializedData, function(response) {
-    // Log the response to the console
-    console.log("Response: "+response);
-});
-
- var msg = $.parseJSON(msg);
-                    if(msg.success=='yes')
-                    {
-*/
-
         $.ajax(url, {
             type: 'POST',
             contentType: "application/json",

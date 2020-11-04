@@ -36,11 +36,13 @@ try {
     $adminRec->userName = $userRec->userName;
     $adminRec->userLevel = $userRec->userLevel;
 
+    /*
     $action = getParamVal("action");
 	$fiscalYear = getParamVal("fy");
 	$duesAmt = strToUSD(getParamVal("duesAmt"));
 	$duesEmailTestParcel = getParamVal("duesEmailTestParcel");
-
+    */
+    
 /*
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   // collect value of input field
