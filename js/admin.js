@@ -372,6 +372,8 @@ var admin = (function () {
         // Prevent the event from trying to execute the form action
         event.preventDefault();
 
+        $ResultMessage.html("Executing request...(please wait)");
+
         var fileUploadForm = document.getElementById('FileUploadForm');
         if (fileUploadForm.classList.contains('PaymentReconcile')) {
             //console.log("in _handleFileUplodad, action = PaymentReconcile");
