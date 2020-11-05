@@ -11,6 +11,7 @@
  * 2020-08-01 JJK   Re-factored to use jjklogin for authentication
  * 2020-08-25 JJK   Added WelcomeSent
  * 2020-10-03 JJK   Added query logic for Mailing List reports
+ * 2020-11-04 JJK   Added Mark as Mailed logic (Jackson's 18th birthday)
  *============================================================================*/
 require_once 'vendor/autoload.php'; 
 
@@ -220,8 +221,8 @@ try {
     	
     } else {
         // The general Reports query - creating a list of HoaRec records (with all data for the Property)
-        // This PHP service is about getting the list of HOA records, then the JS will decide what to use 
-        // and the logic for each particular report
+        // This PHP service is about getting the list of HOA records, then the javascript will display the
+        // records and provide downloads for each particular report
     	$parcelId = "";
     	$ownerId = "";
     	$fy = 0;
@@ -254,58 +255,37 @@ try {
 
         $outputArray = getHoaRecList($conn,$duesOwed,$skipEmail,$salesWelcome,$currYearPaid,$currYearUnpaid);
 
-                /*
-    	$cnt = 0;
-    		// Loop through all the member properties
-    		while($row = $result->fetch_assoc()) {
-    			$cnt = $cnt + 1;
-    	
-    			$parcelId = $row["Parcel_ID"];
-    			$ownerId = $row["OwnerID"];
-        
-                
-                if ($userRec->userLevel > 1) {
-                    if ($logDuesLetterSend) {
+        if ($userRec->userLevel > 1) {
+            foreach ($outputArray as $hoaRec)  {
+                // If flag is set, mark the Welcome Letters as MAILED
+                if ($logWelcomeLetters) {
+                    $stmt = $conn->prepare("UPDATE hoa_sales SET WelcomeSent='Y',LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE PARID = ? AND WelcomeSent = 'S' ; ");
+	                $stmt->bind_param("ss",$userRec->userName,$parcelId);	
+	                $stmt->execute();
+	                $stmt->close();
+                }
+
+                if ($logDuesLetterSend) {
+                    $commType = 'Dues Notice';
+                    $commDesc = "Postal mail notice sent";
+                    $Email = false;
+                    $SentStatus = 'Y';
+
+                    if ($hoaRec->ownersList[0]->AlternateMailing) {
+                        $Addr = $hoaRec->ownersList[0]->Alt_Address_Line1;
+                    } else {
+                        $Addr = $hoaRec->Parcel_Location;
                     }
 
-                    // If flag is set, mark the Welcome Letters as MAILED
-                    if ($logWelcomeLetters) {
-                        $stmt = $conn->prepare("UPDATE hoa_sales SET WelcomeSent='Y',LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE PARID = ? AND WelcomeSent = 'S' ; ");
-	                    $stmt->bind_param("ss",$userRec->userName,$parcelId);	
-	                    $stmt->execute();
-	                    $stmt->close();
-                    }
-                }
+                    insertCommRec($conn,$hoaRec->Parcel_ID,$hoaRec->ownersList[0]->OwnerID,$commType,$commDesc,
+                        $hoaRec->ownersList[0]->Mailing_Name,$Email,
+                        $Addr,$SentStatus,$userRec->userName);
 
-                var commType = 'Dues Notice';
-                $commType = '1st Dues Notice';
-                $commType = '2nd Dues Notice';
+                } // if ($logDuesLetterSend) {
 
+            } // Loop through hoa recs
+        } // If admin
 
-                // Get a displayAddress for the Communication record
-                displayAddress = hoaRec.Parcel_Location;
-                if (hoaRec.ownersList[0].AlternateMailing) {
-                    displayAddress = hoaRec.ownersList[0].Alt_Address_Line1;
-                }
-                commDesc = noticeType + " Notice for postal mail created for " + displayAddress;
-                // log communication for notice created
-                communications.LogCommunication(hoaRec.Parcel_ID, hoaRec.ownersList[0].OwnerID, commType, commDesc);
-
-                // Get a displayAddress for the Communication record
-                displayAddress = hoaRec.Parcel_Location;
-                if (hoaRec.ownersList[0].AlternateMailing) {
-                    displayAddress = hoaRec.ownersList[0].Alt_Address_Line1;
-                }
-
-                commDesc = "Notice for postal mail mailed for " + displayAddress;
-                // log communication for notice created
-                communications.LogCommunication(hoaRec.Parcel_ID, hoaRec.ownersList[0].OwnerID, commType, commDesc);
-
-
-    			array_push($outputArray,$hoaRec);
-    		}
-                */
-    	
     } // End of } else if ($reportName == "DuesReport") {
     	
     // Close db connection

@@ -1304,16 +1304,6 @@ function getHoaRecList($conn,$duesOwed=false,$skipEmail=false,$salesWelcome=fals
 
 function insertCommRec($conn,$Parcel_ID,$OwnerID,$CommType,$CommDesc,
     $Mailing_Name='',$Email=0,$EmailAddr='',$SentStatus='N',$LastChangedBy='') {
-
-        /*
-    $sql = 'INSERT INTO hoa_communications (Parcel_ID,CommID,CreateTs,OwnerID,CommType,CommDesc,'
-            .'Mailing_Name,Email,EmailAddr,SentStatus,LastChangedBy,LastChangedTs)'.
-            ' VALUES(?,null,CURRENT_TIMESTAMP,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ';
-
-    $sql = 'INSERT INTO hoa_communications (Parcel_ID,CreateTs,OwnerID,CommType,CommDesc,'
-            .'Mailing_Name,Email,EmailAddr,SentStatus,LastChangedBy,LastChangedTs)'.
-            ' VALUES(?,CURRENT_TIMESTAMP,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP); ';
-       */
     $sql = 'INSERT INTO hoa_communications (Parcel_ID,OwnerID,CommType,CommDesc,'
             .'Mailing_Name,Email,EmailAddr,SentStatus,LastChangedBy)'.
             ' VALUES(?,?,?,?,?,?,?,?,?); ';
