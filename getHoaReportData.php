@@ -13,7 +13,7 @@
  * 2020-10-03 JJK   Added query logic for Mailing List reports
  * 2020-11-04 JJK   Added Mark as Mailed logic (Jackson's 18th birthday)
  *============================================================================*/
-require_once 'vendor/autoload.php'; 
+require_once 'vendor/autoload.php';
 
 // Common functions
 require_once 'php_secure/commonUtil.php';
