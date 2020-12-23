@@ -54,80 +54,48 @@ function getParamVal($paramName) {
 	return $paramVal;
 }
 
-function downloadUrlToFile($url, $outFileName)
+function downloadUrlToFile($url)
 {
     try {
-    	//if (is_file($url)) {
-    	//	copy($url, $outFileName); // download xml file
-    	//} else {
-            /*
-    		$options = array(
-    				CURLOPT_FILE    => fopen($outFileName, 'w'),
-    				CURLOPT_TIMEOUT =>  30, // set this to 30 seconds
-    				CURLOPT_URL     => $url
-    		);
-    		
-    		$ch = curl_init();
-    		curl_setopt_array($ch, $options);
-    		curl_exec($ch);
-            curl_close($ch);
-            */
-        //}
 
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_POST, 0); 
-		curl_setopt($ch,CURLOPT_URL,$url); 
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
-		$file_content = curl_exec($ch);
-		curl_close($ch);
- 
+//sys_get_temp_dir()
+//CURLOPT_FILE	The file that the transfer should be written to. The default is STDOUT (the browser window).
+
+        $currTimestampStr = date("YmdHis");
+        $tempFilename = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $currTimestampStr . 'jjktemp.zip';
+	    $tempFile = fopen($tempFilename, 'w');
+
+        // create a new cURL resource
+        $ch = curl_init();
+        // set URL and other appropriate options
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_FILE, $tempFile);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        curl_setopt($ch, CURLOPT_POST, 0); // don't use HTTP POST
+        // CURLOPT_HTTPGET is default
+        // CURL_HTTP_VERSION_1_1
+		//curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+
+        // grab URL and pass it to the browser
+        curl_exec($ch);
+		//$file_content = curl_exec($ch);
+
+        // close cURL resource, and free up system resources
+        curl_close($ch);
+        fclose($tempFile);
+
+        /*
 		$downloaded_file = fopen($outFileName, 'w');
 		fwrite($downloaded_file, $file_content);
-		fclose($downloaded_file);
+        fclose($downloaded_file);
+        */
+
+        return $tempFilename;
 
     } catch(Exception $e) {
         error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
         return false;
     }
-
-    
-/*
-$options = array(
-  CURLOPT_FILE    => '/path/to/download/the/file/to.zip',
-  CURLOPT_TIMEOUT =>  28800, // set this to 8 hours so we dont timeout on big files
-  CURLOPT_URL     => 'http://remoteserver.com/path/to/big/file.zip',
-);
-$ch = curl_init();
-curl_setopt_array($ch, $options);
-curl_exec($ch);
-curl_close($ch);
-
-$options = array(
-          CURLOPT_FILE    => fopen($outFileName, 'w'),
-          CURLOPT_TIMEOUT =>  28800, // set this to 8 hours so we dont timeout on big files
-          CURLOPT_URL     => $url
-        );
-        $ch = curl_init();
-        curl_setopt_array($ch, $options);
-        curl_exec($ch);
-        curl_close($ch);
-
-function download_remote_file_with_curl($file_url, $save_to)
-	{
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_POST, 0); 
-		curl_setopt($ch,CURLOPT_URL,$file_url); 
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
-		$file_content = curl_exec($ch);
-		curl_close($ch);
- 
-		$downloaded_file = fopen($save_to, 'w');
-		fwrite($downloaded_file, $file_content);
-		fclose($downloaded_file);
- 
-	}
-*/
-
 }
 
 function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {

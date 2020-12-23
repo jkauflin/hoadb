@@ -140,9 +140,9 @@ try {
         $currTimestampStr = date("Y-m-d H:i:s");
         $salesYear = substr($currTimestampStr,0,4);
         $url = getConfigValDB($conn,'countySalesDataUrl') . $salesYear . '.ZIP';
-        $zipFileName = 'SALES_' . $salesYear . '.ZIP';
+        //$zipFileName = 'SALES_' . $salesYear . '.ZIP';
         //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Sales file url = $url " . PHP_EOL, 3, LOG_FILE);
-        downloadUrlToFile($url, $zipFileName);
+        $zipFileName = downloadUrlToFile($url);
         //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", After download " . PHP_EOL, 3, LOG_FILE);
 
         // get file's extension
