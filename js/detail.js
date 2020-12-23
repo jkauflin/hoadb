@@ -32,6 +32,7 @@
  * 2018-11-25 JJK   Moved Dues Statement back to here
  * 2018-11-27 JJK   Added EmailAddr2
  * 2020-08-03 JJK   Re-factored for new error handling
+ * 2020-12-22 JJK   Re-factored for Bootstrap 4
  *============================================================================*/
 var detail = (function(){
     'use strict';
@@ -46,8 +47,6 @@ var detail = (function(){
     var $document = $(document);
     var $moduleDiv = $('#DetailPage');
     var $ajaxError = $moduleDiv.find(".ajaxError");
-    // Figure out a better way to do this
-    var $displayPage = $document.find('#navbar a[href="#DetailPage"]');
 
     var $propertyDetail = $moduleDiv.find("#PropertyDetail");
     var $propertyOwners = $moduleDiv.find("#PropertyOwners");
@@ -102,8 +101,6 @@ var detail = (function(){
     //$DuesStatementButton.click(createDuesStatement);
     //$DownloadDuesStatement.click(downloadDuesStatement);
 
-
-
     //=================================================================================================================
     // Module methods
     function getHoaRec(value) {
@@ -116,14 +113,12 @@ var detail = (function(){
         $.getJSON("getHoaDbData.php", "parcelId=" + parcelId, function (outHoaRec) {
             hoaRec = outHoaRec;
             _render();
-             
-            $displayPage.tab('show');
+            util.displayTabPage('DetailPage');
         });
     }
 
     function _render() {
         var tr = '';
-
         // Get the admin level to see if user is allowed to edit data
         if (hoaRec.adminLevel > 1) {
             tr += '<tr><th>Parcel Id:</th><td><a data-parcelId="' + hoaRec.Parcel_ID + '" href="#">' + hoaRec.Parcel_ID + '</a></td></tr>';
@@ -132,24 +127,22 @@ var detail = (function(){
         }
         tr += '<tr><th>Lot No:</th><td>' + hoaRec.LotNo + '</td></tr>';
         tr += '<tr><th>Location: </th><td>' + hoaRec.Parcel_Location + '</td></tr>';
-        tr += '<tr><th class="hidden-xs hidden-sm">Street No: </th><td class="hidden-xs hidden-sm">' + hoaRec.Property_Street_No + '</td></tr>';
-        tr += '<tr><th class="hidden-xs hidden-sm">Street Name: </th><td class="hidden-xs hidden-sm">' + hoaRec.Property_Street_Name + '</td></tr>';
-        tr += '<tr><th class="hidden-xs">City: </th><td class="hidden-xs">' + hoaRec.Property_City + '</td></tr>';
-        tr += '<tr><th class="hidden-xs">State: </th><td class="hidden-xs">' + hoaRec.Property_State + '</td></tr>';
-        tr += '<tr><th class="hidden-xs">Zip Code: </th><td class="hidden-xs">' + hoaRec.Property_Zip + '</td></tr>';
+        tr += '<tr><th class="d-none d-md-table-cell">Street No: </th><td class="d-none d-md-table-cell">' + hoaRec.Property_Street_No + '</td></tr>';
+        tr += '<tr><th class="d-none d-md-table-cell">Street Name: </th><td class="d-none d-md-table-cell">' + hoaRec.Property_Street_Name + '</td></tr>';
+        tr += '<tr><th class="d-none d-md-table-cell">City: </th><td class="d-none d-md-table-cell">' + hoaRec.Property_City + '</td></tr>';
+        tr += '<tr><th class="d-none d-md-table-cell">State: </th><td class="d-none d-md-table-cell">' + hoaRec.Property_State + '</td></tr>';
+        tr += '<tr><th class="d-none d-md-table-cell">Zip Code: </th><td class="d-none d-md-table-cell">' + hoaRec.Property_Zip + '</td></tr>';
         tr += '<tr><th>Total Due: </th><td>$' + util.formatMoney(hoaRec.TotalDue) + '</td></tr>';
 
-        //tr += '<tr><th class="hidden-xs hidden-sm">Member: </th><td class="hidden-xs hidden-sm">' + util.setCheckbox(hoaRec.Member) + '</td></tr>';
+        //tr += '<tr><th class="d-none d-md-table-cell">Member: </th><td class="d-none d-md-table-cell">' + util.setCheckbox(hoaRec.Member) + '</td></tr>';
         //tr += '<tr><th>Vacant: </th><td>' + util.setCheckbox(hoaRec.Vacant) + '</td></tr>';
-        tr += '<tr><th>Rental: </th><td>' + util.setCheckbox(hoaRec.Rental) + '</td></tr>';
-        tr += '<tr><th>Managed: </th><td>' + util.setCheckbox(hoaRec.Managed) + '</td></tr>';
-        tr += '<tr><th>Foreclosure: </th><td>' + util.setCheckbox(hoaRec.Foreclosure) + '</td></tr>';
-        tr += '<tr><th>Bankruptcy: </th><td>' + util.setCheckbox(hoaRec.Bankruptcy) + '</td></tr>';
-        tr += '<tr><th>ToBe Released: </th><td>' + util.setCheckbox(hoaRec.Liens_2B_Released) + '</td></tr>';
+        tr += '<tr><th class="d-none d-md-table-cell">Rental: </th><td class="d-none d-md-table-cell">' + util.setCheckbox(hoaRec.Rental) + '</td></tr>';
+        tr += '<tr><th class="d-none d-md-table-cell">Managed: </th><td class="d-none d-md-table-cell">' + util.setCheckbox(hoaRec.Managed) + '</td></tr>';
+        tr += '<tr><th class="d-none d-md-table-cell">Foreclosure: </th><td class="d-none d-md-table-cell">' + util.setCheckbox(hoaRec.Foreclosure) + '</td></tr>';
+        tr += '<tr><th class="d-none d-md-table-cell">Bankruptcy: </th><td class="d-none d-md-table-cell">' + util.setCheckbox(hoaRec.Bankruptcy) + '</td></tr>';
+        tr += '<tr><th class="d-none d-md-table-cell">ToBe Released: </th><td class="d-none d-md-table-cell">' + util.setCheckbox(hoaRec.Liens_2B_Released) + '</td></tr>';
         tr += '<tr><th>Use Email: </th><td>' + util.setCheckbox(hoaRec.UseEmail) + '</td></tr>';
         tr += '<tr><th>Comments: </th><td>' + hoaRec.Comments + '</td></tr>';
-        //tr += '<tr><th>AdminLevel: </th><td>' + hoaRec.adminLevel + '</td></tr>';
-        //tr += '<tr><th>UserName: </th><td>' + hoaRec.userName + '</td></tr>';
 
         $propDetail.html(tr);
 
@@ -162,9 +155,9 @@ var detail = (function(){
                 tr = tr + '<th>OwnId</th>';
                 tr = tr + '<th>Owner</th>';
                 tr = tr + '<th>Phone</th>';
-                tr = tr + '<th class="hidden-xs">Date Purchased</th>';
-                tr = tr + '<th class="hidden-xs">Alt Address</th>';
-                tr = tr + '<th class="hidden-xs">Comments</th>';
+                tr = tr + '<th class="d-none d-md-table-cell">Date Purchased</th>';
+                tr = tr + '<th class="d-none d-md-table-cell">Alt Address</th>';
+                tr = tr + '<th class="d-none d-md-table-cell">Comments</th>';
                 tr = tr + '</tr>';
             }
             tr = tr + '<tr>';
@@ -181,9 +174,9 @@ var detail = (function(){
                 tr = tr + '<td>' + rec.Owner_Name1 + ' ' + rec.Owner_Name2 + '</a></td>';
             }
             tr = tr + '<td>' + rec.Owner_Phone + '</td>';
-            tr = tr + '<td class="hidden-xs">' + rec.DatePurchased + '</td>';
-            tr = tr + '<td class="hidden-xs">' + rec.Alt_Address_Line1 + '</td>';
-            tr = tr + '<td class="hidden-xs">' + rec.Comments + '</td>';
+            tr = tr + '<td class="d-none d-md-table-cell">' + rec.DatePurchased + '</td>';
+            tr = tr + '<td class="d-none d-md-table-cell">' + rec.Alt_Address_Line1 + '</td>';
+            tr = tr + '<td class="d-none d-md-table-cell">' + rec.Comments + '</td>';
             tr = tr + '</tr>';
         });
         $propOwners.html(tr);
@@ -203,11 +196,11 @@ var detail = (function(){
                 tr = tr + '<th>Dues Amt</th>';
                 tr = tr + '<th>Lien</th>';
                 tr = tr + '<th>Paid</th>';
-                tr = tr + '<th>Non-Collectible</th>';
-                tr = tr + '<th class="hidden-xs">Date Paid</th>';
-                tr = tr + '<th class="hidden-xs hidden-sm">Date Due</th>';
-                tr = tr + '<th class="hidden-xs">Payment</th>';
-                tr = tr + '<th class="hidden-xs">Comments</th>';
+                tr = tr + '<th class="d-none d-sm-table-cell>Non-Collectible</th>';
+                tr = tr + '<th class="d-none d-md-table-cell">Date Paid</th>';
+                tr = tr + '<th class="d-none d-md-table-cell">Date Due</th>';
+                tr = tr + '<th class="d-none d-md-table-cell">Payment</th>';
+                tr = tr + '<th class="d-none d-sm-table-cell">Comments</th>';
                 tr = tr + '</tr>';
                 TaxYear = rec.DateDue.substring(0, 4);
             }
@@ -227,13 +220,13 @@ var detail = (function(){
                 } else if (rec.Disposition == 'Paid') {
                     ButtonType = 'btn-success';
                 } else {
-                    ButtonType = 'btn-default';
+                    ButtonType = 'btn-sm btn-info';
                 }
-                LienButton = '<a data-parcelId="' + hoaRec.Parcel_ID + '" data-fy="' + rec.FY + '" href="#" class="btn ' + ButtonType + ' btn-xs" role="button">Lien</a>';
+                LienButton = '<a data-parcelId="' + hoaRec.Parcel_ID + '" data-fy="' + rec.FY + '" href="#" class="btn ' + ButtonType + ' btn-sm" role="button">Lien</a>';
             } else {
                 // If NOT PAID and past the due date, add a Create Lien button to go to edit
                 if (!rec.Paid && rec.DuesDue && !rec.NonCollectible) {
-                    LienButton = '<a data-parcelId="' + hoaRec.Parcel_ID + '" data-fy="' + rec.FY + '" href="#" class="btn btn-warning btn-xs" role="button">Create Lien</a>';
+                    LienButton = '<a data-parcelId="' + hoaRec.Parcel_ID + '" data-fy="' + rec.FY + '" href="#" class="btn btn-warning btn-sm" role="button">Create Lien</a>';
                 }
             }
 
@@ -241,35 +234,34 @@ var detail = (function(){
             tr = tr + '<td>' + LienButton + '</td>';
 
             tr = tr + '<td>' + util.setCheckbox(rec.Paid) + '</td>';
-            tr = tr + '<td>' + util.setCheckbox(rec.NonCollectible) + '</td>';
-            tr = tr + '<td class="hidden-xs">' + rec.DatePaid + '</td>';
-            tr = tr + '<td class="hidden-xs hidden-sm">' + rec.DateDue + '</td>';
-            tr = tr + '<td class="hidden-xs">' + rec.PaymentMethod + '</td>';
-            tr = tr + '<td class="hidden-xs">' + rec.Comments + ' ' + rec.LienComment + '</td>';
+            tr = tr + '<td class="d-none d-sm-table-cell>' + util.setCheckbox(rec.NonCollectible) + '</td>';
+            tr = tr + '<td class="d-none d-md-table-cell">' + rec.DatePaid + '</td>';
+            tr = tr + '<td class="d-none d-md-table-cell">' + rec.DateDue + '</td>';
+            tr = tr + '<td class="d-none d-md-table-cell">' + rec.PaymentMethod + '</td>';
+            tr = tr + '<td class="d-none d-sm-table-cell">' + rec.Comments + ' ' + rec.LienComment + '</td>';
             tr = tr + '</tr>';
         });
         $propAssessments.html(tr);
 
         // Set the buttons from configuration values and current parcel id
         var mcTreasURI = config.getVal('countyTreasurerUrl') + '?parid=' + hoaRec.Parcel_ID + '&taxyr=' + TaxYear + '&own1=' + ownName1;
-        $MCTreasLink.html('<a href="' + encodeURI(mcTreasURI) + '" class="btn btn-primary" role="button" target="_blank">County<br>Treasurer</a>');
+        $MCTreasLink.html('<a href="' + encodeURI(mcTreasURI) + '" class="btn btn-sm btn-primary mr-1 mb-1 float-left d-none d-md-block" role="button" target="_blank">County<br>Treasurer</a>');
 
         var mcAuditorURI = config.getVal('countyAuditorUrl') + '?mode=PARID';
-        $MCAuditorLink.html('<a href="' + encodeURI(mcAuditorURI) + '" class="btn btn-primary" role="button" target="_blank">County<br>Property</a>');
+        $MCAuditorLink.html('<a href="' + encodeURI(mcAuditorURI) + '" class="btn btn-sm btn-primary mr-1 mb-1 float-left d-none d-md-block" role="button" target="_blank">County<br>Property</a>');
 
-        $DuesStatement.html('<a id="DuesStatementButton" data-parcelId="' + hoaRec.Parcel_ID + '" data-ownerId="' + currOwnerID + '" href="#" class="btn btn-success" role="button">Dues Statement</a>');
+        $DuesStatement.html('<a id="DuesStatementButton" data-parcelId="' + hoaRec.Parcel_ID + '" data-ownerId="' + currOwnerID + '" href="#" class="btn btn-sm btn-success mr-1 mb-1 float-left" role="button">Dues Statement</a>');
 
-        $Communications.html('<a id="CommunicationsButton" data-parcelId="' + hoaRec.Parcel_ID + '" data-ownerId="' + currOwnerID + '" href="#" class="btn btn-info" role="button">Communications</a>');
+        $Communications.html('<a id="CommunicationsButton" data-parcelId="' + hoaRec.Parcel_ID + '" data-ownerId="' + currOwnerID + '" href="#" class="btn btn-sm btn-info mr-1 mb-1 float-left" role="button">Communications</a>');
 
         if (hoaRec.adminLevel > 1) {
-            $NewOwner.html('<a id="NewOwnerButton" data-parcelId="' + hoaRec.Parcel_ID + '" data-ownerId="' + currOwnerID + '" href="#" class="btn btn-warning" role="button">New Owner</a>');
-            //$AddAssessment.html('<a id="AddAssessmentButton" href="#" class="btn btn-default" role="button">Add Assessment</a>');
+            $NewOwner.html('<a id="NewOwnerButton" data-parcelId="' + hoaRec.Parcel_ID + '" data-ownerId="' + currOwnerID + '" href="#" class="btn btn-sm btn-warning mr-1 mb-1 float-left" role="button">New Owner</a>');
+            //$AddAssessment.html('<a id="AddAssessmentButton" href="#" class="btn btn-sm btn-info" role="button">Add Assessment</a>');
         }
 
     } // function _render() {
 
     function _editProperty(event) {
-         
         $.getJSON("getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId"), function (editHoaRec) {
             _formatPropertyDetailEdit(editHoaRec);
              
@@ -308,8 +300,8 @@ var detail = (function(){
         $EditTableBody.html(tr);
 
         tr = '<form class="form-inline" role="form">' +
-            '<a id="SavePropertyEdit" data-parcelId="' + editHoaRec.Parcel_ID + '" href="#" class="btn btn-primary" role="button">Save</a>' +
-            '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>' +
+            '<a id="SavePropertyEdit" data-parcelId="' + editHoaRec.Parcel_ID + '" href="#" class="btn btn-sm btn-primary m-1" role="button">Save</a>' +
+            '<button type="button" class="btn btn-sm btn-info m-1" data-dismiss="modal">Close</button>' +
             '</form>';
         $EditPageButton.html(tr);
 
@@ -340,7 +332,6 @@ var detail = (function(){
     };	// End of $(document).on("click","#SavePropertyEdit",function(){
 
     function _editOwner(event) {
-         
         $.getJSON("getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&ownerId=" + event.target.getAttribute("data-ownerId"), 
         function (editHoaRec) {
             var createNew = false;
@@ -350,8 +341,7 @@ var detail = (function(){
         });
     };
 
-    function _newOwner() {
-         
+    function _newOwner(event) {
         $.getJSON("getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&ownerId=" + event.target.getAttribute("data-ownerId"), 
         function (editHoaRec) {
             var createNew = true;
@@ -361,8 +351,7 @@ var detail = (function(){
         });
     };
 
-    function _salesNewOwnerProcess() {
-         
+    function _salesNewOwnerProcess(event) {
         $.getJSON("getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&saleDate=" + event.target.getAttribute("data-saleDate"),
             function (editHoaRec) {
                 var createNew = true;
@@ -442,14 +431,14 @@ var detail = (function(){
         tr = '<form class="form-inline" role="form">';
         if (createNew) {
             //	    tr += '<tr><th></th><td>'+
-            tr += '<a id="SaveOwnerEdit" data-parcelId="' + editHoaRec.Parcel_ID + '" data-ownerId="NEW" href="#" class="btn btn-primary" role="button">Create New</a>';
+            tr += '<a id="SaveOwnerEdit" data-parcelId="' + editHoaRec.Parcel_ID + '" data-ownerId="NEW" href="#" class="btn btn-sm btn-primary m-1" role="button">Create New</a>';
             //	  	  '</td></tr>';
         } else {
             //	    tr += '<tr><th></th><td>'+
-            tr += '<a id="SaveOwnerEdit" data-parcelId="' + editHoaRec.Parcel_ID + '" data-ownerId="' + ownerId + '" href="#" class="btn btn-primary" role="button">Save</a>';
+            tr += '<a id="SaveOwnerEdit" data-parcelId="' + editHoaRec.Parcel_ID + '" data-ownerId="' + ownerId + '" href="#" class="btn btn-sm btn-primary m-1" role="button">Save</a>';
             //	  	  '</td></tr>';
         }
-        tr += '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button></form>';
+        tr += '<button type="button" class="btn btn-sm btn-info m-1" data-dismiss="modal">Close</button></form>';
         $EditPage2ColButton.html(tr);
 
         // Initialize the date picker object
@@ -473,7 +462,6 @@ var detail = (function(){
         } // End of empty or valid email address
         */
 
-         
         var paramMap = new Map();
         paramMap.set('parcelId', event.target.getAttribute("data-parcelId"));
         paramMap.set('ownerId', event.target.getAttribute("data-ownerId"));
@@ -497,31 +485,9 @@ var detail = (function(){
             }
         });
 
-        /*
-        $.ajax(url, {
-            type: "POST",
-            contentType: "application/json",
-            data: util.getJSONfromInputs($Inputs, paramMap),
-            dataType: "json"
-            //dataType: "html"
-        })
-            .done(function (storeRec) {
-                _renderConfig(storeRec);
-            })
-            .fail(function (xhr, status, error) {
-                //Ajax request failed.
-                console.log('Error in AJAX request to ' + url + ', xhr = ' + xhr.status + ': ' + xhr.statusText +
-                    ', status = ' + status + ', error = ' + error);
-                alert('Error in AJAX request to ' + url + ', xhr = ' + xhr.status + ': ' + xhr.statusText +
-                    ', status = ' + status + ', error = ' + error);
-            });
-            */
-
-
     };	// End of $(document).on("click","#SaveOwnerEdit",function(){
 
     function _editAssessment(event) {
-         
         $.getJSON("getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&fy=" + event.target.getAttribute("data-fy"), function (editHoaRec) {
             _formatAssessmentDetailEdit(editHoaRec);
              
@@ -598,8 +564,8 @@ var detail = (function(){
         $EditTable2Col2Body.html(tr);
 
         tr = '<form class="form-inline" role="form">' +
-            '<a id="SaveAssessmentEdit" data-parcelId="' + editHoaRec.Parcel_ID + '" data-fy="' + fy + '" href="#" class="btn btn-primary" role="button">Save</a>' +
-            '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>' +
+            '<a id="SaveAssessmentEdit" data-parcelId="' + editHoaRec.Parcel_ID + '" data-fy="' + fy + '" href="#" class="btn btn-sm btn-primary m-1" role="button">Save</a>' +
+            '<button type="button" class="btn btn-sm btn-info m-1" data-dismiss="modal">Close</button>' +
             '</form>';
         $("#EditPage2ColButton").html(tr);
 
@@ -613,8 +579,7 @@ var detail = (function(){
 
     } // End of function formatAssessmentDetailEdit(editHoaRec){
 
-    function _saveAssessmentEdit() {
-         
+    function _saveAssessmentEdit(event) {
         var paramMap = new Map();
         paramMap.set('parcelId', event.target.getAttribute("data-parcelId"));
         paramMap.set('fy', event.target.getAttribute("data-fy"));
@@ -643,10 +608,8 @@ var detail = (function(){
 
     function createDuesStatement(event) {
         //console.log("create dues statement, parcel = " + event.target.getAttribute("data-parcelId") + ", owner = " + event.target.getAttribute("data-ownerId"));
-         
         $.getJSON("getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&ownerId=" + event.target.getAttribute("data-ownerId"), function (hoaRec) {
             formatDuesStatementResults(hoaRec);
-             
             $DuesStatementPage.modal();
         });
     };
@@ -664,10 +627,12 @@ var detail = (function(){
         // Initialize the PDF object
         currPdfRec = pdfModule.init(config.getVal('hoaNameShort') + ' Dues Statement');
 
-        if (duesStatementNotes.length > 0) {
-            currPdfRec.lineColIncrArray = [1.4];
-            currPdfRec = pdfModule.duesStatementAddLine(currPdfRec,[duesStatementNotes], null);
-            currPdfRec = pdfModule.duesStatementAddLine(currPdfRec,[''], null);
+        if (duesStatementNotes != null) {
+            if (duesStatementNotes.length > 0) {
+                currPdfRec.lineColIncrArray = [1.4];
+                currPdfRec = pdfModule.duesStatementAddLine(currPdfRec,[duesStatementNotes], null);
+                currPdfRec = pdfModule.duesStatementAddLine(currPdfRec,[''], null);
+            }
         }
 
         var pdfLineHeaderArray = [
@@ -712,7 +677,7 @@ var detail = (function(){
         duesStatementDownloadLinks.append(
             $('<a>').prop('id', 'DownloadDuesStatement')
                 .attr('href', '#')
-                .attr('class', "btn btn-danger downloadBtn")
+                .attr('class', "btn btn-danger ml-1")
                 .attr('data-pdfName', 'DuesStatement')
                 .html('PDF'));
 

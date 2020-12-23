@@ -129,19 +129,19 @@ var admin = (function () {
                 } else {
                     buttonForm.append($('<button>')
                         .prop('id', "AdminExecute")
-                        .prop('class', "btn btn-danger")
+                        .prop('class', "btn btn-sm btn-danger m-1")
                         .attr('type', "button")
                         .attr('data-dismiss', "modal").html('Continue')
                         .attr('data-action', action)
                         .attr('data-fy', fy)
                         .attr('data-duesAmt', duesAmt));
 
-                    buttonForm.append($('<button>').prop('class', "btn btn-default").attr('type', "button").attr('data-dismiss', "modal").html('Close'));
+                    buttonForm.append($('<button>').prop('class', "btn btn-sm btn-info m-1").attr('type', "button").attr('data-dismiss', "modal").html('Close'));
                     $ConfirmationButton.append(buttonForm);
                     $ConfirmationModal.modal();
                 }
             } else {
-                buttonForm.append($('<button>').prop('class', "btn btn-default").attr('type', "button").attr('data-dismiss', "modal").html('Close'));
+                buttonForm.append($('<button>').prop('class', "btn btn-sm btn-info m-1").attr('type', "button").attr('data-dismiss', "modal").html('Close'));
                 $ConfirmationButton.append(buttonForm);
                 $ConfirmationModal.modal();
             }
@@ -160,20 +160,18 @@ var admin = (function () {
                 $DuesButtons.append($('<a>')
                     .prop('id', "DuesEmailsCreateList")
                     .attr('href', "#")
-                    .attr('class', "btn btn-primary AdminExecute")
+                    .attr('class', "btn btn-primary mr-2 AdminExecute")
                     .attr('data-action', "DuesEmailsCreateList")
                     .attr('role', "button")
                     .html("Create List"))
-                    .append($('<label>').html("&nbsp;&nbsp; "))
 
                     .append($('<a>')
                         .prop('id', "DuesEmailsCheckList")
                         .attr('href', "#")
-                        .attr('class', "btn btn-primary AdminExecute")
+                        .attr('class', "btn btn-primary mr-2 AdminExecute")
                         .attr('data-action', "DuesEmailsCheckList")
                         .attr('role', "button")
                         .html("Check List"))
-                        .append($('<label>').html("&nbsp;&nbsp; "))
 
                     .append($('<a>')
                         .prop('id', "DuesEmailsSendList")
@@ -182,16 +180,6 @@ var admin = (function () {
                         .attr('data-action', "DuesEmailsSendList")
                         .attr('role', "button")
                         .html("Send Emails"));
-
-                    /*
-                    .append($('</br>'))
-                    .append($('<input>')
-                        .prop('id', "FirstNoticeCheckbox")
-                        .attr('name', 'FirstNoticeCheckbox')
-                        .attr('type', "checkbox")
-                        .attr('checked', "checked"))
-                    .append($('<label>').html("&nbsp; 1st Notice"));
-                    */
             }
         } else {
             $ResultMessage.html("User is not logged in");
@@ -203,12 +191,6 @@ var admin = (function () {
         if (jjklogin.isUserLoggedIn()) {
             $DuesListDisplay.empty();
             $ResultMessage.html("Executing Admin request...(please wait)");
-            /*
-            var firstNotice = true;
-            if ($('#FirstNoticeCheckbox') != null) {
-                firstNotice = $('#FirstNoticeCheckbox').is(":checked");
-            }
-            */
             var action = event.target.getAttribute("data-action");
             //console.log("in adminExecute, action = " + action);
 
@@ -217,8 +199,6 @@ var admin = (function () {
                 "&fy=" + event.target.getAttribute("data-fy") +
                 "&duesAmt=" + event.target.getAttribute("data-duesAmt") +
                 "&parcelId=" + event.target.getAttribute("data-parcelId")
-                // +
-                //"&firstNotice=" +firstNotice
                 , function (adminRec) {
 
                 $ResultMessage.html(adminRec.message);
@@ -248,7 +228,6 @@ var admin = (function () {
                     .append($('<th>').html('Name'))
                     .append($('<th>').html('Type'))
                     .append($('<th>').html('Email'))
-//                    .append($('<th>').html('Sent'))
                     .appendTo($DuesListDisplay);
             }
 
@@ -258,12 +237,9 @@ var admin = (function () {
             tr.append($('<td>')
                 .append($('<a>')
                     .attr('href', "#")
-                    .attr('class', "btn btn-danger btn-xs AdminExecute")
-
+                    .attr('class', "btn btn-sm btn-danger AdminExecute")
                     .attr('data-parcelId', commRec.Parcel_ID)
                     .attr('data-action', "DuesEmailsTest")
-
-
                     .attr('role', "button")
                     .html("Test"))
             );
@@ -279,7 +255,6 @@ var admin = (function () {
             tr.append($('<td>').html(commRec.Mailing_Name))
             tr.append($('<td>').html(commRec.CommType))
             tr.append($('<td>').html(commRec.EmailAddr))
-//            tr.append($('<td>').html(commRec.SentStatus))
 
             tr.appendTo($DuesListDisplay);
 
@@ -484,7 +459,7 @@ var admin = (function () {
                         .attr('data-gross', paymentRec.gross)
                         .attr('data-fee', paymentRec.fee)
                         .attr('href', "#")
-                        .attr('class', "btn btn-success btn-xs LogPayment")
+                        .attr('class', "btn btn-success btn-sm LogPayment")
                         .attr('role', "button")
                         .html("Log"))
                 );
@@ -505,7 +480,7 @@ var admin = (function () {
                         .attr('data-gross', paymentRec.gross)
                         .attr('data-fee', paymentRec.fee)
                         .attr('href', "#")
-                        .attr('class', "btn btn-primary btn-xs LogPayment")
+                        .attr('class', "btn btn-primary btn-sm LogPayment")
                         .attr('role', "button")
                         .html("Pay"))
                 );
@@ -526,7 +501,7 @@ var admin = (function () {
                         .attr('data-gross', paymentRec.gross)
                         .attr('data-fee', paymentRec.fee)
                         .attr('href', "#")
-                        .attr('class', "btn btn-warning btn-xs LogPayment")
+                        .attr('class', "btn btn-warning btn-sm LogPayment")
                         .attr('role', "button")
                         .html("Send"))
                 );

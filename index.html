@@ -1,91 +1,78 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
     <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-	<title>HOA db</title>
+    <title>HOA db</title>
 	<meta name="keywords" 		content="homewowners association database hoa db" />
 	<meta name="description"	content="This is the Homeowners Association database" />
 	<meta name="Author" 		content="John J Kauflin"/>
-	
     <!-- Place favicon.ico in the root directory -->
-    <link rel="icon"              href="favicon.ico">
+    <link rel="icon" href="favicon.ico?ver=1.002">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.min.css"/>
     <!-- Bootstrap core CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+        integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
     <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
         integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous" />
-
-    <link rel="stylesheet" href="css/main.css?ver=3.018">
-  </head>
+    <!--
+    <link rel="stylesheet" href="css/main.css?ver=3.024">
+    -->
+</head>
 
 <body>
-	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+        <a class="navbar-brand m-0 mr-2 p-0" data-toggle="modal" href="#aboutDialog"><img class="m-0 p-0" id="header-image" src="images/logo-photo.jpg"></a>
+        <a class="navbar-brand" data-toggle="modal" href="#aboutDialog">HOA DB v2.3</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <!-- Navbar links -->
+        <div class="collapse navbar-collapse" id="collapsibleNavbar">
+            <ul class="nav navbar-nav ml-auto">
+                <li class="nav-item"><a class="nav-link active" href="#SearchPage" data-toggle="tab"><i class="fa fa-search fa-lg"></i> Search</a></li>
+                <li class="nav-item"><a class="nav-link" href="#DetailPage" data-toggle="tab"><i class="fa fa-list" fa-lg></i> Detail</a></li>
+                <li class="nav-item"><a class="nav-link" href="#CommPage" data-toggle="tab"><i class="fa fa-phone"></i> Comm</a></li>
+                <li class="nav-item"><a class="nav-link" href="#ReportsPage" data-toggle="tab"><i class="fa fa-bar-chart fa-lg"></i> Reports</a></li>
+                <li class="nav-item"><a class="nav-link" href="#AdminPage" data-toggle="tab"><i class="fa fa-usd fa-lg"></i> Admin</a></li>
+                <li class="nav-item"><a class="nav-link" href="#ConfigPage" data-toggle="tab"><i class="fa fa-cog fa-lg"></i> Config</a></li>
+                <li class="nav-item"><a class="nav-link" id="login" href="#" role="button">login</a></li>
+            </ul>
+        </div>
+    </nav>
+
     <div class="container-fluid">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" data-toggle="modal" href="#aboutDialog"><img id="header-image" alt="Brand logo photo" src="images/logo-photo.jpg"></a>
-          <a class="navbar-brand" style="outline: 0" data-toggle="modal" href="#aboutDialog">HOA DB v2.2</a>
-        </div> <!-- navbar-header -->
-
-        <div id="navbar" class="navbar-collapse collapse">
-			<ul class="nav navbar-nav navbar-right">
-				<li class="active"><a href="#SearchPage" data-toggle="tab"><i class="fa fa-search fa-lg"></i> Search</a></li>
-				<li><a href="#DetailPage" data-toggle="tab"><i class="fa fa-list" fa-lg></i> Detail</a></li>
-				<li><a href="#CommPage" data-toggle="tab"><i class="fa fa-phone"></i> Comm</a></li>
-				<li><a href="#ReportsPage" data-toggle="tab"><i class="fa fa-bar-chart fa-lg"></i> Reports</a></li>
-				<li><a href="#AdminPage" data-toggle="tab"><i class="fa fa-usd fa-lg"></i> Admin</a></li>
-                <li><a href="#ConfigPage" data-toggle="tab"><i class="fa fa-cog fa-lg"></i> Config</a></li>
-                <li><a id="logout" href="#" role="button">logout</a></li>
-	    	</ul>
-        </div> <!-- navbar-collapse (controlled by the collapse toggle button) -->
-
-      </div> <!-- container-fluid -->
-	</nav><!-- <nav class="navbar navbar-default navbar-fixed-top"> -->
-
-
-<div class="container-fluid">
 	<div class="tab-content">
 		
-		<div class="tab-pane active" id="SearchPage">
+		<div class="tab-pane show active" id="SearchPage">
 			<div class="row">
 				  <div class="col-sm-4 col-md-3">
-				  	<div id="DisplayWidth"></div>
-                    <div class="visible-xs-inline pull-right username"></div>
-				  	<h4>Search</h4>
-                  	<div id="SearchInput" >
-                    	<div class="form-group">
-                    		<input type="text" class="form-control resetval" name="searchStr"  	id="searchStr" 	placeholder="Enter value to search">
-                    	</div>
-                    	<button id="SearchButton" type="button" class="btn btn-primary">Search</button>
-                    	<button id="AdvancedOptionsButton" type="button" class="btn btn-default" data-toggle="collapse" data-target="#AdvancedSearchOptions">Advanced Options</button>
+                    <h5>Search</h5>
+                  	<form id="SearchInput" class="form-group" action="#">
+                    	<input type="text" class="form-control form-control-sm m-1 resetval" name="searchStr"  	id="searchStr" 	placeholder="Enter value to search">
+                    	<button id="SearchButton" type="button" class="btn btn-primary mt-2 mb-2">Search</button>
+                    	<button id="AdvancedOptionsButton" type="button" class="btn btn-info mt-2 ml-2 mb-2" data-toggle="collapse" data-target="#AdvancedSearchOptions">Advanced Options</button>
 						<div id="AdvancedSearchOptions" class="collapse">
 	                    	<div class="form-group">
-	                    		<input type="text" class="form-control resetval" name="parcelId"  	id="parcelId" 	placeholder="Parcel Id (R35617399 0001)">
-	                    		<input type="text" class="form-control resetval" name="lotNo"     	id="lotNo"		placeholder="Lot Number">
-	                    		<input type="text" class="form-control resetval" name="address"     id="address"   	placeholder="Property Address" >
-	                    		<input type="text" class="form-control resetval" name="ownerName"   id="ownerName" 	placeholder="Owner Name (Last First)" >
-	                    		<input type="text" class="form-control resetval" name="phoneNo"     id="phoneNo"   	placeholder="Phone Number" >
-	                    		<input type="text" class="form-control resetval" name="altAddress"	id="altAddress"	placeholder="Alternate Address">
+	                    		<input type="text" name="parcelId"  	id="parcelId" 	placeholder="Parcel Id (R35617399 0001)" class="form-control form-control-sm mb-1 resetval">
+	                    		<input type="text" name="lotNo"     	id="lotNo"		placeholder="Lot Number" class="form-control form-control-sm mb-1 resetval">
+	                    		<input type="text" name="address"       id="address"   	placeholder="Property Address" class="form-control form-control-sm mb-1 resetval">
+	                    		<input type="text" name="ownerName"     id="ownerName" 	placeholder="Owner Name (Last First)" class="form-control form-control-sm mb-1 resetval">
+	                    		<input type="text" name="phoneNo"       id="phoneNo"   	placeholder="Phone Number" class="form-control form-control-sm mb-1 resetval">
+	                    		<input type="text" name="altAddress"    id="altAddress"	placeholder="Alternate Address" class="form-control form-control-sm mb-1 resetval">
                             </div>
-                            <button id="NewUserButton" type="button" class="btn btn-success">User Registration</button>
                         </div>
-                        
-				  	</div>
+                    </form>
 				  	
 				  </div>
 				  <div class="col-sm-8 col-md-9">
-                    <div class="hidden-xs pull-right username"></div>
-                	<h4>Properties List</h4>
+                    <div id="username" class="float-right"></div>
+                    <div id="jjkloginEventElement"></div>
+                	<h5>Properties</h5>
                 	<div class="ajaxError"></div>
-		            <table id="PropertyListDisplay" class="table table-striped table-condensed">
+		            <table id="PropertyListDisplay" class="table table-striped table-sm">
 		            	<tbody>
 		               	</tbody>
 		           	</table>
@@ -100,25 +87,17 @@
 					<div class="row">
 
 				  		<div class="col-xs-5 col-sm-5">
-			             	<h4>Detail</h4>
+			             	<h5>Detail</h5>
 		                  	<div id="MCTreasLink"></div>
-		                  	<p>
 		                  		<div id="MCAuditorLink"></div>
-		                	</p>
-							<p>
 		                  		<div id="DuesStatement"></div>
-		                  	</p>
-		                  	<p>
 		                  		<div id="NewOwner"></div>
-		                  	</p>
-							<p>
 		                  		<div id="Communications"></div>
-		                  	</p>
 		                  	<div id="AddAssessment"></div>
 		            	</div>
 		            	
     					<div class="col-xs-7 col-sm-7">
-	                		<h4>Property Detail</h4>
+	                		<h5 class="mt-2">Property Detail</h5>
                 			<div class="ajaxError"></div>
 	                		<table id="PropertyDetail" class="">
 	                  			<tbody>
@@ -130,13 +109,13 @@
 				</div>
 				  
 				  <div class="col-sm-7 col-md-8">
-				  		<h4>Owners</h4>
-				                <table id="PropertyOwners" class="table table-striped table-condensed">
+				  		<h5 class="mt-2">Owners</h5>
+				                <table id="PropertyOwners" class="table table-striped table-sm">
 				                  <tbody>
 				                  </tbody>
 				                </table>
-				    	<h4>Assessments</h4>
-				                <table id="PropertyAssessments" class="table table-striped table-condensed">
+				    	<h5 class="mt-2">Assessments</h5>
+				                <table id="PropertyAssessments" class="table table-striped table-sm">
 				                  <tbody>
 				                  </tbody>
 				                </table>
@@ -145,13 +124,13 @@
 		</div><!-- end of Detail -->
 	        
 	    <div class="tab-pane" id="CommPage">
-			<h4>Communications</h4>
+			<h5>Communications</h5>
             <div class="ajaxError"></div>
 		    <div id="CommunicationsNew"></div>
 		    <p>
 		    	<div id="CommunicationsParcel"></div>
 			</p>
-		    <table id="CommListDisplay" class="table table-striped table-condensed" style="margin-top:10px;">
+		    <table id="CommListDisplay" class="table table-striped table-sm mt-2">
 		    	<tbody>
 		    	</tbody>
 		    </table>
@@ -160,38 +139,38 @@
 	        
 	    <div class="tab-pane" id="ReportsPage">
 				<div class="row">
-				    <div class="col-sm-2">
-				    	<h4>Reports</h4>
+				    <div class="col-sm-4 col-md-3 col-xl-2">
+				    	<h5>Reports</h5>
 	                  	
 		                <div class="form-group">
 	                    	<button id="SalesReport" data-reportTitle="County Reported Sales of HOA properties" 
-	                    		type="button" class="btn btn-primary reportRequest form-control"><i class="fa fa-handshake-o fa-lg pull-left"></i>Sales Report</button>
+	                    		type="button" class="btn btn-primary reportRequest form-control mr-2 mb-2"><i class="fa fa-handshake-o fa-lg float-left"></i>Sales Report</button>
 	                    	<button id="SalesNewOwnerReport" data-reportTitle="County Reported Sales of HOA properties (for New Owner maintenance)" 
-	                    		type="button" class="btn btn-primary reportRequest form-control"><i class="fa fa-users fa-lg pull-left"></i>New Owners</button>
+	                    		type="button" class="btn btn-primary reportRequest form-control mr-2 mb-2"><i class="fa fa-users fa-lg float-left"></i>New Owners</button>
 	                    	<button id="UnpaidDuesReport" data-reportTitle="Unpaid Dues Report" 
-	                    		type="button" class="btn btn-primary reportRequest form-control"><i class="fa fa-usd fa-lg pull-left"></i>Unpaid Dues</button>
+	                    		type="button" class="btn btn-primary reportRequest form-control mr-2 mb-2"><i class="fa fa-usd fa-lg float-left"></i>Unpaid Dues</button>
 	                    	<button id="PaidDuesReport" data-reportTitle="Paid Dues Report" 
-	                    		type="button" class="btn btn-primary reportRequest form-control"><i class="fa fa-usd fa-lg pull-left"></i>Paid Dues</button>
+	                    		type="button" class="btn btn-primary reportRequest form-control mr-2 mb-2"><i class="fa fa-usd fa-lg float-left"></i>Paid Dues</button>
 	                    	<button id="PaidDuesCountsReport" data-reportTitle="Paid Dues Counts Report" 
-	                    		type="button" class="btn btn-primary reportRequest form-control"><i class="fa fa-usd fa-lg pull-left"></i>Paid Dues Counts</button>
+	                    		type="button" class="btn btn-primary reportRequest form-control mr-2 mb-2"><i class="fa fa-usd fa-lg float-left"></i>Paid Dues Counts</button>
 	                    	<button id="PropertyOwnerReport" data-reportTitle="Property/Owner Report" 
-								type="button" class="btn btn-primary reportRequest form-control"><i class="fa fa-user fa-lg pull-left"></i>Property Owner</button>
+								type="button" class="btn btn-primary reportRequest form-control mr-2 mb-2"><i class="fa fa-user fa-lg float-left"></i>Property Owner</button>
 							<button id="UnpaidDuesRankingReport" data-reportTitle="Unpaid Dues Ranking Report" 
-								type="button" class="btn btn-primary reportRequest form-control"><i class="fa fa-bank fa-lg pull-left"></i>Unpaid Dues Ranking</button>
+								type="button" class="btn btn-primary reportRequest form-control mr-2 mb-2"><i class="fa fa-bank fa-lg float-left"></i>Unpaid Dues Ranking</button>
                             <button id="IssuesReport" data-reportTitle="Issues Report" type="button"
-                                class="btn btn-primary reportRequest form-control"><i class="fa fa-exclamation-triangle fa-lg pull-left"></i>Issues Report</button>
+                                class="btn btn-primary reportRequest form-control mr-2 mb-2"><i class="fa fa-exclamation-triangle fa-lg float-left"></i>Issues Report</button>
                             <button data-reportTitle="Mailing List" type="button"
-                                class="btn btn-primary reportFilter form-control"><i class="fa fa-envelope fa-lg pull-left"></i>Mailing List</button>
+                                class="btn btn-primary reportFilter form-control mr-2 mb-2"><i class="fa fa-envelope fa-lg float-left"></i>Mailing List</button>
 		                </div>
 	       					
 					</div>
-				    <div class="col-sm-10">
-	                	<div id="ReportDownloadLinks" class="pull-right"></div>
-                        <div id="ReportFilter"></div>
-                        <h4 id="ReportHeader"></h4>
+				    <div class="col-sm-8 col-md-9 col-xl-10">
+	                	<div id="ReportDownloadLinks" class="float-right m-2"></div>
+                        <div id="ReportFilter" class="m-3"></div>
+                        <h5 id="ReportHeader"></h5>
 	                	<div class="ajaxError"></div>
-	                	<h5 id="ReportRecCnt"></h5>
-			            <table id="ReportListDisplay" class="table table-striped table-condensed small">
+	                	<h6 id="ReportRecCnt"></h6>
+			            <table id="ReportListDisplay" class="table table-striped table-sm small">
 			            	<tbody>
 			               	</tbody>
 						</table>
@@ -202,12 +181,11 @@
 	    <div class="tab-pane" id="AdminPage">
 			<div class="row">
 				<div class="col-sm-4 col-md-3">
-				  	<h4>Admin</h4>
-
-	                <div class="form-group" style="margin-right:100px;">
-                    	<input type="text" class="form-control resetval" name="DuesAmt"     	id="DuesAmt"		placeholder="Dues Amount">
+				  	<h5>Admin</h5>
+	                <div class="form-group">
+                    	<input type="text" class="form-control mr-2 mb-2 resetval" name="DuesAmt"     	id="DuesAmt"		placeholder="Dues Amount">
 						<label for="FiscalYear">Fiscal Year for which to add Assessments:</label>
-						<select class="form-control" id="FiscalYear">
+						<select class="form-control mr-2 mb-2" id="FiscalYear">
 						        <option>2022</option>
 						        <option>2023</option>
 						        <option>2024</option>
@@ -218,29 +196,33 @@
 						        <option>2029</option>
                                 <option>2030</option>
                                 <option>2031</option>
+                                <option>2032</option>
+                                <option>2033</option>
+                                <option>2034</option>
+                                <option>2035</option>
 						</select>                    		
 
-                        <button id="AddAssessments" type="button" class="btn btn-primary form-control AdminButton">
-                            <i class="fa fa-usd fa-lg pull-left"></i>Add Assessments</button>
+                        <button id="AddAssessments" type="button" class="btn btn-primary form-control  mr-2 mb-2 AdminButton">
+                            <i class="fa fa-usd fa-lg float-left"></i>Add Assessments</button>
+						<button id="DuesEmails" type="button" class="btn btn-primary form-control mr-2 mb-2">
+                            <i class="fa fa-envelope fa-lg float-left"></i>Dues Notice Emails</button>
+                        <button id="PaymentReconcile" type="button" class="btn btn-success form-control mr-2 mb-2 AdminButton">
+                            <i class="fa fa-paypal fa-lg float-left"></i>Payment Reconciliation</button>
+                        <button id="SalesDownload" type="button" class="btn btn-success form-control mr-2 mb-2 AdminButton">
+                            <i class="fa fa-handshake-o fa-lg float-left"></i>County Sales Download</button>
                         <!--
-	                    <button id="DuesNotices" type="button" class="btn btn-primary form-control AdminButton">Create Dues Notices</button>
-						<button id="MarkMailed" type="button" class="btn btn-primary form-control AdminButton">Mark paper Dues mailed</button>
+                        <button id="SalesUpload" type="button" class="btn btn-success form-control mr-2 mb-2 AdminButton">
+                            <i class="fa fa-handshake-o fa-lg float-left"></i>Sales Upload</button>
                         -->
-						<button id="DuesEmails" type="button" class="btn btn-primary form-control">
-                            <i class="fa fa-envelope fa-lg pull-left"></i>Dues Notice Emails</button>
-                        <button id="PaymentReconcile" type="button" class="btn btn-success form-control AdminButton">
-                            <i class="fa fa-paypal fa-lg pull-left"></i>Payment reconciliation</button>
-                        <button id="SalesUpload" type="button" class="btn btn-success form-control AdminButton">
-                            <i class="fa fa-handshake-o fa-lg pull-left"></i>Sales upload</button>
 	                </div>
 				  </div>
 				  <div class="col-sm-8 col-md-9">
-                		<h4 id="AdminResults">Results</h4>
+                		<h5 id="AdminResults">Results</h5>
                 		<div class="ajaxError"></div>
-	                	<div id="AdminDownloadLinks" class="pull-right"></div>
+	                	<div id="AdminDownloadLinks" class="float-right m-2"></div>
                         <div id="DuesButtons"></div>
-                        <div id="ResultMessage" style="margin-top:10px;"></div>
-                        <table id="DuesListDisplay" class="table table-striped table-condensed">
+                        <div id="ResultMessage" class="m-2"></div>
+                        <table id="DuesListDisplay" class="table table-striped table-sm">
 			            	<tbody>
 			               	</tbody>
 						</table>
@@ -254,15 +236,15 @@
 	    <div class="tab-pane" id="ConfigPage">
 			<h4>Config</h4>
             <div class="ajaxError"></div>
-            <a data-ConfigName="NEW-VALUE" href="#" class="btn btn-primary NewConfig" role="button">New Config Value</a>
-		    <table id="ConfigListDisplay" class="table table-striped table-condensed" style="margin-top:10px;">
+            <a data-ConfigName="NEW-VALUE" href="#" class="btn btn-sm btn-primary NewConfig" role="button">New Config Value</a>
+		    <table id="ConfigListDisplay" class="table table-striped table-sm mt-2">
 		    	<tbody>
 		    	</tbody>
 		    </table>
 	 	</div><!-- end of Config -->
 	        
 	</div><!-- end of main tab content -->
-</div><!-- end of main container -->
+    </div><!-- end of main container -->
 
 
 <!-- Modal -->
@@ -270,11 +252,10 @@
 	    <div class="modal-dialog modal-lg">
 	      <div class="modal-content">
 	        <div class="modal-header">
-	          <button type="button" class="close" data-dismiss="modal">&times;</button>
-	          
-	          <h4 class="modal-title">          	
-	          	<img style="margin-top: -10px; margin-right: 5px;" alt="Brand logo photo" src="images/logo-photo.jpg">
-	          	Gander Road Homoeowners Association</h4>
+	          <h5 class="modal-title">          	
+	          	<img src="images/logo-photo.jpg">
+	          	Gander Road Homoeowners Association</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
 	        </div>
 	        <div class="modal-body">
               <p>(C) Copyright 2020, All rights reserved. </p>
@@ -283,7 +264,7 @@
 
 	        </div>
 	        <div class="modal-footer">
-	          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+	          <button type="button" class="btn btn-sm btn-info" data-dismiss="modal">Close</button>
 	        </div>
 	      </div>
 	    </div>
@@ -294,14 +275,12 @@
 	    <div class="modal-dialog modal-lg">
 	      <div class="modal-content">
 	        <div class="modal-header">
-	          <button type="button" class="close" data-dismiss="modal">&times;</button>
-	          
-	          <h3 id="EditPageHeader" class="modal-title"></h3>
+	          <h5 id="EditPageHeader" class="modal-title"></h5>
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
 	        </div>
 	        <div class="modal-body">
-           		<div class="ajaxError"></div>
-           		<h4 class="editValidationError" style="color:red;"></h4>
-				<table id="EditTable" >
+           		<h5 class="editValidationError" style="color:red;"></h5>
+				<table id="EditTable" class="table-sm">
 					<tbody>
 					</tbody>
 				</table>
@@ -318,23 +297,20 @@
 	    <div class="modal-dialog modal-lg">
 	      <div class="modal-content">
 	        <div class="modal-header">
-	          <button type="button" class="close" data-dismiss="modal">&times;</button>
-	          
-	          <h3 id="EditPage2ColHeader" class="modal-title"></h3>
+	            <h5 id="EditPage2ColHeader" class="modal-title"></h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
 	        </div>
 	        <div class="modal-body">
-           <div class="ajaxError"></div>
-           		<h4 class="editValidationError" style="color:red;"></h4>
-
+           		<h5 class="editValidationError" style="color:red;"></h5>
 				<div class="row">
 					<div class="col-sm-7">
-				        <table id="EditTable2Col" >
+				        <table id="EditTable2Col" class="table-sm">
 				        	<tbody>
 				        	</tbody>
 				        </table>
 					</div>
 				    <div class="col-sm-5">
-				        <table id="EditTable2Col2" >
+				        <table id="EditTable2Col2" class="table-sm">
 				        	<tbody>
 				        	</tbody>
 				        </table>
@@ -354,8 +330,8 @@
 	    <div class="modal-dialog modal-sm">
 	      <div class="modal-content">
 	        <div class="modal-header">
-	          <button type="button" class="close" data-dismiss="modal">&times;</button>
-	          <h3 class="modal-title">Confirmation</h3>
+	            <h5 class="modal-title">Confirmation</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
 	        </div>
             <div id="ConfirmationMessage" class="modal-body">
             </div>
@@ -368,138 +344,18 @@
 </div>
 
 <div id="FileUploadModal" class="modal fade" role="dialog">
-    <div class="modal-dialog modal-sm">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
+                <h5 id="FileUploadTitle" class="modal-title">File Upload</h5>
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 id="FileUploadTitle" class="modal-title">File Upload</h4>
             </div>
             <div id="FileUploadMessage" class="modal-body">
-                <form id="FileUploadForm" action="" method="post" enctype="multipart/form-data">
-                    <input id="uploadFilename" type="file" accept=".csv, .zip" name="uploadFilename" />
-                    <br/>
-                    <input class="btn btn-success" type="submit" value="Upload file">
+                <form id="FileUploadForm" action="" method="post" enctype="multipart/form-data" class="form-group">
+                    <input id="uploadFilename" type="file" accept=".csv, .zip" name="uploadFilename" class="form-control p-1 m-1 float-left" />
+                    <input class="btn btn-success mt-2 float-left" type="submit" value="Upload file" >
                 </form>
             </div>
-            <div class="modal-footer">
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="LoginModal" class="modal fade" role="dialog">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">
-                    <img style="margin-top: -10px; margin-right: 5px;" alt="Brand logo photo" src="images/logo-photo.jpg">
-                    HOA DB Login</h4>
-            </div>
-
-            <div id="LoginInput" class="modal-body">
-                <div class="form-group">
-                    <input type="text" class="form-control resetval" name="username" id="username" placeholder="Username">
-                    <input type="password" class="form-control resetval" name="password" id="password" placeholder="Password">
-                </div>
-                <button id="LoginButton" type="button" class="btn btn-success">Login</button>
-
-                <div class="ajaxError" style="margin-top: 10px;"></div>
-                <div id="LoginDisplay" style="margin-top: 10px;">
-                </div>
-            </div>
-
-            <div class="modal-footer">
-                <a id="ForgotPassword" href="#" class="button" role="button">Forgot password?</a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="ResetPasswordModal" class="modal fade" role="dialog">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">
-                    <img style="margin-top: -10px; margin-right: 5px;" alt="Brand logo photo"
-                        src="images/logo-photo.jpg">
-                    HOA DB Password Reset</h4>
-            </div>
-
-            <div id="ResetPasswordInput" class="modal-body">
-                <div class="form-group">
-                    <input type="text" class="form-control resetval" name="usernameReset" id="usernameReset" placeholder="Username">
-                    <input type="text" class="form-control resetval" name="emailAddrReset" id="emailAddrReset" placeholder="or Email address">
-                </div>
-                <button id="ResetPasswordButton" type="button" class="btn btn-success">Reset Password</button>
-
-                <div class="ajaxError" style="margin-top: 10px;"></div>
-                <div id="ResetPasswordDisplay" style="margin-top: 10px;">
-                </div>
-            </div>
-
-            <div class="modal-footer">
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="PasswordModal" class="modal fade" role="dialog">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">
-                    <img style="margin-top: -10px; margin-right: 5px;" alt="Brand logo photo"
-                        src="images/logo-photo.jpg">
-                    HOA DB Set Password</h4>
-            </div>
-
-            <div id="PasswordInput" class="modal-body">
-                <div class="form-group">
-                    <input type="hidden" class="form-control resetval" name="regCode" id="regCode">
-                    <input type="password" class="form-control resetval" name="password_1" id="password_1" placeholder="Password">
-                    <input type="password" class="form-control resetval" name="password_2" id="password_2" placeholder="Confirm Password">
-                </div>
-                <button id="PasswordButton" type="button" class="btn btn-success">Set Password</button>
-
-                <div class="ajaxError" style="margin-top: 10px;"></div>
-                <div id="PasswordDisplay" style="margin-top: 10px;">
-                </div>
-            </div>
-
-            <div class="modal-footer">
-                Password must be at least 8 characters, and include at least one number, letter, symbol, and CAPS
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="RegisterModal" class="modal fade" role="dialog">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">
-                    <img style="margin-top: -10px; margin-right: 5px;" alt="Brand logo photo"
-                        src="images/logo-photo.jpg">
-                    HOA DB User Registration</h4>
-            </div>
-
-            <div id="RegisterInput" class="modal-body">
-                <div class="form-group">
-                    <input type="text" class="form-control resetval" name="usernameReg" id="usernameReg" placeholder="Username">
-                    <input type="text" class="form-control resetval" name="emailAddrReg" id="emailAddrReg" placeholder="Email address">
-                    <input type="text" class="form-control resetval" name="userLevelReg" id="userLevelReg" placeholder="User Level">
-                </div>
-                <button id="RegisterButton" type="button" class="btn btn-success">Create User</button>
-
-                <div class="ajaxError"></div>
-                <div id="RegisterDisplay" style="margin-top: 10px;">
-                </div>
-            </div>
-
             <div class="modal-footer">
             </div>
         </div>
@@ -510,14 +366,13 @@
 	    <div class="modal-dialog modal-lg">
 	      <div class="modal-content">
 	        <div class="modal-header">
-	          	<button type="button" class="close" data-dismiss="modal">&times;</button>
-	          	<h3 class="modal-title">          	<img style="margin-top: -10px; margin-right: 5px;" alt="Brand logo photo" src="images/logo-photo.jpg">
-	          	GRHA Dues Statement</h3>
+	          	<h4 class="modal-title"><img src="images/logo-photo.jpg"> GRHA Dues Statement</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
 	        </div>
 	        <div id="DuesStatementContent" class="modal-body">
-	       		<div id="DuesStatementDownloadLinks" class="pull-right"></div>
+	       		<div id="DuesStatementDownloadLinks" class="float-right mb-1"></div>
 	            <div class="ajaxError"></div>
-		        <table id="DuesStatementPropertyTable" class="table table-striped table-condensed">
+		        <table id="DuesStatementPropertyTable" class="table table-striped table-sm">
 		        	<tbody>
 		        	</tbody>
 		        </table>
@@ -536,19 +391,19 @@
 				</div>
 
 		    	<h4>Total Due calculation details</h4>
-		        <table id="DuesStatementCalculationTable" class="table table-striped table-condensed">
+		        <table id="DuesStatementCalculationTable" class="table table-striped table-sm">
 		        	<tbody>
 		        	</tbody>
 		        </table>
 	            
 		    	<h4>Payment history</h4>
-		        <table id="DuesStatementAssessmentsTable" class="table table-striped table-condensed">
+		        <table id="DuesStatementAssessmentsTable" class="table table-striped table-sm">
 		        	<tbody>
 		        	</tbody>
 		        </table>
 	        </div>
 	        <div class="modal-footer">
-	          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+	          <button type="button" class="btn btn-sm btn-info" data-dismiss="modal">Close</button>
 	        </div>
 	      </div>
 	    </div>
@@ -557,35 +412,26 @@
     <!-- Bootstrap core JavaScript
         ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" 
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"
+        integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
         crossorigin="anonymous"></script>
-    <!--
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-        crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
-        integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
-        crossorigin="anonymous"></script>
-    -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" crossorigin="anonymous"
-        integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd">
-        </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js" type="text/javascript"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap-add-clear@1.0.7/bootstrap-add-clear.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.min.js"></script>
 
-    <script src="js/util.js?ver=2.011"></script>
-    <script src="js/jjklogin.js?ver=2.010"></script>
-	<script src="js/config.js?ver=2.010"></script>
-	<script src="js/search.js?ver=2.010"></script>
-    <script src="js/detail.js?ver=2.010"></script>
-	<script src="js/communications.js?ver=2.010"></script>
-	<script src="js/pdfModule.js?ver=2.010"></script>
-	<script src="js/reports.js?ver=2.011"></script>
-	<script src="js/admin.js?ver=2.011"></script>
+    <script src="js/util.js?ver=2.013"></script>
+	<script src="js/config.js?ver=2.013"></script>
+	<script src="js/search.js?ver=2.013"></script>
+    <script src="js/detail.js?ver=2.013"></script>
+	<script src="js/communications.js?ver=2.013"></script>
+	<script src="js/pdfModule.js?ver=2.013"></script>
+	<script src="js/reports.js?ver=2.013"></script>
+	<script src="js/admin.js?ver=2.013"></script>
+
+    <script src="vendor/jkauflin/jjklogin/jjklogin.js?ver=1.006"></script>
 
 </body>
 </html>

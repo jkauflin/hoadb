@@ -13,6 +13,9 @@
  * 2020-08-05 JJK   Re-did the map loading and rendering to not load on
  *                  page load - have the load called after login
  * 2020-08-06 JJK   Added functions to load and return the Logo image data
+ * 2020-12-22 JJK   Modified for changes to jjklogin - added event 
+ *                  handling to call the config load functions when a user
+ *                  is authenticated (using the new jjklogin event)
  *============================================================================*/
 var config = (function(){
     'use strict';
@@ -24,6 +27,7 @@ var config = (function(){
 
     //=================================================================================================================
     // Variables cached from the DOM
+    var $document = $(document);
     var $moduleDiv = $('#ConfigPage');
     var $ajaxError = $moduleDiv.find(".ajaxError");
     var $ConfigListDisplay = $moduleDiv.find("tbody");
@@ -33,16 +37,26 @@ var config = (function(){
     var $editValidationError = $(".editValidationError");
     var $EditPageHeader = $("#EditPageHeader");
     var $EditPageButton = $("#EditPageButton");
+    var $jjkloginEventElement = $document.find('#jjkloginEventElement')
 
     //=================================================================================================================
     // Bind events
     $moduleDiv.on("click", ".NewConfig", editConfig);
     $EditPage.on("click", ".SaveConfigEdit", _saveConfigEdit);
 
+    // Respond to user authentication event from jjklogin
+    $jjkloginEventElement.on('userJJKLoginAuth', function (event) {
+        //console.log('in config, after login, username = '+event.originalEvent.detail.userName);
+        // When user is authenticated load the configuration values
+        // (need something like this because load is asynchronous - AJAX calls, can't do it on 1st request)
+        _loadConfigValues();
+        _loadConfigLogoImg();
+    });
+
     //=================================================================================================================
     // Module methods
 
-    function loadConfigValues() {
+    function _loadConfigValues() {
         $.getJSON("getHoaConfigList.php", "", function (result) {
             if (result.error) {
                 console.log("error = " + result.error);
@@ -79,7 +93,7 @@ var config = (function(){
         $ConfigListDisplay.html(tr);
     }
 
-    function loadConfigLogoImg() {
+    function _loadConfigLogoImg() {
         $.get("getLogoImgData.php", function (result) {
             if (result.error) {
                 console.log("error = " + result.error);
@@ -105,13 +119,13 @@ var config = (function(){
             // If a string was passed in then use value as the name, else get it from the attribute of the click event object
             var configName = (typeof value === "string") ? value : value.target.getAttribute("data-ConfigName");
             $.getJSON("getHoaConfigList.php", "ConfigName=" + configName, function (hoaConfigRec) {
-                formatConfigEdit(hoaConfigRec[0]);
+                _formatConfigEdit(hoaConfigRec[0]);
                 $EditPage.modal();
             });
         }
     };
 
-    function formatConfigEdit(hoaConfigRec) {
+    function _formatConfigEdit(hoaConfigRec) {
         // Clear the field where we report validation errors
         $editValidationError.empty();
         $EditPageHeader.text("Edit Configuration");
@@ -133,12 +147,12 @@ var config = (function(){
         $EditTableBody.html(tr);
 
         tr = '<form class="form-inline" role="form">';
-        tr += '<a data-ConfigAction="Edit" href="#" class="btn btn-primary SaveConfigEdit" role="button">Save</a>';
-        tr += '<a data-ConfigAction="Delete" href="#" class="btn btn-primary SaveConfigEdit" role="button">Delete</a>';
-        tr += '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button></form>';
+        tr += '<a data-ConfigAction="Edit" href="#" class="btn btn-sm btn-primary m-1 SaveConfigEdit" role="button">Save</a>';
+        tr += '<a data-ConfigAction="Delete" href="#" class="btn btn-sm btn-primary m-1 SaveConfigEdit" role="button">Delete</a>';
+        tr += '<button type="button" class="btn btn-sm m-1 btn-info" data-dismiss="modal">Close</button></form>';
         $EditPageButton.html(tr);
 
-    } // End of function formatConfigEdit(hoaConfigRec){
+    } // End of function _formatConfigEdit(hoaConfigRec){
 
     function _saveConfigEdit(event) {
         //console.log("in saveConfigEdit, data-ConfigAction = " + event.target.getAttribute("data-ConfigAction"));
@@ -172,8 +186,6 @@ var config = (function(){
     //=================================================================================================================
     // This is what is exposed from this Module
     return {
-        loadConfigValues,
-        loadConfigLogoImg,
         getLogoImgData,
         getVal,
         editConfig

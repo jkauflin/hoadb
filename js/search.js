@@ -13,6 +13,7 @@
  * 2018-10-27 JJK   Added SearchInput for non-touch devices
  * 2020-07-29 JJK   Modified for version 2.0 changes
  * 2020-08-03 JJK   Re-factored for new error handling
+ * 2020-12-22 JJK   Re-factored for Bootstrap 4
  *============================================================================*/
 var search = (function(){
     'use strict';
@@ -75,22 +76,20 @@ var search = (function(){
         $.each(hoaPropertyRecList, function (index, hoaPropertyRec) {
             if (index == 0) {
                 tr = '';
-                tr += '<tr>';
+                tr += '<tr class="small">';
                 tr += '<th>Row</th>';
                 tr += '<th>Parcel Id</th>';
-                //tr += '<th class="hidden-xs hidden-sm">Lot No</th>';
                 tr += '<th>Location</th>';
-                tr += '<th class="hidden-xs">Owner Name</th>';
-                tr += '<th class="visible-lg">Owner Phone</th>';
+                tr += '<th class="d-none d-md-table-cell">Owner Name</th>';
+                tr += '<th class="d-none d-lg-table-cell">Owner Phone</th>';
                 tr += '</tr>';
             }
-            tr += '<tr>';
+            tr += '<tr class="small">';
             tr += '<td>' + (index + 1) + '</td>';
             tr += '<td><a class="DetailDisplay" data-parcelId="' + hoaPropertyRec.parcelId + '" href="#">' + hoaPropertyRec.parcelId + '</a></td>';
-            //tr += '<td class="hidden-xs hidden-sm">' + hoaPropertyRec.lotNo + '</td>';
             tr += '<td>' + hoaPropertyRec.parcelLocation + '</td>';
-            tr += '<td class="hidden-xs">' + hoaPropertyRec.ownerName + '</td>';
-            tr += '<td class="visible-lg">' + hoaPropertyRec.ownerPhone + '</td>';
+            tr += '<td class="d-none d-md-table-cell">' + hoaPropertyRec.ownerName + '</td>';
+            tr += '<td class="d-none d-lg-table-cell">' + hoaPropertyRec.ownerPhone + '</td>';
             tr += '</tr>';
         });
 

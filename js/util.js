@@ -20,6 +20,7 @@
  * 2020-08-03 JJK   Removed ajaxError handling - error handling re-factor
  *                  Moved result.error check and message display to the
  *                  individual calls
+ * 2020-12-22 JJK   Re-factored for Bootstrap 4, and added displayTabPage
  *============================================================================*/
  var util = (function(){
     'use strict';  // Force declaration of variables before use (among other things)
@@ -29,38 +30,45 @@
     //=================================================================================================================
     // Variables cached from the DOM
     var $document = $(document);
-    var $wildcard = $('*');
-    var $resetval = $document.find(".resetval");
-    var $Date = $document.find(".Date");
+    //var $resetval = $document.find(".resetval");
+    //var $Date = $document.find(".Date");
     var $ajaxError = $document.find(".ajaxError");
-
 
     //=================================================================================================================
     // Bind events
-   
-     // Auto-close the collapse menu after clicking a non-dropdown menu item (in the bootstrap nav header)
-     $document.on('click', '.navbar-collapse.in', function (e) {
-         if ($(e.target).is('a') && $(e.target).attr('class') != 'dropdown-toggle') {
-             $(this).collapse('hide');
-         }
-     });
+    
+    // Auto-close the collapse menu after clicking a non-dropdown menu item (in the bootstrap nav header) bs4
+    $(".navbar-nav li a:not('.dropdown-toggle')").on('click', function () { 
+        $('.navbar-collapse').collapse('hide'); 
+    });
 
-     // 8/9/2020 Focus on the first non-readonly input field when a modal pops up
-     $document.on('shown.bs.modal', function (e) {
-         $('input:visible:enabled:not([readonly]):first', e.target).focus(); 
-     });
+    // 8/9/2020 Focus on the first non-readonly input field when a modal pops up
+    $document.on('shown.bs.modal', function (e) {
+        $('input:visible:enabled:not([readonly]):first', e.target).focus(); 
+    });
 
-     // Using addClear plug-in function to add a clear button on input text fields
-     $resetval.addClear();
+    // Using addClear plug-in function to add a clear button on input text fields
+    //$resetval.addClear();
 
-     // Initialize Date picker library
-     $Date.datetimepicker({
-         timepicker: false,
-         format: 'Y-m-d'
-     });
+    // Initialize Date picker library
+    /*
+    $Date.datetimepicker({
+        timepicker: false,
+        format: 'Y-m-d'
+    });
+    */
 
     //=================================================================================================================
     // Module methods
+    function displayTabPage(targetTabPage) {
+        // Remove the active class on the current active tab
+        $(".nav-link.active").removeClass("active");
+        // Show the target tab page
+        $('.navbar-nav a[href="#'+targetTabPage+'"]').tab('show')
+        // Make the target tab page active
+        $('.navbar-nav a[href="#'+targetTabPage+'"]').addClass('active');
+    }
+
     function sleep(milliseconds) {
         var start = new Date().getTime();
         for (var i = 0; i < 1e7; i++) {
@@ -125,15 +133,6 @@
             tempDay = '0' + tempDate.getDate();
         }
         return tempDate.getFullYear() + '-' + tempMonth + '-' + tempDay;
-    }
-
-    // 2020-07-29 Turning off this changing cursor idea
-    function waitCursor() {
-        //$wildcard.css('cursor', 'progress');
-        //$ajaxError.html("");
-    }
-    function defaultCursor() {
-        //$wildcard.css('cursor', 'default');
     }
 
     // Helper functions for setting UI components from data
@@ -239,14 +238,13 @@
     //=================================================================================================================
     // This is what is exposed from this Module
     return {
+        displayTabPage,
         sleep:              sleep,
         urlParam:           urlParam,
         cleanStr:           cleanStr,
         csvFilter:          csvFilter,
         formatMoney:        formatMoney,
         formatDate:         formatDate,
-        waitCursor:         waitCursor,
-        defaultCursor:      defaultCursor,
         setBoolText:        setBoolText,
         setCheckbox:        setCheckbox,
         setCheckboxEdit:    setCheckboxEdit,

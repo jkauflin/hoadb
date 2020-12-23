@@ -131,30 +131,33 @@ function download_remote_file_with_curl($file_url, $save_to)
 }
 
 function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
-    //mb_internal_encoding("UTF-8");
-	$message = '<html><head><title>' . $subject .'</title></head><body>' . $messageStr . '</body></html>';
-	
-	// Always set content-type when sending HTML email
-	//$headers = "MIME-Version: 1.0" . "\r\n";
-	//$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-	
-	// More headers
-	//$headers .= 'From: ' . $fromEmailAddress . "\r\n";
-	/*
-	 $headers = 'From: webmaster@example.com' . "\r\n" .
-	 'Reply-To: webmaster@example.com' . "\r\n" .
-	 'X-Mailer: PHP/' . phpversion();
-	 */
-	
-    //mail($toStr,$subject,$message,$headers);
-
-    //$mimeType = 'text/plain';
-    $mimeType = 'text/html';
-
     try {
+    	$message = '<html><head><title>' . $subject .'</title></head><body>' . $messageStr . '</body></html>';
+    	
+    	// Always set content-type when sending HTML email
+    	$headers = "MIME-Version: 1.0" . "\r\n";
+    	$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+    	// More headers
+        $headers .= 'From: ' . $fromEmailAddress . "\r\n";
+        
+    	mail($toStr,$subject,$message,$headers);
+        return true;
+        
+    } catch(Exception $e) {
+        error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", sendHtmlEMail Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
+        return false;
+    }
+}
+
+function sendSwiftMail($toStr,$subject,$messageStr,$fromEmailAddress,
+                        $attachmentType='application/pdf',$attachmentPath='',$attachmentFiledata=null,
+                        $attachmentFilename='outfilename.pdf',$inlineAttachmentPath='') {
+    try {
+	    $message = '<html><head><title>' . $subject .'</title></head><body>' . $messageStr . '</body></html>';
+        $mimeType = 'text/html';
+
     	// Create the Transport (using default linux sendmail)
     	$transport = new Swift_SendmailTransport();
-
     	// Create the Mailer using your created Transport
     	$mailer = new Swift_Mailer($transport);
 
@@ -164,22 +167,37 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
     		->setTo([$toStr])
     		->setBody($messageStr,$mimeType);
 
-        // Create the attachment with your data
-    	//$attachment = new Swift_Attachment($filedata, $filename, 'application/pdf');
-    	// Attach it to the message
-    	//$message->attach($attachment);
+        if ($attachmentFiledata != null || $attachmentPath != '') {
+            $attachment = null;
+            if ($attachmentFiledata != null) {
+                // Create the attachment with your data
+    	        $attachment = new Swift_Attachment($attachmentFiledata, $attachmentFilename, 'application/pdf');
+            } else {
+                // Create an attachment from a path
+                $attachment = Swift_Attachment::fromPath($attachmentPath);
+                $attachment->setFilename($attachmentFilename);
+            }
+    	    // Attach it to the message
+            $message->attach($attachment);
+        }
+
+        if ($inlineAttachmentPath != '') {
+            // Add inline "Image"
+            $inline_attachment = Swift_Image::fromPath($inlineAttachmentPath);
+            $cid = $message->embed($inline_attachment);
+        }
          
     	// Send the message and check for success
     	if ($mailer->send($message)) {
-            //error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", sendHtmlEMail SUCCESS " . PHP_EOL, 3, LOG_FILE);
+            //error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", sendSwiftMail SUCCESS " . PHP_EOL, 3, LOG_FILE);
             return true;
     	} else {
-            error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", sendHtmlEMail ERROR " . PHP_EOL, 3, LOG_FILE);
+            error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", sendSwiftEMail ERROR " . PHP_EOL, 3, LOG_FILE);
             return false;
     	}
 
     } catch(Exception $e) {
-        error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", sendHtmlEMail Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
+        error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", sendSwiftMail Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
         return false;
     }
 }

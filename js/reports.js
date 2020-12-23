@@ -25,6 +25,7 @@
  *                  logic to the PHP query
  * 2020-10-14 JJK   Modified to use common getHoaRecList function and 
  *                  removed call to AdminExecute for dues rank list
+ * 2020-12-22 JJK   Re-factored for Bootstrap 4
  *============================================================================*/
 var reports = (function () {
     'use strict';
@@ -86,9 +87,9 @@ var reports = (function () {
                     .attr('name', "MailingListName")
                     .attr('type', "radio")
                     .attr('checked', "checked")
-                    .attr('value', "WelcomeLetters")).append($('<label>').html("&nbsp; Welcome Letters (property addresses, Sales WelcomeSent = S) &nbsp;&nbsp;"))
+                    .attr('value', "WelcomeLetters")).append($('<label class="ml-2">').html("Welcome Letters (property addresses, Sales WelcomeSent = S)"))
             if (jjklogin.getUserLevel() > 1) {
-                $ReportFilter.append($('<input>')
+                $ReportFilter.append($('<input class="ml-4">')
                     .prop('id', "LogWelcomeLetters")
                     .attr('name', "LogWelcomeLetters")
                     .attr('type', "checkbox"))
@@ -99,27 +100,27 @@ var reports = (function () {
                     .prop('id', "MailingListName")
                     .attr('name', "MailingListName")
                     .attr('type', "radio")
-                    .attr('value', "Newsletter")).append($('<label>').html("&nbsp; Newsletter (ALL property addresses)")).append($('</br>'))
+                    .attr('value', "Newsletter")).append($('<label class="ml-2">').html("Newsletter (ALL property addresses)")).append($('</br>'))
                 .append($('<input>')
                     .prop('id', "MailingListName")
                     .attr('name', "MailingListName")
                     .attr('type', "radio")
-                    .attr('value', "Duesletter1")).append($('<label>').html("&nbsp; Dues Letter 1st Notice (ALL owner addresses using ALT if set, skipping UseEmail) &nbsp;&nbsp;"))
+                    .attr('value', "Duesletter1")).append($('<label class="ml-2">').html("Dues Letter 1st Notice (ALL owner addresses using ALT if set, skipping UseEmail)"))
             $ReportFilter.append($('</br>'))
                 .append($('<input>')
                     .prop('id', "MailingListName")
                     .attr('name', "MailingListName")
                     .attr('type', "radio")
-                    .attr('value', "Duesletter2")).append($('<label>').html("&nbsp; Dues Letter 2nd Notice (Unpaid owner addresses using ALT if set) &nbsp;&nbsp;"))
+                    .attr('value', "Duesletter2")).append($('<label class="ml-2">').html("Dues Letter 2nd Notice (Unpaid owner addresses using ALT if set)"))
             if (jjklogin.getUserLevel() > 1) {
-                $ReportFilter.append($('<input>')
+                $ReportFilter.append($('<input class="ml-4">')
                     .prop('id', "LogDuesLetterSend")
                     .attr('name', "LogDuesLetterSend")
                     .attr('type', "checkbox"))
-                    .append($('<label>').html("&nbsp; Mark Dues Letters (1 or 2) as MAILED"))
+                    .append($('<label class="ml-2">').html("Mark Dues Letters (1 or 2) as MAILED"))
             }
             $ReportFilter.append($('</br>'))
-            $ReportFilter.append($('<a>')
+            $ReportFilter.append($('<a class="m-2">')
                     .prop('id', "MailingListReport")
                     .attr('href', "#")
                     .attr('class', "btn btn-primary reportRequest")
@@ -202,7 +203,7 @@ var reports = (function () {
         $ReportDownloadLinks.append(
             $('<a>').prop('id', 'DownloadReportCSV')
                 .attr('href', '#')
-                .attr('class', "btn btn-warning")
+                .attr('class', "btn btn-small btn-warning")
                 .attr('data-reportName', util.formatDate() + '-' + reportName)
                 .html('Download CSV'));
 
@@ -316,7 +317,7 @@ var reports = (function () {
                                 .attr('data-saleDate', hoaSalesRec.SALEDT)
                                 .attr('data-Action', "WelcomeSend")
                                 .attr('href', "#")
-                                .attr('class', "btn btn-success btn-xs SalesFlagUpdate")
+                                .attr('class', "btn btn-success btn-sm SalesFlagUpdate")
                                 .attr('role', "button")
                                 .html("Send"))
                             .append($('<a>').prop('id', reportName)
@@ -325,7 +326,7 @@ var reports = (function () {
                                 .attr('data-saleDate', hoaSalesRec.SALEDT)
                                 .attr('data-Action', "WelcomeIgnore")
                                 .attr('href', "#")
-                                .attr('class', "btn btn-warning btn-xs SalesFlagUpdate")
+                                .attr('class', "btn btn-warning btn-sm SalesFlagUpdate")
                                 .attr('role', "button")
                                 .html("Ignore"))
                         );
@@ -350,7 +351,7 @@ var reports = (function () {
                                 .attr('data-saleDate', hoaSalesRec.SALEDT)
                                 .attr('data-Action', "NewOwnerIgnore")
                                 .attr('href', "#")
-                                .attr('class', "btn btn-warning btn-xs SalesFlagUpdate")
+                                .attr('class', "btn btn-warning btn-sm SalesFlagUpdate")
                                 .attr('role', "button")
                                 .html("Ignore"))
                     );
@@ -440,7 +441,7 @@ var reports = (function () {
             $ReportDownloadLinks.append(
                 $('<a>').prop('id', 'DownloadReportCSV')
                     .attr('href', '#')
-                    .attr('class', "btn btn-warning")
+                    .attr('class', "btn btn-sm btn-warning")
                     .attr('data-reportName', util.formatDate() + '-' + reportName)
                     .html('Download CSV'));
 
@@ -554,7 +555,7 @@ var reports = (function () {
             $ReportDownloadLinks.append(
                 $('<a>').prop('id', 'DownloadReportCSV')
                     .attr('href', '#')
-                    .attr('class', "btn btn-warning")
+                    .attr('class', "btn btn-sm btn-warning")
                     .attr('data-reportName', util.formatDate() + '-' + reportName +'-'+ mailingListName)
                     .html('Download CSV'));
 
@@ -718,15 +719,14 @@ var reports = (function () {
             $ReportDownloadLinks.append(
                 $('<a>').prop('id', 'DownloadReportCSV')
                     .attr('href', '#')
-                    .attr('class', "btn btn-warning")
+                    .attr('class', "btn btn-sm btn-warning")
                     .attr('data-reportName', util.formatDate() + '-' + reportName)
                     .html('Download CSV'));
 
-            // Include downloadBtn class to add space to left margin
             $ReportDownloadLinks.append(
                 $('<a>').prop('id', 'DownloadReportPDF')
                     .attr('href', '#')
-                    .attr('class', "btn btn-danger downloadBtn")
+                    .attr('class', "btn btn-sm btn-danger ml-2")
                     .attr('data-reportName', util.formatDate() + '-' + reportName)
                     .html('Download PDF'));
 

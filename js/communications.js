@@ -13,7 +13,7 @@
  * 2020-08-03 JJK   Re-factored for new error handling
  * 2020-08-16 JJK   Modified to allow edit on issue
  * 2020-08-22 JJK   Increased CommDesc to 600 characters
- * 2020-10-13 JJK   
+ * 2020-12-22 JJK   Re-factored for Bootstrap 4
  *============================================================================*/
 var communications = (function () {
     'use strict';
@@ -30,7 +30,6 @@ var communications = (function () {
     var $document = $(document);
     var $moduleDiv = $('#CommPage');
     var $ajaxError = $moduleDiv.find(".ajaxError");
-    var $displayPage = $document.find('#navbar a[href="#CommPage"]');
     var $CommListDisplay = $moduleDiv.find("tbody");
     var $EditPage = $("#EditPage");
     var $EditTable = $("#EditTable");
@@ -55,8 +54,7 @@ var communications = (function () {
         $.getJSON("getHoaCommList.php", "parcelId=" + parcelId + "&ownerId=" + ownerId, function (outHoaCommRecList) {
             hoaCommRecList = outHoaCommRecList;
             _render();
-             
-            $displayPage.tab('show');
+            util.displayTabPage('CommPage');
         });
     }
 
@@ -150,7 +148,7 @@ var communications = (function () {
 
         tr = '<form class="form-inline" role="form">';
         tr += '<a data-commAction="Edit" data-parcelId="' + parcelId + '" data-ownerId="' + ownerId + '" data-commId="' + commId + '" href="#" class="btn btn-primary SaveCommEdit" role="button">Save</a>';
-        tr += '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button></form>';
+        tr += '<button type="button" class="btn btn-sm btn-info" data-dismiss="modal">Close</button></form>';
         $EditPageButton.html(tr);
 
     } // End of function formatCommEdit(hoaCommRec){

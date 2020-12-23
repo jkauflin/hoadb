@@ -60,8 +60,10 @@
  *                  updAssessmentPaid function
  * 2020-10-13 JJK   Added getHoaRecList to return a list of hoaRec objects
  *                  for reports and admin functions
+ * 2020-12-21 JJK   Removed function to return external_includes path
  *============================================================================*/
 
+/*
 function externalIncludesDir() {
     return "../../external_includes/";
 }
@@ -72,6 +74,7 @@ function getSecretsFilename() {
 function getSecretsFilename2() {
     return "../external_includes/hoadbSecrets.php";
 }
+*/
 
 function getConn($host, $dbadmin, $password, $dbname) {
     //error_log(date('[Y-m-d H:i:s] '). "in getConn, dbadmin = $dbadmin" . PHP_EOL, 3, LOG_FILE);
