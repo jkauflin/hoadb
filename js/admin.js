@@ -60,6 +60,7 @@
  * 2020-09-30 JJK   Added logic to save, update, and re-display paymentList
  * 2020-10-01 JJK   Added SalesUpload, and made upload file generic
  * 2020-10-28 JJK   Re-did Dues Email logic using Communication records
+ * 2020-12-24 JJK   Added SalesDownload to get file from County site
 *============================================================================*/
 var admin = (function () {
     'use strict';  // Force declaration of variables before use (among other things)
@@ -88,6 +89,7 @@ var admin = (function () {
     var $FirstNoticeCheckbox = $moduleDiv.find("#FirstNoticeCheckbox");
     var $DuesButtons = $moduleDiv.find("#DuesButtons");
     var $DuesListDisplay = $moduleDiv.find("#DuesListDisplay tbody");
+    //var $SalesDownload = $moduleDiv.find("#SalesDownload");
 
     //=================================================================================================================
     // Bind events
@@ -97,7 +99,12 @@ var admin = (function () {
     $FileUploadModal.on("submit", "#FileUploadForm", _handleFileUpload);
     $moduleDiv.on("click", ".LogPayment", _logPayment);
     $moduleDiv.on("click", "#DuesEmails", _duesEmailsButtons);
-    
+
+    // 2020-12-24 Can't figure out how to wait until the config values are set before trying to set the HREF
+    //var currYear = new Date().getFullYear();
+    //var downloadURL = config.getVal('countySalesDataUrl') + currYear + '.ZIP';
+    //$SalesDownload.attr("href", downloadURL);
+
     //=================================================================================================================
     // Module methods
     function _adminRequest(event) {

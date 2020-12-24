@@ -136,6 +136,8 @@ try {
         $fileName = 'payments.CSV';
 
 	} else if ($action == "SalesDownload") {
+        // *** 2020-12-24 Still can't get this working, the cURL won't work from host server ***
+        // *** just added a manual download (to local computer), and upload function ***
 
         $currTimestampStr = date("Y-m-d H:i:s");
         $salesYear = substr($currTimestampStr,0,4);

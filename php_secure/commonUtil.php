@@ -67,7 +67,7 @@ function downloadUrlToFile($url)
         curl_setopt($ch, CURLOPT_URL, $url);        // URL to call
         curl_setopt($ch, CURLOPT_FILE, $tempFile);  // Write output to this file
         curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36');
+        //curl_setopt($ch, CURLOPT_USERAGENT, 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36');
         curl_setopt($ch, CURLOPT_POST, 0); // Don't use HTTP POST (use default of HTTP GET)
         // CURLOPT_HTTPGET is default
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);  // Don't check SSL 

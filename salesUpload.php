@@ -43,7 +43,7 @@ try {
 
     $adminLevel = $userRec->userLevel;
 	if ($adminLevel < 2) {
-		$adminRec->message = "You do not have permissions to Add Assessments.";
+		$adminRec->message = "You do not have permissions for this function";
         $adminRec->result = "Not Valid";
         exit(json_encode($adminRec));
     }
@@ -105,6 +105,8 @@ try {
     $addToOutput = false;
     $outputStr = '';
 	$recCnt = 0;
+    $hoaRecsFound = 0;
+    $newSalesFound = 0;
 	while(!feof($file))
 	{
 		$recCnt = $recCnt + 1;
@@ -131,11 +133,14 @@ try {
 			continue;
 		}
 
+        $hoaRecsFound = $hoaRecsFound + 1;
         $hoaOwnerRec = $hoaRec->ownersList[0];
 			
 			$addToOutput = false;
             // If the Sales record was not found, insert one
 			if ( sizeof($hoaRec->salesList) < 1) {
+                $newSalesFound = $newSalesFound +1;
+
                 $stmt = $conn->prepare("INSERT INTO hoa_sales VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?); ");
 				$NotificationFlag = 'Y';
                 $ProcessedFlag = 'N';
@@ -190,21 +195,6 @@ try {
 				$outputStr .= '</tbody></table></p>';
 			}
 			
-				/*
-				 $hoaOwnerRec->OwnerID = $row["OwnerID"];
-				 $hoaOwnerRec->Owner_Name1 = $row["Owner_Name1"];
-				 $hoaOwnerRec->Owner_Name2 = $row["Owner_Name2"];
-				 $hoaOwnerRec->DatePurchased = $row["DatePurchased"];
-				 $hoaOwnerRec->Mailing_Name = $row["Mailing_Name"];
-				 $hoaOwnerRec->AlternateMailing = $row["AlternateMailing"];
-				 $hoaOwnerRec->Alt_Address_Line1 = $row["Alt_Address_Line1"];
-				 $hoaOwnerRec->Alt_Address_Line2 = $row["Alt_Address_Line2"];
-				 $hoaOwnerRec->Alt_City = $row["Alt_City"];
-				 $hoaOwnerRec->Alt_State = $row["Alt_State"];
-				 $hoaOwnerRec->Alt_Zip = $row["Alt_Zip"];
-				 $hoaOwnerRec->Owner_Phone = $row["Owner_Phone"];
-				 */
-
 		//$outputStr .= '<br>' . $valArray[0];
 			
 	} // End of while(!feof($file))
@@ -222,7 +212,8 @@ try {
         }
 	}
         
-	$adminRec->message = "Sales upload and update successful.";
+    $adminRec->message = "County Sales file processed successfully (Check Sales Report) </br>".
+                         " Total records = $recCnt, HOA records found = $hoaRecsFound, New HOA sales found = $newSalesFound";
 	$adminRec->result = "Valid";
 	echo json_encode($adminRec);
 
