@@ -57,10 +57,6 @@ function getParamVal($paramName) {
 function downloadUrlToFile($url)
 {
     try {
-
-//sys_get_temp_dir()
-//CURLOPT_FILE	The file that the transfer should be written to. The default is STDOUT (the browser window).
-
         $currTimestampStr = date("YmdHis");
         $tempFilename = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $currTimestampStr . 'jjktemp.zip';
 	    $tempFile = fopen($tempFilename, 'w');
@@ -68,13 +64,15 @@ function downloadUrlToFile($url)
         // create a new cURL resource
         $ch = curl_init();
         // set URL and other appropriate options
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_FILE, $tempFile);
+        curl_setopt($ch, CURLOPT_URL, $url);        // URL to call
+        curl_setopt($ch, CURLOPT_FILE, $tempFile);  // Write output to this file
         curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_POST, 0); // don't use HTTP POST
+        curl_setopt($ch, CURLOPT_USERAGENT, 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36');
+        curl_setopt($ch, CURLOPT_POST, 0); // Don't use HTTP POST (use default of HTTP GET)
         // CURLOPT_HTTPGET is default
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);  // Don't check SSL 
         // CURL_HTTP_VERSION_1_1
-		//curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+		//curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);  // return actual data for:  $file_content = curl_exec($ch);
 
         // grab URL and pass it to the browser
         curl_exec($ch);
