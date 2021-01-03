@@ -1,8 +1,8 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2015,2016,2020 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2016,2020,2021 John J Kauflin, All rights reserved. 
  *----------------------------------------------------------------------------
- * DESCRIPTION: 
+ * DESCRIPTION: Common functions for database work
  *----------------------------------------------------------------------------
  * Modification History
  * 2015-03-06 JJK 	Initial version to get data 
@@ -61,20 +61,9 @@
  * 2020-10-13 JJK   Added getHoaRecList to return a list of hoaRec objects
  *                  for reports and admin functions
  * 2020-12-21 JJK   Removed function to return external_includes path
+ * 2021-01-02 JJK   Modified for new Paypal API based payments, and to get
+ *                  payment instructions and processing fee from config
  *============================================================================*/
-
-/*
-function externalIncludesDir() {
-    return "../../external_includes/";
-}
-
-function getSecretsFilename() {
-    return "../../external_includes/hoadbSecrets.php";
-}
-function getSecretsFilename2() {
-    return "../external_includes/hoadbSecrets.php";
-}
-*/
 
 function getConn($host, $dbadmin, $password, $dbname) {
     //error_log(date('[Y-m-d H:i:s] '). "in getConn, dbadmin = $dbadmin" . PHP_EOL, 3, LOG_FILE);
@@ -146,7 +135,8 @@ class HoaRec
 	public $TotalDue;
 	public $paymentButton;
 	public $paymentInstructions;
-	public $userName;
+    public $userName;
+    public $paymentFee;
 }
 
 class HoaOwnerRec
@@ -475,7 +465,9 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 	$hoaRec->TotalDue = 0.00;
 	// Payment button will be set if online payment is enabled and allowed for this parcel
 	$hoaRec->paymentButton = '';
-	$hoaRec->paymentInstructions = '';
+    $hoaRec->paymentInstructions = '';
+    $hoaRec->paymentFee = 0.00;
+
 	$hoaRec->DuesEmailAddr = '';
 	$CurrentOwnerID = 0;
 	
@@ -829,18 +821,17 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 		// Only display payment button if something is owed
 		// For now, only set payment button if just the current year dues are owed (no other years or open liens)
 		if ($hoaRec->TotalDue > 0) {
+            $hoaRec->paymentInstructions = getConfigValDB($conn,"OfflinePaymentInstructions");
+            $hoaRec->paymentFee = stringToMoney(getConfigValDB($conn,"paymentFee"));
 			if ($onlyCurrYearDue) {
+                /*
 				$hoaRec->paymentButton = $paypalFixedAmtButtonForm;
                 $hoaRec->paymentButton .= $paypalFixedAmtButtonInput;
-                
 				$customValues = $parcelId . ',' . $ownerId . ',' . $fyPayment . ',' .$hoaRec->TotalDue;
 				$hoaRec->paymentButton .= '<input type="hidden" name="custom" value="' . $customValues . '">';
-				$hoaRec->paymentButton .= '</form>';
-				$hoaRec->paymentInstructions = '($4.00 processing fee will be added for online payment)';
-			} else {
-				// Non-online Paypal payment instructions
-				$hoaRec->paymentInstructions = '(general payment instructions - contact Treasurer)';
-				
+                $hoaRec->paymentButton .= '</form>';
+                */
+                $hoaRec->paymentInstructions = getConfigValDB($conn,"OnlinePaymentInstructions");
 			}
 		} // End of if ($hoaRec->TotalDue > 0) {
 
@@ -905,6 +896,7 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 	// Payment button will be set if online payment is enabled and allowed for this parcel
 	$hoaRec->paymentButton = '';
 	$hoaRec->paymentInstructions = '';
+    $hoaRec->paymentFee = 0.00;
 	
 	// Get values from database and load into structure that will be returned as JSON
 	$stmt = $conn->prepare("SELECT * FROM hoa_properties WHERE Parcel_ID = ? ; ");
@@ -1162,18 +1154,17 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 		// Only display payment button if something is owed
 		// For now, only set payment button if just the current year dues are owed (no other years or open liens)
 		if ($hoaRec->TotalDue > 0) {
+            $hoaRec->paymentInstructions = getConfigValDB($conn,"OfflinePaymentInstructions");
+            $hoaRec->paymentFee = stringToMoney(getConfigValDB($conn,"paymentFee"));
 			if ($onlyCurrYearDue) {
+                /*
 				$hoaRec->paymentButton = $paypalFixedAmtButtonForm;
                 $hoaRec->paymentButton .= $paypalFixedAmtButtonInput;
-                
 				$customValues = $parcelId . ',' . $ownerId . ',' . $fyPayment . ',' .$hoaRec->TotalDue;
 				$hoaRec->paymentButton .= '<input type="hidden" name="custom" value="' . $customValues . '">';
-				$hoaRec->paymentButton .= '</form>';
-				$hoaRec->paymentInstructions = '($4.00 processing fee will be added for online payment)';
-			} else {
-				// Non-online Paypal payment instructions
-				$hoaRec->paymentInstructions = '(general payment instructions - contact Treasurer)';
-	
+                $hoaRec->paymentButton .= '</form>';
+                */
+                $hoaRec->paymentInstructions = getConfigValDB($conn,"OnlinePaymentInstructions");
 			}
 		} // End of if ($hoaRec->TotalDue > 0) {
 	
@@ -1328,7 +1319,7 @@ function setCommEmailSent($conn,$Parcel_ID,$CommID,$LastChangedBy='') {
 //----------------------------------------------------------------------------------------------------------------
 // Common function to take the payment transaction information and update the HOA database for PAID, etc.
 //----------------------------------------------------------------------------------------------------------------
-function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_email,$payment_amt,$payment_fee,$fromEmailAddress) {
+function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_email,$payment_amt,$payment_fee) {
 	// Get the HOA record for this Parcel and Owner
 	$hoaRec = getHoaRec($conn,$parcelId,$ownerId,'');
 	if ($hoaRec == null || $hoaRec->Parcel_ID == null || $hoaRec->Parcel_ID != $parcelId) {
@@ -1357,6 +1348,12 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 		    $hoaPaymentRec = getHoaPaymentRec($conn,$parcelId,$txn_id);
         }
 
+        // Double check the payment amount against the total due
+        $paymentShort = false;
+        if ($payment_amt < $hoaRec->TotalDue) {
+            $paymentShort = true;
+        }
+
         // get assessment record first and check PAID (and mail flags?)
         $assessmentPaid = 0;
 		$stmt = $conn->prepare("SELECT * FROM hoa_assessments WHERE Parcel_ID = ? AND FY = ? ; ");
@@ -1371,14 +1368,14 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 
         // If the Assessment has not been marked as PAID, mark it and check to send emails
         // (this will handle the transaction re-send case in an Idempotent manner)
-        if (!$assessmentPaid) {
+        if (!$assessmentPaid && !$paymentShort) {
 			// Update Assessment record for payment		
 			$assessmentsComments = $txn_id;
 		
 			$paidBoolean = 1;
 			$datePaid = date("Y-m-d");
 			$paymentMethod = 'Paypal';
-			$username = 'ipnHandler';
+			$username = 'paypal';
         
 			if (!$stmt = $conn->prepare("UPDATE hoa_assessments SET Paid=?,DatePaid=?,PaymentMethod=?," .
 					"Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND FY = ? ; ")) {
@@ -1398,32 +1395,38 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 
         // Send email notifications (if they have not been sent)
         if ($hoaPaymentRec->paidEmailSent != 'Y') {
-        // Set notification emails
-			$payerInfo = 'Thank you for your GRHA member dues payment.  Our records have been successfully updated to show that the assessment has been PAID.  ';
-			$payerInfo .= 'You can use the Dues Checker on our website (www.grha-dayton.org) to see the updated record. ';
-			$payerInfo .= 'Your dues will be used to promote the recreation, health, safety, and welfare of the ';
-			$payerInfo .= 'residents in the Properties, and for the improvement and maintenance of the Common Areas. ';
+            $fromEmailAddress = getConfigValDB($conn,"fromEmailAddress");
+            $treasurerEmail = getConfigValDB($conn,"treasurerEmail");
+            $paymentEmailList = getConfigValDB($conn,"paymentEmailList");
 
-			$treasurerInfo = 'The following payment has been recorded and the assessment has been marked as PAID.';
+            if ($paymentShort) {
+    			$payerInfo = 'Thank you for your GRHA member dues payment.  Payment is less than total due - Please contact Treasurer  ';
+			    $treasurerInfo = 'The following payment has been recorded, but NOT marked as PAID because it is short of total. ';
+            } else {
+    			$payerInfo = 'Thank you for your GRHA member dues payment.  Our records have been successfully updated to show that the assessment has been PAID.  ';
+    			$payerInfo .= 'Your dues will be used to promote the recreation, health, safety, and welfare of the ';
+    			$payerInfo .= 'residents in the Properties, and for the improvement and maintenance of the Common Areas. ';
+                $treasurerInfo = 'The following payment has been recorded and the assessment has been marked as PAID. ';
+            }
+            $treasurerInfo .= ' Payment fee was ' . $payment_fee;
 				
 			$paymentInfoStr = '<br><br>Parcel Id: ' . $parcelId;
 			$paymentInfoStr .= '<br>Fiscal Year: ' . $fy;
 			$paymentInfoStr .= '<br>Transaction Id: ' . $txn_id;
 			$paymentInfoStr .= '<br>Payment Date: ' . $payment_date;
 			$paymentInfoStr .= '<br>Payer Email: ' . $payer_email;
-			$paymentInfoStr .= '<br>Payment Amount: ' . $payment_amt . ' (this includes the $4.00 PayPal processing fee) <br>';
+			$paymentInfoStr .= '<br>Payment Amount: ' . $payment_amt . ' (this includes the Paypal processing fee) <br>';
 			
             $sendMailSuccess = false;
 
 			$subject = 'GRHA Payment Confirmation';
-			$messageStr = '<h3>GRHA Payment Confirmation</h3>' . $payerInfo . $paymentInfoStr;
-			$sendMailSuccess = sendHtmlEMail($payer_email,$subject,$messageStr,$fromEmailAddress);
-            // If the Member email was successful, send the Treasurer notification
-            if ($sendMailSuccess) {
-                $subject = 'GRHA Payment Notification';
-			    $messageStr = '<h3>GRHA Payment Notification</h3>' . $treasurerInfo . $paymentInfoStr;
-			    $sendMailSuccess = sendHtmlEMail(getConfigValDB($conn,"paymentEmailList"),$subject,$messageStr,$fromEmailAddress);
-            }
+			$messageStr = '<h4>GRHA Payment Confirmation</h4>' . $payerInfo . $paymentInfoStr;
+            $sendMailSuccess = sendHtmlEMail($payer_email,$subject,$messageStr,$fromEmailAddress);
+
+            $subject = 'GRHA Payment Notification';
+			$messageStr = '<h4>GRHA Payment Notification</h4>' . $treasurerInfo . $paymentInfoStr;
+			$sendMailSuccess = sendHtmlEMail($treasurerEmail,$subject,$messageStr,$fromEmailAddress);
+			$sendMailSuccess = sendHtmlEMail($paymentEmailList,$subject,$messageStr,$fromEmailAddress);
 
             // Update the paidEmailSent flag on the Payment record
             if ($sendMailSuccess) {

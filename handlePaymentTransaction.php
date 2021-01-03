@@ -69,8 +69,7 @@ try {
         $param->payment_date,
         $param->fromEmail,
         $param->gross,
-        $param->fee,
-        $fromEmailAddress);
+        $param->fee);
 
         // After the update, re-query to get the flag values
         $paymentRec = new PaymentRec();

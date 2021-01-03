@@ -666,12 +666,7 @@ var detail = (function(){
 
         // If enabled, payment button and instructions will have values, else they will be blank if online payment is not allowed
         if (hoaRec.TotalDue > 0) {
-            $("#PayDues").html(hoaRec.paymentButton);
-            if (hoaRec.paymentButton != '') {
-                $("#PayDuesInstructions").html(config.getVal('onlinePaymentInstructions'));
-            } else {
-                $("#PayDuesInstructions").html(config.getVal('offlinePaymentInstructions'));
-            }
+            $("#PayDuesInstructions").html(hoaRec.paymentInstructions);
         }
 
         duesStatementDownloadLinks.append(
