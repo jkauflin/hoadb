@@ -196,10 +196,10 @@ var detail = (function(){
                 tr = tr + '<th>Dues Amt</th>';
                 tr = tr + '<th>Lien</th>';
                 tr = tr + '<th>Paid</th>';
-                tr = tr + '<th class="d-none d-sm-table-cell>Non-Coll</th>';
-                tr = tr + '<th class="d-none d-sm-table-cell">Date Paid</th>';
-                tr = tr + '<th class="d-none d-sm-table-cell">Date Due</th>';
-                tr = tr + '<th class="d-none d-sm-table-cell">Payment</th>';
+                tr = tr + '<th class="d-none d-sm-table-cell">Non-Coll</th>';
+                tr = tr + '<th class="d-none d-md-table-cell">Date Paid</th>';
+                tr = tr + '<th class="d-none d-md-table-cell">Date Due</th>';
+                tr = tr + '<th class="d-none d-md-table-cell">Payment</th>';
                 tr = tr + '<th class="d-none d-sm-table-cell">Comments</th>';
                 tr = tr + '</tr>';
                 TaxYear = rec.DateDue.substring(0, 4);
@@ -235,10 +235,10 @@ var detail = (function(){
 
             tr = tr + '<td>' + util.setCheckbox(rec.Paid) + '</td>';
 
-            tr = tr + '<td class="d-none d-sm-table-cell>' + util.setCheckbox(rec.NonCollectible) + '</td>';
-            tr = tr + '<td class="d-none d-sm-table-cell">' + rec.DatePaid + '</td>';
-            tr = tr + '<td class="d-none d-sm-table-cell">' + rec.DateDue + '</td>';
-            tr = tr + '<td class="d-none d-sm-table-cell">' + rec.PaymentMethod + '</td>';
+            tr = tr + '<td class="d-none d-sm-table-cell">' + util.setCheckbox(rec.NonCollectible) + '</td>';
+            tr = tr + '<td class="d-none d-md-table-cell">' + rec.DatePaid + '</td>';
+            tr = tr + '<td class="d-none d-md-table-cell">' + rec.DateDue + '</td>';
+            tr = tr + '<td class="d-none d-md-table-cell">' + rec.PaymentMethod + '</td>';
             tr = tr + '<td class="d-none d-sm-table-cell">' + rec.Comments + ' ' + rec.LienComment + '</td>';
             tr = tr + '</tr>';
         });
