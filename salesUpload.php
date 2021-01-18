@@ -67,11 +67,14 @@ try {
         exit(json_encode($adminRec));
     }
 
+    $currTimestampStr = date("Y-m-d H:i:s");
+    // Get the year from the current system time
+    $salesYear = substr($currTimestampStr,0,4);
+    // 2021-01-18 - Problem of running in January with file from last year
+    // Tell the user to use the SALES_yyyy_RES.csv file from within, rather than the Zip
+
     // Check if upload file is parent ZIP or individual residental sales CSV
     if ($ext == 'zip') {
-        $currTimestampStr = date("Y-m-d H:i:s");
-        // Get the year from the current system time
-        $salesYear = substr($currTimestampStr,0,4);
         // Residential sales file in the Zip collection
         $resFileName = 'SALES_' . $salesYear . '_RES.csv';
         $zipFile = new ZipArchive();
@@ -85,7 +88,6 @@ try {
 		if (!$file) {
             exit("Failed to open file in downloaded, file = $resFileName\n");
         }
-
 
     } else {
         // Open the uploaded file from the temporary location
