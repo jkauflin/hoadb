@@ -449,6 +449,7 @@ var reports = (function () {
             // Loop through the list of properties / current owner
             var totalDue = 0.0;
             var recCnt = 0;
+            var DateDue2 = config.getVal('dueDate2');
             $.each(reportList, function (index, hoaRec) {
                 totalDue = util.formatMoney(hoaRec.TotalDue);
                 //console.log('TotalDue = ' + util.formatMoney(hoaRec.TotalDue));
@@ -499,6 +500,8 @@ var reports = (function () {
                     csvLine += ',' + util.csvFilter("NonCollectible");
                     csvLine += ',' + util.csvFilter("DateDue");
                     csvLine += ',' + util.csvFilter("UseEmail");
+                    csvLine += ',' + util.csvFilter("FiscalYearPrev");
+                    csvLine += ',' + util.csvFilter("DateDue2");
                     csvContent += csvLine + '\n';
                 }
 
@@ -548,6 +551,10 @@ var reports = (function () {
                 csvLine += ',' + util.csvFilter(util.setBoolText(hoaRec.assessmentsList[0].NonCollectible));
                 csvLine += ',' + util.csvFilter(hoaRec.assessmentsList[0].DateDue);
                 csvLine += ',' + util.csvFilter(hoaRec.UseEmail);
+                csvLine += ',' + util.csvFilter(reportYear-1);
+                //var tempDate = new Date(hoaRec.assessmentsList[0].DateDue);
+                //var DateDue2 = util.formatDate2(tempDate);
+                csvLine += ',' + util.csvFilter(DateDue2);
                 csvContent += csvLine + '\n';
 
             }); // $.each(reportList, function(index, hoaRec) {

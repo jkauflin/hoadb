@@ -135,6 +135,22 @@
         return tempDate.getFullYear() + '-' + tempMonth + '-' + tempDay;
     }
 
+    function formatDate2(inDate) {
+        var tempDate = inDate;
+        if (tempDate == null) {
+            tempDate = new Date();
+        }
+        var tempMonth = tempDate.getMonth() + 1;
+        if (tempDate.getMonth() < 9) {
+            tempMonth = '0' + (tempDate.getMonth() + 1);
+        }
+        var tempDay = tempDate.getDate();
+        if (tempDate.getDate() < 10) {
+            tempDay = '0' + tempDate.getDate();
+        }
+        return tempDate.getFullYear() + '-' + tempMonth + '-' + tempDay;
+    }
+
     // Helper functions for setting UI components from data
     function setBoolText(inBool) {
         var tempStr = "NO";
@@ -245,6 +261,7 @@
         csvFilter:          csvFilter,
         formatMoney:        formatMoney,
         formatDate:         formatDate,
+        formatDate2,
         setBoolText:        setBoolText,
         setCheckbox:        setCheckbox,
         setCheckboxEdit:    setCheckboxEdit,
