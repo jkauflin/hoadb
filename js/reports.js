@@ -26,6 +26,7 @@
  * 2020-10-14 JJK   Modified to use common getHoaRecList function and 
  *                  removed call to AdminExecute for dues rank list
  * 2020-12-22 JJK   Re-factored for Bootstrap 4
+ * 2021-02-02 JJK   Added fields to the mailing list for dues letters
  *============================================================================*/
 var reports = (function () {
     'use strict';
@@ -450,6 +451,7 @@ var reports = (function () {
             var totalDue = 0.0;
             var recCnt = 0;
             var DateDue2 = config.getVal('dueDate2');
+            var noticeDate = util.formatDate();
             $.each(reportList, function (index, hoaRec) {
                 totalDue = util.formatMoney(hoaRec.TotalDue);
                 //console.log('TotalDue = ' + util.formatMoney(hoaRec.TotalDue));
@@ -502,6 +504,7 @@ var reports = (function () {
                     csvLine += ',' + util.csvFilter("UseEmail");
                     csvLine += ',' + util.csvFilter("FiscalYearPrev");
                     csvLine += ',' + util.csvFilter("DateDue2");
+                    csvLine += ',' + util.csvFilter("NoticeDate");
                     csvLine += ',' + util.csvFilter("Email");
                     csvLine += ',' + util.csvFilter("Email2");
                     csvContent += csvLine + '\n';
@@ -557,6 +560,7 @@ var reports = (function () {
                 //var tempDate = new Date(hoaRec.assessmentsList[0].DateDue);
                 //var DateDue2 = util.formatDate2(tempDate);
                 csvLine += ',' + util.csvFilter(DateDue2);
+                csvLine += ',' + util.csvFilter(noticeDate);
                 csvLine += ',' + util.csvFilter(hoaRec.DuesEmailAddr);
                 csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].EmailAddr2);
                 csvContent += csvLine + '\n';
