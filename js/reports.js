@@ -502,6 +502,8 @@ var reports = (function () {
                     csvLine += ',' + util.csvFilter("UseEmail");
                     csvLine += ',' + util.csvFilter("FiscalYearPrev");
                     csvLine += ',' + util.csvFilter("DateDue2");
+                    csvLine += ',' + util.csvFilter("Email");
+                    csvLine += ',' + util.csvFilter("Email2");
                     csvContent += csvLine + '\n';
                 }
 
@@ -555,6 +557,8 @@ var reports = (function () {
                 //var tempDate = new Date(hoaRec.assessmentsList[0].DateDue);
                 //var DateDue2 = util.formatDate2(tempDate);
                 csvLine += ',' + util.csvFilter(DateDue2);
+                csvLine += ',' + util.csvFilter(hoaRec.DuesEmailAddr);
+                csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].EmailAddr2);
                 csvContent += csvLine + '\n';
 
             }); // $.each(reportList, function(index, hoaRec) {
