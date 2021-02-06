@@ -424,11 +424,12 @@ function createDuesMessage($conn,$Parcel_ID) {
 
     $htmlMessageStr .= '<b>' . $hoaName . '</b>' . '<br>';
     $htmlMessageStr .= $title . " for Fiscal Year " . '<b>' . $FY . '</b>' . '<br>';
-    $htmlMessageStr .= '<b>For the Period:</b> Oct 1st, ' . $noticeYear . ' thru Sept 30th, ' . $FY . '<br><br>';
+    $htmlMessageStr .= '<b>For the Period:</b> Oct 1, ' . $noticeYear . ' thru Sept 30, ' . $FY . '<br><br>';
 
     $htmlMessageStr .= '<b>Current Dues Amount: </b>$' . stringToMoney($hoaRec->assessmentsList[0]->DuesAmt) . '<br>';
-    $htmlMessageStr .= '<b>Total Due (as of ' . $noticeDate . ') :</b> $' . $hoaRec->TotalDue . '<br>';
-    $htmlMessageStr .= '<b>Due Date: </b>' . 'October 1st, ' . $noticeYear . '<br>';
+    $htmlMessageStr .= '<b>Total Outstanding (as of ' . $noticeDate . ') :</b> $' . $hoaRec->TotalDue . '<br>';
+    $htmlMessageStr .= '*** Includes fees, current & past dues ***';
+    $htmlMessageStr .= '<b>Due Date: </b>' . 'October 1, ' . $noticeYear . '<br>';
     $htmlMessageStr .= '<b>Dues must be paid to avoid a lien and lien fees </b><br><br>';
 
     $htmlMessageStr .= '<b>Parcel Id: </b>' . $hoaRec->Parcel_ID . '<br>';
