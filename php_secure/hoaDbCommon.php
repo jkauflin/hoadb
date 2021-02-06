@@ -427,13 +427,13 @@ function createDuesMessage($conn,$Parcel_ID) {
     $htmlMessageStr .= '<b>For the Period:</b> Oct 1, ' . $noticeYear . ' thru Sept 30, ' . $FY . '<br><br>';
 
     $htmlMessageStr .= '<b>Current Dues Amount: </b>$' . stringToMoney($hoaRec->assessmentsList[0]->DuesAmt) . '<br>';
-    $htmlMessageStr .= '<b>Total Outstanding (as of ' . $noticeDate . ') :</b> $' . $hoaRec->TotalDue . '<br>';
-    $htmlMessageStr .= '*** Includes fees, current & past dues ***';
+    //$htmlMessageStr .= '<b>Total Outstanding (as of ' . $noticeDate . ') :</b> $' . $hoaRec->TotalDue . '<br>';
+    $htmlMessageStr .= '<b>  Total Outstanding:</b> $' . $hoaRec->TotalDue . '<br>';
+    $htmlMessageStr .= '  *** Includes fees, current & past dues *** <br>';
     $htmlMessageStr .= '<b>Due Date: </b>' . 'October 1, ' . $noticeYear . '<br>';
     $htmlMessageStr .= '<b>Dues must be paid to avoid a lien and lien fees </b><br><br>';
 
     $htmlMessageStr .= '<b>Parcel Id: </b>' . $hoaRec->Parcel_ID . '<br>';
-    $htmlMessageStr .= '<b>Lot:</b> ' . $hoaRec->LotNo . '<br>';
     $htmlMessageStr .= '<b>Owner: </b>' . $hoaRec->ownersList[0]->Mailing_Name . '<br>';
     $htmlMessageStr .= '<b>Location: </b>' . $hoaRec->Parcel_Location . '<br>';
     $htmlMessageStr .= '<b>Phone: </b>' . $hoaRec->ownersList[0]->Owner_Phone . '<br>';
