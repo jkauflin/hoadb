@@ -550,7 +550,11 @@ var reports = (function () {
                     
                 csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Owner_Phone);
                 csvLine += ',' + util.csvFilter(reportYear);
-                csvLine += ',' + util.csvFilter(hoaRec.assessmentsList[0].DuesAmt);
+                if (hoaRec.assessmentsList[0].Paid) {
+                    csvLine += ',$0';
+                } else {
+                    csvLine += ',' + util.csvFilter(hoaRec.assessmentsList[0].DuesAmt);
+                }
                 csvLine += ',' + util.csvFilter(totalDue);
                 csvLine += ',' + util.csvFilter(util.setBoolText(hoaRec.assessmentsList[0].Paid));
                 csvLine += ',' + util.csvFilter(util.setBoolText(hoaRec.assessmentsList[0].NonCollectible));
