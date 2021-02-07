@@ -451,7 +451,7 @@ var reports = (function () {
             var totalDue = 0.0;
             var recCnt = 0;
             var DateDue2 = config.getVal('dueDate2');
-            var noticeDate = util.formatDate();
+            var noticeDate = util.formatDateMonth();
             $.each(reportList, function (index, hoaRec) {
                 totalDue = util.formatMoney(hoaRec.TotalDue);
                 //console.log('TotalDue = ' + util.formatMoney(hoaRec.TotalDue));

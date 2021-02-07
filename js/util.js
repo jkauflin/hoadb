@@ -21,6 +21,7 @@
  *                  Moved result.error check and message display to the
  *                  individual calls
  * 2020-12-22 JJK   Re-factored for Bootstrap 4, and added displayTabPage
+ * 2021-02-07 JJK   Added formateDateMonth
  *============================================================================*/
  var util = (function(){
     'use strict';  // Force declaration of variables before use (among other things)
@@ -151,6 +152,16 @@
         return tempDate.getFullYear() + '-' + tempMonth + '-' + tempDay;
     }
 
+    var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    function formatDateMonth(inDate) {
+        var tempDate = inDate;
+        if (tempDate == null) {
+            tempDate = new Date();
+        }
+        return months[tempDate.getMonth()] + ' ' + tempDate.getDate() + ', ' + tempDate.getFullYear();
+    }
+
+
     // Helper functions for setting UI components from data
     function setBoolText(inBool) {
         var tempStr = "NO";
@@ -262,6 +273,7 @@
         formatMoney:        formatMoney,
         formatDate:         formatDate,
         formatDate2,
+        formatDateMonth,
         setBoolText:        setBoolText,
         setCheckbox:        setCheckbox,
         setCheckboxEdit:    setCheckboxEdit,
