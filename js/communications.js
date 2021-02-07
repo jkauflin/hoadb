@@ -147,8 +147,8 @@ var communications = (function () {
         $EditTableBody.html(tr);
 
         tr = '<form class="form-inline" role="form">';
-        tr += '<a data-commAction="Edit" data-parcelId="' + parcelId + '" data-ownerId="' + ownerId + '" data-commId="' + commId + '" href="#" class="btn btn-primary SaveCommEdit" role="button">Save</a>';
-        tr += '<button type="button" class="btn btn-sm btn-info" data-dismiss="modal">Close</button></form>';
+        tr += '<a data-commAction="Edit" data-parcelId="' + parcelId + '" data-ownerId="' + ownerId + '" data-commId="' + commId + '" href="#" class="btn btn-sm btn-primary SaveCommEdit" role="button">Save</a>';
+        tr += '<button type="button" class="btn btn-sm btn-info ml-1" data-dismiss="modal">Close</button></form>';
         $EditPageButton.html(tr);
 
     } // End of function formatCommEdit(hoaCommRec){
