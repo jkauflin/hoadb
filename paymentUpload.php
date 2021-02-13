@@ -7,6 +7,7 @@
  * Modification History
  * 2020-09-25 JJK   Initial version
  * 2020-12-21 JJK   Re-factored to use jjklogin package
+ * 2021-02-13 JJK   Modified for new paypal express payment values
  *============================================================================*/
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
@@ -86,11 +87,12 @@ try {
     $TimeCol = -1;
     $TimeZoneCol = -1;
     $NameCol = -1;	
+    $TypeCol = -1;	
     $GrossCol = -1;
     $FeeCol = -1;
     $FromEmailAddressCol = -1;
     $TransactionIDCol = -1;
-    $ItemTitleCol = -1;
+    //$ItemTitleCol = -1;
     $CustomNumberCol = -1;
     $ContactPhoneNumberCol = -1;
     $ExpectedColsNotFound = '';
@@ -118,6 +120,8 @@ try {
                     $TimeZoneCol = $i;
                 } else if ($paymentCoumnArray[$i] == 'Name') {
                     $NameCol = $i;
+                } else if ($paymentCoumnArray[$i] == 'Type') {
+                    $TypeCol = $i;
                 } else if ($paymentCoumnArray[$i] == 'Gross') {
                     $GrossCol = $i;
                 } else if ($paymentCoumnArray[$i] == 'Fee') {
@@ -151,6 +155,10 @@ try {
             if ($NameCol < 0) {
                 $AllColsFound = false;
                 $ExpectedColsNotFound .= 'Name, ';
+            }
+            if ($TypeCol < 0) {
+                $AllColsFound = false;
+                $ExpectedColsNotFound .= 'Type, ';
             }
             if ($GrossCol < 0) {
                 $AllColsFound = false;
@@ -197,7 +205,12 @@ try {
         }
 
         // Only want to check the current year dues payments
-        if ($paymentArray[$ItemTitleCol] != "Current Year Dues") {
+//Item Title
+//2021 Dues and processing fee for property at <parcel location>
+        //if ($paymentArray[$ItemTitleCol] != "Current Year Dues") {
+        //    continue;
+        //}
+        if ($paymentArray[$TypeCol] != "Express Checkout Payment") {
             continue;
         }
 
@@ -210,10 +223,8 @@ try {
         $paymentRec->fee = $paymentArray[$FeeCol];
 
         $strArray = explode(",",$paymentArray[$CustomNumberCol]);
-        $paymentRec->Parcel_ID = $strArray[0];
-        $paymentRec->OwnerID = $strArray[1];
-        $paymentRec->FY = $strArray[2];
-        $paymentRec->DuesAmt = $strArray[3];
+        $paymentRec->FY = $strArray[0];
+        $paymentRec->Parcel_ID = $strArray[1];
 
         $paymentRec->ContactPhone = $paymentArray[$ContactPhoneNumberCol];
 

@@ -20,6 +20,7 @@
  * 2020-09-19 JJK   Corrected email issue by including autoload.php
  * 2020-12-31 JJK   New version (not using IPN), using PHP SDK for Paypal API
  * 2020-01-03 JJK   Modified to go Live with production settings
+ * 2021-02-13 JJK   Modified CustomId to be FY,ParcelId
  *============================================================================*/
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
@@ -67,7 +68,11 @@ try {
     $parcelId = $response->result->purchase_units[0]->reference_id;
     $ownerId = 0;
     $payeeEmail = $response->result->purchase_units[0]->payee->email_address;
-    $fy = $response->result->purchase_units[0]->custom_id;
+
+    $strArray = explode(",",$response->result->purchase_units[0]->custom_id);
+    $fy = $strArray[0];
+    $parcelId2 = $strArray[1];
+
     $txn_id = $response->result->purchase_units[0]->payments->captures[0]->id;
     $totalAmount = $response->result->purchase_units[0]->payments->captures[0]->amount->value;
     $payment_date = $response->result->purchase_units[0]->payments->captures[0]->create_time;
