@@ -7,6 +7,8 @@
  * Modification History
  * 2020-10-01 JJK   Initial version
  * 2020-12-21 JJK   Re-factored to use jjklogin package
+ * 2021-04-24 JJK   Corrected filename bug by looking at the file in the ZIP
+ *                  and updated error handling by replacing exit() with throw()
  *============================================================================*/
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
@@ -43,16 +45,12 @@ try {
 
     $adminLevel = $userRec->userLevel;
 	if ($adminLevel < 2) {
-		$adminRec->message = "You do not have permissions for this function";
-        $adminRec->result = "Not Valid";
-        exit(json_encode($adminRec));
+        throw new Exception('You do not have permissions for this function', 500);
     }
 
     $fileName = $_FILES['uploadFilename']['name'];
     if (empty($fileName)) {
-		$adminRec->message = "No file selected.";
-        $adminRec->result = "Not Valid";
-        exit(json_encode($adminRec));
+        throw new Exception('No file selected', 500);
     }
 
     // get uploaded file's extension
@@ -62,37 +60,37 @@ try {
     //move_uploaded_file(file, dest)
 
     if (!file_exists($tmp_file)) {
-		$adminRec->message = "Upload file not found.";
-        $adminRec->result = "Not Valid";
-        exit(json_encode($adminRec));
+        throw new Exception('Upload file not found', 500);
     }
 
-    $currTimestampStr = date("Y-m-d H:i:s");
-    // Get the year from the current system time
-    $salesYear = substr($currTimestampStr,0,4);
-    // 2021-01-18 - Problem of running in January with file from last year
-    // Tell the user to use the SALES_yyyy_RES.csv file from within, rather than the Zip
-
     // Check if upload file is parent ZIP or individual residental sales CSV
+    $file = null;
     if ($ext == 'zip') {
-        // Residential sales file in the Zip collection
-        $resFileName = 'SALES_' . $salesYear . '_RES.csv';
         $zipFile = new ZipArchive();
     	if (!$zipFile->open($tmp_file)) {
-    		$adminRec->message = "Failed to open ZIP file.";
-            $adminRec->result = "Not Valid";
-            exit(json_encode($adminRec));
+            throw new Exception('Failed to open uploaded ZIP file', 500);
         }
 
-		$file = $zipFile->getStream($resFileName);
-		if (!$file) {
-            exit("Failed to open file in downloaded, file = $resFileName\n");
-        }
+        for ($i = 0; $i < $zipFile->numFiles; $i++) {
+            $fileInZip = $zipFile->getNameIndex($i);
+            // Look for the Residential sales file in the Zip collection
+            if (strstr($fileInZip,'_RES.csv')) {
+        		$file = $zipFile->getStream($fileInZip);
+        		if (!$file) {
+                    throw new Exception("Failed to open file in ZIP, file = $fileInZip", 500);
+                }
+                break;
+            }
+        }     
 
     } else {
         // Open the uploaded file from the temporary location
-        $file = fopen($tmp_file, "r") or die("Unable to open file!");
+        //$file = fopen($tmp_file, "r") or die("Unable to open file!");
+        $file = fopen($tmp_file, "r");
+    }
 
+    if (!$file) {
+        throw new Exception('Unable to open file', 500);
     }
 
     //$action = getParamVal("action");
@@ -206,8 +204,8 @@ try {
 	$conn->close();
 
 	if ($sendMessage) {
-		$subject = 'HOA Residential Sales in ' . $salesYear;
-		$messageStr = '<h2>HOA Residential Sales in ' . $salesYear . '</h2>' . $outputStr;
+		$subject = 'HOA Residential Sales';
+		$messageStr = '<h2>HOA Residential Sales</h2>' . $outputStr;
         $sendMailSuccess = sendHtmlEMail($salesReportEmailList,$subject,$messageStr,$fromEmailAddress);
         if (!$sendMailSuccess) {
             // If fail to send email maybe go back and update the default Y flag back to N ?

@@ -61,6 +61,7 @@
  * 2020-10-01 JJK   Added SalesUpload, and made upload file generic
  * 2020-10-28 JJK   Re-did Dues Email logic using Communication records
  * 2020-12-24 JJK   Added SalesDownload to get file from County site
+ * 2021-04-24 JJK   Modified sales file upload from ajax to fetch
 *============================================================================*/
 var admin = (function () {
     'use strict';  // Force declaration of variables before use (among other things)
@@ -369,29 +370,20 @@ var admin = (function () {
     function _salesUpload(fileUploadForm) {
         $ResultMessage.html("Processing sales file...");
         $FileUploadModal.modal('hide');
-        // Call service to upload the payments file and compare with database records
+
+        // Call service to upload the sales file and compare with database records
         var url = 'salesUpload.php';
-        $.ajax(url, {
-            type: 'POST',
-            data: new FormData(fileUploadForm),
-            contentType: false,
-            cache: false,
-            processData: false,
-            dataType: 'json'
-            //dataType: "html"
-        }).done(function (result) {
-            //console.log("result = " + result);
-            if (result.error) {
-                console.log("error = " + result.error);
-                $ajaxError.html("<b>" + result.error + "</b>");
-            } else {
-                var adminRec = result
-                $ResultMessage.html(adminRec.message);
-            }
-        }).fail(function (xhr, status, error) {
-            console.log('Error in AJAX request to ' + url + ', status = ' + status + ', error = ' + error)
-            $ajaxError.html("<b>" + "Error in request" + "</b>");
+        fetch(url, {
+            method: 'POST',
+            body: new FormData(fileUploadForm)
         })
+        .then(response => response.json())
+        .then(adminRec => {
+            $ResultMessage.html(adminRec.message);
+        })
+        .catch(error => {
+            console.error('Error in request to '+url, error);
+        });
     }
 
     function _paymentReconcile(fileUploadForm) {
