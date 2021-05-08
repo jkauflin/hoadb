@@ -9,6 +9,7 @@
  * 2020-12-21 JJK   Re-factored to use jjklogin package
  * 2021-04-24 JJK   Corrected filename bug by looking at the file in the ZIP
  *                  and updated error handling by replacing exit() with throw()
+ * 2021-05-08 JJK   Corrected sales table insert issue
  *============================================================================*/
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
@@ -85,7 +86,6 @@ try {
 
     } else {
         // Open the uploaded file from the temporary location
-        //$file = fopen($tmp_file, "r") or die("Unable to open file!");
         $file = fopen($tmp_file, "r");
     }
 
@@ -107,6 +107,7 @@ try {
 	$recCnt = 0;
     $hoaRecsFound = 0;
     $newSalesFound = 0;
+    $saleDate = '';
 	while(!feof($file))
 	{
 		$recCnt = $recCnt + 1;
@@ -127,7 +128,9 @@ try {
         // Check if the Parcel Id from the sales record matches any in our HOA database
         // (and get the Sales record associated with the Sales Date)
 	    // sales now included in this query and in hoaRec
-		$hoaRec = getHoaRec($conn,$parcelId,"","",$salesRecArray[2]);
+
+        $saleDate = $salesRecArray[2];
+		$hoaRec = getHoaRec($conn,$parcelId,"","",$saleDate);
 		if (empty($hoaRec->Parcel_ID)) {
 			// If the parcel id is not found in the HOA db, then just skip to the next one
 			continue;
@@ -139,14 +142,14 @@ try {
 			$addToOutput = false;
             // If the Sales record was not found, insert one
 			if ( sizeof($hoaRec->salesList) < 1) {
-                $newSalesFound = $newSalesFound +1;
+                $newSalesFound = $newSalesFound + 1;
 
-                $stmt = $conn->prepare("INSERT INTO hoa_sales VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?); ");
+                $stmt = $conn->prepare("INSERT INTO hoa_sales VALUES (?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,CURRENT_TIMESTAMP,?); ");
 				$NotificationFlag = 'Y';
                 $ProcessedFlag = 'N';
                 $lastChangedby = 'system';
                 $WelcomeSent = 'X';
-				$stmt->bind_param("sssssssssssssssss",
+				$stmt->bind_param("ssssssssssssssss",
 				    $salesRecArray[0],
 					$salesRecArray[1],
 					$salesRecArray[2],
@@ -159,7 +162,6 @@ try {
 					$salesRecArray[9],
 					$salesRecArray[10],
 					$salesRecArray[11],
-					$currTimestampStr,
 					$NotificationFlag,
 					$ProcessedFlag,
                     $lastChangedby,
@@ -169,7 +171,7 @@ try {
                 $stmt->execute();
 				$stmt->close();
 
-                $hoaSalesRec = getHoaSalesRec($conn,$hoaRec->Parcel_ID,$salesRecArray[2]);
+                $hoaSalesRec = getHoaSalesRec($conn,$hoaRec->Parcel_ID,$saleDate);
 				$addToOutput = true;
 				
 			} else {
@@ -206,6 +208,7 @@ try {
 	if ($sendMessage) {
 		$subject = 'HOA Residential Sales';
 		$messageStr = '<h2>HOA Residential Sales</h2>' . $outputStr;
+        //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", email  " . PHP_EOL, 3, LOG_FILE);
         $sendMailSuccess = sendHtmlEMail($salesReportEmailList,$subject,$messageStr,$fromEmailAddress);
         if (!$sendMailSuccess) {
             // If fail to send email maybe go back and update the default Y flag back to N ?
