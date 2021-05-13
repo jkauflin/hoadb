@@ -93,7 +93,7 @@ try {
     	// End of if ($reportName == "SalesReport" || $reportName == "SalesNewOwnerReport") {
 
     } else if ($reportName == "IssuesReport") {
-		$sql = "SELECT * FROM hoa_communications WHERE CommType='Issue' ORDER BY CommID DESC ";
+		$sql = "SELECT * FROM hoa_communications WHERE CommType='Issue' ORDER BY LastChangedTs DESC ";
 		$stmt = $conn->prepare($sql);
     	$stmt->execute();
     	$result = $stmt->get_result();

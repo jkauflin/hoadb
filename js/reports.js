@@ -27,6 +27,7 @@
  *                  removed call to AdminExecute for dues rank list
  * 2020-12-22 JJK   Re-factored for Bootstrap 4
  * 2021-02-02 JJK   Added fields to the mailing list for dues letters
+ * 2021-05-13 JJK   Updated the Issues Report format to include name
  *============================================================================*/
 var reports = (function () {
     'use strict';
@@ -378,7 +379,7 @@ var reports = (function () {
                     $('<tr>')
                         .append($('<th>').html('Rec'))
                         .append($('<th>').html('Location'))
-                        .append($('<th>').html('CommID'))
+                        .append($('<th>').html('Name'))
                         .append($('<th>').html('CommDesc'))
                         .appendTo($ReportListDisplay);
                 }
@@ -386,8 +387,9 @@ var reports = (function () {
                 tr = $('<tr>');
                 tr.append($('<td>').html(index + 1))
                     .append($('<td>').html(hoaRec.Parcel_Location))
-                    .append($('<td>').html(hoaRec.commList[0].CommID))
-                    .append($('<td>').html(hoaRec.commList[0].CommDesc.substr(0,80)))
+                    .append($('<td>').html(hoaRec.ownersList[0].Mailing_Name))
+                    //.append($('<td>').html(hoaRec.commList[0].CommDesc.substr(0,80)))
+                    .append($('<td>').html(hoaRec.commList[0].CommDesc))
                 tr.appendTo($ReportListDisplay);
 
             }); // $.each(reportList, function(index, hoaRec) {
