@@ -13,6 +13,8 @@
  * 2020-10-03 JJK   Added query logic for Mailing List reports
  * 2020-11-04 JJK   Added Mark as Mailed logic (Jackson's 18th birthday)
  * 2020-12-21 JJK   Re-factored to use jjklogin package
+ * 2021-07-06 JJK   Corrected bug in logWelcomeSend that was preventing the
+ *                  Welcome postcards from getting marked as SENT (Y)
  *============================================================================*/
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
@@ -228,7 +230,7 @@ try {
         // The general Reports query - creating a list of HoaRec records (with all data for the Property)
         // This PHP service is about getting the list of HOA records, then the javascript will display the
         // records and provide downloads for each particular report
-    	$parcelId = "";
+    	//$parcelId = "";
     	$ownerId = "";
     	$fy = 0;
 
@@ -262,10 +264,11 @@ try {
 
         if ($userRec->userLevel > 1) {
             foreach ($outputArray as $hoaRec)  {
+
                 // If flag is set, mark the Welcome Letters as MAILED
                 if ($logWelcomeLetters) {
                     $stmt = $conn->prepare("UPDATE hoa_sales SET WelcomeSent='Y',LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE PARID = ? AND WelcomeSent = 'S' ; ");
-	                $stmt->bind_param("ss",$userRec->userName,$parcelId);	
+	                $stmt->bind_param("ss",$userRec->userName,$hoaRec->Parcel_ID);	
 	                $stmt->execute();
 	                $stmt->close();
                 }
