@@ -46,7 +46,7 @@ try {
 	// Create connection to the database
 	//--------------------------------------------------------------------------------------------------------
 	$conn = getConn($host, $dbadmin, $password, $dbname);
-	$hoaRec = getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate,$paypalFixedAmtButtonForm,$paypalFixedAmtButtonInput);
+	$hoaRec = getHoaRec($conn,$parcelId,$ownerId,$fy,$saleDate);
 	$hoaRec->adminLevel = $userRec->userLevel;
 	$hoaRec->userName = $userRec->userName;
 	$conn->close();

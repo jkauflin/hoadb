@@ -29,7 +29,7 @@ require_once 'php_secure/hoaDbCommon.php';
 	// Create connection to the database
 	//--------------------------------------------------------------------------------------------------------
 	$conn = getConn($host, $dbadmin, $password, $dbname);
-	$hoaRec = getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm,$paypalFixedAmtButtonInput);
+	$hoaRec = getHoaRec2($conn,$parcelId);
 	
 	$conn->close();
 	
