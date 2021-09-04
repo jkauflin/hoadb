@@ -21,6 +21,7 @@
  * 2020-12-31 JJK   New version (not using IPN), using PHP SDK for Paypal API
  * 2020-01-03 JJK   Modified to go Live with production settings
  * 2021-02-13 JJK   Modified CustomId to be FY,ParcelId
+ * 2021-09-04 JJK   Added logging to check email function
  *============================================================================*/
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
@@ -82,6 +83,8 @@ try {
     $payer_email = $response->result->payer->email_address;
     $payer_name = $response->result->payer->name->given_name . ' ' . $response->result->payer->name->surname;
 
+    error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", BEFORE updAssessmentPaid, parcel = " . $parcelId . PHP_EOL, 3, LOG_FILE);
+
     // Get a database connection and call the common function to mark paid
     $conn = getConn($host, $dbadmin, $password, $dbname);
     updAssessmentPaid(
@@ -96,6 +99,8 @@ try {
         $payment_fee);
 	// Close db connection
     $conn->close();
+
+    error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", AFTER updAssessmentPaid, parcel = " . $parcelId . PHP_EOL, 3, LOG_FILE);
 
     // Return order details to the client
     echo json_encode($response);

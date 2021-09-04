@@ -63,6 +63,7 @@
  * 2020-12-21 JJK   Removed function to return external_includes path
  * 2021-01-02 JJK   Modified for new Paypal API based payments, and to get
  *                  payment instructions and processing fee from config
+ * 2021-09-04 JJK   Added logging to check email function
  *============================================================================*/
 
 function getConn($host, $dbadmin, $password, $dbname) {
@@ -1426,11 +1427,14 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 			$subject = 'GRHA Payment Confirmation';
 			$messageStr = '<h4>GRHA Payment Confirmation</h4>' . $payerInfo . $paymentInfoStr;
             $sendMailSuccess = sendHtmlEMail($payer_email,$subject,$messageStr,$fromEmailAddress);
+    		error_log("After payment email sent to:  " . $payer_email . ", sendMailSuccess = " . $sendMailSuccess . PHP_EOL, 3, LOG_FILE);
 
             $subject = 'GRHA Payment Notification';
 			$messageStr = '<h4>GRHA Payment Notification</h4>' . $treasurerInfo . $paymentInfoStr;
 			$sendMailSuccess = sendHtmlEMail($treasurerEmail,$subject,$messageStr,$fromEmailAddress);
+    		error_log("After payment email sent to:  " . $treasurerEmail . ", sendMailSuccess = " . $sendMailSuccess . PHP_EOL, 3, LOG_FILE);
 			$sendMailSuccess = sendHtmlEMail($paymentEmailList,$subject,$messageStr,$fromEmailAddress);
+    		error_log("After payment email sent to:  " . $paymentEmailList . ", sendMailSuccess = " . $sendMailSuccess . PHP_EOL, 3, LOG_FILE);
 
             // Update the paidEmailSent flag on the Payment record
             if ($sendMailSuccess) {

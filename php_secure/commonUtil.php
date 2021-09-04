@@ -106,8 +106,11 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
     	// More headers
         $headers .= 'From: ' . $fromEmailAddress . "\r\n";
         
-    	mail($toStr,$subject,$message,$headers);
-        return true;
+    	if (mail($toStr,$subject,$message,$headers)) {
+            return true;
+        } else {
+            return false;
+        }
         
     } catch(Exception $e) {
         error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", sendHtmlEMail Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);

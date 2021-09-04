@@ -5,7 +5,8 @@
  * DESCRIPTION: Handle transactions from payment merchant - insert a payment
  * 				transaction record, update paid flags, and send an email to
  * 				the payer.  Executed as part of the payment reconciliation
- *              process.
+ *              process (should no longer be needed with the new 
+ *              handlePayment process)
  *----------------------------------------------------------------------------
  * Modification History
  * 2020-09-26 JJK 	Initial version from handlePaymentNotification.php
