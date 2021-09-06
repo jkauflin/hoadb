@@ -5,7 +5,8 @@
  * DESCRIPTION:  Scrip to test functions
  *----------------------------------------------------------------------------
  * Modification History
- * 2021-09-06 JJK 	Initial version to test mail functions
+ * 2021-09-06 JJK 	Initial version to test mail functions 
+ * 
  *============================================================================*/
 require_once 'vendor/autoload.php'; 
 // Define a super global constant for the log file (this will be in scope for all functions)
