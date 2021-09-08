@@ -202,13 +202,15 @@ try {
 	} // End of while(!feof($file))
 	fclose($file);
 
+    $fromEmailAddress = getConfigValDB($conn,"fromEmailAddress");
+    $salesReportEmailList = getConfigValDB($conn,"salesReportEmailList");
+
 	// Close db connection
 	$conn->close();
 
 	if ($sendMessage) {
 		$subject = 'HOA Residential Sales';
 		$messageStr = '<h2>HOA Residential Sales</h2>' . $outputStr;
-        //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", email  " . PHP_EOL, 3, LOG_FILE);
         $sendMailSuccess = sendHtmlEMail($salesReportEmailList,$subject,$messageStr,$fromEmailAddress);
         if (!$sendMailSuccess) {
             // If fail to send email maybe go back and update the default Y flag back to N ?
