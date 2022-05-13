@@ -5,11 +5,13 @@
  * DESCRIPTION: Upload county sales file and update sales table
  *----------------------------------------------------------------------------
  * Modification History
- * 2020-10-01 JJK   Initial version
+ * 2020-10-01 JJK   Initial version - using this instead of getSalesFromCounty.php
  * 2020-12-21 JJK   Re-factored to use jjklogin package
  * 2021-04-24 JJK   Corrected filename bug by looking at the file in the ZIP
  *                  and updated error handling by replacing exit() with throw()
  * 2021-05-08 JJK   Corrected sales table insert issue
+ * 2022-05-13 JJK   Modified to accept the monthly and weekly sales files
+ *                  by just looking for a single file in the ZIP
  *============================================================================*/
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
@@ -73,16 +75,18 @@ try {
         }
 
         for ($i = 0; $i < $zipFile->numFiles; $i++) {
+            // Get the file name in the zip
             $fileInZip = $zipFile->getNameIndex($i);
-            // Look for the Residential sales file in the Zip collection
+            // Look for the Residential sales file in the Zip collection (if there are more than 1 files)
             if (strstr($fileInZip,'_RES.csv')) {
-        		$file = $zipFile->getStream($fileInZip);
-        		if (!$file) {
-                    throw new Exception("Failed to open file in ZIP, file = $fileInZip", 500);
-                }
                 break;
             }
         }     
+
+        $file = $zipFile->getStream($fileInZip);
+        if (!$file) {
+            throw new Exception("Failed to open file in ZIP, file = $fileInZip", 500);
+        }
 
     } else {
         // Open the uploaded file from the temporary location

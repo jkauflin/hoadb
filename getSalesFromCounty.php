@@ -20,6 +20,9 @@
  *                  And updated county url in secrets
  * 2020-08-10 JJK   Corrected sales array check and tested insert
  *                  Commented out the download for now
+ * 2022-05-13 JJK   *** Not really using this one now - the download 
+ * 					stopped working so I wrote salesUpload.php to manually
+ * 					upload sales files manually downloaded from the County
  *============================================================================*/
 require_once 'vendor/autoload.php'; 
 // Define a super global constant for the log file (this will be in scope for all functions)
