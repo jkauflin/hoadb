@@ -1,13 +1,13 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2016 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2016 John J Kauflin, All rights reserved.
  *----------------------------------------------------------------------------
  * DESCRIPTION: Functions to execute Admin operations
  *----------------------------------------------------------------------------
  * Modification History
  * 2016-04-09 JJK	Added Dues Statements
  * 2016-04-15 JJK   Dropped some unused Assessments fields
- * 2016-09-02 JJK   Added NonCollectible field 
+ * 2016-09-02 JJK   Added NonCollectible field
  * 2016-11-28 JJK   Added InterestNotPaid and BankFee fields
  * 2017-06-10 JJK	Added unpaid dues ranking
  * 2017-08-13 JJK   Added Dues email TEST, and addition of Paypal emails
@@ -23,7 +23,7 @@
  *============================================================================*/
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
-require_once 'vendor/autoload.php'; 
+require_once 'vendor/autoload.php';
 
 // Figure out how many levels up to get to the "public_html" root folder
 $webRootDirOffset = substr_count(strstr(dirname(__FILE__),"public_html"),DIRECTORY_SEPARATOR) + 1;
@@ -65,12 +65,12 @@ try {
 
 	if ($action == "AddAssessments") {
 	    // Loop through all the member properties
-		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";		
+		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Member = 1 AND p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ";
 		$stmt = $conn->prepare($sql);
 		$stmt->execute();
 		$result = $stmt->get_result();
 		$stmt->close();
-			
+
 		$cnt = 0;
 		if ($result->num_rows > 0) {
 				$OwnerID = 0;
@@ -82,7 +82,7 @@ try {
 				$NonCollectible = 0;
 				$DatePaid = "";
 				$PaymentMethod = "";
-				
+
 				$Lien = 0;
 				$LienRefNo = "";
 				$DateFiled = "";
@@ -98,7 +98,7 @@ try {
 				$InterestNotPaid = 0;
 				$BankFee = "";
 				$LienComment = "";
-					
+
 				$Comments = "";
 
 				$sqlStr = 'INSERT INTO hoa_assessments (OwnerID,Parcel_ID,FY,DuesAmt,DateDue,Paid,NonCollectible,DatePaid,PaymentMethod,
@@ -124,12 +124,12 @@ try {
 
 				} // End of while($row = $result->fetch_assoc()) {
 		} // End of if ($result->num_rows > 0) {
-			
+
 		$stmt->close();
-			
+
 		$adminRec->message = "Added assessments for Fiscal Year " . $FY . ' and a Dues Amount of $' . $duesAmt . ' for ' . $cnt . ' members';
         $adminRec->result = "Valid";
-        
+
 	// End of if ($action == "AddAssessments") {
 	} else if ($action == "PaymentReconcile") {
 
@@ -193,7 +193,7 @@ try {
     			$salesRecCoumnArray = fgetcsv($file);
     			continue;
     		}
-    					
+
             $salesRecArray = fgetcsv($file);
             if (!$salesRecArray) {
                 continue;
@@ -212,7 +212,7 @@ try {
 
             $hoaRecsFound = $hoaRecsFound + 1;
             $hoaOwnerRec = $hoaRec->ownersList[0];
-    			
+
     			$addToOutput = false;
                 // If the Sales record was not found, insert one
     			if ( sizeof($hoaRec->salesList) < 1) {
@@ -242,24 +242,24 @@ try {
                         $lastChangedby,
                         $WelcomeSent
                     );
-                    
+
                     $stmt->execute();
     				$stmt->close();
 
                     $hoaSalesRec = getHoaSalesRec($conn,$hoaRec->Parcel_ID,$salesRecArray[2]);
     				$addToOutput = true;
-    				
+
     			} else {
-    			    $hoaSalesRec = $hoaRec->salesList[0]; 
+    			    $hoaSalesRec = $hoaRec->salesList[0];
     				// If the sales record is found but there was no notification, send an email
     				if ($hoaSalesRec->NotificationFlag == 'N') {
     					$addToOutput = true;
     				}
     			}
-    			
+
     			if ($addToOutput) {
     				$sendMessage = true;
-    				
+
     				$outputStr .= '<p><table border=1 class="evenLineHighlight"><tbody>';
     				$outputStr .= '<tr><th>Parcel Id:</th><td>' . $parcelId . '</td></tr>';
     				$outputStr .= '<tr><th>Parcel Location:</th><td><b>' . $hoaRec->Parcel_Location . '</b></td></tr>';
@@ -271,9 +271,9 @@ try {
     				$outputStr .= '<tr><th>Sale Date:</th><td>' . $hoaSalesRec->SALEDT . '</td></tr>';
     				$outputStr .= '</tbody></table></p>';
     			}
-    			
+
     		//$outputStr .= '<br>' . $valArray[0];
-    			
+
     	} // End of while(!feof($file))
     	fclose($file);
 
@@ -287,7 +287,7 @@ try {
             }
         }
         */
-            
+
         $adminRec->message = "County Sales file downloaded and processed successfully (Check Sales Report) </br>".
                                 " Total recs = $recCnt, HOA recs found = $hoaRecsFound, New HOA sales found = $newSalesFound";
     	$adminRec->result = "Valid";
@@ -301,6 +301,10 @@ try {
             $messageStr = createDuesMessage($conn,$parcelId);
             $sendMailSuccess = sendHtmlEMail($EmailAddr,$subject,$messageStr,$fromTreasurerEmailAddress);
             $testMessage = ' (Test email sent for Parcel Id = ' . $parcelId . ')';
+
+            // 2022-08-27 JJK
+            error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", $testMessage, success = $sendMailSuccess " . PHP_EOL, 3, LOG_FILE);
+
 
         } else if ($action == "DuesEmailsCreateList") {
             // Delete the previous list of any outstanding dues emails to send
@@ -329,7 +333,7 @@ try {
         } else if ($action == "DuesEmailsSendList") {
             // Get list of outstanding dues emails to send
             $sql = "SELECT * FROM hoa_communications WHERE Email = 1 AND SentStatus = 'N' ORDER BY Parcel_ID ";
-            $stmt = $conn->prepare($sql);	
+            $stmt = $conn->prepare($sql);
             $stmt->execute();
             $result = $stmt->get_result();
             $stmt->close();
@@ -338,8 +342,14 @@ try {
             //$firstNotice = false;
             $maxRecs = (int) getConfigValDB($conn,'duesEmailBatchMax');
 
+            // 2022-08-27 JJK
+            error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", DuesEmailsSendList maxRecs = $maxRecs " . PHP_EOL, 3, LOG_FILE);
+
             $sendMailSuccess = false;
             if ($result->num_rows > 0) {
+                // 2022-08-27 JJK
+                error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", DuesEmailsSendList $result->num_rows = $result->num_rows " . PHP_EOL, 3, LOG_FILE);
+
                 $cnt = 0;
                 $Parcel_ID = '';
                 while($row = $result->fetch_assoc()) {
@@ -353,12 +363,15 @@ try {
                     $EmailAddr = $row["EmailAddr"];
                     $messageStr = createDuesMessage($conn,$Parcel_ID);
 
+                    /*
                     $sendMailSuccess = sendHtmlEMail($EmailAddr,$subject,$messageStr,$fromTreasurerEmailAddress);
                     // If the Member email was successful, update the flag on the communication record
                     if ($sendMailSuccess) {
                         // if successful change sent to 'Y' and update Last changed timestamp
                         setCommEmailSent($conn,$Parcel_ID,$CommID,$userRec->userName);
                     }
+                    */
+
                 }
             }
         }
@@ -391,5 +404,5 @@ try {
     $adminRec->result = "Not Valid";
 	echo json_encode($adminRec);
 }
-    
+
 ?>

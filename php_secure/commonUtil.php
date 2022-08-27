@@ -1,17 +1,17 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2015,2020 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2020 John J Kauflin, All rights reserved.
  *----------------------------------------------------------------------------
- * DESCRIPTION: 
+ * DESCRIPTION:
  *----------------------------------------------------------------------------
  * Modification History
- * 2015-03-06 JJK 	Initial version with some common utilities 
+ * 2015-03-06 JJK 	Initial version with some common utilities
  * 2015-09-08 JJK	Added getAdminLevel to return an admin level based on
  *                  username to control updates
- * 2015-10-01 JJK	Added $fromEmailAddress to sendHtmlEMail                
+ * 2015-10-01 JJK	Added $fromEmailAddress to sendHtmlEMail
  * 2015-10-20 JJK   Added function wildCardStrFromTokens to build a wild
  * 					card parameter string from the tokens in a string
- * 2016-04-10 JJK	Added calcCompoundInterest to calculate compound 
+ * 2016-04-10 JJK	Added calcCompoundInterest to calculate compound
  * 					interests for the total dues calculation
  * 2016-09-11 JJK   Corrected handling of bad dates for interest calculation
  * 2016-09-11 JJK   Modified the truncDate routine to take the 1st token
@@ -19,7 +19,8 @@
  * 					like "4/7/2007 0"
  * 2020-08-05 JJK   Removed getAdminLevel and getUsername (in favor of new
  *                  Login/Authentication logic)
- * 2020-09-19 JJK   If using SwiftMailer don't forget to include autoload.php
+ * 2020-09-19 JJK   If using SwiftMailer don't forget to include autoload.php\
+ * 2022-08-27 JJK   Corrected convert input to string in csvFilter
  *============================================================================*/
 
 function strToUSD($inStr) {
@@ -32,7 +33,9 @@ function strToUSD($inStr) {
 
 // Replace comma with null so you can use it as a CSV value
 function csvFilter($inVal) {
-	return preg_replace('/[\x2C]+/', '', String($inVal));
+    $inStr = (string) $inVal;
+	//return preg_replace('/[\x2C]+/', '', String($inVal));
+	return preg_replace('/[\x2C]+/', '', $inStr);
 }
 
 
@@ -70,7 +73,7 @@ function downloadUrlToFile($url)
         //curl_setopt($ch, CURLOPT_USERAGENT, 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36');
         curl_setopt($ch, CURLOPT_POST, 0); // Don't use HTTP POST (use default of HTTP GET)
         // CURLOPT_HTTPGET is default
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);  // Don't check SSL 
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);  // Don't check SSL
         // CURL_HTTP_VERSION_1_1
 		//curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);  // return actual data for:  $file_content = curl_exec($ch);
 
@@ -116,7 +119,7 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
         } else {
             return false;
         }
-        
+
     } catch(Exception $e) {
         error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", sendHtmlEMail Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
         return false;
@@ -160,7 +163,7 @@ function sendSwiftMail($toStr,$subject,$messageStr,$fromEmailAddress,
             $inline_attachment = Swift_Image::fromPath($inlineAttachmentPath);
             $cid = $message->embed($inline_attachment);
         }
-         
+
     	// Send the message and check for success
     	if ($mailer->send($message)) {
             //error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", sendSwiftMail SUCCESS " . PHP_EOL, 3, LOG_FILE);
@@ -226,19 +229,19 @@ function calcCompoundInterest($principal,$startDate) {
 
 	//error_log(date('[Y-m-d H:i:s] '). "StartDate = " . $startDate . PHP_EOL, 3, "jjk-commonUtil.log");
 	if ($startDate != null && $startDate != '' && $startDate != '0000-00-00') {
-		
+
 		// Convert the 1st start date string token (i.e. till space) into a DateTime object (to check the date)
 		if ($startDateTime = date_create( strtok($startDate," ") )) {
 			// Difference between passed date and current system date
 			$diff = date_diff($startDateTime,date_create(),true);
-			
+
 			// Time in fractional years
 			$time = floatval($diff->days) / 365.0;
-			
+
 			$A = floatval($principal) * pow((1+($rate/$annualFrequency)),($annualFrequency*$time));
 			// Subtract the original principal to get just the interest
 			$interestAmount = round(($A - $principal),2);
-			
+
 		} else {
 			// Error in date_create
 			error_log(date('[Y-m-d H:i:s] '). "Problem with StartDate = " . $startDate . PHP_EOL, 3, "jjk-commonUtil.log");
