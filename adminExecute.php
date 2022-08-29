@@ -366,6 +366,9 @@ try {
                 // 2022-08-27 JJK
                 //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", DuesEmailsSendList $result->num_rows = $result->num_rows " . PHP_EOL, 3, LOG_FILE);
 
+                // Create a Mailer object for the SMTP transport
+                $mailer = getMailer($mailUsername, $mailPassword, $mailServer, $mailPort);
+
                 $cnt = 0;
                 $Parcel_ID = '';
                 while($row = $result->fetch_assoc()) {
@@ -379,8 +382,6 @@ try {
                     $EmailAddr = $row["EmailAddr"];
                     $messageStr = createDuesMessage($conn,$Parcel_ID);
 
-                    // Create a Mailer object for the SMTP transport
-                    $mailer = getMailer($mailUsername, $mailPassword, $mailServer, $mailPort);
                     $sendMailSuccess = sendMail($mailer,$EmailAddr,$subject,$messageStr,$mailUsername);
                     //$sendMailSuccess = sendHtmlEMail($EmailAddr,$subject,$messageStr,$fromTreasurerEmailAddress);
                     // If the Member email was successful, update the flag on the communication record
