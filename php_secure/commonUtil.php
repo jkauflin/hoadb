@@ -103,7 +103,8 @@ function downloadUrlToFile($url)
 
 function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
     //Create an instance; passing `true` enables exceptions
-    $mail = new PHPMailer(true);
+    //$mail = new PHPMailer(true);
+    $mail = new PHPMailer;
 
     try {
     	$message = '<html><head><title>' . $subject .'</title></head><body>' . $messageStr . '</body></html>';
