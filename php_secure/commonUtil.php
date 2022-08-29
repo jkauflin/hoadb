@@ -21,6 +21,8 @@
  *                  Login/Authentication logic)
  * 2020-09-19 JJK   If using SwiftMailer don't forget to include autoload.php\
  * 2022-08-27 JJK   Corrected convert input to string in csvFilter
+ * 2022-08-29 JJK   Updated sendHtmlEMail to use PHPMailer and SMTP account
+ *                  for outgoing email
  *============================================================================*/
 
 function strToUSD($inStr) {
@@ -100,14 +102,65 @@ function downloadUrlToFile($url)
 }
 
 function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
+    //Create an instance; passing `true` enables exceptions
+    $mail = new PHPMailer(true);
+
     try {
     	$message = '<html><head><title>' . $subject .'</title></head><body>' . $messageStr . '</body></html>';
     	// Always set content-type when sending HTML email
+        /*
     	$headers = "MIME-Version: 1.0" . "\r\n";
     	$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
     	// More headers
         $headers .= 'From: ' . $fromEmailAddress . "\r\n";
+        */
 
+        //Server settings
+        $mail->SMTPDebug  = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
+        $mail->isSMTP();                                            //Send using SMTP
+        $mail->SMTPDebug  = 2;
+        $mail->Host       = $mailServer;                     //Set the SMTP server to send through
+        $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
+        $mail->Username   = $mailUsername;                     //SMTP username
+        $mail->Password   = $mailPassword;                               //SMTP password
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
+        $mail->Port       = $mailPort;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+
+        //Recipients
+        $mail->setFrom($fromEmailAddress);
+        $mail->addReplyTo($fromEmailAddress);
+        $mail->addAddress($toStr);
+        /*
+        $mail->addReplyTo('info@example.com', 'Information');
+        $mail->addCC('cc@example.com');
+        $mail->addBCC('bcc@example.com');
+        */
+
+        //Attachments
+        //$mail->addAttachment('/var/tmp/file.tar.gz');         //Add attachments
+        //$mail->addAttachment('/tmp/image.jpg', 'new.jpg');    //Optional name
+
+        //Content
+        $mail->isHTML(true);                                  //Set email format to HTML
+        $mail->Subject   = $subject;
+        //$mail->Body    = 'This is the HTML message body <b>in bold!</b>';
+        $mail->Body      = $message;
+        //$mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+
+        //$mail->msgHTML(file_get_contents('message.html'), __DIR__);
+        //$mail->msgHTML($message);
+        //$mail->Body = 'This is a plain text message body';
+        //$mail->addAttachment('test.txt');
+
+        if ($mail->send()) {
+            //echo 'The email message was sent.';
+            return true;
+        } else {
+            //echo 'Mailer Error: ' . $mail->ErrorInfo;
+            return false;
+        }
+
+        /*
         if (!function_exists('mail'))
         {
             error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", mail() has been disabled " . PHP_EOL, 3, LOG_FILE);
@@ -119,6 +172,7 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
         } else {
             return false;
         }
+        */
 
     } catch(Exception $e) {
         error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", sendHtmlEMail Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
@@ -133,6 +187,7 @@ function sendSwiftMail($toStr,$subject,$messageStr,$fromEmailAddress,
 	    $message = '<html><head><title>' . $subject .'</title></head><body>' . $messageStr . '</body></html>';
         $mimeType = 'text/html';
 
+        /*
     	// Create the Transport (using default linux sendmail)
     	$transport = new Swift_SendmailTransport();
     	// Create the Mailer using your created Transport
@@ -172,6 +227,7 @@ function sendSwiftMail($toStr,$subject,$messageStr,$fromEmailAddress,
             error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", sendSwiftEMail ERROR " . PHP_EOL, 3, LOG_FILE);
             return false;
     	}
+        */
 
     } catch(Exception $e) {
         error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", sendSwiftMail Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);

@@ -1,7 +1,7 @@
 {
     "require": {
-        "php": ">=7.0.0",
-        "swiftmailer/swiftmailer": "^6.0",
+        "php": ">=8.0.0",
+        "phpmailer/phpmailer": "^6.5",
         "firebase/php-jwt": "^5.2.0",
         "jkauflin/jjklogin": "^1.1.4",
         "paypal/paypal-checkout-sdk": "1.0.1"

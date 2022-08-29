@@ -1,29 +1,29 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2015,2016,2020,2021 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2016,2020,2021 John J Kauflin, All rights reserved.
  *----------------------------------------------------------------------------
  * DESCRIPTION: Common functions for database work
  *----------------------------------------------------------------------------
  * Modification History
- * 2015-03-06 JJK 	Initial version to get data 
- * 2015-03-24 JJK	Included credentials files 
+ * 2015-03-06 JJK 	Initial version to get data
+ * 2015-03-24 JJK	Included credentials files
  * 2015-04-28 JJK	Added sales rec
  * 2015-09-08 JJK	Added sales array to main HoaRec structure
- * 2015-11-28 JJK   Added $TotalDue for the total amount due by a property 
- *                  and got it adding the unpaid assessments (using a 
+ * 2015-11-28 JJK   Added $TotalDue for the total amount due by a property
+ *                  and got it adding the unpaid assessments (using a
  *                  regular expression replace to convert the string to
  *                  a numberic value)
  * 2016-03-28 JJK	Added getComm to return a database connection and moved
- * 					the hoaDbCred include inside it to access the variables	
+ * 					the hoaDbCred include inside it to access the variables
  * 2016-04-05 JJK	Added Lien fields to the Assessments record
  * 2016-04-10 JJK	Working on Dues Total calculation (with Lien info)
  * 2016-04-13 JJK	Added sales download filename and email functions
  * 2016-04-29 JJK	Added paypal button script config string
- * 2016-05-02 JJK   Amy's 11th birthday.  
+ * 2016-05-02 JJK   Amy's 11th birthday.
  * 2016-05-14 JJK   Added get Payment function
  * 2016-07-01 JJK	Added MySQL backup function
  * 2016-08-19 JJK   Added UseEmail in Properties and EmailAddr in Owners
- * 2016-09-02 JJK   Added NonCollectible field, and logic to use to 
+ * 2016-09-02 JJK   Added NonCollectible field, and logic to use to
  * 					exclude assessments from total due calculations
  * 2016-09-11 JJK   Modified to use truncDate when getting dates from
  * 					the assessment record (and added 1st token check)
@@ -31,7 +31,7 @@
  * 2016-11-28 JJK   Added $InterestNotPaid and $BankFee to HoaAssessmentRec
  * 					and to the dues calculations in both functions
  * 2017-08-16 JJK   Added $DuesEmailAddr for payment email address.
- *                  If there is an email from the last electronic payment, for the current Owner, 
+ *                  If there is an email from the last electronic payment, for the current Owner,
  *					only use it if they are not going paperless or the paperless email is blank
  * 2018-10-27 JJK   Modified the error_log to write to hoadb.log
  * 2018-11-16 JJK	Added $hoaRecList to AdminRec to store all data needed for dues
@@ -42,7 +42,7 @@
  *                  external_includes folder above the public root
  *                  (added "../../external_includes/") to get to the file
  * 2020-07-14 JJK   Moved php files to separate /php folder
- * 2020-07-23 JJK   Changed philosophy of connections - always start in 
+ * 2020-07-23 JJK   Changed philosophy of connections - always start in
  *                  upper level calling file, don't try to start at this
  *                  "included functions" level and don't try to include
  *                  credentials at this level.  Just write functions and
@@ -64,6 +64,7 @@
  * 2021-01-02 JJK   Modified for new Paypal API based payments, and to get
  *                  payment instructions and processing fee from config
  * 2021-09-04 JJK   Added logging to check email function in updAssessmentPaid
+ * 2022-08-29 JJK   Updated to use PHPMailer and SMTP account for mail
  *============================================================================*/
 
 function getConn($host, $dbadmin, $password, $dbname) {
@@ -88,7 +89,7 @@ function getConfigValDB($conn,$configName) {
 	$stmt->bind_param("s", $configName);
 	$stmt->execute();
 	$result = $stmt->get_result();
-	
+
 	if ($result->num_rows > 0) {
 		while($row = $result->fetch_assoc()) {
 			$configVal = $row["ConfigValue"];
@@ -124,14 +125,14 @@ class HoaRec
   	public $Comments;
   	public $LastChangedBy;
   	public $LastChangedTs;
-  	 
+
 	public $ownersList;
 	public $assessmentsList;
 	public $totalDuesCalcList;
 	public $salesList;
     public $emailAddrList;
     public $commList;
-	
+
 	public $adminLevel;
 	public $TotalDue;
 	public $paymentButton;
@@ -177,7 +178,7 @@ class HoaAssessmentRec
   	public $NonCollectible;
   	public $DatePaid;
   	public $PaymentMethod;
-  	
+
   	public $Lien;
   	public $LienRefNo;
   	public $DateFiled;
@@ -193,7 +194,7 @@ class HoaAssessmentRec
   	public $InterestNotPaid;
   	public $BankFee;
   	public $LienComment;
-  	
+
   	public $Comments;
   	public $LastChangedBy;
   	public $LastChangedTs;
@@ -252,7 +253,7 @@ class AdminRec
 	public $userLevel;
 	public $result;
 	public $message;
-	
+
 	public $hoaPropertyRecList;
 	public $hoaRecList;
 	public $paymentList;
@@ -325,7 +326,7 @@ class PaidDuesCountsRec
 
 
 function getHoaSalesRec($conn,$parcelId,$saleDate) {
-	
+
 	$hoaSalesRec = new HoaSalesRec();
 
 	//$conn = getConn($host, $dbadmin, $password, $dbname);
@@ -333,7 +334,7 @@ function getHoaSalesRec($conn,$parcelId,$saleDate) {
 	$stmt->bind_param("ss", $parcelId,$saleDate);
 	$stmt->execute();
 	$result = $stmt->get_result();
-	
+
 	if ($result->num_rows > 0) {
 		while($row = $result->fetch_assoc()) {
 			$hoaSalesRec->PARID = $row["PARID"];
@@ -353,20 +354,20 @@ function getHoaSalesRec($conn,$parcelId,$saleDate) {
 			$hoaSalesRec->ProcessedFlag = $row["ProcessedFlag"];
 			$hoaSalesRec->LastChangedBy = $row["LastChangedBy"];
 			$hoaSalesRec->LastChangedTs = $row["LastChangedTs"];
-			
+
 			$hoaSalesRec->adminLevel = 1;
 		}
 		$result->close();
 	}
 	$stmt->close();
-	
+
 	return $hoaSalesRec;
 } // End of function getHoaSalesRec($conn,$parcelId,$saleDate) {
 
 function getHoaPaymentRec($conn,$parcelId,$transId) {
 
 	$hoaPaymentRec = null;
-	
+
 	$stmt = $conn->prepare("SELECT * FROM hoa_payments WHERE Parcel_ID = ? AND txn_id = ?; ");
 	$stmt->bind_param("ss", $parcelId,$transId);
 	$stmt->execute();
@@ -475,13 +476,13 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 
 	$hoaRec->DuesEmailAddr = '';
 	$CurrentOwnerID = 0;
-	
+
 	// Get values from database and load into structure that will be returned as JSON
 	$stmt = $conn->prepare("SELECT * FROM hoa_properties WHERE Parcel_ID = ? ; ");
 	$stmt->bind_param("s", $parcelId);
 	$stmt->execute();
 	$result = $stmt->get_result();
-	
+
 	if ($result->num_rows > 0) {
 		while($row = $result->fetch_assoc()) {
 			$hoaRec->Parcel_ID = $row["Parcel_ID"];
@@ -504,7 +505,7 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 			$hoaRec->Comments = $row["Comments"];
 			$hoaRec->LastChangedBy = $row["LastChangedBy"];
 			$hoaRec->LastChangedTs = $row["LastChangedTs"];
-				
+
 			$hoaRec->ownersList = array();
 			$hoaRec->assessmentsList = array();
 			$hoaRec->totalDuesCalcList = array();
@@ -513,7 +514,7 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 		}
 		$result->close();
 		$stmt->close();
-	
+
 		if (empty($ownerId)) {
 			$stmt = $conn->prepare("SELECT * FROM hoa_owners WHERE Parcel_ID = ? ORDER BY OwnerID DESC ; ");
 			//$stmt = $conn->prepare("SELECT * FROM hoa_owners WHERE Parcel_ID = ? ORDER BY DATE(DatePurchased) DESC ; ");
@@ -525,7 +526,7 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 		}
 		$stmt->execute();
 		$result = $stmt->get_result();
-	
+
 		if ($result->num_rows > 0) {
 			while($row = $result->fetch_assoc()) {
 				$hoaOwnerRec = new HoaOwnerRec();
@@ -550,7 +551,7 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 				$hoaOwnerRec->UpdateTimestamp = $row["UpdateTimestamp"];
 				$hoaOwnerRec->LastChangedBy = $row["LastChangedBy"];
 				$hoaOwnerRec->LastChangedTs = $row["LastChangedTs"];
-				
+
 				if ($hoaOwnerRec->CurrentOwner) {
 					// Get the email address for the current owner
 					$hoaRec->DuesEmailAddr = $hoaOwnerRec->EmailAddr;
@@ -584,13 +585,13 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 				$tempEmail = $row["payer_email"];
 				//error_log(date('[Y-m-d H:i:s] '). " tempEmail = " . $tempEmail . PHP_EOL, 3, "hoadb.log");
 
-				// If there is an email from the last electronic payment, for the current Owner, only use it 
+				// If there is an email from the last electronic payment, for the current Owner, only use it
 				// if they are not going paperless or the paperless email is blank
 				//if (!$hoaRec->UseEmail || $hoaRec->DuesEmailAddr == '') {
 				//	$hoaRec->DuesEmailAddr = $row["payer_email"];
 				//}
 
-				// If there is an email from the last electronic payment, for the current Owner, 
+				// If there is an email from the last electronic payment, for the current Owner,
 				// add it to the email list (if not already in the array)
 				if (!in_array($tempEmail, $hoaRec->emailAddrList)) {
 					//error_log(date('[Y-m-d H:i:s] '). " push tempEmail = " . $tempEmail . PHP_EOL, 3, "hoadb.log");
@@ -631,7 +632,7 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 				$hoaAssessmentRec->NonCollectible = $row["NonCollectible"];
 				$hoaAssessmentRec->DatePaid = truncDate($row["DatePaid"]);
 				$hoaAssessmentRec->PaymentMethod = $row["PaymentMethod"];
-				
+
 				$hoaAssessmentRec->DuesDue = 0;
 				if (!$hoaAssessmentRec->Paid && !$hoaAssessmentRec->NonCollectible) {
 					if ($cnt == 1) {
@@ -642,7 +643,7 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 					}
 
 					// check dates???
-					
+
 					if ($dateDue=date_create($hoaAssessmentRec->DateDue)) {
 						// Current System datetime
 						$currSysDate=date_create();
@@ -654,20 +655,20 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 						error_log('date1=' . date_format($date1,"Y-m-d") . ', date2=' . date_format($date2,"Y-m-d") . ", diff days = " . $diff->days);
 						$diff=date_diff($date1,$date2,false);
 						error_log('date1=' . date_format($date1,"Y-m-d") . ', date2=' . date_format($date2,"Y-m-d") . ", diff days = " . $diff->days);
-						
-						
+
+
 						$diff=date_diff($date2,$date1,true);
 						error_log('date2=' . date_format($date2,"Y-m-d") . ', date1=' . date_format($date1,"Y-m-d") . ", diff days = " . $diff->days);
 						$diff=date_diff($date2,$date1,false);
 						error_log('date2=' . date_format($date2,"Y-m-d") . ', date1=' . date_format($date1,"Y-m-d") . ", diff days = " . $diff->days);
-						
+
 						if ($diff->days > 0) {
 							$hoaAssessmentRec->DuesDue = 1;
 						}
 						*/
 					}
 				}
-				
+
 				$hoaAssessmentRec->Lien = $row["Lien"];
 				$hoaAssessmentRec->LienRefNo = $row["LienRefNo"];
 				$hoaAssessmentRec->DateFiled = truncDate($row["DateFiled"]);
@@ -683,14 +684,14 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 				$hoaAssessmentRec->InterestNotPaid = $row["InterestNotPaid"];
 				$hoaAssessmentRec->BankFee = $row["BankFee"];
 				$hoaAssessmentRec->LienComment = $row["LienComment"];
-				
+
 				$hoaAssessmentRec->Comments = $row["Comments"];
 				$hoaAssessmentRec->LastChangedBy = $row["LastChangedBy"];
 				$hoaAssessmentRec->LastChangedTs = $row["LastChangedTs"];
-				
+
 				array_push($hoaRec->assessmentsList,$hoaAssessmentRec);
-				
-				
+
+
 				// Only do the Total calc if FY is empty - need to check all years
 				//if (empty($fy)) {
 
@@ -700,24 +701,24 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 				$duesAmt = 0.0;
 				if (!$hoaAssessmentRec->Paid && !$hoaAssessmentRec->NonCollectible) {
 					// Replace every ascii character except decimal and digits with a null
-					$duesAmt = stringToMoney($hoaAssessmentRec->DuesAmt); 
+					$duesAmt = stringToMoney($hoaAssessmentRec->DuesAmt);
 					$hoaRec->TotalDue += $duesAmt;
-					
+
 					$totalDuesCalcRec = new TotalDuesCalcRec();
 					$totalDuesCalcRec->calcDesc = 'FY ' . $hoaAssessmentRec->FY . ' Assessment (due ' . $hoaAssessmentRec->DateDue . ')';
 					$totalDuesCalcRec->calcValue = $duesAmt;
 					array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 
 					//error_log(date('[Y-m-d H:i:s] '). "DateDue = " . $hoaAssessmentRec->DateDue . PHP_EOL, 3, "jjk-hoaDbCommon.log");
-						
+
 					// Calculate interest on the assessment (if a Lien has been created and is Open)
 					if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open') {
 						$onlyCurrYearDue = false;
-						// If still calculating interest dynamically calculate the compound interest						
+						// If still calculating interest dynamically calculate the compound interest
 						if (!$hoaAssessmentRec->StopInterestCalc) {
 							$hoaAssessmentRec->AssessmentInterest = calcCompoundInterest($duesAmt,$hoaAssessmentRec->DateDue);
 						}
-						
+
 						$hoaRec->TotalDue = $hoaRec->TotalDue + $hoaAssessmentRec->AssessmentInterest;
 						$totalDuesCalcRec = new TotalDuesCalcRec();
 						$totalDuesCalcRec->calcDesc = '%6 Interest on FY ' . $hoaAssessmentRec->FY . ' Assessment (since ' . $hoaAssessmentRec->DateDue . ')';
@@ -725,7 +726,7 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 					}
 				}
-				
+
 				// If the Assessment was Paid but the interest was not, then add the interest to the total
 				if ($hoaAssessmentRec->Paid && $hoaAssessmentRec->InterestNotPaid) {
 					$onlyCurrYearDue = false;
@@ -733,14 +734,14 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 					if (!$hoaAssessmentRec->StopInterestCalc) {
 						$hoaAssessmentRec->AssessmentInterest = calcCompoundInterest($duesAmt,$hoaAssessmentRec->DateDue);
 					}
-					
+
 					$hoaRec->TotalDue = $hoaRec->TotalDue + $hoaAssessmentRec->AssessmentInterest;
 					$totalDuesCalcRec = new TotalDuesCalcRec();
 					$totalDuesCalcRec->calcDesc = '%6 Interest on FY ' . $hoaAssessmentRec->FY . ' Assessment (since ' . $hoaAssessmentRec->DateDue . ')';
 					$totalDuesCalcRec->calcValue = $hoaAssessmentRec->AssessmentInterest;
 					array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 				}
-				
+
 				/*
 				 Dues Total calculation logic
 				 If Assessment NOT Paid, Assessment amount is added
@@ -751,28 +752,28 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 				 Released
 				 	Release Fee - added if entered
 				 Closed
-				
+
 				 Stop Interest Calc
-				
+
 				 What if Assessment Paid, but Lien still Open???
 
 					$onlyCurrYearDue = false;  (logical for when to show Paypal button - if just simple current fee dues (no liens or previous)
 						*** if this is the case, give a message on the screen to contact Treasurer ***
-					
+
 					FilingFeeInterest - interest on the Filing Fee (when Lien Open and NOT stop calculating interest)
 						if (!$hoaAssessmentRec->StopInterestCalc) {
 							$hoaAssessmentRec->FilingFeeInterest = calcCompoundInterest($hoaAssessmentRec->FilingFee,$hoaAssessmentRec->DateFiled);
 						}
 				 */
-				
+
 				// If there is an Open Lien (not Paid, Released, or Closed)
 				if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open' && !$hoaAssessmentRec->NonCollectible) {
-				
+
 					// calc interest - start date   WHEN TO CALC INTEREST
 					// unpaid fee amount and interest since the Filing Date
 
 					// if there is a Filing Fee (on an Open Lien), then check to calc interest (or use stored value)
-					
+
 					if ($hoaAssessmentRec->FilingFee > 0) {
 						// shouldn't have to do this for the ones that are stored as Decimal right???  shouldn't have to parse, floatval, or round
 						//$numericStr = preg_replace('/[\x01-\x2D\x2F\x3A-\x7F]+/', '', $hoaAssessmentRec->DuesAmt);
@@ -781,7 +782,7 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 						$totalDuesCalcRec->calcDesc = 'FY ' . $hoaAssessmentRec->FY . ' Assessment Lien Filing Fee';
 						$totalDuesCalcRec->calcValue = $hoaAssessmentRec->FilingFee;
 						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
-						
+
 						// If stopping dynamic interest calculation just take the stored value, else calculate the interest
 						if (!$hoaAssessmentRec->StopInterestCalc) {
 							$hoaAssessmentRec->FilingFeeInterest = calcCompoundInterest($hoaAssessmentRec->FilingFee,$hoaAssessmentRec->DateFiled);
@@ -792,9 +793,9 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 						$totalDuesCalcRec->calcDesc = '%6 Interest on Filing Fees (since ' . $hoaAssessmentRec->DateFiled . ')';
 						$totalDuesCalcRec->calcValue = $hoaAssessmentRec->FilingFeeInterest;
 						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
-						
+
 					} // End of if ($hoaAssessmentRec->FilingFee > 0) {
-					
+
 					if ($hoaAssessmentRec->ReleaseFee > 0) {
 						$hoaRec->TotalDue += $hoaAssessmentRec->ReleaseFee;
 						$totalDuesCalcRec = new TotalDuesCalcRec();
@@ -802,7 +803,7 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 						$totalDuesCalcRec->calcValue = $hoaAssessmentRec->ReleaseFee;
 						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 					}
-					
+
 					if ($hoaAssessmentRec->BankFee > 0) {
 						$hoaRec->TotalDue += $hoaAssessmentRec->BankFee;
 						$totalDuesCalcRec = new TotalDuesCalcRec();
@@ -812,11 +813,11 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 					}
 
 				} // if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open') {
-				
+
 			} // End of Assessments loop
-	
+
 		} // End of if Assessments
-		
+
 		$result->close();
 		$stmt->close();
 
@@ -840,8 +841,8 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 			}
 		} // End of if ($hoaRec->TotalDue > 0) {
 
-		
-		// Get sales records for this parcel		
+
+		// Get sales records for this parcel
 		if (empty($saleDate)) {
 			$stmt = $conn->prepare("SELECT * FROM hoa_sales WHERE PARID = ? ORDER BY CreateTimestamp DESC; ");
 			$stmt->bind_param("s", $parcelId);
@@ -851,7 +852,7 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 		}
 		$stmt->execute();
 		$result = $stmt->get_result();
-		
+
 		if ($result->num_rows > 0) {
 			while($row = $result->fetch_assoc()) {
 				$hoaSalesRec = new HoaSalesRec();
@@ -872,10 +873,10 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 				$hoaSalesRec->ProcessedFlag = $row["ProcessedFlag"];
 				$hoaSalesRec->LastChangedBy = $row["LastChangedBy"];
 				$hoaSalesRec->LastChangedTs = $row["LastChangedTs"];
-		
+
 				array_push($hoaRec->salesList,$hoaSalesRec);
 			}
-		
+
 		} // End of Assessments
 		$result->close();
 		$stmt->close();
@@ -893,22 +894,22 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 	$ownerId = '';
 	$fy = '';
 	$saleDate = '';
-	
+
 	$hoaRec = new HoaRec();
-	
+
 	// Total Due is calculated below
 	$hoaRec->TotalDue = 0.00;
 	// Payment button will be set if online payment is enabled and allowed for this parcel
 	$hoaRec->paymentButton = '';
 	$hoaRec->paymentInstructions = '';
     $hoaRec->paymentFee = 0.00;
-	
+
 	// Get values from database and load into structure that will be returned as JSON
 	$stmt = $conn->prepare("SELECT * FROM hoa_properties WHERE Parcel_ID = ? ; ");
 	$stmt->bind_param("s", $parcelId);
 	$stmt->execute();
 	$result = $stmt->get_result();
-	
+
 	if ($result->num_rows > 0) {
 		while($row = $result->fetch_assoc()) {
 			$hoaRec->Parcel_ID = $row["Parcel_ID"];
@@ -931,7 +932,7 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 			$hoaRec->Comments = $row["Comments"];
 			$hoaRec->LastChangedBy = $row["LastChangedBy"];
 			$hoaRec->LastChangedTs = $row["LastChangedTs"];
-	
+
 			$hoaRec->ownersList = array();
 			$hoaRec->assessmentsList = array();
 			$hoaRec->totalDuesCalcList = array();
@@ -939,7 +940,7 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 		}
 		$result->close();
 		$stmt->close();
-	
+
 		if (empty($fy) || $fy == "LATEST") {
 			$stmt = $conn->prepare("SELECT * FROM hoa_assessments WHERE Parcel_ID = ? ORDER BY FY DESC ; ");
 			$stmt->bind_param("s", $parcelId);
@@ -949,7 +950,7 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 		}
 		$stmt->execute();
 		$result = $stmt->get_result();
-	
+
 		$fyPayment = '';
 		$onlyCurrYearDue = false;
 		$cnt = 0;
@@ -969,7 +970,7 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 				$hoaAssessmentRec->NonCollectible = $row["NonCollectible"];
 				$hoaAssessmentRec->DatePaid = truncDate($row["DatePaid"]);
 				$hoaAssessmentRec->PaymentMethod = $row["PaymentMethod"];
-	
+
 				$hoaAssessmentRec->DuesDue = 0;
 				if (!$hoaAssessmentRec->Paid && !$hoaAssessmentRec->NonCollectible) {
 					if ($cnt == 1) {
@@ -978,7 +979,7 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 					} else {
 						$onlyCurrYearDue = false;
 					}
-	
+
 					if ($dateDue=date_create($hoaAssessmentRec->DateDue)) {
 						// Current System datetime
 						$currSysDate=date_create();
@@ -990,20 +991,20 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 							error_log('date1=' . date_format($date1,"Y-m-d") . ', date2=' . date_format($date2,"Y-m-d") . ", diff days = " . $diff->days);
 							$diff=date_diff($date1,$date2,false);
 							error_log('date1=' . date_format($date1,"Y-m-d") . ', date2=' . date_format($date2,"Y-m-d") . ", diff days = " . $diff->days);
-	
-	
+
+
 							$diff=date_diff($date2,$date1,true);
 							error_log('date2=' . date_format($date2,"Y-m-d") . ', date1=' . date_format($date1,"Y-m-d") . ", diff days = " . $diff->days);
 							$diff=date_diff($date2,$date1,false);
 							error_log('date2=' . date_format($date2,"Y-m-d") . ', date1=' . date_format($date1,"Y-m-d") . ", diff days = " . $diff->days);
-	
+
 							if ($diff->days > 0) {
 							$hoaAssessmentRec->DuesDue = 1;
 							}
 							*/
 					}
 				}
-	
+
 				$hoaAssessmentRec->Lien = $row["Lien"];
 				$hoaAssessmentRec->LienRefNo = $row["LienRefNo"];
 				$hoaAssessmentRec->DateFiled = $row["DateFiled"];
@@ -1019,17 +1020,17 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 				$hoaAssessmentRec->InterestNotPaid = $row["InterestNotPaid"];
 				$hoaAssessmentRec->BankFee = $row["BankFee"];
 				$hoaAssessmentRec->LienComment = $row["LienComment"];
-	
+
 				$hoaAssessmentRec->Comments = $row["Comments"];
 				$hoaAssessmentRec->LastChangedBy = $row["LastChangedBy"];
 				$hoaAssessmentRec->LastChangedTs = $row["LastChangedTs"];
-	
+
 				array_push($hoaRec->assessmentsList,$hoaAssessmentRec);
-	
-	
+
+
 				// Only do the Total calc if FY is empty - need to check all years
 				//if (empty($fy)) {
-	
+
 				//-------------------------------------------------------------------------------------------------------------------------------
 				// Logic to calculate the Total Due from assessments and liens
 				//-------------------------------------------------------------------------------------------------------------------------------
@@ -1038,19 +1039,19 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 					// Replace every ascii character except decimal and digits with a null
 					$duesAmt = stringToMoney($hoaAssessmentRec->DuesAmt);
 					$hoaRec->TotalDue += $duesAmt;
-						
+
 					$totalDuesCalcRec = new TotalDuesCalcRec();
 					$totalDuesCalcRec->calcDesc = 'FY ' . $hoaAssessmentRec->FY . ' Assessment (due ' . $hoaAssessmentRec->DateDue . ')';
 					$totalDuesCalcRec->calcValue = $duesAmt;
 					array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
-	
+
 					if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open') {
 						$onlyCurrYearDue = false;
 						// If still calculating interest dynamically calculate the compound interest
 						if (!$hoaAssessmentRec->StopInterestCalc) {
 							$hoaAssessmentRec->AssessmentInterest = calcCompoundInterest($duesAmt,$hoaAssessmentRec->DateDue);
 						}
-	
+
 						$hoaRec->TotalDue = $hoaRec->TotalDue + $hoaAssessmentRec->AssessmentInterest;
 						$totalDuesCalcRec = new TotalDuesCalcRec();
 						$totalDuesCalcRec->calcDesc = '%6 Interest on FY ' . $hoaAssessmentRec->FY . ' Assessment (since ' . $hoaAssessmentRec->DateDue . ')';
@@ -1066,14 +1067,14 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 					if (!$hoaAssessmentRec->StopInterestCalc) {
 						$hoaAssessmentRec->AssessmentInterest = calcCompoundInterest($duesAmt,$hoaAssessmentRec->DateDue);
 					}
-						
+
 					$hoaRec->TotalDue = $hoaRec->TotalDue + $hoaAssessmentRec->AssessmentInterest;
 					$totalDuesCalcRec = new TotalDuesCalcRec();
 					$totalDuesCalcRec->calcDesc = '%6 Interest on FY ' . $hoaAssessmentRec->FY . ' Assessment (since ' . $hoaAssessmentRec->DateDue . ')';
 					$totalDuesCalcRec->calcValue = $hoaAssessmentRec->AssessmentInterest;
 					array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 				}
-				
+
 				/*
 				 Dues Total calculation logic
 				 If Assessment NOT Paid, Assessment amount is added
@@ -1084,28 +1085,28 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 				 Released
 				 Release Fee - added if entered
 				 Closed
-	
+
 				 Stop Interest Calc
-	
+
 				 What if Assessment Paid, but Lien still Open???
-	
+
 				 $onlyCurrYearDue = false;  (logical for when to show Paypal button - if just simple current fee dues (no liens or previous)
 				 *** if this is the case, give a message on the screen to contact Treasurer ***
-				 	
+
 				 FilingFeeInterest - interest on the Filing Fee (when Lien Open and NOT stop calculating interest)
 				 if (!$hoaAssessmentRec->StopInterestCalc) {
 				 $hoaAssessmentRec->FilingFeeInterest = calcCompoundInterest($hoaAssessmentRec->FilingFee,$hoaAssessmentRec->DateFiled);
 				 }
 				 */
-	
+
 				// If there is an Open Lien (not Paid, Released, or Closed)
 				if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open' && !$hoaAssessmentRec->NonCollectible) {
-	
+
 					// calc interest - start date   WHEN TO CALC INTEREST
 					// unpaid fee amount and interest since the Filing Date
-	
+
 					// if there is a Filing Fee (on an Open Lien), then check to calc interest (or use stored value)
-						
+
 					if ($hoaAssessmentRec->FilingFee > 0) {
 						// shouldn't have to do this for the ones that are stored as Decimal right???  shouldn't have to parse, floatval, or round
 						//$numericStr = preg_replace('/[\x01-\x2D\x2F\x3A-\x7F]+/', '', $hoaAssessmentRec->DuesAmt);
@@ -1114,20 +1115,20 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 						$totalDuesCalcRec->calcDesc = 'FY ' . $hoaAssessmentRec->FY . ' Assessment Lien Filing Fee';
 						$totalDuesCalcRec->calcValue = $hoaAssessmentRec->FilingFee;
 						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
-	
+
 						// If stopping dynamic interest calculation just take the stored value, else calculate the interest
 						if (!$hoaAssessmentRec->StopInterestCalc) {
 							$hoaAssessmentRec->FilingFeeInterest = calcCompoundInterest($hoaAssessmentRec->FilingFee,$hoaAssessmentRec->DateFiled);
 						}
-	
+
 						$hoaRec->TotalDue += $hoaAssessmentRec->FilingFeeInterest;
 						$totalDuesCalcRec = new TotalDuesCalcRec();
 						$totalDuesCalcRec->calcDesc = '%6 Interest on Filing Fees (since ' . $hoaAssessmentRec->DateFiled . ')';
 						$totalDuesCalcRec->calcValue = $hoaAssessmentRec->FilingFeeInterest;
 						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
-	
+
 					} // End of if ($hoaAssessmentRec->FilingFee > 0) {
-						
+
 					if ($hoaAssessmentRec->ReleaseFee > 0) {
 						$hoaRec->TotalDue += $hoaAssessmentRec->ReleaseFee;
 						$totalDuesCalcRec = new TotalDuesCalcRec();
@@ -1143,16 +1144,16 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 						$totalDuesCalcRec->calcValue = $hoaAssessmentRec->BankFee;
 						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 					}
-						
+
 				} // if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open') {
-	
+
 			} // End of Assessments loop
-	
+
 		} // End of if Assessments
-	
+
 		$result->close();
 		$stmt->close();
-	
+
 		//---------------------------------------------------------------------------------------------------
 		// Construct the online payment button and instructions according to what is owed
 		//---------------------------------------------------------------------------------------------------
@@ -1172,8 +1173,8 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
                 $hoaRec->paymentInstructions = getConfigValDB($conn,"OnlinePaymentInstructions");
 			}
 		} // End of if ($hoaRec->TotalDue > 0) {
-	
-	
+
+
 		// Get sales records for this parcel
 		if (empty($saleDate)) {
 			$stmt = $conn->prepare("SELECT * FROM hoa_sales WHERE PARID = ? ORDER BY CreateTimestamp DESC; ");
@@ -1184,7 +1185,7 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 		}
 		$stmt->execute();
 		$result = $stmt->get_result();
-	
+
 		if ($result->num_rows > 0) {
 			while($row = $result->fetch_assoc()) {
 				$hoaSalesRec = new HoaSalesRec();
@@ -1205,19 +1206,19 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 				$hoaSalesRec->ProcessedFlag = $row["ProcessedFlag"];
 				$hoaSalesRec->LastChangedBy = $row["LastChangedBy"];
 				$hoaSalesRec->LastChangedTs = $row["LastChangedTs"];
-	
+
 				array_push($hoaRec->salesList,$hoaSalesRec);
 			}
-	
+
 		} // End of Assessments
 		$result->close();
 		$stmt->close();
-	
+
 	} else {
 		$result->close();
 		$stmt->close();
 	} // End of Properties
-	
+
 	return $hoaRec;
 } // End of function getHoaRec2($conn,$parcelId) {
 
@@ -1226,7 +1227,7 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 //----------------------------------------------------------------------------------------------------------------
 function getHoaRecList($conn,$duesOwed=false,$skipEmail=false,$salesWelcome=false,
     $currYearPaid=false,$currYearUnpaid=false,$testEmail=false) {
-    
+
     $outputArray = array();
 
     if ($testEmail) {
@@ -1262,7 +1263,7 @@ function getHoaRecList($conn,$duesOwed=false,$skipEmail=false,$salesWelcome=fals
                         // current owner?
         } else {
             // All properties and current owner
-            $sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ". 
+            $sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 ".
                             "ORDER BY p.Parcel_ID; ";
         }
     }
@@ -1271,16 +1272,16 @@ function getHoaRecList($conn,$duesOwed=false,$skipEmail=false,$salesWelcome=fals
     $stmt->execute();
     $result = $stmt->get_result();
     $stmt->close();
-    	
+
     $cnt = 0;
     if ($result->num_rows > 0) {
     	// Loop through all the member properties
     	while($row = $result->fetch_assoc()) {
     		$cnt = $cnt + 1;
-    	
+
     		$parcelId = $row["Parcel_ID"];
     		$ownerId = $row["OwnerID"];
-        
+
             // Don't include FY because you want all assessments to calculate Total Due
     		//$hoaRec = getHoaRec($conn,$parcelId,$ownerId,$fy);
     		$hoaRec = getHoaRec($conn,$parcelId,$ownerId);
@@ -1334,7 +1335,7 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
 		//error_log(date('[Y-m-d H:i:s] ') . '$hoaRec->Parcel_ID = ' . $hoaRec->Parcel_ID . ', $hoaRec->ownersList[0]->OwnerID = ' . $hoaRec->ownersList[0]->OwnerID . PHP_EOL, 3, LOG_FILE);
 		// Use the Owner Id of the current owner when recording the payment
 		$ownerId = $hoaRec->ownersList[0]->OwnerID;
-		
+
 		// Idempotent check - Check for any payment record for this parcel and transaction id
 		$hoaPaymentRec = getHoaPaymentRec($conn,$parcelId,$txn_id);
 		if ($hoaPaymentRec != null) {
@@ -1374,14 +1375,14 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
         // If the Assessment has not been marked as PAID, mark it and check to send emails
         // (this will handle the transaction re-send case in an Idempotent manner)
         if (!$assessmentPaid && !$paymentShort) {
-			// Update Assessment record for payment		
+			// Update Assessment record for payment
 			$assessmentsComments = $txn_id;
-		
+
 			$paidBoolean = 1;
 			$datePaid = date("Y-m-d");
 			$paymentMethod = 'Paypal';
 			$username = 'paypal';
-        
+
 			if (!$stmt = $conn->prepare("UPDATE hoa_assessments SET Paid=?,DatePaid=?,PaymentMethod=?," .
 					"Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND FY = ? ; ")) {
 					error_log("Update Assessment Prepare failed: " . $stmt->errno . ", Error = " . $stmt->error . PHP_EOL, 3, LOG_FILE);
@@ -1414,14 +1415,14 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
                 $treasurerInfo = 'The following payment has been recorded and the assessment has been marked as PAID. ';
             }
             $treasurerInfo .= ' Payment fee was ' . $payment_fee;
-				
+
 			$paymentInfoStr = '<br><br>Parcel Id: ' . $parcelId;
 			$paymentInfoStr .= '<br>Fiscal Year: ' . $fy;
 			$paymentInfoStr .= '<br>Transaction Id: ' . $txn_id;
 			$paymentInfoStr .= '<br>Payment Date: ' . $payment_date;
 			$paymentInfoStr .= '<br>Payer Email: ' . $payer_email;
 			$paymentInfoStr .= '<br>Payment Amount: ' . $payment_amt . ' (this includes the Paypal processing fee) <br>';
-			
+
             $sendMailSuccess = false;
 
 			$subject = 'GRHA Payment Confirmation';
@@ -1459,7 +1460,7 @@ function updAssessmentPaid($conn,$parcelId,$ownerId,$fy,$txn_id,$payment_date,$p
         }
 
 	} // End of if Parcel found
-	
+
 } // End of function updAssessmentPaid($parcelId,$ownerId,$fy,$txn_id,$payment_date,$payer_email,$payment_amt,$payment_fee) {
 
 ?>

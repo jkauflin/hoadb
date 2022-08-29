@@ -20,6 +20,7 @@
  * 2020-08-01 JJK   Re-factored to use jjklogin for authentication
  * 2020-10-13 JJK   Re-did dues emails logic
  * 2020-12-21 JJK   Re-factored to use jjklogin package
+ * 2022-08-29 JJK   Added PHPMailer for outgoing email sends
  *============================================================================*/
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
@@ -38,6 +39,10 @@ require_once 'php_secure/commonUtil.php';
 require_once 'php_secure/hoaDbCommon.php';
 
 use \jkauflin\jjklogin\LoginAuth;
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+//use PHPMailer\PHPMailer\Exception;
 
 $adminRec = new AdminRec();
 try {
