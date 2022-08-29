@@ -45,11 +45,9 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 //use PHPMailer\PHPMailer\Exception;
 */
-/*
 use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mime\Email;
-*/
 
 $adminRec = new AdminRec();
 try {
@@ -311,7 +309,38 @@ try {
             $subject = getConfigValDB($conn,'hoaNameShort') . ' Dues Notice TEST';
             $EmailAddr = getConfigValDB($conn,'duesEmailTestAddress');
             $messageStr = createDuesMessage($conn,$parcelId);
-            $sendMailSuccess = sendHtmlEMail($EmailAddr,$subject,$messageStr,$fromTreasurerEmailAddress);
+
+            //$sendMailSuccess = sendHtmlEMail($EmailAddr,$subject,$messageStr,$fromTreasurerEmailAddress);
+
+            $message = '<html><head><title>' . $subject .'</title></head><body>' . $messageStr . '</body></html>';
+
+            error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", BEFORE " . PHP_EOL, 3, LOG_FILE);
+
+            // Create a Transport object
+            $transport = Transport::fromDsn('smtp://' . $mailUsername . ':' . $mailPassword . '@' . $mailServer . ':' . $mailPort);
+            // Create a Mailer object
+            $mailer = new Mailer($transport);
+            // Create an Email object
+            $email = (new Email());
+            // Set the "From address"
+            $email->from($fromTreasurerEmailAddress);
+            // Set the "From address"
+            $email->to($EmailAddr);
+            // Set a "subject"
+            $email->subject($subject);
+            // Set the plain-text "Body"
+            //$email->text('This is the plain text body of the message.\nThanks,\nAdmin');
+            // Set HTML "Body"
+            $email->html($message);
+            // Add an "Attachment"
+            //$email->attachFromPath('/path/to/example.txt');
+            // Add an "Image"
+            //$email->embed(fopen('/path/to/mailor.jpg', 'r'), 'nature');
+
+
+            // Send the message
+            $sendMailSuccess = $mailer->send($email);
+
             $testMessage = ' (Test email sent for Parcel Id = ' . $parcelId . ')';
 
             // 2022-08-27 JJK
