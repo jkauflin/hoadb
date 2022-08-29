@@ -40,9 +40,11 @@ require_once 'php_secure/hoaDbCommon.php';
 
 use \jkauflin\jjklogin\LoginAuth;
 
+/*
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 //use PHPMailer\PHPMailer\Exception;
+*/
 
 $adminRec = new AdminRec();
 try {

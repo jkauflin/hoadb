@@ -104,19 +104,18 @@ function downloadUrlToFile($url)
 function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
     //Create an instance; passing `true` enables exceptions
     //$mail = new PHPMailer(true);
-    $mail = new PHPMailer;
+    //$mail = new PHPMailer;
 
     try {
     	$message = '<html><head><title>' . $subject .'</title></head><body>' . $messageStr . '</body></html>';
     	// Always set content-type when sending HTML email
-        /*
     	$headers = "MIME-Version: 1.0" . "\r\n";
     	$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
     	// More headers
         $headers .= 'From: ' . $fromEmailAddress . "\r\n";
-        */
 
         //Server settings
+        /*
         $mail->SMTPDebug  = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
         $mail->isSMTP();                                            //Send using SMTP
         $mail->SMTPDebug  = 2;
@@ -131,11 +130,9 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
         $mail->setFrom($fromEmailAddress);
         $mail->addReplyTo($fromEmailAddress);
         $mail->addAddress($toStr);
-        /*
-        $mail->addReplyTo('info@example.com', 'Information');
-        $mail->addCC('cc@example.com');
-        $mail->addBCC('bcc@example.com');
-        */
+        //$mail->addReplyTo('info@example.com', 'Information');
+        //$mail->addCC('cc@example.com');
+        //$mail->addBCC('bcc@example.com');
 
         //Attachments
         //$mail->addAttachment('/var/tmp/file.tar.gz');         //Add attachments
@@ -160,8 +157,9 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
             //echo 'Mailer Error: ' . $mail->ErrorInfo;
             return false;
         }
+        */
 
-        /*
+
         if (!function_exists('mail'))
         {
             error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", mail() has been disabled " . PHP_EOL, 3, LOG_FILE);
@@ -173,7 +171,6 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
         } else {
             return false;
         }
-        */
 
     } catch(Exception $e) {
         error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", sendHtmlEMail Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);
