@@ -359,12 +359,12 @@ try {
             $maxRecs = (int) getConfigValDB($conn,'duesEmailBatchMax');
 
             // 2022-08-27 JJK
-            error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", DuesEmailsSendList maxRecs = $maxRecs " . PHP_EOL, 3, LOG_FILE);
+            //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", DuesEmailsSendList maxRecs = $maxRecs " . PHP_EOL, 3, LOG_FILE);
 
             $sendMailSuccess = false;
             if ($result->num_rows > 0) {
                 // 2022-08-27 JJK
-                error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", DuesEmailsSendList $result->num_rows = $result->num_rows " . PHP_EOL, 3, LOG_FILE);
+                //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", DuesEmailsSendList $result->num_rows = $result->num_rows " . PHP_EOL, 3, LOG_FILE);
 
                 $cnt = 0;
                 $Parcel_ID = '';
@@ -379,15 +379,15 @@ try {
                     $EmailAddr = $row["EmailAddr"];
                     $messageStr = createDuesMessage($conn,$Parcel_ID);
 
-                    /*
-                    $sendMailSuccess = sendHtmlEMail($EmailAddr,$subject,$messageStr,$fromTreasurerEmailAddress);
+                    // Create a Mailer object for the SMTP transport
+                    $mailer = getMailer($mailUsername, $mailPassword, $mailServer, $mailPort);
+                    $sendMailSuccess = sendMail($mailer,$EmailAddr,$subject,$messageStr,$mailUsername);
+                    //$sendMailSuccess = sendHtmlEMail($EmailAddr,$subject,$messageStr,$fromTreasurerEmailAddress);
                     // If the Member email was successful, update the flag on the communication record
                     if ($sendMailSuccess) {
                         // if successful change sent to 'Y' and update Last changed timestamp
                         setCommEmailSent($conn,$Parcel_ID,$CommID,$userRec->userName);
                     }
-                    */
-
                 }
             }
         }
