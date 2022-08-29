@@ -20,7 +20,7 @@
  * 2020-08-01 JJK   Re-factored to use jjklogin for authentication
  * 2020-10-13 JJK   Re-did dues emails logic
  * 2020-12-21 JJK   Re-factored to use jjklogin package
- * 2022-08-29 JJK   Added PHPMailer for outgoing email sends
+ * 2022-08-29 JJK   Added Symfony Mailer for outgoing email sends using SMTP
  *============================================================================*/
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
@@ -310,42 +310,17 @@ try {
             $EmailAddr = getConfigValDB($conn,'duesEmailTestAddress');
             $messageStr = createDuesMessage($conn,$parcelId);
 
-            //$sendMailSuccess = sendHtmlEMail($EmailAddr,$subject,$messageStr,$fromTreasurerEmailAddress);
-
-            $message = '<html><head><title>' . $subject .'</title></head><body>' . $messageStr . '</body></html>';
-
-            error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", BEFORE " . PHP_EOL, 3, LOG_FILE);
-
-            // Create a Transport object
-            $transport = Transport::fromDsn('smtp://' . $mailUsername . ':' . $mailPassword . '@' . $mailServer . ':' . $mailPort);
-            // Create a Mailer object
-            $mailer = new Mailer($transport);
-            // Create an Email object
-            $email = (new Email());
-            // Set the "From address"
-            $email->from($fromTreasurerEmailAddress);
-            // Set the "From address"
-            $email->to($EmailAddr);
-            // Set a "subject"
-            $email->subject($subject);
-            // Set the plain-text "Body"
-            //$email->text('This is the plain text body of the message.\nThanks,\nAdmin');
-            // Set HTML "Body"
-            $email->html($message);
-            // Add an "Attachment"
-            //$email->attachFromPath('/path/to/example.txt');
-            // Add an "Image"
-            //$email->embed(fopen('/path/to/mailor.jpg', 'r'), 'nature');
-
-
-            // Send the message
-            $sendMailSuccess = $mailer->send($email);
-
-            $testMessage = ' (Test email sent for Parcel Id = ' . $parcelId . ')';
+            // Create a Mailer object for the SMTP transport
+            $mailer = getMailer($mailUsername, $mailPassword, $mailServer, $mailPort);
+            $sendMailSuccess = sendMail($mailer,$EmailAddr,$subject,$messageStr,$mailUsername);
+            if ($sendMailSuccess) {
+                $testMessage = ' (Test email sent for Parcel Id = ' . $parcelId . ')';
+            } else {
+                $testMessage = ' (Test email FAILED for Parcel Id = ' . $parcelId . ')';
+            }
 
             // 2022-08-27 JJK
-            error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", $testMessage, success = $sendMailSuccess " . PHP_EOL, 3, LOG_FILE);
-
+            error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", $testMessage  " . PHP_EOL, 3, LOG_FILE);
 
         } else if ($action == "DuesEmailsCreateList") {
             // Delete the previous list of any outstanding dues emails to send
