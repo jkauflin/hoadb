@@ -106,7 +106,6 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
     	$message = '<html><head><title>' . $subject .'</title></head><body>' . $messageStr . '</body></html>';
 
         // Always set content-type when sending HTML email
-        /*
     	$headers = "MIME-Version: 1.0" . "\r\n";
     	$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
     	// More headers
@@ -123,8 +122,8 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
         } else {
             return false;
         }
-        */
 
+        /*
         // Create a Transport object
         $transport = Transport::fromDsn('smtp://' . $mailUsername . ':' . $mailPassword . '@' . $mailServer . ':' . $mailPort);
         // Create a Mailer object
@@ -148,7 +147,7 @@ function sendHtmlEMail($toStr,$subject,$messageStr,$fromEmailAddress) {
 
         // Send the message
         $mailer->send($email);
-        
+        */
 
     } catch(Exception $e) {
         error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", sendHtmlEMail Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);

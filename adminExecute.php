@@ -45,10 +45,11 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 //use PHPMailer\PHPMailer\Exception;
 */
+/*
 use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mime\Email;
-
+*/
 
 $adminRec = new AdminRec();
 try {
