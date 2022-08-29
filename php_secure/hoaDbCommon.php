@@ -64,7 +64,7 @@
  * 2021-01-02 JJK   Modified for new Paypal API based payments, and to get
  *                  payment instructions and processing fee from config
  * 2021-09-04 JJK   Added logging to check email function in updAssessmentPaid
- * 2022-08-29 JJK   Updated to use PHPMailer and SMTP account for mail
+ * 2022-08-29 JJK   Updated to use SMTP account for mail
  *============================================================================*/
 
 function getConn($host, $dbadmin, $password, $dbname) {
