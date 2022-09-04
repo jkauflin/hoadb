@@ -49,7 +49,7 @@ error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", email =
 // Create a Mailer object for the SMTP transport
 $sendMailSuccessStr = sendMail($mailer,$EmailAddr,$subject,$messageStr,$mailUsername) ? 'true' : 'false';
 $resultStr = "After email to $EmailAddr, sendMailSuccess = $sendMailSuccessStr";
-error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", $resultStr " . PHP_EOL, 3, LOG_FILE);
+error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", $resultStr " . PHP_EOL, 3, LOG_FILE);
 
 echo $resultStr;
 ?>
