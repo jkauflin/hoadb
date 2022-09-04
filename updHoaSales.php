@@ -1,19 +1,20 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2015,2018,2020 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2018,2020 John J Kauflin, All rights reserved.
  *----------------------------------------------------------------------------
- * DESCRIPTION: 
+ * DESCRIPTION:  Update hoa_sales table flags for processed and welcome sent
  *----------------------------------------------------------------------------
  * Modification History
- * 2015-10-02 JJK 	Initial version to update Sales 
+ * 2015-10-02 JJK 	Initial version to update Sales
  * 2018-11-04 JJK	Re-factored to use POST and return JSON data of
  *                  re-queried record
  * 2020-08-01 JJK   Re-factored to use jjklogin for authentication
  * 2020-12-21 JJK   Re-factored to use jjklogin package
+ * 2022-09-04 JJK   Removed echo statement with invalid variable name
  *============================================================================*/
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
-require_once 'vendor/autoload.php'; 
+require_once 'vendor/autoload.php';
 
 // Figure out how many levels up to get to the "public_html" root folder
 $webRootDirOffset = substr_count(strstr(dirname(__FILE__),"public_html"),DIRECTORY_SEPARATOR) + 1;
@@ -41,9 +42,8 @@ try {
 	$username = $userRec->userName;
 
 	header("Content-Type: application/json; charset=UTF-8");
-	# Get JSON as a string
+	# Get JSON as a string (from the Request)
 	$json_str = file_get_contents('php://input');
-
 	# Decode the string to get a JSON object
 	$param = json_decode($json_str);
 
@@ -61,11 +61,10 @@ try {
     } else {
         throw new Exception('ACTION is not valid, value = ' . $param->ACTION, 500);
     }
-	$stmt->bind_param("sss",$username,$param->PARID,$param->SALEDT);	
+	$stmt->bind_param("sss",$username,$param->PARID,$param->SALEDT);
 	$stmt->execute();
 	$stmt->close();
 	$conn->close();
-	echo 'Update Successful - parcelId = ' . $PARID;
 
 } catch(Exception $e) {
     //error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", Exception = " . $e->getMessage() . PHP_EOL, 3, LOG_FILE);

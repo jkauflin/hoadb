@@ -9,7 +9,8 @@
  *============================================================================*/
 require_once 'vendor/autoload.php';
 // Define a super global constant for the log file (this will be in scope for all functions)
-define("LOG_FILE", "./php.log");
+//define("LOG_FILE", "./php.log");
+define("LOG_FILE", "./test.log");
 // Figure out how many levels up to get to the "public_html" root folder
 $webRootDirOffset = substr_count(strstr(dirname(__FILE__),"public_html"),DIRECTORY_SEPARATOR) + 1;
 // Get settings and credentials from a file in a directory outside of public_html
@@ -28,25 +29,27 @@ if (getParamVal("key") != $scheduledJobKey) {
     exit;
 }
 
-	//--------------------------------------------------------------------------------------------------------
-	// Create connection to the database
-	//--------------------------------------------------------------------------------------------------------
-	$conn = getConn($host, $dbadmin, $password, $dbname);
+// Create a Mailer object for the SMTP transport using parameters from secrets
+$mailer = getMailer($mailUsername, $mailPassword, $mailServer, $mailPort);
 
-    $fromEmailAddress = getConfigValDB($conn,"fromEmailAddress");
-    $treasurerEmail = getConfigValDB($conn,"treasurerEmail");
-    $paymentEmailList = getConfigValDB($conn,"paymentEmailList");
+//--------------------------------------------------------------------------------------------------------
+// Create connection to the database
+//--------------------------------------------------------------------------------------------------------
+$conn = getConn($host, $dbadmin, $password, $dbname);
 
-    $subject = 'GRHA Test email ';
-    $messageStr = '<h2>This is a test of email from GRHA</h2>';
-    error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", email = $paymentEmailList" . PHP_EOL, 3, LOG_FILE);
+//$fromEmailAddress = getConfigValDB($conn,"fromEmailAddress");
+//$treasurerEmail = getConfigValDB($conn,"treasurerEmail");
+//$paymentEmailList = getConfigValDB($conn,"paymentEmailList");
+$EmailAddr = getConfigValDB($conn,'duesEmailTestAddress');
 
-    $sendMailSuccess = sendHtmlEMail($paymentEmailList,$subject,$messageStr,$fromEmailAddress);
-    $sendMailSuccessStr = $sendMailSuccess ? 'true' : 'false';
+$subject = 'GRHA Test email ';
+$messageStr = '<h2>This is a test of email from GRHA</h2>';
+error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", email = $EmailAddr" . PHP_EOL, 3, LOG_FILE);
 
-    $resultStr = "After payment email sent to:  $paymentEmailList, sendMailSuccess = $sendMailSuccessStr";
-    error_log($resultStr . PHP_EOL, 3, LOG_FILE);
-
+// Create a Mailer object for the SMTP transport
+$sendMailSuccess = sendMail($mailer,$EmailAddr,$subject,$messageStr,$mailUsername);
+$resultStr = "After email to $EmailAddr, sendMailSuccess = $sendMailSuccessStr";
+error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", $resultStr " . PHP_EOL, 3, LOG_FILE);
 
 echo $resultStr;
 ?>
