@@ -47,7 +47,7 @@ $messageStr = '<h2>This is a test of email from GRHA</h2>';
 error_log(date('[Y-m-d H:i:s] '). "in " . basename(__FILE__,".php") . ", email = $EmailAddr" . PHP_EOL, 3, LOG_FILE);
 
 // Create a Mailer object for the SMTP transport
-$sendMailSuccess = sendMail($mailer,$EmailAddr,$subject,$messageStr,$mailUsername);
+$sendMailSuccessStr = sendMail($mailer,$EmailAddr,$subject,$messageStr,$mailUsername) ? 'true' : 'false';
 $resultStr = "After email to $EmailAddr, sendMailSuccess = $sendMailSuccessStr";
 error_log(date('[Y-m-d H:i] '). "in " . basename(__FILE__,".php") . ", $resultStr " . PHP_EOL, 3, LOG_FILE);
 
