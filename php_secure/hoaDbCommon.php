@@ -574,8 +574,10 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 
 		//--------------------------------------------------------------------------------------------------------------------------
 		// Override email address to use if we get the last email used to make an electronic payment
+        // 10/15/2022 JJK Modified to only look for payments within the last year (because of renter issue)
 		//--------------------------------------------------------------------------------------------------------------------------
-		$stmt = $conn->prepare("SELECT payer_email FROM hoa_payments WHERE Parcel_ID = ? AND OwnerID = ? ORDER BY FY DESC ; ");
+		//$stmt = $conn->prepare("SELECT payer_email FROM hoa_payments WHERE Parcel_ID = ? AND OwnerID = ? ORDER BY FY DESC ; ");
+		$stmt = $conn->prepare("SELECT payer_email FROM hoa_payments WHERE Parcel_ID = ? AND OwnerID = ? AND YEAR(LastChangedTs) = YEAR(DATE_SUB(CURDATE(), INTERVAL 1 YEAR)) ORDER BY FY DESC ; ");
 		$stmt->bind_param("ss", $parcelId,$CurrentOwnerID);
 		$stmt->execute();
 		$result = $stmt->get_result();
@@ -584,12 +586,6 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 			if ($row = $result->fetch_assoc()) {
 				$tempEmail = $row["payer_email"];
 				//error_log(date('[Y-m-d H:i:s] '). " tempEmail = " . $tempEmail . PHP_EOL, 3, "hoadb.log");
-
-				// If there is an email from the last electronic payment, for the current Owner, only use it
-				// if they are not going paperless or the paperless email is blank
-				//if (!$hoaRec->UseEmail || $hoaRec->DuesEmailAddr == '') {
-				//	$hoaRec->DuesEmailAddr = $row["payer_email"];
-				//}
 
 				// If there is an email from the last electronic payment, for the current Owner,
 				// add it to the email list (if not already in the array)
