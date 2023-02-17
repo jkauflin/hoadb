@@ -1,18 +1,19 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2016,2020 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2016,2020 John J Kauflin, All rights reserved.
  *----------------------------------------------------------------------------
  * DESCRIPTION: Functions to validate Admin operations (i.e. check permissions
  * 				parameters, timing, etc.)
  *----------------------------------------------------------------------------
  * Modification History
- * 2016-04-05 JJK 	Added check for AddAssessments 
+ * 2016-04-05 JJK 	Added check for AddAssessments
  * 2020-08-01 JJK   Re-factored to use jjklogin for authentication
  * 2020-12-21 JJK   Re-factored to use jjklogin package
+ * 2023-02-17 JJK   Refactor for non-static jjklogin class and settings from DB
  *============================================================================*/
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
-require_once 'vendor/autoload.php'; 
+require_once 'vendor/autoload.php';
 
 // Figure out how many levels up to get to the "public_html" root folder
 $webRootDirOffset = substr_count(strstr(dirname(__FILE__),"public_html"),DIRECTORY_SEPARATOR) + 1;
@@ -30,7 +31,8 @@ use \jkauflin\jjklogin\LoginAuth;
 
 $adminRec = new AdminRec();
 try {
-    $userRec = LoginAuth::getUserRec($cookieNameJJKLogin,$cookiePathJJKLogin,$serverKeyJJKLogin);
+    $loginAuth = new LoginAuth($hostJJKLogin, $dbadminJJKLogin, $passwordJJKLogin, $dbnameJJKLogin);
+    $userRec = $loginAuth->getUserRec();
     if ($userRec->userName == null || $userRec->userName == '') {
         throw new Exception('User is NOT logged in', 500);
     }
@@ -57,7 +59,7 @@ try {
     } else {
         $adminRec->result = "Valid";
     	$adminRec->message = "Continue with " . $action . "?";
-        
+
     	if ($action == "AddAssessments") {
             if (empty($duesAmt) || empty($fy)) {
     			$adminRec->message = "You must enter Dues Amount and Fiscal Year.";

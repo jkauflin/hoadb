@@ -1,6 +1,6 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2020 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2020 John J Kauflin, All rights reserved.
  *----------------------------------------------------------------------------
  * DESCRIPTION: Upload payments file and compare records with database
  *----------------------------------------------------------------------------
@@ -8,10 +8,11 @@
  * 2020-09-25 JJK   Initial version
  * 2020-12-21 JJK   Re-factored to use jjklogin package
  * 2021-02-13 JJK   Modified for new paypal express payment values
+ * 2023-02-17 JJK   Refactor for non-static jjklogin class and settings from DB
  *============================================================================*/
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
-require_once 'vendor/autoload.php'; 
+require_once 'vendor/autoload.php';
 
 // Figure out how many levels up to get to the "public_html" root folder
 $webRootDirOffset = substr_count(strstr(dirname(__FILE__),"public_html"),DIRECTORY_SEPARATOR) + 1;
@@ -29,7 +30,8 @@ use \jkauflin\jjklogin\LoginAuth;
 
 $adminRec = new AdminRec();
 try {
-    $userRec = LoginAuth::getUserRec($cookieNameJJKLogin,$cookiePathJJKLogin,$serverKeyJJKLogin);
+    $loginAuth = new LoginAuth($hostJJKLogin, $dbadminJJKLogin, $passwordJJKLogin, $dbnameJJKLogin);
+    $userRec = $loginAuth->getUserRec();
     if ($userRec->userName == null || $userRec->userName == '') {
         throw new Exception('User is NOT logged in', 500);
     }
@@ -86,8 +88,8 @@ try {
     $DateCol = -1;
     $TimeCol = -1;
     $TimeZoneCol = -1;
-    $NameCol = -1;	
-    $TypeCol = -1;	
+    $NameCol = -1;
+    $TypeCol = -1;
     $GrossCol = -1;
     $FeeCol = -1;
     $FromEmailAddressCol = -1;
@@ -104,11 +106,11 @@ try {
 	while(!feof($file))
 	{
 		$recCnt = $recCnt + 1;
-			
+
 		// 1st record of CSV files are the column names
 		if ($recCnt == 1) {
             $paymentCoumnArray = fgetcsv($file);
-            
+
             // Confirm the columns in the spreadsheet to make sure they equal the ones we are looking for
             // and set the column numbers to access the array
             for ($i = 0; $i < count($paymentCoumnArray); $i++)  {
@@ -188,7 +190,7 @@ try {
                 $AllColsFound = false;
                 $ExpectedColsNotFound .= 'Contact Phone Number';
             }
-                
+
             if (!$AllColsFound) {
                 // Exit out with an error
 		        $adminRec->message = "Expected column names not found.  Missing Columns: " . $ExpectedColsNotFound;
@@ -198,7 +200,7 @@ try {
 
 			continue;
 		}
-					
+
         $paymentArray = fgetcsv($file);
         if (!$paymentArray) {
             continue;

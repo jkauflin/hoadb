@@ -1,7 +1,7 @@
 /*==============================================================================
- * (C) Copyright 2015,2016,2017,2018 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2016,2017,2018 John J Kauflin, All rights reserved.
  *----------------------------------------------------------------------------
- * DESCRIPTION: 
+ * DESCRIPTION:
  *----------------------------------------------------------------------------
  * Modification History
  * 2015-09-08 JJK   Added GetSalesReport to show sales to HOA properties
@@ -23,7 +23,7 @@
  * 2020-10-02 JJK   Started Mailing List development
  * 2020-10-10 JJK   Added checkboxes to log mailed and moved the filter
  *                  logic to the PHP query
- * 2020-10-14 JJK   Modified to use common getHoaRecList function and 
+ * 2020-10-14 JJK   Modified to use common getHoaRecList function and
  *                  removed call to AdminExecute for dues rank list
  * 2020-12-22 JJK   Re-factored for Bootstrap 4
  * 2021-02-02 JJK   Added fields to the mailing list for dues letters
@@ -50,7 +50,7 @@ var reports = (function () {
     var pdfColIncrement = 1.5;
     var pdfMaxLineChars = 95;
     var pdfFontSizeDefault = 11;
-    
+
     //=================================================================================================================
     // Variables cached from the DOM
     var $moduleDiv = $('#ReportsPage');
@@ -60,7 +60,7 @@ var reports = (function () {
     var $ReportListDisplay = $("#ReportListDisplay tbody");
     var $ReportRecCnt = $("#ReportRecCnt");
     var $ReportDownloadLinks = $("#ReportDownloadLinks");
-    
+
     //=================================================================================================================
     // Bind events
     $moduleDiv.on("click", ".reportRequest", _reportRequest);
@@ -82,7 +82,6 @@ var reports = (function () {
         $ReportFilter.empty();
 
         // check user logged in
-        if (jjklogin.isUserLoggedIn()) {
             $ReportFilter
                 .append($('<input>')
                     .prop('id', "MailingListName")
@@ -90,13 +89,11 @@ var reports = (function () {
                     .attr('type', "radio")
                     .attr('checked', "checked")
                     .attr('value', "WelcomeLetters")).append($('<label class="ml-2">').html("Welcome Letters (property addresses, Sales WelcomeSent = S)"))
-            if (jjklogin.getUserLevel() > 1) {
                 $ReportFilter.append($('<input class="ml-4">')
                     .prop('id', "LogWelcomeLetters")
                     .attr('name', "LogWelcomeLetters")
                     .attr('type', "checkbox"))
                     .append($('<label>').html("&nbsp; Mark Welcome Letters as MAILED"))
-            }
             $ReportFilter.append($('</br>'))
             $ReportFilter.append($('<input>')
                     .prop('id', "MailingListName")
@@ -114,13 +111,11 @@ var reports = (function () {
                     .attr('name', "MailingListName")
                     .attr('type', "radio")
                     .attr('value', "Duesletter2")).append($('<label class="ml-2">').html("Dues Letter 2nd Notice (Unpaid owner addresses using ALT if set)"))
-            if (jjklogin.getUserLevel() > 1) {
                 $ReportFilter.append($('<input class="ml-4">')
                     .prop('id', "LogDuesLetterSend")
                     .attr('name', "LogDuesLetterSend")
                     .attr('type', "checkbox"))
                     .append($('<label class="ml-2">').html("Mark Dues Letters (1 or 2) as MAILED"))
-            }
             $ReportFilter.append($('</br>'))
             $ReportFilter.append($('<a class="m-2">')
                     .prop('id', "MailingListReport")
@@ -129,9 +124,6 @@ var reports = (function () {
                     .attr('data-reportTitle', reportTitle)
                     .attr('role', "button")
                     .html("Create List")).append($('</br>'))
-        } else {
-            $ReportRecCnt.html("User is not logged in");
-        }
     }
 
     function _reportRequest(event) {
@@ -143,7 +135,6 @@ var reports = (function () {
         $ReportDownloadLinks.html("");
 
         // check user logged in
-        if (jjklogin.isUserLoggedIn()) {
             var mailingListName = '';
             var logWelcomeLetters = '';
             var logDuesLetterSend = '';
@@ -155,7 +146,7 @@ var reports = (function () {
                 $ReportFilter.empty();
             }
 
-            $.getJSON("getHoaReportData.php", "reportName=" + reportName + "&mailingListName=" 
+            $.getJSON("getHoaReportData.php", "reportName=" + reportName + "&mailingListName="
                   + mailingListName + "&logDuesLetterSend=" + logDuesLetterSend+"&logWelcomeLetters="+logWelcomeLetters, function (result) {
                 if (result.error) {
                     console.log("error = " + result.error);
@@ -170,9 +161,6 @@ var reports = (function () {
                 }
             });
 
-        } else {
-            $ReportRecCnt.html("User is not logged in");
-        }
     }
 
     function _duesRank(hoaRecList, reportName) {
@@ -223,7 +211,7 @@ var reports = (function () {
 
     function _downloadReportPDF(event) {
         pdf.save(event.target.getAttribute("data-reportName") + ".pdf");
-    };	
+    };
 
     function _salesFlagUpdate(event) {
         var reportName = event.target.getAttribute('id');
@@ -246,7 +234,7 @@ var reports = (function () {
                 $ReportListDisplay.html("");
                 $ReportRecCnt.html("");
                 $ReportDownloadLinks.html("");
-                 
+
                 $.getJSON("getHoaReportData.php", "reportName=" + reportName, function (reportList) {
                     _formatReportList(reportName, reportTitle, reportList);
                 });
@@ -309,7 +297,7 @@ var reports = (function () {
 
                 if (reportName == "SalesReport") {
                     // If WelcomeSent has not been set, offer the buttons to set the value
-                    if (hoaSalesRec.adminLevel > 1 && 
+                    if (hoaSalesRec.adminLevel > 1 &&
                         (hoaSalesRec.WelcomeSent == null || hoaSalesRec.WelcomeSent == 'X' || hoaSalesRec.WelcomeSent == ' ' || hoaSalesRec.WelcomeSent == '')) {
                         // offer buttons for Send and Ignore
                         tr.append($('<td>')
@@ -535,7 +523,7 @@ var reports = (function () {
                 csvLine += ',' + util.csvFilter(hoaRec.Parcel_ID);
                 csvLine += ',' + util.csvFilter(hoaRec.Parcel_Location);
                 csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Mailing_Name);
-                    
+
                 if (mailingListName.startsWith('Duesletter') && hoaRec.ownersList[0].AlternateMailing) {
                     csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Alt_Address_Line1);
                     csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Alt_Address_Line2);
@@ -549,7 +537,7 @@ var reports = (function () {
                     csvLine += ',' + util.csvFilter(hoaRec.Property_State);
                     csvLine += ',' + util.csvFilter(hoaRec.Property_Zip);
                 }
-                    
+
                 csvLine += ',' + util.csvFilter(hoaRec.ownersList[0].Owner_Phone);
                 csvLine += ',' + util.csvFilter(reportYear);
                 if (hoaRec.assessmentsList[0].Paid) {

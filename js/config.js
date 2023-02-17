@@ -1,7 +1,7 @@
 /*==============================================================================
- * (C) Copyright 2015,2016,2017,2018 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2016,2017,2018 John J Kauflin, All rights reserved.
  *----------------------------------------------------------------------------
- * DESCRIPTION: 
+ * DESCRIPTION:
  *----------------------------------------------------------------------------
  * Modification History
  * 2016-05-17 JJK   Implemented Config update page
@@ -13,7 +13,7 @@
  * 2020-08-05 JJK   Re-did the map loading and rendering to not load on
  *                  page load - have the load called after login
  * 2020-08-06 JJK   Added functions to load and return the Logo image data
- * 2020-12-22 JJK   Modified for changes to jjklogin - added event 
+ * 2020-12-22 JJK   Modified for changes to jjklogin - added event
  *                  handling to call the config load functions when a user
  *                  is authenticated (using the new jjklogin event)
  *============================================================================*/
@@ -115,14 +115,12 @@ var config = (function(){
 
     function editConfig(value) {
         // check user logged in
-        if (jjklogin.isUserLoggedIn()) {
             // If a string was passed in then use value as the name, else get it from the attribute of the click event object
             var configName = (typeof value === "string") ? value : value.target.getAttribute("data-ConfigName");
             $.getJSON("getHoaConfigList.php", "ConfigName=" + configName, function (hoaConfigRec) {
                 _formatConfigEdit(hoaConfigRec[0]);
                 $EditPage.modal();
             });
-        }
     };
 
     function _formatConfigEdit(hoaConfigRec) {
@@ -190,5 +188,5 @@ var config = (function(){
         getVal,
         editConfig
     };
-        
+
 })(); // var util = (function(){

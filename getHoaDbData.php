@@ -1,17 +1,18 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2015,2020 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2020 John J Kauflin, All rights reserved.
  *----------------------------------------------------------------------------
- * DESCRIPTION: 
+ * DESCRIPTION:
  *----------------------------------------------------------------------------
  * Modification History
- * 2015-03-06 JJK 	Initial version to get data 
- * 2020-08-01 JJK   Re-factored to use jjklogin for authentication 
+ * 2015-03-06 JJK 	Initial version to get data
+ * 2020-08-01 JJK   Re-factored to use jjklogin for authentication
  * 2020-12-21 JJK   Re-factored to use jjklogin package
+ * 2023-02-17 JJK   Refactor for non-static jjklogin class and settings from DB
  *============================================================================*/
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
-require_once 'vendor/autoload.php'; 
+require_once 'vendor/autoload.php';
 
 // Figure out how many levels up to get to the "public_html" root folder
 $webRootDirOffset = substr_count(strstr(dirname(__FILE__),"public_html"),DIRECTORY_SEPARATOR) + 1;
@@ -28,7 +29,8 @@ require_once 'php_secure/hoaDbCommon.php';
 use \jkauflin\jjklogin\LoginAuth;
 
 try {
-    $userRec = LoginAuth::getUserRec($cookieNameJJKLogin,$cookiePathJJKLogin,$serverKeyJJKLogin);
+    $loginAuth = new LoginAuth($hostJJKLogin, $dbadminJJKLogin, $passwordJJKLogin, $dbnameJJKLogin);
+    $userRec = $loginAuth->getUserRec();
     if ($userRec->userName == null || $userRec->userName == '') {
         throw new Exception('User is NOT logged in', 500);
     }
@@ -41,7 +43,7 @@ try {
 	$ownerId = getParamVal("ownerId");
 	$fy = getParamVal("fy");
 	$saleDate = getParamVal("saleDate");
-	
+
 	//--------------------------------------------------------------------------------------------------------
 	// Create connection to the database
 	//--------------------------------------------------------------------------------------------------------

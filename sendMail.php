@@ -1,12 +1,12 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2016 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2016 John J Kauflin, All rights reserved.
  *----------------------------------------------------------------------------
  * DESCRIPTION: Service to use swiftmailer library to send dues emails.
  * 				Version 6.3 (Depends on PHP 7)
  *----------------------------------------------------------------------------
  * Modification History
- * 2016-11-06 JJK 	Initial version to send mail with PDF attachment 
+ * 2016-11-06 JJK 	Initial version to send mail with PDF attachment
  * 2016-11-07 JJK   Modified to use swiftmailer.org library
  * 2018-11-25 JJK	Modified to return a JSON record which includes the
  * 					email address for the send and the send result
@@ -16,10 +16,11 @@
  *                  to "vendor/autoload.php"
  * 2020-08-03 JJK   Re-factored to use jjklogin for authentication
  * 2020-12-21 JJK   Re-factored to use jjklogin package
+ * 2023-02-17 JJK   Refactor for non-static jjklogin class and settings from DB
  *============================================================================*/
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
-require_once 'vendor/autoload.php'; 
+require_once 'vendor/autoload.php';
 
 // Figure out how many levels up to get to the "public_html" root folder
 $webRootDirOffset = substr_count(strstr(dirname(__FILE__),"public_html"),DIRECTORY_SEPARATOR) + 1;
@@ -36,7 +37,8 @@ require_once 'php_secure/hoaDbCommon.php';
 use \jkauflin\jjklogin\LoginAuth;
 
 try {
-    $userRec = LoginAuth::getUserRec($cookieNameJJKLogin,$cookiePathJJKLogin,$serverKeyJJKLogin);
+    $loginAuth = new LoginAuth($hostJJKLogin, $dbadminJJKLogin, $passwordJJKLogin, $dbnameJJKLogin);
+    $userRec = $loginAuth->getUserRec();
     if ($userRec->userName == null || $userRec->userName == '') {
         throw new Exception('User is NOT logged in', 500);
     }
@@ -77,7 +79,7 @@ try {
 	// swiftmailer PHP read receipt capability
 	// $message -> setReadReceiptTo('your@address.tld');
 	// When the email is opened, if the mail client supports it a notification will be sent to this address.
-	// Read receipts won't work for the majority of recipients since many mail clients auto-disable them. 
+	// Read receipts won't work for the majority of recipients since many mail clients auto-disable them.
 	// Those clients that will send a read receipt will make the user aware that one has been requested.
 
 	// Create the attachment with your data

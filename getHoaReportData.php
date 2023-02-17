@@ -1,6 +1,6 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2016,2020 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2016,2020 John J Kauflin, All rights reserved.
  *----------------------------------------------------------------------------
  * DESCRIPTION: Get data for reports
  *----------------------------------------------------------------------------
@@ -15,6 +15,7 @@
  * 2020-12-21 JJK   Re-factored to use jjklogin package
  * 2021-07-06 JJK   Corrected bug in logWelcomeSend that was preventing the
  *                  Welcome postcards from getting marked as SENT (Y)
+ * 2023-02-17 JJK   Refactor for non-static jjklogin class and settings from DB
  *============================================================================*/
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
@@ -35,7 +36,8 @@ require_once 'php_secure/hoaDbCommon.php';
 use \jkauflin\jjklogin\LoginAuth;
 
 try {
-    $userRec = LoginAuth::getUserRec($cookieNameJJKLogin,$cookiePathJJKLogin,$serverKeyJJKLogin);
+    $loginAuth = new LoginAuth($hostJJKLogin, $dbadminJJKLogin, $passwordJJKLogin, $dbnameJJKLogin);
+    $userRec = $loginAuth->getUserRec();
     if ($userRec->userName == null || $userRec->userName == '') {
         throw new Exception('User is NOT logged in', 500);
     }
@@ -85,7 +87,7 @@ try {
     			$hoaSalesRec->LastChangedBy = $row["LastChangedBy"];
     			$hoaSalesRec->LastChangedTs = $row["LastChangedTs"];
     			$hoaSalesRec->WelcomeSent = $row["WelcomeSent"];
-    	
+
     			$hoaSalesRec->adminLevel = $userRec->userLevel;
 
                 array_push($outputArray,$hoaSalesRec);
@@ -106,7 +108,7 @@ try {
     		// Loop through all the member properties
     		while($row = $result->fetch_assoc()) {
                 $cnt = $cnt + 1;
-                
+
                 $hoaCommRec = new HoaCommRec();
                 $hoaCommRec->Parcel_ID = $row["Parcel_ID"];
                 $hoaCommRec->CommID = $row["CommID"];
@@ -123,7 +125,7 @@ try {
         }
 
     } else if ($reportName == "PaidDuesCountsReport") {
-    	
+
     	// get the data for the counts summary by FY
     	$parcelId = "";
     	$ownerId = "";
@@ -131,18 +133,18 @@ try {
     	$duesAmt = "";
     	$paid = FALSE;
     	$nonCollectible = FALSE;
-    	
+
     	//$sql = "SELECT * FROM hoa_assessments WHERE FY > 2006 ORDER BY FY DESC; ";
     	$sql = "SELECT * FROM hoa_assessments WHERE FY > 2006 ORDER BY FY,Parcel_ID,OwnerID DESC; ";
-    	
-    //  a.FY	
+
+    //  a.FY
     //	a.Paid
-    	
+
     	$stmt = $conn->prepare($sql);
     	$stmt->execute();
     	$result = $stmt->get_result();
     	$stmt->close();
-    	
+
     	$paidCnt = 0;
     	$unPaidCnt = 0;
     	$nonCollCnt = 0;
@@ -159,17 +161,17 @@ try {
 
     			//$parcelId = $row["Parcel_ID"];
     			//$ownerId = $row["OwnerID"];
-    				
+
     			$fy = $row["FY"];
     			$duesAmt = $row["DuesAmt"];
     			$paid = $row["Paid"];
     			$nonCollectible = $row["NonCollectible"];
-    			
+
     			if ($cnt == 1) {
     				$prevFY = $fy;
     			}
 
-    				
+
     			if ($fy != $prevFY) {
     				$paidDuesCountsRec = new PaidDuesCountsRec();
     				$paidDuesCountsRec->fy = $prevFY;
@@ -177,9 +179,9 @@ try {
     				$paidDuesCountsRec->unpaidCnt = $unPaidCnt;
     				$paidDuesCountsRec->nonCollCnt = $nonCollCnt;
     				$paidDuesCountsRec->totalDue = $totalDue;
-    				$paidDuesCountsRec->nonCollDue = $nonCollDue; 
+    				$paidDuesCountsRec->nonCollDue = $nonCollDue;
     				array_push($outputArray,$paidDuesCountsRec);
-    				
+
     				// reset counts
     				$paidCnt = 0;
     				$unPaidCnt = 0;
@@ -199,7 +201,7 @@ try {
     			$prevParcelId = $parcelId;
     			$prevOwnerId = $ownerId;
     			*/
-    			
+
     			if ($paid) {
     				$paidCnt++;
     			} else {
@@ -213,7 +215,7 @@ try {
     			}
 
     		}
-    		
+
     		// Get the last bucket
     		$paidDuesCountsRec = new PaidDuesCountsRec();
     		$paidDuesCountsRec->fy = $prevFY;
@@ -223,9 +225,9 @@ try {
     		$paidDuesCountsRec->totalDue = $totalDue;
     		$paidDuesCountsRec->nonCollDue = $nonCollDue;
     		array_push($outputArray,$paidDuesCountsRec);
-    		
+
     	}
-    	
+
     } else {
         // The general Reports query - creating a list of HoaRec records (with all data for the Property)
         // This PHP service is about getting the list of HOA records, then the javascript will display the
@@ -268,7 +270,7 @@ try {
                 // If flag is set, mark the Welcome Letters as MAILED
                 if ($logWelcomeLetters) {
                     $stmt = $conn->prepare("UPDATE hoa_sales SET WelcomeSent='Y',LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE PARID = ? AND WelcomeSent = 'S' ; ");
-	                $stmt->bind_param("ss",$userRec->userName,$hoaRec->Parcel_ID);	
+	                $stmt->bind_param("ss",$userRec->userName,$hoaRec->Parcel_ID);
 	                $stmt->execute();
 	                $stmt->close();
                 }
@@ -295,7 +297,7 @@ try {
         } // If admin
 
     } // End of } else if ($reportName == "DuesReport") {
-    	
+
     // Close db connection
     $conn->close();
 

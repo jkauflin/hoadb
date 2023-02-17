@@ -1,10 +1,10 @@
 /*==============================================================================
- * (C) Copyright 2015,2020 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2020 John J Kauflin, All rights reserved.
  *----------------------------------------------------------------------------
- * DESCRIPTION: 
+ * DESCRIPTION:
  *----------------------------------------------------------------------------
  * Modification History
- * 2015-03-06 JJK 	Initial version 
+ * 2015-03-06 JJK 	Initial version
  * 2016-05-19 JJK   Modified to get the country web site URL's from config
  * 2016-06-05 JJK   Split Edit modal into 1 and 2Col versions
  * 2016-06-09 JJK	Added duesStatementNotes to the individual dues
@@ -36,23 +36,23 @@
  * 2018-10-14 JJK   Re-factored for modules
  * 2018-11-03 JJK   Got update Properties working again with JSON POST
  * 2018-11-04 JJK   (Jackson's 16th birthday)
- * 2018-11-17 JJK   To solve the async loop issue I modified AdminRequest to 
- *                  do all data queries in the PHP module and pass back a 
+ * 2018-11-17 JJK   To solve the async loop issue I modified AdminRequest to
+ *                  do all data queries in the PHP module and pass back a
  *                  large array of data to process in a sync loop
  * 2018-11-25 JJK   Renamed to pdfModule and implemented configuration object
  *                  rather than global variables (to solve email issue)
- * 2018-11-26 JJK   Implemented error handling and logging for failed 
+ * 2018-11-26 JJK   Implemented error handling and logging for failed
  *                  email sends
  * 2019-09-14 JJK   Added a FirstNoticeCheckbox for explicit designation
  *                  of 1st or Additional notices.  Pass along and use in
- *                  the functions instead of comparing array count with 
+ *                  the functions instead of comparing array count with
  *                  total number of properties
  * 2019-09-22 JJK   Checked logic for dues emails and communications
  * 2020-02-15 JJK   For the dues emails, adding display list of records
  *                  (for both test and real) to confirm logic
- *                  Fixed the bug that was getting string 'false' value 
+ *                  Fixed the bug that was getting string 'false' value
  *                  instead of boolean false
- * 
+ *
  * 2020-08-03 JJK   Re-factored for new error handling
  * 2020-08-10 JJK   Added some validation checks (Dad's 80th birthday)
  * 2020-08-29 JJK   Modified the dues email send to be individual request
@@ -163,8 +163,6 @@ var admin = (function () {
         $DuesButtons.empty();
         $DuesListDisplay.empty();
 
-        if (jjklogin.isUserLoggedIn()) {
-            if (jjklogin.getUserLevel() > 1) {
                 $DuesButtons.append($('<a>')
                     .prop('id', "DuesEmailsCreateList")
                     .attr('href', "#")
@@ -188,15 +186,10 @@ var admin = (function () {
                         .attr('data-action', "DuesEmailsSendList")
                         .attr('role', "button")
                         .html("Send Emails"));
-            }
-        } else {
-            $ResultMessage.html("User is not logged in");
-        }
     }
 
-    // Respond to the Continue click for an Admin Execute function 
+    // Respond to the Continue click for an Admin Execute function
     function _adminExecute(event) {
-        if (jjklogin.isUserLoggedIn()) {
             $DuesListDisplay.empty();
             $ResultMessage.html("Executing Admin request...(please wait)");
             var action = event.target.getAttribute("data-action");
@@ -216,10 +209,6 @@ var admin = (function () {
                     _duesEmailListDisplay();
                 }
             });
-
-        } else {
-            $ResultMessage.html("User is not logged in");
-        }
     }
 
     function _duesEmailListDisplay() {
@@ -434,7 +423,7 @@ var admin = (function () {
                     .append($('<th>').html('From Email'))
                     .appendTo($DuesListDisplay);
 
-                $("#ResultMessage").html("# of payments = <b>" + paymentList.length + "</b>, Fiscal Year = <b>" + paymentRec.FY 
+                $("#ResultMessage").html("# of payments = <b>" + paymentList.length + "</b>, Fiscal Year = <b>" + paymentRec.FY
                                             + "</b>, Dues Amt = <b>" + paymentRec.DuesAmt+"</b> "+message);
             }
 

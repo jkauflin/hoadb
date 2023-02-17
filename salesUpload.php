@@ -1,6 +1,6 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2020 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2020 John J Kauflin, All rights reserved.
  *----------------------------------------------------------------------------
  * DESCRIPTION: Upload county sales file and update sales table
  *----------------------------------------------------------------------------
@@ -12,10 +12,11 @@
  * 2021-05-08 JJK   Corrected sales table insert issue
  * 2022-05-13 JJK   Modified to accept the monthly and weekly sales files
  *                  by just looking for a single file in the ZIP
+ * 2023-02-17 JJK   Refactor for non-static jjklogin class and settings from DB
  *============================================================================*/
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
-require_once 'vendor/autoload.php'; 
+require_once 'vendor/autoload.php';
 
 // Figure out how many levels up to get to the "public_html" root folder
 $webRootDirOffset = substr_count(strstr(dirname(__FILE__),"public_html"),DIRECTORY_SEPARATOR) + 1;
@@ -33,7 +34,8 @@ use \jkauflin\jjklogin\LoginAuth;
 
 $adminRec = new AdminRec();
 try {
-    $userRec = LoginAuth::getUserRec($cookieNameJJKLogin,$cookiePathJJKLogin,$serverKeyJJKLogin);
+    $loginAuth = new LoginAuth($hostJJKLogin, $dbadminJJKLogin, $passwordJJKLogin, $dbnameJJKLogin);
+    $userRec = $loginAuth->getUserRec();
     if ($userRec->userName == null || $userRec->userName == '') {
         throw new Exception('User is NOT logged in', 500);
     }
@@ -81,7 +83,7 @@ try {
             if (strstr($fileInZip,'_RES.csv')) {
                 break;
             }
-        }     
+        }
 
         $file = $zipFile->getStream($fileInZip);
         if (!$file) {
@@ -103,7 +105,7 @@ try {
 	// Create connection to the database
 	//--------------------------------------------------------------------------------------------------------
 	$conn = getConn($host, $dbadmin, $password, $dbname);
-        
+
 	// Loop through all the records in the downloaded sales file and compare with HOA database parcels
     $sendMessage = false;
     $addToOutput = false;
@@ -115,13 +117,13 @@ try {
 	while(!feof($file))
 	{
 		$recCnt = $recCnt + 1;
-			
+
 		// 1st record of CSV files are the column names so just skip them
 		if ($recCnt == 1) {
 			$salesRecCoumnArray = fgetcsv($file);
 			continue;
 		}
-					
+
         $salesRecArray = fgetcsv($file);
         if (!$salesRecArray) {
             continue;
@@ -142,7 +144,7 @@ try {
 
         $hoaRecsFound = $hoaRecsFound + 1;
         $hoaOwnerRec = $hoaRec->ownersList[0];
-			
+
 			$addToOutput = false;
             // If the Sales record was not found, insert one
 			if ( sizeof($hoaRec->salesList) < 1) {
@@ -171,24 +173,24 @@ try {
                     $lastChangedby,
                     $WelcomeSent
                 );
-                
+
                 $stmt->execute();
 				$stmt->close();
 
                 $hoaSalesRec = getHoaSalesRec($conn,$hoaRec->Parcel_ID,$saleDate);
 				$addToOutput = true;
-				
+
 			} else {
-			    $hoaSalesRec = $hoaRec->salesList[0]; 
+			    $hoaSalesRec = $hoaRec->salesList[0];
 				// If the sales record is found but there was no notification, send an email
 				if ($hoaSalesRec->NotificationFlag == 'N') {
 					$addToOutput = true;
 				}
 			}
-			
+
 			if ($addToOutput) {
 				$sendMessage = true;
-				
+
 				$outputStr .= '<p><table border=1 class="evenLineHighlight"><tbody>';
 				$outputStr .= '<tr><th>Parcel Id:</th><td>' . $parcelId . '</td></tr>';
 				$outputStr .= '<tr><th>Parcel Location:</th><td><b>' . $hoaRec->Parcel_Location . '</b></td></tr>';
@@ -200,9 +202,9 @@ try {
 				$outputStr .= '<tr><th>Sale Date:</th><td>' . $hoaSalesRec->SALEDT . '</td></tr>';
 				$outputStr .= '</tbody></table></p>';
 			}
-			
+
 		//$outputStr .= '<br>' . $valArray[0];
-			
+
 	} // End of while(!feof($file))
 	fclose($file);
 
@@ -220,7 +222,7 @@ try {
             // If fail to send email maybe go back and update the default Y flag back to N ?
         }
 	}
-        
+
     $adminRec->message = "County Sales file processed successfully (Check Sales Report) </br>".
                          " Total records = $recCnt, HOA records found = $hoaRecsFound, New HOA sales found = $newSalesFound";
 	$adminRec->result = "Valid";

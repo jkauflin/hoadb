@@ -1,8 +1,8 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2015,2020 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2020 John J Kauflin, All rights reserved.
  *----------------------------------------------------------------------------
- * DESCRIPTION: 
+ * DESCRIPTION:
  *----------------------------------------------------------------------------
  * Modification History
  * 2015-03-09 JJK 	Initial version to get properties list
@@ -10,15 +10,16 @@
  * 					function to build wildcard parameter string from tokens
  * 2017-02-26 JJK	Added a general search to look through all columns
  * 					(someday switch to MySQL full text search for these fields)
- * 2020-07-23 JJK   Modified to require files from a secure location, use a 
- *                  function to get the Credentials file, and pass parameters 
+ * 2020-07-23 JJK   Modified to require files from a secure location, use a
+ *                  function to get the Credentials file, and pass parameters
  *                  to the getConn function
  * 2020-08-01 JJK   Re-factored to use jjklogin for authentication
  * 2020-12-21 JJK   Re-factored to use jjklogin package
+ * 2023-02-17 JJK   Refactor for non-static jjklogin class and settings from DB
  *============================================================================*/
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
-require_once 'vendor/autoload.php'; 
+require_once 'vendor/autoload.php';
 
 // Figure out how many levels up to get to the "public_html" root folder
 $webRootDirOffset = substr_count(strstr(dirname(__FILE__),"public_html"),DIRECTORY_SEPARATOR) + 1;
@@ -35,7 +36,8 @@ require_once 'php_secure/hoaDbCommon.php';
 use \jkauflin\jjklogin\LoginAuth;
 
 try {
-    $userRec = LoginAuth::getUserRec($cookieNameJJKLogin,$cookiePathJJKLogin,$serverKeyJJKLogin);
+    $loginAuth = new LoginAuth($hostJJKLogin, $dbadminJJKLogin, $passwordJJKLogin, $dbnameJJKLogin);
+    $userRec = $loginAuth->getUserRec();
     if ($userRec->userName == null || $userRec->userName == '') {
         throw new Exception('User is NOT logged in', 500);
     }
@@ -55,7 +57,7 @@ try {
 
 	$sql = " ";
 	$paramStr = " ";
-	
+
 	if (!empty($searchStr)) {
 		$paramStr = wildCardStrFromTokens($searchStr);
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE (p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1) AND (";
@@ -63,7 +65,7 @@ try {
 		$sql = $sql . " OR p.LotNo LIKE UPPER('" . $paramStr . "')";
 		$sql = $sql . " OR UPPER(p.Parcel_Location) LIKE UPPER('" . $paramStr . "')";
 		$sql = $sql . " OR UPPER(CONCAT(o.Owner_Name1,' ',o.Owner_Name2,' ',o.Mailing_Name)) LIKE UPPER('" . $paramStr . "')";
-		/*			
+		/*
 		$sql = $sql . " OR UPPER(o.Owner_Phone) LIKE UPPER('" . $paramStr . "')";
 		$sql = $sql . " OR UPPER(o.Alt_Address_Line1) LIKE UPPER('" . $paramStr . "')";
 		} elseif (!empty($checkNo)) {
@@ -79,31 +81,31 @@ try {
 		//$stmt->bind_param("s", $paramStr);
 		$stmt->execute();
 		$result = $stmt->get_result();
-		
+
 		$outputArray = array();
 		if ($result->num_rows > 0) {
 			while($row = $result->fetch_assoc()) {
 				$hoaPropertyRec = new HoaPropertyRec();
-		
+
 				$hoaPropertyRec->parcelId = $row["Parcel_ID"];
 				$hoaPropertyRec->lotNo = $row["LotNo"];
 				$hoaPropertyRec->subDivParcel = $row["SubDivParcel"];
 				$hoaPropertyRec->parcelLocation = $row["Parcel_Location"];
 				$hoaPropertyRec->ownerName = $row["Owner_Name1"] . ' ' . $row["Owner_Name2"];
 				$hoaPropertyRec->ownerPhone = $row["Owner_Phone"];
-		
+
 				array_push($outputArray,$hoaPropertyRec);
 			}
 		}
-		
+
 		$stmt->close();
 		$conn->close();
-		
+
 	} else {
 		// Default SQL
 		$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 AND UPPER(p.Parcel_ID) ";
 		$paramStr = " ";
-		
+
 		if (!empty($parcelId)) {
 			$sql = "SELECT * FROM hoa_properties p, hoa_owners o WHERE p.Parcel_ID = o.Parcel_ID AND o.CurrentOwner = 1 AND UPPER(p.Parcel_ID) ";
 			$paramStr = wildCardStrFromTokens($parcelId);
@@ -132,36 +134,36 @@ try {
 			// Hardcode the default to find all parcels
 			$paramStr = '%r%';
 		}
-		
+
 		$sql = $sql . "LIKE UPPER(?) ORDER BY p.Parcel_ID; ";
 		//error_log('$sql = ' . $sql);
-		
+
 		$conn = getConn($host, $dbadmin, $password, $dbname);
 		$stmt = $conn->prepare($sql);
 		$stmt->bind_param("s", $paramStr);
 		$stmt->execute();
 		$result = $stmt->get_result();
-		
+
 		$outputArray = array();
 		if ($result->num_rows > 0) {
 			while($row = $result->fetch_assoc()) {
 				$hoaPropertyRec = new HoaPropertyRec();
-		
+
 				$hoaPropertyRec->parcelId = $row["Parcel_ID"];
 				$hoaPropertyRec->lotNo = $row["LotNo"];
 				$hoaPropertyRec->subDivParcel = $row["SubDivParcel"];
 				$hoaPropertyRec->parcelLocation = $row["Parcel_Location"];
 				$hoaPropertyRec->ownerName = $row["Owner_Name1"] . ' ' . $row["Owner_Name2"];
 				$hoaPropertyRec->ownerPhone = $row["Owner_Phone"];
-		
+
 				array_push($outputArray,$hoaPropertyRec);
 			}
 		}
-		
+
 		$stmt->close();
 		$conn->close();
 	}
-	
+
 	echo json_encode($outputArray);
 
 } catch(Exception $e) {

@@ -1,23 +1,24 @@
 <?php
 /*==============================================================================
- * (C) Copyright 2015,2018 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2018 John J Kauflin, All rights reserved.
  *----------------------------------------------------------------------------
- * DESCRIPTION: 
+ * DESCRIPTION:
  *----------------------------------------------------------------------------
  * Modification History
  * 2015-03-06 JJK 	Initial version to get data
- * 2016-04-10 JJK	Added new lien fields to the update 
- * 2016-07-08 JJK   Added logic to set current date on paid and lien if not 
+ * 2016-04-10 JJK	Added new lien fields to the update
+ * 2016-07-08 JJK   Added logic to set current date on paid and lien if not
  * 					specified
- * 2016-09-02 JJK   Added NonCollectible field 
+ * 2016-09-02 JJK   Added NonCollectible field
  * 2018-11-04 JJK	Re-factored to use POST and return JSON data of
  *                  re-queried record
  * 2020-08-01 JJK   Re-factored to use jjklogin for authentication
  * 2020-12-21 JJK   Re-factored to use jjklogin package
+ * 2023-02-17 JJK   Refactor for non-static jjklogin class and settings from DB
  *============================================================================*/
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
-require_once 'vendor/autoload.php'; 
+require_once 'vendor/autoload.php';
 
 // Figure out how many levels up to get to the "public_html" root folder
 $webRootDirOffset = substr_count(strstr(dirname(__FILE__),"public_html"),DIRECTORY_SEPARATOR) + 1;
@@ -34,7 +35,8 @@ require_once 'php_secure/hoaDbCommon.php';
 use \jkauflin\jjklogin\LoginAuth;
 
 try {
-    $userRec = LoginAuth::getUserRec($cookieNameJJKLogin,$cookiePathJJKLogin,$serverKeyJJKLogin);
+    $loginAuth = new LoginAuth($hostJJKLogin, $dbadminJJKLogin, $passwordJJKLogin, $dbnameJJKLogin);
+    $userRec = $loginAuth->getUserRec();
     if ($userRec->userName == null || $userRec->userName == '') {
         throw new Exception('User is NOT logged in', 500);
     }
@@ -78,18 +80,18 @@ try {
 	error_log(date('[Y-m-d H:i] '). "updHoaProperty, bankFee = " . $param->bankFee . PHP_EOL, 3, "hoadb.log");
 	error_log(date('[Y-m-d H:i] '). "updHoaProperty, lienComment = " . $param->lienComment . PHP_EOL, 3, "hoadb.log");
 	*/
-	
+
 	$currDateStr = date("Y-m-d");
 
 	if ($param->lienCheckbox && $param->disposition == '') {
 		$param->disposition = 'Open';
 	}
-	
+
 	// if paid and Date Paid not set - set it to current date?
 	if ($param->paidCheckbox && $param->datePaid == '') {
 		$param->datePaid = $currDateStr;
 	}
-	
+
 	// if lien and Date Filed not set - set to current date?
 	if ($param->lienCheckbox && $param->dateFiled == '') {
 		$param->dateFiled = $currDateStr;
@@ -102,10 +104,10 @@ try {
 
 	if (!$stmt = $conn->prepare("UPDATE hoa_assessments SET OwnerID=?,DuesAmt=?,DateDue=?,Paid=?,NonCollectible=?,DatePaid=?,PaymentMethod=?," .
 							"Lien=?,LienRefNo=?,DateFiled=?,Disposition=?,FilingFee=?,ReleaseFee=?,DateReleased=?,LienDatePaid=?,AmountPaid=?," .
-							"StopInterestCalc=?,FilingFeeInterest=?,AssessmentInterest=?,InterestNotPaid=?,BankFee=?,LienComment=?," .	
+							"StopInterestCalc=?,FilingFeeInterest=?,AssessmentInterest=?,InterestNotPaid=?,BankFee=?,LienComment=?," .
 							"Comments=?,LastChangedBy=?,LastChangedTs=CURRENT_TIMESTAMP WHERE Parcel_ID = ? AND FY = ? ; ")) {
-		error_log("Prepare failed: " . $stmt->errno . ", Error = " . $stmt->error);
-		echo "Prepare failed: (" . $stmt->errno . ") " . $stmt->error;
+		error_log("Prepare failed ");
+		echo "Prepare failed ";
 	}
 	if (!$stmt->bind_param("issiississssssssississssss", $param->ownerId,$param->duesAmount,$param->dateDue,$param->paidCheckbox,$param->nonCollectibleCheckbox,$param->datePaid,$param->paymentMethod,
 						$param->lienCheckbox,$param->lienRefNo,$param->dateFiled,$param->disposition,$param->filingFee,$param->releaseFee,$param->dateReleased,$param->lienDatePaid,$param->amountPaid,
@@ -119,9 +121,9 @@ try {
 		error_log("Add Assessment Execute failed: " . $stmt->errno . ", Error = " . $stmt->error);
 		echo "Add Assessment Execute failed: (" . $stmt->errno . ") " . $stmt->error;
 	}
-	
+
 	$stmt->close();
-	
+
 	// Re-query the record from the database and return as a JSON structure
 	$hoaRec = getHoaRec($conn,$param->parcelId,"","","");
 	$hoaRec->adminLevel = $userRec->userLevel;

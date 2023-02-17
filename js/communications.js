@@ -1,7 +1,7 @@
 /*==============================================================================
- * (C) Copyright 2015,2016,2017,2018,2020 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2016,2017,2018,2020 John J Kauflin, All rights reserved.
  *----------------------------------------------------------------------------
- * DESCRIPTION: 
+ * DESCRIPTION:
  *----------------------------------------------------------------------------
  * Modification History
  * 2016-10-25 JJK   Added Communications table
@@ -50,7 +50,7 @@ var communications = (function () {
     function _getHoaCommList(event) {
         parcelId = event.target.getAttribute("data-parcelId");
         ownerId = event.target.getAttribute("data-ownerId");
-         
+
         $.getJSON("getHoaCommList.php", "parcelId=" + parcelId + "&ownerId=" + ownerId, function (outHoaCommRecList) {
             hoaCommRecList = outHoaCommRecList;
             _render();
@@ -62,9 +62,7 @@ var communications = (function () {
     function _render() {
         var tr = '';
 
-        if (jjklogin.getUserLevel() > 1) {
             $CommunicationsNew.html('<a id="CommunicationsNewButton" data-parcelId="' + parcelId + '" data-ownerId="' + ownerId + '" data-commId="NEW" href="#" class="btn btn-primary NewComm" role="button">New Communication</a>');
-        }
         //$("#CommunicationsParcel").html("<b>Parcel Id:</b> " + parcelId + " <b>Owner Id:</b> " + ownerId);
 
         $.each(hoaCommRecList, function (index, hoaCommRec) {
@@ -84,7 +82,7 @@ var communications = (function () {
             }
             tr += '<tr class="small">';
             // if issue make CommID a hyperlink to edit the issue
-            if (hoaCommRec.CommType == "Issue" && jjklogin.getUserLevel() > 1) {
+            if (hoaCommRec.CommType == "Issue") {
                 tr += '<td><a data-parcelId="' + parcelId + '" data-ownerId="' + ownerId + '" data-commId="' + hoaCommRec.CommID +
                       '" href="#" class="NewComm" role="button">' + hoaCommRec.CommID + '</a></td>';
             } else {

@@ -7,15 +7,16 @@
  * 				the payer.  Executed as part of the payment reconciliation
  *              process where you download an activity data file from Paypal,
  *              display transaction lines in a web page, and allow admin to
- *              record a payment transaction (should no longer be needed with 
+ *              record a payment transaction (should no longer be needed with
  *              the new handlePayment process, but keeping this in case it
  *              is ever needed)
  *----------------------------------------------------------------------------
  * Modification History
  * 2020-09-26 JJK 	Initial version from handlePaymentNotification.php
  * 2020-12-21 JJK   Re-factored to use jjklogin package
+ * 2023-02-17 JJK   Refactor for non-static jjklogin class and settings from DB
  *============================================================================*/
-require_once 'vendor/autoload.php'; 
+require_once 'vendor/autoload.php';
 
 // Define a super global constant for the log file (this will be in scope for all functions)
 define("LOG_FILE", "./php.log");
@@ -35,7 +36,8 @@ use \jkauflin\jjklogin\LoginAuth;
 
 $adminRec = new AdminRec();
 try {
-    $userRec = LoginAuth::getUserRec($cookieNameJJKLogin,$cookiePathJJKLogin,$serverKeyJJKLogin);
+    $loginAuth = new LoginAuth($hostJJKLogin, $dbadminJJKLogin, $passwordJJKLogin, $dbnameJJKLogin);
+    $userRec = $loginAuth->getUserRec();
     if ($userRec->userName == null || $userRec->userName == '') {
         throw new Exception('User is NOT logged in', 500);
     }

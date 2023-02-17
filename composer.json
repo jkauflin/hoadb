@@ -2,8 +2,8 @@
     "require": {
         "php": ">=8.0.0",
         "symfony/mailer": "^6.1",
-        "firebase/php-jwt": "^5.2.0",
-        "jkauflin/jjklogin": "^1.1.4",
+        "firebase/php-jwt": "^6.4.0",
+        "jkauflin/jjklogin": "^1.2.3",
         "paypal/paypal-checkout-sdk": "1.0.1"
     }
 }
