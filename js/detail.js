@@ -1,10 +1,10 @@
 /*==============================================================================
- * (C) Copyright 2015,2016,2017,2018 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2016,2017,2018 John J Kauflin, All rights reserved.
  *----------------------------------------------------------------------------
- * DESCRIPTION: 
+ * DESCRIPTION:
  *----------------------------------------------------------------------------
  * Modification History
- * 2015-03-06 JJK 	Initial version 
+ * 2015-03-06 JJK 	Initial version
  * 2015-03-26 JJK	Solved initial DetailPage checkbox display problem by
  * 					moving format after the pagecontainer change (instead of
  * 					before it.  Let the page initialize first, then fill it.
@@ -106,7 +106,7 @@ var detail = (function(){
     function getHoaRec(value) {
         // If a string was passed in then use value as the name, else get it from the attribute of the click event object
         var parcelId = (typeof value === "string") ? value : value.target.getAttribute("data-parcelId");
-         
+
         $propDetail.html("");
         $propOwners.html("");
         $propAssessments.html("");
@@ -265,7 +265,7 @@ var detail = (function(){
     function _editProperty(event) {
         $.getJSON("getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId"), function (editHoaRec) {
             _formatPropertyDetailEdit(editHoaRec);
-             
+
             $EditPage.modal();
         });
     };
@@ -310,7 +310,7 @@ var detail = (function(){
 
     // Functions for EditPage - respond to requests for update
     function _savePropertyEdit(event) {
-         
+
         var paramMap = new Map();
         paramMap.set('parcelId', event.target.getAttribute("data-parcelId"));
         //console.log("util.getJSONfromInputs($EditTable,paramMap) = " + util.getJSONfromInputs($EditTable, paramMap));
@@ -320,7 +320,7 @@ var detail = (function(){
             data: util.getJSONfromInputs($EditTable, paramMap),
             dataType: "json",
             success: function (outHoaRec) {
-                 
+
                 // Set the newest record from the update into the module variable (for render)
                 hoaRec = outHoaRec;
                 _render();
@@ -333,21 +333,21 @@ var detail = (function(){
     };	// End of $(document).on("click","#SavePropertyEdit",function(){
 
     function _editOwner(event) {
-        $.getJSON("getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&ownerId=" + event.target.getAttribute("data-ownerId"), 
+        $.getJSON("getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&ownerId=" + event.target.getAttribute("data-ownerId"),
         function (editHoaRec) {
             var createNew = false;
             _formatOwnerDetailEdit(editHoaRec, createNew);
-             
+
             $EditPage2Col.modal();
         });
     };
 
     function _newOwner(event) {
-        $.getJSON("getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&ownerId=" + event.target.getAttribute("data-ownerId"), 
+        $.getJSON("getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&ownerId=" + event.target.getAttribute("data-ownerId"),
         function (editHoaRec) {
             var createNew = true;
             _formatOwnerDetailEdit(editHoaRec, createNew);
-             
+
             $EditPage2Col.modal();
         });
     };
@@ -357,7 +357,7 @@ var detail = (function(){
             function (editHoaRec) {
                 var createNew = true;
                 _formatOwnerDetailEdit(editHoaRec, createNew);
-                 
+
                 $EditPage2Col.modal();
             });
 
@@ -475,7 +475,7 @@ var detail = (function(){
             data: util.getJSONfromInputs($EditTable2Col, paramMap),
             dataType: "json",
             success: function (outHoaRec) {
-                 
+
                 // Set the newest record from the update into the module variable (for render)
                 hoaRec = outHoaRec;
                 _render();
@@ -491,7 +491,7 @@ var detail = (function(){
     function _editAssessment(event) {
         $.getJSON("getHoaDbData.php", "parcelId=" + event.target.getAttribute("data-parcelId") + "&fy=" + event.target.getAttribute("data-fy"), function (editHoaRec) {
             _formatAssessmentDetailEdit(editHoaRec);
-             
+
             $EditPage2Col.modal();
         });
     };
@@ -593,7 +593,7 @@ var detail = (function(){
             data: util.getJSONfromInputs($EditPage2Col, paramMap),
             dataType: "json",
             success: function (outHoaRec) {
-                 
+
                 // Set the newest record from the update into the module variable (for render)
                 hoaRec = outHoaRec;
                 _render();
@@ -644,7 +644,7 @@ var detail = (function(){
             'Phone'];
         currPdfRec.lineColIncrArray = [0.6, 1.4, 0.8, 2.2, 1.9];
 
-        currPdfRec = pdfModule.duesStatementAddLine(currPdfRec,[hoaRec.Parcel_ID, hoaRec.LotNo, hoaRec.Parcel_Location, 
+        currPdfRec = pdfModule.duesStatementAddLine(currPdfRec,[hoaRec.Parcel_ID, hoaRec.LotNo, hoaRec.Parcel_Location,
             ownerRec.Mailing_Name,ownerRec.Owner_Phone], pdfLineHeaderArray);
 
         if (hoaRec.ownersList[0].AlternateMailing) {
@@ -709,6 +709,7 @@ var detail = (function(){
         var TaxYear = '';
         tr = '';
         var tempDuesAmt = '';
+        let maxPaymentHistoryLines = 6;
         $.each(hoaRec.assessmentsList, function (index, rec) {
             pdfLineHeaderArray = null;
 
@@ -733,16 +734,18 @@ var detail = (function(){
                 currPdfRec.lineColIncrArray = [0.6, 0.8, 1.0, 1.7, 0.8, 1.5];
             }
 
-            tempDuesAmt = '' + rec.DuesAmt;
-            tr = tr + '<tr>';
-            tr = tr + '<td>' + rec.FY + '</a></td>';
-            tr = tr + '<td>' + util.formatMoney(tempDuesAmt) + '</td>';
-            tr = tr + '<td>' + rec.DateDue + '</td>';
-            tr = tr + '<td>' + util.setCheckbox(rec.Paid) + '</td>';
-            tr = tr + '<td>' + util.setCheckbox(rec.NonCollectible) + '</td>';
-            tr = tr + '<td>' + rec.DatePaid + '</td>';
-            tr = tr + '</tr>';
-            currPdfRec = pdfModule.duesStatementAddLine(currPdfRec,[rec.FY, rec.DuesAmt, rec.DateDue, util.setBoolText(rec.Paid), util.setBoolText(rec.NonCollectible), rec.DatePaid], pdfLineHeaderArray);
+            if (!rec.Paid || index < maxPaymentHistoryLines) {
+                tempDuesAmt = '' + rec.DuesAmt;
+                tr = tr + '<tr>';
+                tr = tr + '<td>' + rec.FY + '</a></td>';
+                tr = tr + '<td>' + util.formatMoney(tempDuesAmt) + '</td>';
+                tr = tr + '<td>' + rec.DateDue + '</td>';
+                tr = tr + '<td>' + util.setCheckbox(rec.Paid) + '</td>';
+                tr = tr + '<td>' + util.setCheckbox(rec.NonCollectible) + '</td>';
+                tr = tr + '<td>' + rec.DatePaid + '</td>';
+                tr = tr + '</tr>';
+                currPdfRec = pdfModule.duesStatementAddLine(currPdfRec,[rec.FY, rec.DuesAmt, rec.DateDue, util.setBoolText(rec.Paid), util.setBoolText(rec.NonCollectible), rec.DatePaid], pdfLineHeaderArray);
+            }
         });
 
         $DuesStatementAssessmentsTable.html(tr);
@@ -754,5 +757,5 @@ var detail = (function(){
     return {
         getHoaRec: getHoaRec
     };
-        
+
 })(); // var detail = (function(){

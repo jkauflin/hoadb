@@ -65,6 +65,8 @@
  *                  payment instructions and processing fee from config
  * 2021-09-04 JJK   Added logging to check email function in updAssessmentPaid
  * 2022-08-29 JJK   mail
+ * 2024-11-01 JJK   Updated Total Due logic according to changes specified
+ *                  by GRHA Board and new Treasurer (late fees, interest calc)
  *============================================================================*/
 
 function getConn($host, $dbadmin, $password, $dbname) {
@@ -646,6 +648,10 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 						if ($currSysDate > $dateDue) {
 							$hoaAssessmentRec->DuesDue = 1;
 						}
+
+                        // if FY > current, add the total late fees for a year   $100
+                        // $10 x months since due date (up to 10)
+
 						/*
 						$diff=date_diff($date1,$date2,true);
 						error_log('date1=' . date_format($date1,"Y-m-d") . ', date2=' . date_format($date2,"Y-m-d") . ", diff days = " . $diff->days);
@@ -705,21 +711,51 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 					$totalDuesCalcRec->calcValue = $duesAmt;
 					array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 
-					//error_log(date('[Y-m-d H:i:s] '). "DateDue = " . $hoaAssessmentRec->DateDue . PHP_EOL, 3, "jjk-hoaDbCommon.log");
+                    //================================================================================================================================
+					// 2024-11-01 JJK - Updated Total Due logic according to changes specified by GRHA Board and new Treasurer
+                    //      Remove the restriction of an Open Lien to adding the interest on the unpaid assessment - it will now start adding
+                    //      interest when unpaid and past the DUE DATE.
+                    //      In addition, a $10 a month late fee will be added to any unpaid assessments
+                    //          *** Starting on 11/1/2024, Do it for every unpaid assessment (per year) for number of months from 11/1/FY-1
+                    //          FY > 2024
+                    //          if months > 10, use 10 ($100) - show a LATE FEE for every unpaid assessment
+                    //
+                    // $hoaAssessmentRec->DuesDue is set to TRUE if current date is past the $hoaAssessmentRec->DateDue
+                    //================================================================================================================================
+					//if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open') {
+                    if ($hoaAssessmentRec->DuesDue) {
+                        $onlyCurrYearDue = false;
 
-					// Calculate interest on the assessment (if a Lien has been created and is Open)
-					if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open') {
-						$onlyCurrYearDue = false;
 						// If still calculating interest dynamically calculate the compound interest
 						if (!$hoaAssessmentRec->StopInterestCalc) {
 							$hoaAssessmentRec->AssessmentInterest = calcCompoundInterest($duesAmt,$hoaAssessmentRec->DateDue);
 						}
-
 						$hoaRec->TotalDue = $hoaRec->TotalDue + $hoaAssessmentRec->AssessmentInterest;
 						$totalDuesCalcRec = new TotalDuesCalcRec();
 						$totalDuesCalcRec->calcDesc = '%6 Interest on FY ' . $hoaAssessmentRec->FY . ' Assessment (since ' . $hoaAssessmentRec->DateDue . ')';
 						$totalDuesCalcRec->calcValue = $hoaAssessmentRec->AssessmentInterest;
 						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
+
+                        // Calculate monthly late fees (starting in November 2024 for the FY 2025)
+                        if ($hoaAssessmentRec->FY > 2024) {
+                            $date1 = new DateTime($hoaAssessmentRec->DateDue);
+                            $lateDate = $hoaAssessmentRec->FY-1 . "-10-31";
+                            $date2 = new DateTime();
+                            $interval = $date1->diff($date2);
+                            $months = ($interval->y * 12) + $interval->m;
+                            error_log('date1=' . date_format($date1,"Y-m-d") . ', date2=' . date_format($date2,"Y-m-d") . ", months = " . $months . PHP_EOL, 3, LOG_FILE);
+
+                            if ($months > 10) {
+                                $months = 10;
+                            }
+                            $totalLateFees = 10.00 * $months;
+
+                            $hoaRec->TotalDue = $hoaRec->TotalDue + $totalLateFees;
+                            $totalDuesCalcRec = new TotalDuesCalcRec();
+                            $totalDuesCalcRec->calcDesc = '$10 a Month late fee on FY ' . $hoaAssessmentRec->FY . ' Assessment (since ' . $lateDate . ')';
+                            $totalDuesCalcRec->calcValue = $totalLateFees;
+                            array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
+                        }
 					}
 				}
 
@@ -737,30 +773,6 @@ function getHoaRec($conn,$parcelId,$ownerId='',$fy='',$saleDate='',$paypalFixedA
 					$totalDuesCalcRec->calcValue = $hoaAssessmentRec->AssessmentInterest;
 					array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 				}
-
-				/*
-				 Dues Total calculation logic
-				 If Assessment NOT Paid, Assessment amount is added
-				 Lien
-				 Open
-				 If Lien is Open (and Stop Interest Calc is NOT set), Assessment Interest (from Date Due) is added
-				 Paid
-				 Released
-				 	Release Fee - added if entered
-				 Closed
-
-				 Stop Interest Calc
-
-				 What if Assessment Paid, but Lien still Open???
-
-					$onlyCurrYearDue = false;  (logical for when to show Paypal button - if just simple current fee dues (no liens or previous)
-						*** if this is the case, give a message on the screen to contact Treasurer ***
-
-					FilingFeeInterest - interest on the Filing Fee (when Lien Open and NOT stop calculating interest)
-						if (!$hoaAssessmentRec->StopInterestCalc) {
-							$hoaAssessmentRec->FilingFeeInterest = calcCompoundInterest($hoaAssessmentRec->FilingFee,$hoaAssessmentRec->DateFiled);
-						}
-				 */
 
 				// If there is an Open Lien (not Paid, Released, or Closed)
 				if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open' && !$hoaAssessmentRec->NonCollectible) {
@@ -982,22 +994,6 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 						if ($currSysDate > $dateDue) {
 							$hoaAssessmentRec->DuesDue = 1;
 						}
-						/*
-							$diff=date_diff($date1,$date2,true);
-							error_log('date1=' . date_format($date1,"Y-m-d") . ', date2=' . date_format($date2,"Y-m-d") . ", diff days = " . $diff->days);
-							$diff=date_diff($date1,$date2,false);
-							error_log('date1=' . date_format($date1,"Y-m-d") . ', date2=' . date_format($date2,"Y-m-d") . ", diff days = " . $diff->days);
-
-
-							$diff=date_diff($date2,$date1,true);
-							error_log('date2=' . date_format($date2,"Y-m-d") . ', date1=' . date_format($date1,"Y-m-d") . ", diff days = " . $diff->days);
-							$diff=date_diff($date2,$date1,false);
-							error_log('date2=' . date_format($date2,"Y-m-d") . ', date1=' . date_format($date1,"Y-m-d") . ", diff days = " . $diff->days);
-
-							if ($diff->days > 0) {
-							$hoaAssessmentRec->DuesDue = 1;
-							}
-							*/
 					}
 				}
 
@@ -1041,18 +1037,51 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 					$totalDuesCalcRec->calcValue = $duesAmt;
 					array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 
-					if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open') {
-						$onlyCurrYearDue = false;
+                    //================================================================================================================================
+					// 2024-11-01 JJK - Updated Total Due logic according to changes specified by GRHA Board and new Treasurer
+                    //      Remove the restriction of an Open Lien to adding the interest on the unpaid assessment - it will now start adding
+                    //      interest when unpaid and past the DUE DATE.
+                    //      In addition, a $10 a month late fee will be added to any unpaid assessments
+                    //          *** Starting on 11/1/2024, Do it for every unpaid assessment (per year) for number of months from 11/1/FY-1
+                    //          FY > 2024
+                    //          if months > 10, use 10 ($100) - show a LATE FEE for every unpaid assessment
+                    //
+                    // $hoaAssessmentRec->DuesDue is set to TRUE if current date is past the $hoaAssessmentRec->DateDue
+                    //================================================================================================================================
+					//if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open') {
+                    if ($hoaAssessmentRec->DuesDue) {
+                        $onlyCurrYearDue = false;
+
 						// If still calculating interest dynamically calculate the compound interest
 						if (!$hoaAssessmentRec->StopInterestCalc) {
 							$hoaAssessmentRec->AssessmentInterest = calcCompoundInterest($duesAmt,$hoaAssessmentRec->DateDue);
 						}
-
 						$hoaRec->TotalDue = $hoaRec->TotalDue + $hoaAssessmentRec->AssessmentInterest;
 						$totalDuesCalcRec = new TotalDuesCalcRec();
 						$totalDuesCalcRec->calcDesc = '%6 Interest on FY ' . $hoaAssessmentRec->FY . ' Assessment (since ' . $hoaAssessmentRec->DateDue . ')';
 						$totalDuesCalcRec->calcValue = $hoaAssessmentRec->AssessmentInterest;
 						array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
+
+                        // Calculate monthly late fees (starting in November 2024 for the FY 2025)
+                        if ($hoaAssessmentRec->FY > 2024) {
+                            $date1 = new DateTime($hoaAssessmentRec->DateDue);
+                            $lateDate = $hoaAssessmentRec->FY-1 . "-10-31";
+                            $date2 = new DateTime();
+                            $interval = $date1->diff($date2);
+                            $months = ($interval->y * 12) + $interval->m;
+                            error_log('date1=' . date_format($date1,"Y-m-d") . ', date2=' . date_format($date2,"Y-m-d") . ", months = " . $months . PHP_EOL, 3, LOG_FILE);
+
+                            if ($months > 10) {
+                                $months = 10;
+                            }
+                            $totalLateFees = 10.00 * $months;
+
+                            $hoaRec->TotalDue = $hoaRec->TotalDue + $totalLateFees;
+                            $totalDuesCalcRec = new TotalDuesCalcRec();
+                            $totalDuesCalcRec->calcDesc = '$10 a Month late fee on FY ' . $hoaAssessmentRec->FY . ' Assessment (since ' . $lateDate . ')';
+                            $totalDuesCalcRec->calcValue = $totalLateFees;
+                            array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
+                        }
 					}
 				}
 
@@ -1070,30 +1099,6 @@ function getHoaRec2($conn,$parcelId,$paypalFixedAmtButtonForm='',$paypalFixedAmt
 					$totalDuesCalcRec->calcValue = $hoaAssessmentRec->AssessmentInterest;
 					array_push($hoaRec->totalDuesCalcList,$totalDuesCalcRec);
 				}
-
-				/*
-				 Dues Total calculation logic
-				 If Assessment NOT Paid, Assessment amount is added
-				 Lien
-				 Open
-				 If Lien is Open (and Stop Interest Calc is NOT set), Assessment Interest (from Date Due) is added
-				 Paid
-				 Released
-				 Release Fee - added if entered
-				 Closed
-
-				 Stop Interest Calc
-
-				 What if Assessment Paid, but Lien still Open???
-
-				 $onlyCurrYearDue = false;  (logical for when to show Paypal button - if just simple current fee dues (no liens or previous)
-				 *** if this is the case, give a message on the screen to contact Treasurer ***
-
-				 FilingFeeInterest - interest on the Filing Fee (when Lien Open and NOT stop calculating interest)
-				 if (!$hoaAssessmentRec->StopInterestCalc) {
-				 $hoaAssessmentRec->FilingFeeInterest = calcCompoundInterest($hoaAssessmentRec->FilingFee,$hoaAssessmentRec->DateFiled);
-				 }
-				 */
 
 				// If there is an Open Lien (not Paid, Released, or Closed)
 				if ($hoaAssessmentRec->Lien && $hoaAssessmentRec->Disposition == 'Open' && !$hoaAssessmentRec->NonCollectible) {
