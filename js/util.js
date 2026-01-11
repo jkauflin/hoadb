@@ -1,10 +1,10 @@
 /*==============================================================================
- * (C) Copyright 2015,2016,2017,2018 John J Kauflin, All rights reserved. 
+ * (C) Copyright 2015,2016,2017,2018 John J Kauflin, All rights reserved.
  *----------------------------------------------------------------------------
- * DESCRIPTION: 
+ * DESCRIPTION:
  *----------------------------------------------------------------------------
  * Modification History
- * 2015-03-06 JJK 	Initial version 
+ * 2015-03-06 JJK 	Initial version
  * 2015-04-09 JJK   Added Regular Expressions and functions for validating
  * 					email addresses and replacing non-printable characters
  * 2016-05-18 JJK   Added setTextArea
@@ -37,15 +37,15 @@
 
     //=================================================================================================================
     // Bind events
-    
+
     // Auto-close the collapse menu after clicking a non-dropdown menu item (in the bootstrap nav header) bs4
-    $(".navbar-nav li a:not('.dropdown-toggle')").on('click', function () { 
-        $('.navbar-collapse').collapse('hide'); 
+    $(".navbar-nav li a:not('.dropdown-toggle')").on('click', function () {
+        $('.navbar-collapse').collapse('hide');
     });
 
     // 8/9/2020 Focus on the first non-readonly input field when a modal pops up
     $document.on('shown.bs.modal', function (e) {
-        $('input:visible:enabled:not([readonly]):first', e.target).focus(); 
+        $('input:visible:enabled:not([readonly]):first', e.target).focus();
     });
 
     // Using addClear plug-in function to add a clear button on input text fields
@@ -160,8 +160,7 @@
         }
         return months[tempDate.getMonth()] + ' ' + tempDate.getDate() + ', ' + tempDate.getFullYear();
     }
-
-
+    
     // Helper functions for setting UI components from data
     function setBoolText(inBool) {
         var tempStr = "NO";
@@ -285,5 +284,5 @@
         getJSONfromInputs:  getJSONfromInputs,
         displayError:       displayError
     };
-        
+
 })(); // var util = (function(){
